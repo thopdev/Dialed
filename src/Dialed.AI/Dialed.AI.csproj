@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Claude integration: client, prompt templates, JSON schemas. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dialed.Domain\Dialed.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

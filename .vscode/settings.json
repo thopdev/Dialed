@@ -1,0 +1,9 @@
+{
+  "dotnet.defaultSolution": "Dialed.slnx",
+  "editor.formatOnSave": true,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "azureFunctions.projectSubpath": "src/Dialed.Functions",
+  "azureFunctions.projectLanguage": "C#",
+  "azureFunctions.projectRuntime": "~4"
+}

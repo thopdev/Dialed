@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- ASP.NET Core API: Identity + passkeys, Datasync server, households, friends, AI, photos. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dialed.Domain\Dialed.Domain.csproj" />
+    <ProjectReference Include="..\Dialed.AI\Dialed.AI.csproj" />
+  </ItemGroup>
+
+</Project>
