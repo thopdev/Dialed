@@ -1,6 +1,6 @@
 # ADR-0004: Offline-first sync with the Datasync Community Toolkit
 
-**Status:** Accepted — to be validated by the M0 spike · 2026-11-05
+**Status:** Superseded by [ADR-0011](0011-browser-offline-storage-and-sync.md) · 2026-11-05 (the Datasync *server* is still used; its offline *client* doesn't support Blazor WebAssembly)
 
 ## Context
 All of a user's household data must work without a connection (logging brews, adding bags, editing recipes) and sync later, across several people in the same household.

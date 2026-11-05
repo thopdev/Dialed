@@ -1,6 +1,6 @@
 # ADR-0001: .NET MAUI client for iPhone and iPad
 
-**Status:** Accepted · 2026-11-05
+**Status:** Superseded by [ADR-0009](0009-blazor-pwa-maui-ready.md) · 2026-11-05 (no Mac available; kept for history and as the path for a future native app)
 
 ## Context
 Dialed is used mainly on iPhone and iPad. It needs the camera, on-device text recognition, an offline database, a guided brew timer and adaptive layouts for iPad. The developer's main stack is C#/.NET (ASP.NET Core, Blazor).

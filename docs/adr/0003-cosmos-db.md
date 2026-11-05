@@ -16,7 +16,8 @@ The data is small per household, mostly read/written within one household, and n
 - Fits the household-scoped access pattern and gives a change feed for Functions.
 - Relational-style queries (e.g. "all beans from roasters in Ethiopia used by my friends") must be designed per query or denormalised by change-feed Functions.
 - Throughput is capped at 1000 RU/s to stay free; add an alert on throttled (429) requests.
-- If `dev` and `prod` share a subscription, only one of them can be the free-tier account.
+- If `dev` and `prod` share a subscription, only one of them can be the free-tier account. Default for now: one subscription, with `dev` and `prod` as separate databases inside the single free-tier account (they share the 1000 RU/s).
+- ASP.NET Core Identity (ADR-0010) needs a user store on Cosmos DB (custom stores or the EF Core Cosmos provider, decided in the passkey spike).
 
 ## Alternatives considered
 - **Azure SQL (serverless)**: relational fit for households/friends; Datasync supports it well. Not chosen as the developer preferred Cosmos DB.

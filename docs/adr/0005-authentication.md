@@ -1,6 +1,6 @@
 # ADR-0005: Sign in with Apple + API-issued JWT
 
-**Status:** Accepted · 2026-11-05
+**Status:** Superseded by [ADR-0010](0010-passkeys.md) · 2026-11-05 (PWA without an Apple Developer Program membership)
 
 ## Context
 iPhone/iPad-first app for a private beta. Sign-in should be one tap and not require passwords. Other platforms may come later.
