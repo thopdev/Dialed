@@ -159,8 +159,8 @@ sequenceDiagram
   API-->>App: access JWT + refresh token
 ```
 
-- ASP.NET Core Identity (.NET 10) passkeys, wrapped by our endpoints; **RP ID = `<domain>`**, allowed origin = `https://app.<domain>` (plus preview environments in `dev`).
-- Ceremony state: Identity's Data Protection cookie (same-site thanks to the shared domain; `fetch` with credentials and CORS for the app origin) — or a cookie-less custom `IPasskeyHandler` wrapper; decided in the spike.
+- ASP.NET Core Identity (.NET 10) passkeys, wrapped by our endpoints. **RP ID and allowed origins are configuration per environment**: `localhost` on the PC, a persistent dev-tunnel host for testing on the iPhone, the Static Web Apps default hostname in Azure `dev`, `<domain>` in `prod` (see [ADR-0010](adr/0010-passkeys.md)).
+- **Cookie-less ceremony**: the options response carries a Data Protection–protected, single-use, ~5-minute state token that the client sends back with the attestation/assertion — so app and API may live on different sites.
 - Access token ≈ 30 min, refresh token ≈ 60 days, rotated on use, stored hashed server-side, revocable. The app keeps tokens in memory and the refresh token in IndexedDB.
 - Recovery: recovery codes, email recovery, add more passkeys; prompt when a passkey isn't backed up.
 - Beta: sign-up requires an invite code.
@@ -207,9 +207,10 @@ sequenceDiagram
 
 | Resource | SKU / notes |
 |---|---|
+| Region | West Europe (the Foundry/Claude resource in the nearest region that offers it) |
 | Resource group | `rg-dialed-{env}` |
-| Static Web App `swa-dialed-{env}` | Free plan; `app.<domain>` in prod; preview environment per PR |
-| Container Apps environment + app `ca-dialed-api` | Consumption, min replicas 0 (dev) / 0–1 (prod); `api.<domain>` |
+| Static Web App `swa-dialed-{env}` | Free plan; default hostname in dev, `app.<domain>` in prod (from M4); preview environment per PR |
+| Container Apps environment + app `ca-dialed-api` | Consumption, min replicas 0 (dev) / 0–1 (prod); default hostname in dev, `api.<domain>` in prod |
 | Container registry | ACR Basic (shared) or GHCR |
 | Function app `func-dialed-{env}` | Flex Consumption, .NET 10 isolated |
 | Cosmos DB account | NoSQL API, free tier (one per subscription — shared by dev and prod databases), shared-throughput databases |
@@ -220,7 +221,7 @@ sequenceDiagram
 | Log Analytics + Application Insights | Web, API, Functions; availability test |
 | Managed identities + RBAC | API/Functions → Cosmos (data plane RBAC), Storage, Key Vault, Foundry, Email — no connection-string secrets |
 | Budget + alerts | Subscription budget with email alert |
-| DNS | `app` and `api` records at the registrar (or Azure DNS) |
+| DNS (prod, from M4) | `app` and `api` records at the registrar (or Azure DNS) |
 
 CI/CD: GitHub Actions with **OIDC federated credentials** to Azure (no stored Azure secrets). `azd provision` / `azd deploy` for infra + API + Functions; the Static Web Apps action deploys the PWA and creates PR preview environments.
 

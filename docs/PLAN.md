@@ -135,11 +135,11 @@ All of M0–M4 together is the MVP that goes to the private beta. Milestones are
 
 | Milestone | Goal | Exit criteria |
 |---|---|---|
-| **M0 — Foundations** | On a real iPhone, the installed PWA lets you sign up with a passkey, create an entity offline and see it synced to Cosmos DB in dev. | Repo + CI green · dev environment provisioned from Bicep on the custom domain · passkey sign-up/sign-in end-to-end · both spikes done (ADR-0010 and ADR-0011 confirmed) · app shell + PWA install on iPhone and iPad. |
+| **M0 — Foundations** | On a real iPhone, the installed PWA lets you sign up with a passkey, create an entity offline and see it synced to Cosmos DB in dev. | Repo + CI green · dev environment provisioned from Bicep · passkey sign-up/sign-in end-to-end on localhost, on the iPhone via a dev tunnel and in Azure dev · both spikes done (ADR-0010 and ADR-0011 confirmed) · app shell + PWA install on iPhone and iPad. |
 | **M1 — Coffee core** | Thomas uses Dialed daily for his own coffee, offline included. | Vendors, beans, bags, equipment, recipes (incl. defaults) and brew log work offline and sync · inventory deducts from brews · photos upload and show thumbnails · account recovery works. |
 | **M2 — Households & friends** | Coffee data is shared within a household and visible to friends. | Invite flow works across two accounts on two devices · roles enforced server-side · follow requests + visibility rules enforced · copy recipe/bean from a friend. |
 | **M3 — AI** | Label scanning and recipe help are good enough to prefer them over typing. | Label scan ≥ 80% field accuracy on the golden test set · starting recipe + dial-in suggestions in the app · quotas + cost telemetry in place · offline fallback works. |
-| **M4 — Beta hardening & private beta** | Friends can install and use it without Thomas holding their hand. | Sync conflict tests pass · storage-loss recovery tested on iOS · account deletion + data export · error reporting + alerts · privacy policy · prod environment · invite-only sign-up · feedback loop. |
+| **M4 — Beta hardening & private beta** | Friends can install and use it without Thomas holding their hand. | Sync conflict tests pass · storage-loss recovery tested on iOS · account deletion + data export · error reporting + alerts · privacy policy · custom domain + prod environment · invite-only sign-up · feedback loop. |
 | **Later** | Post-MVP backlog. | — |
 
 ### Epics
@@ -147,7 +147,7 @@ All of M0–M4 together is the MVP that goes to the private beta. Milestones are
 | Epic | Milestone(s) |
 |---|---|
 | [#1 Project setup & CI](https://github.com/thopdev/Dialed/issues/1) | M0 |
-| [#2 Azure infrastructure](https://github.com/thopdev/Dialed/issues/2) | M0 (dev + domain), M3 (Foundry), M4 (prod) |
+| [#2 Azure infrastructure](https://github.com/thopdev/Dialed/issues/2) | M0 (dev), M3 (Foundry), M4 (domain + prod) |
 | [#3 Authentication & accounts](https://github.com/thopdev/Dialed/issues/3) | M0 (passkeys), M1 (profile, recovery, beta gate), M4 (deletion/export) |
 | [#4 Offline-first sync](https://github.com/thopdev/Dialed/issues/4) | M0 (spike + engine), M1 (storage loss), M2 (household scoping), M4 (hardening) |
 | [#5 App shell, PWA & design system](https://github.com/thopdev/Dialed/issues/5) | M0, M1, M4 (accessibility) |
@@ -166,9 +166,9 @@ All of M0–M4 together is the MVP that goes to the private beta. Milestones are
 | [#18 Post-MVP backlog](https://github.com/thopdev/Dialed/issues/18) | Later |
 
 **Where to start (M0 critical path):**
-1. #19 solution structure → #20 local dev (open on your iPhone over HTTPS) → #21 CI.
-2. The two spikes, before any feature work: #37 SQLite in the browser + sync protocol, and #29 passkeys with Identity + Cosmos DB.
-3. Infra: #24 Bicep for dev → #111 custom domain (pick the domain before the first real passkey) → #22 PWA deploys with PR previews.
+1. #19 solution structure → #20 local dev (passkeys on localhost; iPhone via a dev tunnel) → #21 CI.
+2. The two spikes, before any feature work: #37 SQLite in the browser + sync protocol, and #29 cookie-less passkeys with Identity + Cosmos DB.
+3. Infra: #24 Bicep for dev → #22 PWA deploys with PR previews. (The custom domain, #111, waits until M4.)
 4. App: #44 shell → #115 PWA install/offline → #116 platform abstractions.
 5. Then #30 passkey API → #32 sign-in screens, and #38 sync server → #39 sync engine.
 
@@ -184,9 +184,11 @@ All of M0–M4 together is the MVP that goes to the private beta. Milestones are
 
 **Definition of Done**: acceptance criteria met · unit tests for domain logic, sync and API · works offline where relevant · checked in Safari on iPhone *and* iPad (installed PWA) · no browser APIs in `Dialed.UI`/`Dialed.Client` · telemetry/logging added · docs/ADR updated if a decision changed · merged to `main` via PR with green CI.
 
-**Branching**: trunk-based. Short-lived branches `feat/<issue>-<slug>`, PR into `main`, squash merge, Conventional Commits (`feat:`, `fix:`, `chore:` …) referencing the issue (`Closes #12`).
+**Branching**: trunk-based. One short-lived branch and PR per story (`feat/<issue>-<slug>`), `Closes #N` in the PR, Thomas reviews and merges (squash), Conventional Commits (`feat:`, `fix:`, `chore:` …).
 
-**Environments**: PR preview environments (Static Web Apps) against `dev` API · `dev` (deployed on every merge to `main`) · `prod` (deployed on release tag). Local development: `dotnet watch` + Cosmos DB emulator + Azurite; test on the iPhone over the local network.
+**Tooling**: VS Code + C# Dev Kit (recommended extensions and launch configs in `.vscode/`) · tests with xUnit v3 + Shouldly · Playwright (WebKit) for end-to-end.
+
+**Environments**: local (passkeys on `localhost` in the PC browser; on the iPhone via a persistent Microsoft dev tunnel) · PR preview environments (Static Web Apps) against the `dev` API · `dev` (deployed on every merge to `main`, Azure default hostnames) · `prod` (custom domain, deployed on release tag). Local stack: `dotnet watch` + Cosmos DB emulator + Azurite.
 
 ## 9. Cost (private beta, estimate)
 
@@ -210,8 +212,8 @@ Put a **budget alert** on the subscription from day one (story in the Azure infr
 |---|---|---|
 | **iOS clears website storage** (local DB, pending photos). | Unsynced brews/photos lost; slow re-download. | Install to home screen, request persistent storage on each launch, push eagerly, full re-sync when the DB is missing, warn on old unsynced changes; test > 7 days unused on a real device (M0 spike). |
 | **SQLite-in-the-browser libraries are young** (Bit.Bsqlite, SqliteWasmBlazor). | Bugs or abandonment. | Spike in M0; keep them behind EF Core so they can be swapped; IndexedDB (Dexie) as last-resort fallback. |
-| **Passkey ceremony across app/API origins** (cookie-based state, Safari blocks cross-site cookies). | Sign-in doesn't work in Safari. | Custom domain with `app.` and `api.` subdomains; cookie-less ceremony handler as fallback; spike in M0. |
-| **Passkeys are bound to the domain**. | Changing the domain later invalidates all accounts. | Choose the domain before the first real user signs up (open question 1). |
+| **Passkey ceremony across app/API origins** (Identity's default keeps state in a cookie; Safari blocks cross-site cookies). | Sign-in doesn't work in Safari. | Cookie-less ceremony with a protected, single-use state token (ADR-0010); validated in the M0 spike on localhost, a dev tunnel and Azure dev. |
+| **Passkeys are bound to their RP ID (domain)**. | Changing the prod domain later invalidates all accounts. | Choose the domain before the first beta tester signs up (M4, open question 1); dev/test passkeys are throwaway. |
 | **Identity on Cosmos DB** has no official EF store. | Extra work. | Custom stores (small surface) or EF Core Cosmos provider; spike. |
 | **PWA limitations on iOS** (no haptics, manual install, links open in Safari). | Feels less native. | Install guide, sound/visual cues, codes instead of links where needed; native MAUI host later (ADR-0009). |
 | **Datasync server + Cosmos partitioning** may not fit the household model out of the box. | Rework of sync layer. | M0 spike; fallback: `/id` partitioning with cross-partition queries at beta scale. |
@@ -223,12 +225,17 @@ Put a **budget alert** on the subscription from day one (story in the Azure infr
 
 ## 11. Open questions
 
-1. **Domain name**: which domain should Dialed use (e.g. `app.<domain>` + `api.<domain>`)? Needed in M0, before the first real passkey is registered.
-2. **Region**: West Europe (Amsterdam) for data, and which region for the Foundry/Claude resource?
-3. **Units & language**: grams and °C only, or also ounces/°F? App UI English only for the beta?
-4. **Roaster/bean catalog**: OK that roasters and beans are per household in the MVP (friends copy them), with a global catalog later?
+1. **Domain name**: which domain should Dialed use for prod (`app.<domain>` + `api.<domain>`)? Needed before the first beta tester (M4, #111). Development runs on localhost, a dev tunnel and Azure default hostnames.
 
-Resolved: no Mac → PWA instead of MAUI (ADR-0009) · no Apple Developer Program needed for the beta · Azure: one subscription for now · no fixed weekly hours → no milestone dates yet.
+Resolved:
+- No Mac → PWA instead of MAUI (ADR-0009); no Apple Developer Program needed for the beta.
+- Passkeys: cookie-less ceremony, `localhost` locally, dev tunnel on the iPhone (ADR-0010).
+- Azure: one subscription for now, region West Europe; Claude resource in the nearest region that offers it.
+- Units: grams/°C by default, ounces/°F switchable per user.
+- Language: English UI for the beta, all text in resource files (Dutch later).
+- Roasters and beans are per household in the MVP; global catalog later.
+- Tests: xUnit v3 + Shouldly. IDE: VS Code + C# Dev Kit. Workflow: one PR per story, Thomas merges.
+- No fixed weekly hours → no milestone dates yet.
 
 ## 12. Assumptions
 
@@ -237,4 +244,4 @@ Resolved: no Mac → PWA instead of MAUI (ADR-0009) · no Apple Developer Progra
 - "Links to other people" means households + friends/following (no public community in MVP).
 - A user can be in several households; one is "active" in the app. Every user gets a personal household on sign-up.
 - Friend content is read **online only** (not synced to the device); your own households' data is fully offline.
-- Units: grams, millilitres, °C, seconds; stored in SI units and formatted in the app.
+- Units: stored in SI (grams, millilitres, °C, seconds); shown in grams/°C or ounces/°F per user preference.

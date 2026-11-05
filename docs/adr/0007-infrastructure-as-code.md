@@ -8,7 +8,8 @@ Everything should be hosted on Azure and reproducible; two environments (`dev`, 
 ## Decision
 - **Bicep** modules in `/infra`, orchestrated by the **Azure Developer CLI** (`azure.yaml`, `azd provision`, `azd deploy`).
 - Resources include Azure Static Web Apps (PWA), Container Apps (API), Functions, Cosmos DB, Storage, Key Vault, Azure Communication Services Email, Foundry, monitoring — see [architecture.md §7](../architecture.md#7-azure-resources-per-environment).
-- **Custom domain**: `app.<domain>` → Static Web Apps, `api.<domain>` → Container Apps (DNS at the registrar or in Azure DNS). Needed for passkeys (ADR-0010).
+- **Region**: West Europe.
+- **Custom domain (prod, before the beta)**: `app.<domain>` → Static Web Apps, `api.<domain>` → Container Apps (DNS at the registrar or in Azure DNS); it is the passkey RP ID for prod (ADR-0010). `dev` uses Azure's default hostnames.
 - **GitHub Actions** authenticates to Azure with **OIDC federated credentials** (no client secrets in GitHub). Static Web Apps creates a **preview environment per pull request**.
 - **Managed identities + RBAC** between services; secrets only in **Key Vault**.
 - `dev` deploys on every merge to `main`; `prod` deploys from a release tag with a manual approval (GitHub environment protection).

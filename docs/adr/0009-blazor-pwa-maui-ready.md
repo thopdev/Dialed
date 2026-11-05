@@ -19,7 +19,8 @@ There is no Mac available. .NET MAUI needs a Mac with Xcode to build, debug and 
 - **Platform services behind interfaces** in `Dialed.Client`/`Dialed.UI`, implemented in the host: photo capture/picker, local photo storage, connectivity, share, passkey (WebAuthn) client, storage persistence, screen wake lock, sound cues.
 - **Rule:** `Dialed.UI` and `Dialed.Client` never reference `IJSRuntime` or browser-only packages directly. An architecture test enforces this.
 - **UI library:** **Fluent UI Blazor** (`Microsoft.FluentUI.AspNetCore.Components`) with a custom coffee theme (design tokens, light/dark). It works in both WebAssembly and MAUI Blazor Hybrid.
-- **Hosting:** **Azure Static Web Apps** (Free plan: 2 custom domains, 3 preview environments, 100 GB bandwidth/month) on a custom domain; the API stays on Container Apps (ADR-0002).
+- **Hosting:** **Azure Static Web Apps** (Free plan: 2 custom domains, 3 preview environments, 100 GB bandwidth/month) — default hostname in `dev`, custom domain in `prod`; the API stays on Container Apps (ADR-0002).
+- **Language:** English UI for the beta; all UI text in resource files (`IStringLocalizer`) so Dutch can be added later.
 
 ## Consequences
 - Fast loop: `dotnet watch` on Windows and test on the iPhone over the local network, or through the preview environment that Static Web Apps creates per pull request.
