@@ -32,7 +32,7 @@ jobs:
         run: dotnet build Dialed.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Dialed.slnx --configuration Release --no-build --logger "trx" --results-directory TestResults
+        run: dotnet test --solution Dialed.slnx --configuration Release --no-build --results-directory TestResults --report-xunit-trx
 
       - name: Upload test results
         if: always()

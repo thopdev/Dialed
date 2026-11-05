@@ -1,5 +1,6 @@
 {
   "dotnet.defaultSolution": "Dialed.slnx",
+  "dotnet.testWindow.useTestingPlatformProtocol": true,
   "editor.formatOnSave": true,
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,

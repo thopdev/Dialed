@@ -9,7 +9,7 @@ Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download) and VS Code 
 
 ```bash
 dotnet build Dialed.slnx
-dotnet test Dialed.slnx
+dotnet test --solution Dialed.slnx     # xUnit v3 on Microsoft.Testing.Platform
 dotnet run --project src/Dialed.Web    # the PWA (placeholder page for now)
 dotnet run --project src/Dialed.Api    # the API, health check at /health
 ```

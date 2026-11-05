@@ -2,11 +2,16 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
-  <!-- Shared settings for all test projects: xUnit v3 + Shouldly. -->
+  <!--
+    Shared settings for all test projects: xUnit v3 + Shouldly on Microsoft.Testing.Platform
+    (opted in for `dotnet test` via global.json). Microsoft.NET.Test.Sdk and xunit.runner.visualstudio
+    stay for IDE test explorers that still use VSTest.
+  -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
