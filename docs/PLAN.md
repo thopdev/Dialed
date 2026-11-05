@@ -142,24 +142,26 @@ All of M0–M4 together is the MVP that goes to TestFlight. Milestones are seque
 
 | Epic | Milestone(s) |
 |---|---|
-| Project setup & CI | M0 |
-| Azure infrastructure | M0 (dev), M4 (prod) |
-| Authentication & accounts | M0, M4 (deletion/export) |
-| Offline-first sync | M0 (spike + skeleton), M4 (hardening) |
-| App shell & design system | M0, M1 |
-| Roasters & sellers | M1 |
-| Beans & inventory | M1 |
-| Equipment & brew methods | M1 |
-| Recipes | M1 |
-| Brew log | M1 |
-| Photos & media | M1 |
-| Households | M2 |
-| Friends & sharing | M2 |
-| AI label scanning | M3 |
-| AI recipe assistant | M3 |
-| Privacy, security & observability | M4 |
-| TestFlight beta | M4 |
-| Post-MVP backlog | Later |
+| [#1 Project setup & CI](https://github.com/thopdev/Dialed/issues/1) | M0 |
+| [#2 Azure infrastructure](https://github.com/thopdev/Dialed/issues/2) | M0 (dev), M3 (Foundry), M4 (prod) |
+| [#3 Authentication & accounts](https://github.com/thopdev/Dialed/issues/3) | M0, M1 (profile), M4 (deletion/export) |
+| [#4 Offline-first sync](https://github.com/thopdev/Dialed/issues/4) | M0 (spike + skeleton), M2 (household scoping), M4 (hardening) |
+| [#5 App shell & design system](https://github.com/thopdev/Dialed/issues/5) | M0, M1, M4 (accessibility) |
+| [#6 Roasters & sellers](https://github.com/thopdev/Dialed/issues/6) | M1 |
+| [#7 Beans & inventory](https://github.com/thopdev/Dialed/issues/7) | M1 |
+| [#8 Equipment & brew methods](https://github.com/thopdev/Dialed/issues/8) | M1 |
+| [#9 Recipes](https://github.com/thopdev/Dialed/issues/9) | M1 |
+| [#10 Brew log](https://github.com/thopdev/Dialed/issues/10) | M1 |
+| [#11 Photos & media](https://github.com/thopdev/Dialed/issues/11) | M1 |
+| [#12 Households](https://github.com/thopdev/Dialed/issues/12) | M2 |
+| [#13 Friends & sharing](https://github.com/thopdev/Dialed/issues/13) | M2 |
+| [#14 AI label scanning](https://github.com/thopdev/Dialed/issues/14) | M3 |
+| [#15 AI recipe assistant](https://github.com/thopdev/Dialed/issues/15) | M3 |
+| [#16 Privacy, security & observability](https://github.com/thopdev/Dialed/issues/16) | M1 (telemetry), M4 |
+| [#17 TestFlight beta](https://github.com/thopdev/Dialed/issues/17) | M4 |
+| [#18 Post-MVP backlog](https://github.com/thopdev/Dialed/issues/18) | Later |
+
+**Where to start (M0 critical path):** #19 solution structure → #20 local dev → #37 Datasync spike → #38 / #39 sync server + client. In parallel: #29 Apple setup → #30 Sign in with Apple API → #32 app sign-in (needs #44 app shell), and #24 Bicep for the dev environment. The spike decides whether ADR-0004 holds, so finish it before any feature work.
 
 ## 8. Way of working
 
