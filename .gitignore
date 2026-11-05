@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Azure Functions local settings (contain secrets) - copy local.settings.example.json
 local.settings.json
+
+# Merged coverage reports (CI)
+coverage/

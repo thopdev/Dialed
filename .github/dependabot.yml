@@ -1,0 +1,36 @@
+version: 2
+
+# Weekly dependency updates, grouped so related packages move together.
+# Note: the Aspire AppHost SDK version in src/Dialed.AppHost/Dialed.AppHost.csproj is not updated by Dependabot -
+# bump it together with the Aspire group (see Directory.Packages.props).
+
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      aspire:
+        patterns: ["Aspire.*"]
+      aspnetcore-extensions:
+        patterns: ["Microsoft.AspNetCore.*", "Microsoft.Extensions.*"]
+      opentelemetry:
+        patterns: ["OpenTelemetry.*"]
+      azure-functions:
+        patterns: ["Microsoft.Azure.Functions.*"]
+      testing:
+        patterns: ["xunit*", "Shouldly", "Microsoft.NET.Test.Sdk", "Microsoft.Testing.*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+
+  - package-ecosystem: dotnet-sdk
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
