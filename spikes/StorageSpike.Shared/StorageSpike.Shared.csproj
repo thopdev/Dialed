@@ -2,6 +2,10 @@
 
   <!-- Shared by both spike hosts: the same EF model, migration, benchmark page and browser-storage checks. -->
 
+  <PropertyGroup>
+    <RootNamespace>StorageSpike</RootNamespace>
+  </PropertyGroup>
+
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
