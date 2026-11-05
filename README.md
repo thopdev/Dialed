@@ -4,18 +4,52 @@
 
 > Status: early development (M0 - Foundations). Start with the plan.
 
-## Development
-Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download) and VS Code with the recommended extensions (`.vscode/extensions.json`, mainly C# Dev Kit). Emulators, dev tunnel and one-command startup follow in #20.
+## Getting started
 
+### Prerequisites (Windows, one-time)
+1. [.NET 10 SDK](https://dotnet.microsoft.com/download) and VS Code with the recommended extensions (`.vscode/extensions.json`, mainly C# Dev Kit).
+2. **Docker Desktop**, running (the Cosmos DB emulator and Azurite run as containers).
+3. **Azure Functions Core Tools v4**: `winget install Microsoft.Azure.FunctionsCoreTools`
+4. Trust the local HTTPS certificate: `dotnet dev-certs https --trust`
+5. For testing on an iPhone/iPad only: the **dev tunnel CLI** - `winget install Microsoft.devtunnel`, then `devtunnel user login`.
+
+### Run everything
+Press **F5** in VS Code and pick **Dialed (Aspire)**, or:
+
+```bash
+dotnet run --project src/Dialed.AppHost
+```
+
+The Aspire dashboard opens (https://localhost:17000) with all resources, logs and traces. The first start downloads the emulator images and the Cosmos DB emulator needs a minute or two; both containers keep running between sessions, so later starts are quick.
+
+| What | Where |
+|---|---|
+| App (PWA) | https://localhost:7200 - the home page shows "API: Healthy" when everything is connected |
+| API | https://localhost:7100 (`/health`, `/alive`) |
+| Cosmos DB Data Explorer, Azurite, Functions | links in the dashboard |
+
+Passkeys (from #29/#30) work in the PC browser on `localhost`.
+
+### Test on your iPhone or iPad
+1. Start **Dialed (Aspire + dev tunnel for iPhone/iPad)** (or `dotnet run --project src/Dialed.AppHost --launch-profile tunnel`).
+2. In the dashboard, open the `tunnel` resource and copy the public URL of **web** (`https://<tunnel>-7200.euw.devtunnels.ms`).
+3. Open it in Safari on the iPhone. The app finds the API through the same tunnel automatically, and the API allows the tunnel origin.
+
+The tunnel ID is derived from your AppHost, so the URL stays the same between runs (tunnels expire after 30 days without use). The tunnel allows anonymous access - only run it while you're testing.
+
+### Build and test
 ```bash
 dotnet build Dialed.slnx
 dotnet test --solution Dialed.slnx     # xUnit v3 on Microsoft.Testing.Platform
-dotnet run --project src/Dialed.Web    # the PWA (placeholder page for now)
-dotnet run --project src/Dialed.Api    # the API, health check at /health
 ```
+
+### Demo data
+In Development the AppHost sets `Seed__Enabled=true`; every `IDevelopmentSeeder` registered in the API then runs at startup (`src/Dialed.Api/Seeding`). Feature stories add their own seeders.
 
 | Folder | What |
 |---|---|
+| `src/Dialed.AppHost` | Aspire AppHost: local orchestration (emulators, API, Functions, PWA, dev tunnel) |
+| `src/Dialed.ServiceDefaults` | OpenTelemetry, health checks, service discovery, resilience for API and Functions |
 | `src/Dialed.Web` | Blazor WebAssembly host (PWA) - browser-specific code only |
 | `src/Dialed.UI` | Pages, components, layouts (shared with a future MAUI host) |
 | `src/Dialed.Client` | Local database, sync engine, API clients, platform interfaces |

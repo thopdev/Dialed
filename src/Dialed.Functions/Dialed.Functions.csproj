@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dialed.Domain\Dialed.Domain.csproj" />
+    <ProjectReference Include="..\Dialed.ServiceDefaults\Dialed.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

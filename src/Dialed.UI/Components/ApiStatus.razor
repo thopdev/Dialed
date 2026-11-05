@@ -1,0 +1,20 @@
+@* Shows whether the app can reach the API - handy when checking the dev tunnel on an iPhone. *@
+@inject HttpClient Http
+
+<p class="api-status">API: @status</p>
+
+@code {
+    private string status = "checking...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            status = await Http.GetStringAsync("health");
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            status = "unreachable";
+        }
+    }
+}
