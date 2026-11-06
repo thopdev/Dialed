@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Passkey spike</title>
+  <style>
+    body { font: 16px -apple-system, system-ui, sans-serif; margin: 0 auto; max-width: 32rem; padding: 1rem; background: #fdfaf6; color: #2b1d14; }
+    h1 { font-size: 1.3rem; }
+    fieldset { border: 1px solid #d8c8b8; border-radius: .6rem; margin: 0 0 1rem; padding: .8rem; }
+    input, button { font: inherit; width: 100%; box-sizing: border-box; margin: .25rem 0; padding: .6rem; border-radius: .4rem; border: 1px solid #c9b6a2; }
+    button { background: #6f4e37; color: #fff; border: 0; }
+    pre { white-space: pre-wrap; word-break: break-all; background: #f1e9e0; padding: .6rem; border-radius: .4rem; font-size: .8rem; }
+  </style>
+</head>
+<body>
+  <h1>Dialed · passkey spike (#29)</h1>
+  <p>API: <code id="api"></code></p>
+
+  <fieldset>
+    <legend>Sign up</legend>
+    <input id="email" type="email" placeholder="email" autocomplete="email">
+    <input id="name" placeholder="display name" autocomplete="name">
+    <button id="signup">Create account with a passkey</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sign in</legend>
+    <!-- "webauthn" in autocomplete enables passkey autofill (conditional mediation). -->
+    <input id="username" placeholder="tap here for passkey autofill" autocomplete="username webauthn">
+    <button id="signin">Sign in with a passkey</button>
+  </fieldset>
+
+  <button id="me">Call /me with the token</button>
+  <pre id="log"></pre>
+
+  <script>
+    // ?api=https://other-host lets the page call an API on another origin (cross-host test).
+    const api = new URLSearchParams(location.search).get('api') ?? location.origin;
+    document.getElementById('api').textContent = api;
+    const log = (label, value) => {
+      document.getElementById('log').textContent = `${new Date().toLocaleTimeString()} ${label}\n${typeof value === 'string' ? value : JSON.stringify(value, null, 2)}\n\n` + document.getElementById('log').textContent;
+    };
+    let token = null;
+    let conditionalAbort = null;
+
+    const b64urlToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=')), c => c.charCodeAt(0)).buffer;
+    const bufToB64url = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    // Manual conversion: parseCreationOptionsFromJSON/toJSON are not in every Safari version yet.
+    const creationOptions = o => ({
+      ...o,
+      challenge: b64urlToBuf(o.challenge),
+      user: { ...o.user, id: b64urlToBuf(o.user.id) },
+      excludeCredentials: (o.excludeCredentials ?? []).map(c => ({ ...c, id: b64urlToBuf(c.id) })),
+    });
+    const requestOptions = o => ({
+      ...o,
+      challenge: b64urlToBuf(o.challenge),
+      allowCredentials: (o.allowCredentials ?? []).map(c => ({ ...c, id: b64urlToBuf(c.id) })),
+    });
+    const credentialJson = c => ({
+      id: c.id,
+      rawId: bufToB64url(c.rawId),
+      type: c.type,
+      authenticatorAttachment: c.authenticatorAttachment ?? undefined,
+      clientExtensionResults: c.getClientExtensionResults(),
+      response: c.response.attestationObject
+        ? {
+            attestationObject: bufToB64url(c.response.attestationObject),
+            clientDataJSON: bufToB64url(c.response.clientDataJSON),
+            transports: c.response.getTransports?.() ?? [],
+          }
+        : {
+            authenticatorData: bufToB64url(c.response.authenticatorData),
+            clientDataJSON: bufToB64url(c.response.clientDataJSON),
+            signature: bufToB64url(c.response.signature),
+            userHandle: c.response.userHandle ? bufToB64url(c.response.userHandle) : null,
+          },
+    });
+
+    async function post(path, body) {
+      const response = await fetch(api + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body ?? {}) });
+      const json = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(`${response.status} ${json?.detail ?? ''}`);
+      return json;
+    }
+
+    async function signIn(mediation) {
+      const { options, state } = await post('/auth/signin/options');
+      const request = { publicKey: requestOptions(options) };
+      if (mediation) {
+        conditionalAbort = new AbortController();
+        request.mediation = mediation;
+        request.signal = conditionalAbort.signal;
+      }
+      const credential = await navigator.credentials.get(request);
+      const result = await post('/auth/signin', { state, credential: credentialJson(credential) });
+      token = result.accessToken;
+      log('Signed in', result);
+    }
+
+    async function startAutofill() {
+      if (!(await PublicKeyCredential.isConditionalMediationAvailable?.())) { log('Autofill', 'conditional mediation not available'); return; }
+      signIn('conditional').catch(e => { if (e.name !== 'AbortError') log('Autofill failed', e.message); });
+    }
+
+    document.getElementById('signup').onclick = async () => {
+      try {
+        conditionalAbort?.abort(); // one WebAuthn request at a time
+        const { options, state } = await post('/auth/signup/options', {
+          email: document.getElementById('email').value,
+          displayName: document.getElementById('name').value,
+        });
+        const credential = await navigator.credentials.create({ publicKey: creationOptions(options) });
+        const result = await post('/auth/signup', { state, credential: credentialJson(credential) });
+        token = result.accessToken;
+        log('Signed up', result);
+      } catch (e) { log('Sign-up failed', `${e.name}: ${e.message}`); }
+      startAutofill();
+    };
+
+    document.getElementById('signin').onclick = async () => {
+      try {
+        conditionalAbort?.abort();
+        await signIn();
+      } catch (e) { log('Sign-in failed', `${e.name}: ${e.message}`); }
+      startAutofill();
+    };
+
+    document.getElementById('me').onclick = async () => {
+      const response = await fetch(api + '/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      log(`/me → ${response.status}`, await response.json().catch(() => ''));
+    };
+
+    log('Environment', {
+      origin: location.origin,
+      standalone: navigator.standalone ?? matchMedia('(display-mode: standalone)').matches,
+      webauthn: !!window.PublicKeyCredential,
+    });
+    startAutofill();
+  </script>
+</body>
+</html>

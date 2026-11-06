@@ -1,0 +1,8 @@
+{
+  "name": "Dialed passkey spike",
+  "short_name": "Passkeys",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fdfaf6",
+  "theme_color": "#6f4e37"
+}

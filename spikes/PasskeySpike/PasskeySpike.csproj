@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- #29: cookie-less passkey ceremonies with ASP.NET Core Identity, own user/passkey stores on Cosmos DB, JWT afterwards. -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PasskeySpike.Tests" />
+  </ItemGroup>
+
+</Project>
