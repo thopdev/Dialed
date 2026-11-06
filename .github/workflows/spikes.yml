@@ -1,0 +1,41 @@
+name: Spikes
+
+# Builds the throwaway prototypes in spikes/ (not part of Dialed.slnx).
+# SqliteWasmBlazor relinks the WebAssembly runtime, so this job installs the wasm-tools workload.
+
+on:
+  pull_request:
+    paths: ['spikes/**', 'Directory.Packages.props', 'Directory.Build.props', '.github/workflows/spikes.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-spikes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install wasm-tools workload
+        run: dotnet workload install wasm-tools
+
+      - name: Build Bit.Bsqlite spike
+        run: dotnet publish spikes/StorageSpike.Bsqlite --configuration Release --output out/bsqlite
+
+      - name: Build SqliteWasmBlazor spike
+        run: dotnet publish spikes/StorageSpike.SqliteWasm --configuration Release --output out/sqlitewasm
+
+      - name: Payload sizes
+        run: |
+          {
+            echo "### Published payload (compressed .br files, wwwroot)"
+            for app in bsqlite sqlitewasm; do
+              size=$(find out/$app/wwwroot -name '*.br' -print0 | du -cb --files0-from=- | tail -1 | cut -f1)
+              echo "- **$app**: $((size / 1024)) KB"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

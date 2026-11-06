@@ -39,6 +39,15 @@
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.1" />
   </ItemGroup>
 
+  <ItemGroup Label="Entity Framework Core">
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Spikes (spikes/, not part of Dialed.slnx)">
+    <PackageVersion Include="Bit.Bsqlite" Version="10.7.0" />
+    <PackageVersion Include="SqliteWasmBlazor" Version="0.9.4-pre" />
+  </ItemGroup>
+
   <ItemGroup Label="Testing">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.2" />

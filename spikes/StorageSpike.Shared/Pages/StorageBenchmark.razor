@@ -1,0 +1,212 @@
+@page "/"
+@using System.Diagnostics
+@inject ISpikeHost Host
+@inject IDbContextFactory<SpikeDbContext> Contexts
+@inject BrowserStorage Storage
+
+<PageTitle>Storage spike - @Host.LibraryName</PageTitle>
+
+<h1>Storage spike</h1>
+<p><strong>@Host.LibraryName</strong> · EF Core on SQLite in the browser (#37)</p>
+
+@if (error is not null)
+{
+    <p style="color: #b00020;"><strong>Error:</strong> @error</p>
+}
+
+<h2>Survival</h2>
+<table>
+    <tr><td>Launches recorded</td><td>@launchCount</td></tr>
+    <tr><td>First launch</td><td>@FormatTime(firstLaunchMs) (@DaysSince(firstLaunchMs) days ago)</td></tr>
+    <tr><td>Brews stored</td><td>@brewCount</td></tr>
+    <tr><td>Outbox rows</td><td>@outboxCount</td></tr>
+    <tr><td>Startup (ready + migrate + first query)</td><td>@startupMs ms</td></tr>
+</table>
+
+<h2>Browser</h2>
+@if (status is not null)
+{
+    <table>
+        <tr><td>Installed (standalone)</td><td>@status.Standalone</td></tr>
+        <tr><td>Persistent storage</td><td>@status.Persisted</td></tr>
+        <tr><td>Usage / quota</td><td>@Mb(status.UsageBytes) / @Mb(status.QuotaBytes) MB</td></tr>
+        <tr><td>Web Locks API</td><td>@status.LocksSupported</td></tr>
+        <tr><td>User agent</td><td style="font-size: 0.75rem;">@status.UserAgent</td></tr>
+    </table>
+}
+
+<h2>Benchmarks</h2>
+<p>
+    <button disabled="@busy" @onclick="() => Run(InsertBrews)">Insert 5,000 brews (+ outbox)</button>
+    <button disabled="@busy" @onclick="() => Run(QueryBrews)">Query</button>
+    <button disabled="@busy" @onclick="() => Run(UpdateBrews)">Update 100 (+ outbox)</button>
+    <button disabled="@busy" @onclick="() => Run(ClearBrews)">Clear brews</button>
+    <button disabled="@busy" @onclick="() => Run(TestLock)">Web Lock (open in 2 tabs)</button>
+</p>
+
+<ul>
+    @foreach (var line in results)
+    {
+        <li>@line</li>
+    }
+</ul>
+
+@code {
+    private const string Household = "household-1";
+
+    private readonly List<string> results = [];
+    private StorageStatus? status;
+    private string? error;
+    private bool busy;
+    private int launchCount;
+    private long? firstLaunchMs;
+    private int brewCount;
+    private int outboxCount;
+    private long startupMs;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var stopwatch = Stopwatch.StartNew();
+            await Host.EnsureReadyAsync();
+            await Storage.RequestPersistenceAsync();
+            status = await Storage.GetStatusAsync();
+
+            await using (var db = await Contexts.CreateDbContextAsync())
+            {
+                db.Launches.Add(new LaunchRow
+                {
+                    LaunchedAtMs = Now(),
+                    Standalone = status.Standalone,
+                    Persisted = status.Persisted,
+                });
+                await db.SaveChangesAsync();
+            }
+
+            await RefreshCounts();
+            startupMs = stopwatch.ElapsedMilliseconds;
+        }
+        catch (Exception exception)
+        {
+            error = exception.ToString();
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task Run(Func<Task<string>> benchmark)
+    {
+        busy = true;
+        error = null;
+        StateHasChanged();
+        try
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var what = await benchmark();
+            results.Insert(0, $"{what}: {stopwatch.ElapsedMilliseconds} ms");
+            await RefreshCounts();
+            status = await Storage.GetStatusAsync();
+        }
+        catch (Exception exception)
+        {
+            error = exception.ToString();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task<string> InsertBrews()
+    {
+        await using var db = await Contexts.CreateDbContextAsync();
+        var now = Now();
+        for (var i = 0; i < 5000; i++)
+        {
+            var id = Guid.NewGuid().ToString();
+            db.Brews.Add(new BrewRow
+            {
+                Id = id,
+                HouseholdId = Household,
+                BrewedAtMs = now - i * 60_000L,
+                DoseG = 18,
+                YieldG = 36 + i % 5,
+                TimeS = 25 + i % 10,
+                Rating = 1 + i % 5,
+                Notes = i % 3 == 0 ? "Bit sour, grind finer next time" : null,
+                UpdatedAtMs = now,
+            });
+            db.Outbox.Add(new OutboxRow { EntityType = "Brew", EntityId = id, Operation = "Create", Payload = "{}", CreatedAtMs = now });
+        }
+
+        await db.SaveChangesAsync();
+        return "Inserted 5,000 brews + 5,000 outbox rows";
+    }
+
+    private async Task<string> QueryBrews()
+    {
+        await using var db = await Contexts.CreateDbContextAsync();
+        var count = await db.Brews.CountAsync(b => b.HouseholdId == Household && !b.Deleted);
+        var latest = await db.Brews.Where(b => b.HouseholdId == Household).OrderByDescending(b => b.BrewedAtMs).Take(50).ToListAsync();
+        var average = count == 0 ? 0 : await db.Brews.Where(b => b.HouseholdId == Household).AverageAsync(b => b.Rating);
+        return $"Count {count}, latest 50 loaded ({latest.Count}), average rating {average:0.00}";
+    }
+
+    private async Task<string> UpdateBrews()
+    {
+        await using var db = await Contexts.CreateDbContextAsync();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        var brews = await db.Brews.OrderBy(b => b.Id).Take(100).ToListAsync();
+        var now = Now();
+        foreach (var brew in brews)
+        {
+            brew.Rating = brew.Rating % 5 + 1;
+            brew.UpdatedAtMs = now;
+            db.Outbox.Add(new OutboxRow { EntityType = "Brew", EntityId = brew.Id, Operation = "Update", Payload = "{}", CreatedAtMs = now });
+        }
+
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return $"Updated {brews.Count} brews in one transaction";
+    }
+
+    private async Task<string> ClearBrews()
+    {
+        await using var db = await Contexts.CreateDbContextAsync();
+        var brews = await db.Brews.ExecuteDeleteAsync();
+        var outbox = await db.Outbox.ExecuteDeleteAsync();
+        return $"Deleted {brews} brews and {outbox} outbox rows";
+    }
+
+    private async Task<string> TestLock()
+    {
+        var got = await Storage.TryExclusiveLockAsync("dialed-sync");
+        return got ? "Got the sync lock (held 10 s)" : "Lock busy - another tab holds it (or Web Locks unsupported)";
+    }
+
+    private async Task RefreshCounts()
+    {
+        await using var db = await Contexts.CreateDbContextAsync();
+        launchCount = await db.Launches.CountAsync();
+        firstLaunchMs = await db.Launches.OrderBy(l => l.Id).Select(l => (long?)l.LaunchedAtMs).FirstOrDefaultAsync();
+        brewCount = await db.Brews.CountAsync();
+        outboxCount = await db.Outbox.CountAsync();
+    }
+
+    private static long Now() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    private static string FormatTime(long? ms) =>
+        ms is null ? "-" : DateTimeOffset.FromUnixTimeMilliseconds(ms.Value).ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+
+    private static string DaysSince(long? ms) =>
+        ms is null ? "-" : (DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeMilliseconds(ms.Value)).TotalDays.ToString("0.0");
+
+    private static string Mb(long bytes) => (bytes / 1024d / 1024d).ToString("0.0");
+
+}
