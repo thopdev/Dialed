@@ -27,7 +27,10 @@ Companion to [PLAN.md](PLAN.md). Decisions and their alternatives are in [adr/](
   Dialed.Functions/      Azure Functions (isolated worker)
   Dialed.Domain/         Shared domain model + logic
   Dialed.AI/             Claude integration, prompts, schemas
+  Dialed.AppHost/        Aspire AppHost: local orchestration (Cosmos DB emulator, Azurite, apps, dev tunnel)
+  Dialed.ServiceDefaults/  OpenTelemetry, health checks, service discovery, resilience
 /tests
+  Dialed.AppHost.Tests/  resource model of the local stack
   Dialed.Domain.Tests/
   Dialed.Client.Tests/   sync engine against an in-memory/real API
   Dialed.Api.Tests/      incl. integration tests against the Cosmos DB emulator

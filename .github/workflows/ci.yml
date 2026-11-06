@@ -1,0 +1,71 @@
+name: CI
+
+# Build, test and coverage for every PR and push to main.
+# The job name `build-test` is the required status check on main.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Line coverage over Dialed.Domain, Dialed.Client, Dialed.Api and Dialed.AI.
+  MINIMUM_LINE_COVERAGE: 70
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: |
+          dotnet restore Dialed.slnx
+          dotnet tool restore
+
+      - name: Build
+        run: dotnet build Dialed.slnx --configuration Release --no-restore
+
+      - name: Test with coverage
+        run: >
+          dotnet test --solution Dialed.slnx --configuration Release --no-build
+          --results-directory "$GITHUB_WORKSPACE/TestResults"
+          --report-xunit-trx
+          --coverage --coverage-output-format cobertura
+
+      - name: Coverage report
+        if: always()
+        run: >
+          dotnet reportgenerator
+          -reports:"TestResults/**/*.cobertura.xml"
+          -targetdir:coverage
+          -reporttypes:"Cobertura;MarkdownSummaryGithub"
+          -assemblyfilters:"+Dialed.Domain;+Dialed.Client;+Dialed.Api;+Dialed.AI"
+
+      - name: Coverage summary
+        if: always()
+        run: cat coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Enforce minimum coverage
+        run: python3 .github/scripts/check_coverage.py coverage/Cobertura.xml "$MINIMUM_LINE_COVERAGE"
+
+      - name: Upload test results and coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: |
+            TestResults
+            coverage
+          if-no-files-found: ignore

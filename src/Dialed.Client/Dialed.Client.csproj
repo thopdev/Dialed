@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Local database, sync engine, API clients and platform-service interfaces.
+    Host-independent: no browser APIs (IJSRuntime) here, so a future MAUI host can reuse it (ADR-0009).
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dialed.Domain\Dialed.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

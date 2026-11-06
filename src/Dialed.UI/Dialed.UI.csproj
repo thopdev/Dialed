@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!--
+    All pages, components and layouts. Host-independent: rendered by Dialed.Web (PWA) today
+    and by a MAUI Blazor Hybrid host later (ADR-0009). No browser APIs here.
+  -->
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dialed.Client\Dialed.Client.csproj" />
+  </ItemGroup>
+
+</Project>

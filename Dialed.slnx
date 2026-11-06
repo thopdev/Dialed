@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Dialed.AI/Dialed.AI.csproj" />
+    <Project Path="src/Dialed.Api/Dialed.Api.csproj" />
+    <Project Path="src/Dialed.AppHost/Dialed.AppHost.csproj" />
+    <Project Path="src/Dialed.Client/Dialed.Client.csproj" />
+    <Project Path="src/Dialed.Domain/Dialed.Domain.csproj" />
+    <Project Path="src/Dialed.Functions/Dialed.Functions.csproj" />
+    <Project Path="src/Dialed.ServiceDefaults/Dialed.ServiceDefaults.csproj" />
+    <Project Path="src/Dialed.UI/Dialed.UI.csproj" />
+    <Project Path="src/Dialed.Web/Dialed.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Dialed.Api.Tests/Dialed.Api.Tests.csproj" />
+    <Project Path="tests/Dialed.AppHost.Tests/Dialed.AppHost.Tests.csproj" />
+    <Project Path="tests/Dialed.ArchitectureTests/Dialed.ArchitectureTests.csproj" />
+    <Project Path="tests/Dialed.Client.Tests/Dialed.Client.Tests.csproj" />
+  </Folder>
+</Solution>

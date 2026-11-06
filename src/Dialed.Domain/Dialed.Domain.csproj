@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Shared domain model and rules. No references to other Dialed projects or to ASP.NET Core. -->
+
+</Project>

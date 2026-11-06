@@ -1,0 +1,59 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <AspNetCoreVersion>10.0.12</AspNetCoreVersion>
+    <!-- Keep in sync with the Aspire.AppHost.Sdk version in src/Dialed.AppHost/Dialed.AppHost.csproj -->
+    <AspireVersion>13.6.4</AspireVersion>
+    <OpenTelemetryVersion>1.17.0</OpenTelemetryVersion>
+  </PropertyGroup>
+
+  <ItemGroup Label="Aspire">
+    <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Functions" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Storage" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.DevTunnels" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="$(AspireVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Service defaults (OpenTelemetry, resilience, service discovery)">
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.10.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="ASP.NET Core and Blazor">
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Azure Functions">
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.1.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup Label="Entity Framework Core">
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Spikes (spikes/, not part of Dialed.slnx)">
+    <PackageVersion Include="Bit.Bsqlite" Version="10.7.0" />
+    <PackageVersion Include="SqliteWasmBlazor" Version="0.9.4-pre" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
+  </ItemGroup>
+
+</Project>

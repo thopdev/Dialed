@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Dialed.Domain\Dialed.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Dialed.AI\Dialed.AI.csproj" />
+    <ProjectReference Include="..\..\src\Dialed.Client\Dialed.Client.csproj" />
+    <ProjectReference Include="..\..\src\Dialed.UI\Dialed.UI.csproj" />
+  </ItemGroup>
+
+</Project>

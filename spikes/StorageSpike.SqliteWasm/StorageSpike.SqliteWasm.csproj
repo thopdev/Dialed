@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <!--
+    Spike host: SqliteWasmBlazor (OPFS). It links its own native SQLite stub into the .NET WebAssembly runtime,
+    so building needs the wasm-tools workload: `dotnet workload install wasm-tools`.
+  -->
+
+  <PropertyGroup>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <WasmBuildNative>true</WasmBuildNative>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SqliteWasmBlazor" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StorageSpike.Shared\StorageSpike.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

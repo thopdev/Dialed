@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/Dialed.slnx"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "test",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["test", "--solution", "${workspaceFolder}/Dialed.slnx"],
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "run: Aspire",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["run", "--project", "${workspaceFolder}/src/Dialed.AppHost", "--launch-profile", "https"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "run: Aspire + dev tunnel",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["run", "--project", "${workspaceFolder}/src/Dialed.AppHost", "--launch-profile", "tunnel"],
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

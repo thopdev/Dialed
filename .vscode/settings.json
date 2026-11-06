@@ -1,0 +1,10 @@
+{
+  "dotnet.defaultSolution": "Dialed.slnx",
+  "dotnet.testWindow.useTestingPlatformProtocol": true,
+  "editor.formatOnSave": true,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "azureFunctions.projectSubpath": "src/Dialed.Functions",
+  "azureFunctions.projectLanguage": "C#",
+  "azureFunctions.projectRuntime": "~4"
+}

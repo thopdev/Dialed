@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "ms-dotnettools.csdevkit",
+    "ms-azuretools.vscode-azurefunctions",
+    "ms-azuretools.vscode-bicep",
+    "editorconfig.editorconfig",
+    "github.vscode-github-actions"
+  ]
+}
