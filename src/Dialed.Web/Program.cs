@@ -1,6 +1,7 @@
 using Dialed.Client;
 using Dialed.UI;
 using Dialed.Web;
+using Dialed.Web.Platform;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -19,6 +20,7 @@ builder.Services.AddScoped(_ => new HttpClient { BaseAddress = apiBaseAddress })
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());
+builder.Services.AddBrowserPlatform();
 builder.Services.AddFluentUIComponents();
 builder.Services.AddLocalization();
 
@@ -28,6 +30,7 @@ var host = builder.Build();
 try
 {
     await host.Services.GetRequiredService<PwaState>().InitializeAsync();
+    await host.Services.StartBrowserPlatformAsync();
 }
 catch (JSException)
 {

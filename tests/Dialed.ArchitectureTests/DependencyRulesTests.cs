@@ -40,6 +40,22 @@ public sealed class DependencyRulesTests
     }
 
     [Fact]
+    public void Client_defines_every_platform_service_as_an_interface()
+    {
+        string[] expected =
+        [
+            "IPhotoCapture", "ILocalFileStore", "IConnectivity", "IShareService", "IPasskeyClient",
+            "IStoragePersistence", "IWakeLock", "ISoundCue", "IAppLifecycle",
+        ];
+
+        var platform = typeof(ClientAssembly).Assembly.GetTypes()
+            .Where(type => type.IsInterface && type.Namespace == "Dialed.Client.Platform")
+            .Select(type => type.Name);
+
+        platform.ShouldBe(expected, ignoreOrder: true);
+    }
+
+    [Fact]
     public void UI_uses_no_browser_only_APIs_and_no_hosts()
     {
         var references = ReferencedAssemblyNames(typeof(Routes));
