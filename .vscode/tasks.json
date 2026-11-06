@@ -115,16 +115,9 @@
     },
     {
       "label": "devtunnel: 7300",
-      "type": "process",
-      "command": "devtunnel",
-      "args": [
-        "host",
-        "-p",
-        "7300",
-        "--protocol",
-        "https",
-        "--allow-anonymous"
-      ],
+      "type": "shell",
+      "detail": "Named tunnel 'dialed-passkeys' that keeps the browser's Origin header (passkeys need it).",
+      "command": "devtunnel create dialed-passkeys --allow-anonymous 2>$null; devtunnel port create dialed-passkeys -p 7300 --protocol https 2>$null; devtunnel update dialed-passkeys --origin-header unchanged; devtunnel host dialed-passkeys",
       "isBackground": true,
       "problemMatcher": {
         "owner": "devtunnel",
@@ -134,7 +127,18 @@
         "background": {
           "activeBegins": true,
           "beginsPattern": "^.",
-          "endsPattern": "Ready to accept connections|Connect via browser"
+          "endsPattern": "Ready to accept connections"
+        }
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-Command"
+            ]
+          }
         }
       }
     },
@@ -144,7 +148,7 @@
         "spike: passkeys",
         "devtunnel: 7300"
       ],
-      "dependsOrder": "sequence",
+      "dependsOrder": "parallel",
       "problemMatcher": []
     }
   ]
