@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Dialed (Aspire)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/src/Dialed.AppHost/Dialed.AppHost.csproj",
+      "launchConfigurationId": "TargetFramework=;https"
+    },
+    {
+      "name": "Dialed (Aspire + dev tunnel for iPhone/iPad)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/src/Dialed.AppHost/Dialed.AppHost.csproj",
+      "launchConfigurationId": "TargetFramework=;tunnel"
+    }
+  ]
+}
