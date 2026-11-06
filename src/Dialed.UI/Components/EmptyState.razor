@@ -1,5 +1,15 @@
-@* Minimal empty state; the illustrated version comes with the design system (#45). *@
+@* Friendly "nothing here yet": optional icon, title, message and a call-to-action (ChildContent). *@
 <div class="dialed-empty">
+    @if (Icon is not null)
+    {
+        <span class="dialed-empty-icon" aria-hidden="true">
+            <FluentIcon Value="@Icon" Color="Color.Custom" CustomColor="currentColor" Width="48px" />
+        </span>
+    }
+    @if (Title is not null)
+    {
+        <h2 class="dialed-empty-title">@Title</h2>
+    }
     <p>@Message</p>
     @ChildContent
 </div>
@@ -7,6 +17,12 @@
 @code {
     [Parameter, EditorRequired]
     public string Message { get; set; } = "";
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public Icon? Icon { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

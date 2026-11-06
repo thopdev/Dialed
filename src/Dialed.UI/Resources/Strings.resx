@@ -32,4 +32,7 @@
   <data name="NotFound_Title" xml:space="preserve"><value>Not found</value></data>
   <data name="NotFound_Message" xml:space="preserve"><value>Sorry, there's nothing here.</value></data>
   <data name="NotFound_Home" xml:space="preserve"><value>Go to Brew</value></data>
+  <data name="Rating_Label" xml:space="preserve"><value>Rating</value></data>
+  <data name="Rating_Value" xml:space="preserve"><value>{0} of {1} stars</value><comment>{0} = given stars, {1} = maximum</comment></data>
+  <data name="Dismiss" xml:space="preserve"><value>Dismiss</value></data>
 </root>

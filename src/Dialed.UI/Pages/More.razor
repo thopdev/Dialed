@@ -1,7 +1,14 @@
 @page "/more"
+@using Dialed.Client
 @inject IStringLocalizer<Strings> L
+@inject IAppEnvironment AppEnvironment
 
 <PageHeader Title="@L["Nav_More"]" />
 
 <h2>@L["More_Diagnostics"]</h2>
 <ApiStatus />
+
+@if (AppEnvironment.IsDevelopment)
+{
+    <p><a href="dev/gallery">Component gallery</a></p>
+}

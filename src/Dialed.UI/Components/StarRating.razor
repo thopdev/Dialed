@@ -1,0 +1,61 @@
+@inject IStringLocalizer<Strings> L
+
+@*
+    1-5 star rating. Editable: a radio group of 44 pt buttons (arrow keys and VoiceOver work).
+    ReadOnly: an image with a text alternative ("4 of 5 stars"). Value 0 = not rated.
+*@
+@if (ReadOnly)
+{
+    <span class="dialed-stars" role="img" aria-label="@L["Rating_Value", Value, Max]">
+        @for (var star = 1; star <= Max; star++)
+        {
+            <span class="dialed-star @(star <= Value ? "on" : "")" aria-hidden="true">@StarIcon(star)</span>
+        }
+    </span>
+}
+else
+{
+    <span class="dialed-stars dialed-stars-edit" role="radiogroup" aria-label="@L["Rating_Label"]">
+        @for (var star = 1; star <= Max; star++)
+        {
+            var current = star;
+            <button type="button"
+                    class="dialed-star @(current <= Value ? "on" : "")"
+                    role="radio"
+                    aria-checked="@(current == Value ? "true" : "false")"
+                    aria-label="@L["Rating_Value", current, Max]"
+                    @onclick="() => Select(current)">
+                @StarIcon(current)
+            </button>
+        }
+    </span>
+}
+
+@code {
+    [Parameter]
+    public int Value { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
+
+    [Parameter]
+    public int Max { get; set; } = 5;
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    private RenderFragment StarIcon(int star) => __builder =>
+    {
+        if (star <= Value)
+        {
+            <FluentIcon Value="@(new Icons.Filled.Size24.Star())" Color="Color.Custom" CustomColor="currentColor" />
+        }
+        else
+        {
+            <FluentIcon Value="@(new Icons.Regular.Size24.Star())" Color="Color.Custom" CustomColor="currentColor" />
+        }
+    };
+
+    // Tapping the current rating again clears it.
+    private Task Select(int star) => ValueChanged.InvokeAsync(star == Value ? 0 : star);
+}

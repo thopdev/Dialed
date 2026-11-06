@@ -1,0 +1,65 @@
+@inject IStringLocalizer<Strings> L
+
+@* Inline, non-blocking error (a failed sync, a failed save). For a screen that cannot render at all, see ErrorPanel. *@
+@if (!dismissed)
+{
+    <div class="dialed-banner dialed-banner-@Severity.ToString().ToLowerInvariant()" role="alert">
+        <span class="dialed-banner-icon" aria-hidden="true">
+            @if (Severity == BannerSeverity.Warning)
+            {
+                <FluentIcon Value="@(new Icons.Regular.Size24.Warning())" Color="Color.Custom" CustomColor="currentColor" />
+            }
+            else
+            {
+                <FluentIcon Value="@(new Icons.Regular.Size24.ErrorCircle())" Color="Color.Custom" CustomColor="currentColor" />
+            }
+        </span>
+        <span class="dialed-banner-message">@Message</span>
+        @if (OnRetry.HasDelegate)
+        {
+            <button type="button" class="dialed-banner-action" @onclick="OnRetry">@L["Error_Retry"]</button>
+        }
+        @if (Dismissible)
+        {
+            <button type="button" class="dialed-banner-action dialed-banner-dismiss" aria-label="@L["Dismiss"]" @onclick="Dismiss">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Dismiss())" Color="Color.Custom" CustomColor="currentColor" />
+            </button>
+        }
+    </div>
+}
+
+@code {
+    public enum BannerSeverity
+    {
+        Error,
+        Warning,
+    }
+
+    private bool dismissed;
+
+    [Parameter, EditorRequired]
+    public string Message { get; set; } = "";
+
+    [Parameter]
+    public BannerSeverity Severity { get; set; } = BannerSeverity.Error;
+
+    [Parameter]
+    public EventCallback OnRetry { get; set; }
+
+    [Parameter]
+    public bool Dismissible { get; set; } = true;
+
+    private void Dismiss() => dismissed = true;
+
+    protected override void OnParametersSet()
+    {
+        // A new message is news again.
+        if (Message != lastMessage)
+        {
+            dismissed = false;
+            lastMessage = Message;
+        }
+    }
+
+    private string? lastMessage;
+}
