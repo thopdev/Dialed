@@ -21,10 +21,22 @@ The app is a PWA (ADR-0009), there is no Apple Developer Program membership (nee
   | `prod` (beta) | `https://app.<domain>` | `<domain>` |
 
   Passkeys are bound to their RP ID, so test passkeys per environment are separate and throwaway.
-- **User store on Cosmos DB:** custom Identity stores (users, emails, passkeys, tokens) on Cosmos DB, or the EF Core Cosmos provider if it supports the Identity schema — decided in the spike.
+- **User store on Cosmos DB:** custom Identity stores (users, emails, passkeys, tokens) on Cosmos DB with point-read lookup documents (see spike results).
 - **Recovery:** recovery codes shown at sign-up, email-based recovery, and a prompt to add a second passkey when the passkey is not backed up (`IsBackedUp` false). On Apple devices passkeys sync through iCloud Keychain.
 - **Beta gate:** sign-up requires an invite code while the app is in private beta.
 - **Dev-only test login** for integration tests and local development.
+
+## Spike results (M0, #29 — server side)
+Prototype in `spikes/PasskeySpike`, 23 tests against the Cosmos DB emulator with a software authenticator (ES256, `none` attestation).
+
+- **Cookie-less works with Identity as-is.** `PasskeyHandler<TUser>` returns its attestation/assertion state as a string; we wrap it with origin, RP ID, expiry and a nonce in a Data Protection token. Single use = creating a `ceremony:{nonce}` document (409 on replay, TTL cleans up). No `SignInManager`, no cookies.
+- **RP ID per request.** Identity's RP ID (`IdentityPasskeyOptions.ServerDomain`) is one global option, and its default (the API's own host) is wrong when app and API are on different hosts. We construct a `PasskeyHandler` per request with the RP ID resolved from the calling `Origin` against an allowlist (wildcards such as `https://*.euw.devtunnels.ms`), plus a custom `ValidateOrigin` that requires `clientData.origin` to equal the origin bound in the state. One API can therefore serve localhost, tunnels, the SWA default host **and** PR previews.
+- **PR previews get their own passkeys.** `azurestaticapps.net` is a public suffix, so each preview hostname is its own RP ID: passkeys from the dev app don't work on a preview (covered by a test) — testers sign up again per preview. Acceptable for dev.
+- **Own stores on Cosmos DB** (`identity` container, partition key `/pk`, pk = id): user document with embedded passkeys, plus `email:{sha256}` and `passkey:{credentialId}` lookup documents → every lookup is a point read; email uniqueness via create-conflict; optimistic concurrency with `_etag`. The EF Core Cosmos provider isn't needed.
+- **Discoverable credentials:** `residentKey: required` and `userVerification: required`; sign-in options carry no `allowCredentials`, so no email is needed to sign in.
+- **Data Protection keys must be shared and persisted in Azure** (Blob Storage + Key Vault), otherwise state minted by one replica can't be opened by another or after a restart. → #24/#26.
+- Sign-up options reveal whether an email is registered (409). Fine for the invite-only beta; revisit in #30.
+- **Still to verify on devices:** Windows Hello on localhost, iPhone Safari and the installed PWA via a dev tunnel (incl. autofill), and app/API on different Azure hostnames (needs #24–#26).
 
 ## Consequences
 - No passwords, no Apple fee; Face ID / Touch ID sign-in on iPhone and iPad.
