@@ -27,7 +27,7 @@ resource insights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 output logAnalyticsId string = logs.id
-output logAnalyticsCustomerId string = logs.properties.CustomerId
+output logAnalyticsCustomerId string = logs.properties.customerId
 output appInsightsId string = insights.id
 // A connection string is an endpoint + ingestion key id, not a secret (local auth is disabled; Entra ID is used to ingest).
 output appInsightsConnectionString string = insights.properties.ConnectionString
