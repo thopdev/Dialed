@@ -46,6 +46,11 @@
   <ItemGroup Label="Spikes (spikes/, not part of Dialed.slnx)">
     <PackageVersion Include="Bit.Bsqlite" Version="10.7.0" />
     <PackageVersion Include="SqliteWasmBlazor" Version="0.9.4-pre" />
+    <PackageVersion Include="CommunityToolkit.Datasync.Server" Version="10.1.2" />
+    <PackageVersion Include="CommunityToolkit.Datasync.Server.CosmosDb" Version="10.1.2" />
+    <PackageVersion Include="CommunityToolkit.Datasync.Client" Version="10.1.2" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.61.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup Label="Testing">

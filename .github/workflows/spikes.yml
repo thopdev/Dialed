@@ -39,3 +39,34 @@ jobs:
               echo "- **$app**: $((size / 1024)) KB"
             done
           } >> "$GITHUB_STEP_SUMMARY"
+
+  datasync-cosmos:
+    runs-on: ubuntu-latest
+    services:
+      cosmos:
+        # Linux (vNext) Cosmos DB emulator - the same one Aspire runs locally.
+        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest
+        ports:
+          - 8081:8081
+    env:
+      COSMOS_CONNECTION_STRING: "AccountEndpoint=http://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build spikes/DatasyncSpike.Tests --configuration Release
+
+      - name: Wait for the Cosmos DB emulator
+        run: |
+          for i in $(seq 1 60); do
+            if curl -s -o /dev/null http://localhost:8081/; then echo "emulator up"; exit 0; fi
+            sleep 5
+          done
+          echo "emulator did not start"; exit 1
+
+      - name: Test Datasync on Cosmos DB
+        run: dotnet test --project spikes/DatasyncSpike.Tests --configuration Release --no-build --output detailed

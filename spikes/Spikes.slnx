@@ -2,4 +2,6 @@
   <Project Path="StorageSpike.Shared/StorageSpike.Shared.csproj" />
   <Project Path="StorageSpike.Bsqlite/StorageSpike.Bsqlite.csproj" />
   <Project Path="StorageSpike.SqliteWasm/StorageSpike.SqliteWasm.csproj" />
+  <Project Path="DatasyncSpike/DatasyncSpike.csproj" />
+  <Project Path="DatasyncSpike.Tests/DatasyncSpike.Tests.csproj" />
 </Solution>
