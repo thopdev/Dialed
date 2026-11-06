@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- #37 part 2: Datasync server on Cosmos DB with one container partitioned by /householdId. -->
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Datasync.Server" />
+    <PackageReference Include="CommunityToolkit.Datasync.Server.CosmosDb" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DatasyncSpike.Tests" />
+  </ItemGroup>
+
+</Project>
