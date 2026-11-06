@@ -1,6 +1,6 @@
 # ADR-0010: Passkeys with ASP.NET Core Identity, API-issued tokens
 
-**Status:** Accepted — to be validated by the M0 spike · 2026-11-05 · Supersedes [ADR-0005](0005-authentication.md)
+**Status:** Accepted — validated by the M0 spike (Azure cross-host check pending #24–#26) · 2026-11-05 · Supersedes [ADR-0005](0005-authentication.md)
 
 ## Context
 The app is a PWA (ADR-0009), there is no Apple Developer Program membership (needed for Sign in with Apple, even on the web), and sign-in should be passwordless. ASP.NET Core Identity in .NET 10 supports passkeys (WebAuthn) out of the box; the built-in flow keeps the ceremony state in a Data Protection cookie and is documented for the Blazor Web App template.
@@ -36,9 +36,10 @@ Prototype in `spikes/PasskeySpike`, 23 tests against the Cosmos DB emulator with
 - **Discoverable credentials:** `residentKey: required` and `userVerification: required`; sign-in options carry no `allowCredentials`, so no email is needed to sign in.
 - **Data Protection keys must be shared and persisted in Azure** (Blob Storage + Key Vault), otherwise state minted by one replica can't be opened by another or after a restart. → #24/#26.
 - Sign-up options reveal whether an email is registered (409). Fine for the invite-only beta; revisit in #30.
-- **iPhone (Safari, Face ID) via dev tunnel: sign-up, discoverable sign-in and passkey autofill work** (2026-11-06).
+- **iPhone (Safari, Face ID) via dev tunnel: sign-up, discoverable sign-in and passkey autofill work, also in the installed home-screen app** (2026-11-06).
 - **Dev tunnels rewrite the `Origin` header to `localhost` by default**, which breaks passkeys (the API binds the wrong origin/RP ID). Tunnels used for passkeys must keep it: `devtunnel update <tunnel> --origin-header unchanged` (the VS Code task does this). The Aspire dev tunnel for the app (#30) needs the same setting.
-- **Still to verify on devices:** the installed home-screen app on iPhone, Windows Hello on localhost, and app/API on different Azure hostnames (needs #24–#26).
+- **Localhost on the PC:** covered by the automated tests (RP ID `localhost`); no Windows Hello on the dev PC, so local testing on a PC uses the phone (cross-device QR) or Chrome DevTools' virtual authenticator.
+- **Still to verify:** app and API on different Azure hostnames (needs #24–#26).
 
 ## Consequences
 - No passwords, no Apple fee; Face ID / Touch ID sign-in on iPhone and iPad.
