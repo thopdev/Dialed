@@ -252,4 +252,25 @@ What keeps a future native app (MAUI Blazor Hybrid) cheap:
 - API is token-based (no cookies needed after sign-in).
 - Fluent UI Blazor works in MAUI Blazor Hybrid.
 
+### Adding a MAUI host
+1. New project `Dialed.Maui` (MAUI Blazor Hybrid) that references `Dialed.UI` and `Dialed.Client`, never `Dialed.Web`. `Routes` and `MainLayout` are reused as they are.
+2. Implement the nine interfaces in `Dialed.Client.Platform` natively and register them in `MauiProgram`:
+
+   | Interface | Web today (`Dialed.Web/Platform`, `wwwroot/js/platform.js`) | MAUI |
+   |---|---|---|
+   | `IPhotoCapture` | file input + canvas downscale | `MediaPicker` |
+   | `ILocalFileStore` | origin private file system | `FileSystem.AppDataDirectory` |
+   | `IConnectivity` | `online`/`offline` events | `Connectivity` |
+   | `IShareService` | Web Share API | `Share` |
+   | `IPasskeyClient` | WebAuthn | ASAuthorization (iOS) / Credential Manager (Android) |
+   | `IStoragePersistence` | `StorageManager.persist()` | always persistent (return `true`) |
+   | `IWakeLock` | Screen Wake Lock | `DeviceDisplay.KeepScreenOn` |
+   | `ISoundCue` | Web Audio | platform audio player |
+   | `IAppLifecycle` | page visibility | window `Activated`/`Deactivated` |
+
+3. Also implement `IAppEnvironment` and `IPwaState` (no updates, always installed) and swap the SQLite provider.
+4. Passkeys need Associated Domains (`webcredentials:`) for the API's domain.
+
+The architecture tests (`Dialed.ArchitectureTests`) fail the build if `Dialed.UI` or `Dialed.Client` reference `Microsoft.JSInterop` or the WebAssembly packages, or if one of the nine interfaces goes missing.
+
 What a switch would still need: the Apple Developer Program, a Mac (or cloud Mac) for builds, native implementations of the interfaces, Associated Domains for passkeys, App Store/TestFlight setup.
