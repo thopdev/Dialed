@@ -5,23 +5,42 @@
       "label": "build",
       "type": "process",
       "command": "dotnet",
-      "args": ["build", "${workspaceFolder}/Dialed.slnx"],
-      "group": { "kind": "build", "isDefault": true },
+      "args": [
+        "build",
+        "${workspaceFolder}/Dialed.slnx"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "problemMatcher": "$msCompile"
     },
     {
       "label": "test",
       "type": "process",
       "command": "dotnet",
-      "args": ["test", "--solution", "${workspaceFolder}/Dialed.slnx"],
-      "group": { "kind": "test", "isDefault": true },
+      "args": [
+        "test",
+        "--solution",
+        "${workspaceFolder}/Dialed.slnx"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
       "problemMatcher": "$msCompile"
     },
     {
       "label": "run: Aspire",
       "type": "process",
       "command": "dotnet",
-      "args": ["run", "--project", "${workspaceFolder}/src/Dialed.AppHost", "--launch-profile", "https"],
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/Dialed.AppHost",
+        "--launch-profile",
+        "https"
+      ],
       "isBackground": true,
       "problemMatcher": []
     },
@@ -29,8 +48,103 @@
       "label": "run: Aspire + dev tunnel",
       "type": "process",
       "command": "dotnet",
-      "args": ["run", "--project", "${workspaceFolder}/src/Dialed.AppHost", "--launch-profile", "tunnel"],
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/src/Dialed.AppHost",
+        "--launch-profile",
+        "tunnel"
+      ],
       "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "git: fetch",
+      "type": "process",
+      "command": "git",
+      "args": [
+        "fetch",
+        "--prune",
+        "origin"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "cosmos: start emulator (8081)",
+      "type": "shell",
+      "command": "docker start cosmos-spike; if (-not $?) { docker run -d --name cosmos-spike -p 8081:8081 mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest }",
+      "problemMatcher": [],
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-Command"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "label": "spike: passkeys",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/spikes/PasskeySpike",
+        "--launch-profile",
+        "https"
+      ],
+      "dependsOn": [
+        "cosmos: start emulator (8081)"
+      ],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "dotnet-run",
+        "pattern": {
+          "regexp": "^__never__$"
+        },
+        "background": {
+          "activeBegins": true,
+          "beginsPattern": "^.*Building",
+          "endsPattern": "Now listening on|Application started"
+        }
+      }
+    },
+    {
+      "label": "devtunnel: 7300",
+      "type": "process",
+      "command": "devtunnel",
+      "args": [
+        "host",
+        "-p",
+        "7300",
+        "--protocol",
+        "https",
+        "--allow-anonymous"
+      ],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "devtunnel",
+        "pattern": {
+          "regexp": "^__never__$"
+        },
+        "background": {
+          "activeBegins": true,
+          "beginsPattern": "^.",
+          "endsPattern": "Ready to accept connections|Connect via browser"
+        }
+      }
+    },
+    {
+      "label": "spike: passkeys + dev tunnel (iPhone)",
+      "dependsOn": [
+        "spike: passkeys",
+        "devtunnel: 7300"
+      ],
+      "dependsOrder": "sequence",
       "problemMatcher": []
     }
   ]
