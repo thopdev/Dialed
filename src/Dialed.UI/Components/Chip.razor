@@ -1,0 +1,22 @@
+@* A small pill: a filter/tag you can toggle (Selected + OnClick), or a plain label (no OnClick). *@
+@if (OnClick.HasDelegate)
+{
+    <button type="button" class="dialed-chip @(Selected ? "selected" : "")" aria-pressed="@(Selected ? "true" : "false")" @onclick="OnClick">
+        @ChildContent
+    </button>
+}
+else
+{
+    <span class="dialed-chip @(Selected ? "selected" : "")">@ChildContent</span>
+}
+
+@code {
+    [Parameter]
+    public bool Selected { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

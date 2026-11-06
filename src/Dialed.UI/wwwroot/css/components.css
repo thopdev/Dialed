@@ -1,0 +1,345 @@
+/*
+  Reusable components (#45). Colours: Fluent tokens only (light/dark follow automatically).
+  Every tappable element is at least --dialed-touch-target (44 px) in both directions.
+*/
+
+/* ---- Card ---------------------------------------------------------------------------------- */
+
+.dialed-card {
+    display: block;
+    box-sizing: border-box;
+    padding: var(--dialed-space-4);
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorNeutralBackground1, #fff);
+    border: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+    box-shadow: var(--dialed-shadow-card);
+    color: inherit;
+    text-decoration: none;
+}
+
+.dialed-card-link {
+    min-height: var(--dialed-touch-target);
+}
+
+.dialed-card-link:active {
+    background: var(--colorNeutralBackground1Pressed, #f0f0f0);
+}
+
+/* ---- List row ------------------------------------------------------------------------------ */
+
+.dialed-row {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    padding: var(--dialed-space-2) var(--dialed-space-1);
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-row-link:active {
+    background: var(--colorNeutralBackground1Pressed, #f0f0f0);
+}
+
+.dialed-row-leading {
+    display: flex;
+    flex: none;
+}
+
+.dialed-row-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dialed-row-title {
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dialed-row-subtitle {
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground3, #616161);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dialed-row-trailing {
+    flex: none;
+    color: var(--colorNeutralForeground3, #616161);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-row-chevron {
+    flex: none;
+    display: flex;
+    color: var(--colorNeutralForeground3, #616161);
+}
+
+/* ---- Star rating --------------------------------------------------------------------------- */
+
+.dialed-stars {
+    display: inline-flex;
+    color: var(--colorNeutralForeground3, #616161);
+}
+
+.dialed-stars .dialed-star.on {
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+}
+
+.dialed-stars .dialed-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialed-stars-edit .dialed-star {
+    width: var(--dialed-touch-target);
+    height: var(--dialed-touch-target);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--colorNeutralForeground3, #616161);
+    cursor: pointer;
+}
+
+.dialed-stars-edit .dialed-star.on {
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+}
+
+.dialed-stars-edit .dialed-star:focus-visible {
+    outline: 2px solid var(--colorStrokeFocus2, #000);
+    outline-offset: -2px;
+    border-radius: var(--dialed-radius-s);
+}
+
+/* ---- Taste slider -------------------------------------------------------------------------- */
+
+.dialed-taste {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-taste-label {
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-taste-track {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-taste-track input[type="range"] {
+    flex: 1;
+    min-width: 0;
+    height: var(--dialed-touch-target);
+    margin: 0;
+    accent-color: var(--colorBrandBackground, #6f4e37);
+}
+
+.dialed-taste-end {
+    flex: none;
+    min-width: 3.5em;
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground3, #616161);
+}
+
+.dialed-taste-end:last-child {
+    text-align: right;
+}
+
+/* ---- Chips --------------------------------------------------------------------------------- */
+
+.dialed-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    min-height: 32px;
+    padding: 0 var(--dialed-space-3);
+    border-radius: var(--dialed-radius-pill);
+    border: 1px solid var(--colorNeutralStroke1, #d1d1d1);
+    background: var(--colorNeutralBackground1, #fff);
+    color: var(--colorNeutralForeground1, #242424);
+    font: inherit;
+    font-size: var(--dialed-text-s);
+}
+
+button.dialed-chip {
+    cursor: pointer;
+}
+
+/* Visually 32 px, but the tappable area reaches 44 px. */
+button.dialed-chip::after {
+    content: "";
+    position: absolute;
+    inset: -6px -2px;
+}
+
+.dialed-chip.selected {
+    background: var(--colorBrandBackground, #6f4e37);
+    border-color: var(--colorBrandBackground, #6f4e37);
+    color: var(--colorNeutralForegroundOnBrand, #fff);
+}
+
+.dialed-chip:focus-visible {
+    outline: 2px solid var(--colorStrokeFocus2, #000);
+    outline-offset: 2px;
+}
+
+/* ---- Empty state --------------------------------------------------------------------------- */
+
+.dialed-empty-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--dialed-space-2);
+}
+
+.dialed-empty-title {
+    margin: 0 0 var(--dialed-space-1);
+    font-size: var(--dialed-text-l);
+    color: var(--colorNeutralForeground1, #242424);
+}
+
+.dialed-empty p {
+    margin: 0 0 var(--dialed-space-3);
+}
+
+/* ---- Skeleton ------------------------------------------------------------------------------ */
+
+.dialed-skeleton {
+    border-radius: var(--dialed-radius-s);
+    background: linear-gradient(90deg,
+        var(--colorNeutralBackground5, #ebebeb) 25%,
+        var(--colorNeutralBackground6, #f5f5f5) 50%,
+        var(--colorNeutralBackground5, #ebebeb) 75%);
+    background-size: 200% 100%;
+    animation: dialed-shimmer 1.4s ease-in-out infinite;
+}
+
+.dialed-skeleton-line {
+    width: 100%;
+    height: 1em;
+    margin: var(--dialed-space-2) 0;
+}
+
+.dialed-skeleton-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.dialed-skeleton-card {
+    width: 100%;
+    height: 96px;
+    border-radius: var(--dialed-radius-m);
+}
+
+@keyframes dialed-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dialed-skeleton {
+        animation: none;
+    }
+}
+
+/* ---- Error banner -------------------------------------------------------------------------- */
+
+.dialed-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-banner-error {
+    background: var(--colorPaletteRedBackground1, #fdf3f4);
+    color: var(--colorPaletteRedForeground1, #b10e1c);
+    border: 1px solid var(--colorPaletteRedBorder1, #eeacb2);
+}
+
+.dialed-banner-warning {
+    background: var(--colorPaletteMarigoldBackground1, #fff9f5);
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+    border: 1px solid var(--colorPaletteMarigoldBorder1, #f9d3b4);
+}
+
+.dialed-banner-icon {
+    display: flex;
+    flex: none;
+}
+
+.dialed-banner-message {
+    flex: 1;
+    color: var(--colorNeutralForeground1, #242424);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-banner-action {
+    flex: none;
+    min-width: var(--dialed-touch-target);
+    min-height: var(--dialed-touch-target);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--dialed-space-2);
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: var(--dialed-weight-semibold);
+    cursor: pointer;
+}
+
+/* ---- Gallery (development builds only) ------------------------------------------------------ */
+
+.dialed-gallery section {
+    margin-bottom: var(--dialed-space-6);
+}
+
+.dialed-gallery h2 {
+    margin: 0 0 var(--dialed-space-3);
+    font-size: var(--dialed-text-l);
+}
+
+.dialed-gallery-swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: var(--dialed-space-2);
+}
+
+.dialed-swatch {
+    height: 56px;
+    border-radius: var(--dialed-radius-s);
+    border: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+    display: flex;
+    align-items: flex-end;
+    padding: var(--dialed-space-1);
+    font-size: var(--dialed-text-xs);
+}
+
+.dialed-gallery-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-3);
+}

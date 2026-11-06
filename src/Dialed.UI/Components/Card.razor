@@ -1,0 +1,20 @@
+@* Surface for grouped content. With Href it becomes a tappable link card. *@
+@if (Href is null)
+{
+    <div class="dialed-card" @attributes="AdditionalAttributes">@ChildContent</div>
+}
+else
+{
+    <a class="dialed-card dialed-card-link" href="@Href" @attributes="AdditionalAttributes">@ChildContent</a>
+}
+
+@code {
+    [Parameter]
+    public string? Href { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+}

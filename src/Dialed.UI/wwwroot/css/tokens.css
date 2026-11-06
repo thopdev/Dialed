@@ -1,0 +1,63 @@
+/*
+  Dialed design tokens (#45).
+
+  Colours: not defined here. Fluent UI generates a light and a dark brand theme from the espresso-brown
+  key colour (body[data-theme-color] in index.html) and exposes it as --color* variables
+  (--colorBrandBackground, --colorNeutralForeground1, ...). Use those, never raw hex values, so both modes
+  and any future brand change work everywhere. Fallbacks in other CSS files are only for first paint.
+
+  This file adds what Fluent doesn't: spacing, radii, type scale, touch targets and coffee semantics.
+*/
+
+:root {
+    /* Spacing: 4 px grid */
+    --dialed-space-1: 4px;
+    --dialed-space-2: 8px;
+    --dialed-space-3: 12px;
+    --dialed-space-4: 16px;
+    --dialed-space-5: 24px;
+    --dialed-space-6: 32px;
+    --dialed-space-7: 48px;
+
+    /* Radii */
+    --dialed-radius-s: 6px;
+    --dialed-radius-m: 12px;
+    --dialed-radius-l: 20px;
+    --dialed-radius-pill: 999px;
+
+    /* Minimum touch target on iPhone and iPad (Apple HIG: 44 x 44 pt) */
+    --dialed-touch-target: 44px;
+
+    /* Type scale in rem: it follows the root font size, which follows the iOS text size setting (below) */
+    --dialed-text-xs: 0.75rem;
+    --dialed-text-s: 0.875rem;
+    --dialed-text-m: 1rem;
+    --dialed-text-l: 1.125rem;
+    --dialed-text-xl: 1.375rem;
+    --dialed-text-2xl: 1.75rem;
+    --dialed-text-3xl: 2.25rem;
+
+    --dialed-weight-regular: 400;
+    --dialed-weight-semibold: 600;
+    --dialed-weight-bold: 700;
+
+    /* Elevation */
+    --dialed-shadow-card: 0 1px 2px rgb(0 0 0 / 0.08), 0 1px 8px rgb(0 0 0 / 0.04);
+}
+
+/*
+  Dynamic Type: on iPhone and iPad Safari (also as a home-screen app) "-apple-system-body" is the size the
+  user picked in Settings > Display & Brightness > Text Size / Accessibility. Everything in rem scales with it.
+*/
+@supports (font: -apple-system-body) {
+    html {
+        font: -apple-system-body;
+        font-family: var(--fontFamilyBase, -apple-system, BlinkMacSystemFont, sans-serif);
+    }
+}
+
+/* Let iOS text-size and browser zoom win over an automatic enlargement of text in landscape. */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
