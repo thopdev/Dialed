@@ -36,7 +36,9 @@ Prototype in `spikes/PasskeySpike`, 23 tests against the Cosmos DB emulator with
 - **Discoverable credentials:** `residentKey: required` and `userVerification: required`; sign-in options carry no `allowCredentials`, so no email is needed to sign in.
 - **Data Protection keys must be shared and persisted in Azure** (Blob Storage + Key Vault), otherwise state minted by one replica can't be opened by another or after a restart. → #24/#26.
 - Sign-up options reveal whether an email is registered (409). Fine for the invite-only beta; revisit in #30.
-- **Still to verify on devices:** Windows Hello on localhost, iPhone Safari and the installed PWA via a dev tunnel (incl. autofill), and app/API on different Azure hostnames (needs #24–#26).
+- **iPhone (Safari, Face ID) via dev tunnel: sign-up, discoverable sign-in and passkey autofill work** (2026-11-06).
+- **Dev tunnels rewrite the `Origin` header to `localhost` by default**, which breaks passkeys (the API binds the wrong origin/RP ID). Tunnels used for passkeys must keep it: `devtunnel update <tunnel> --origin-header unchanged` (the VS Code task does this). The Aspire dev tunnel for the app (#30) needs the same setting.
+- **Still to verify on devices:** the installed home-screen app on iPhone, Windows Hello on localhost, and app/API on different Azure hostnames (needs #24–#26).
 
 ## Consequences
 - No passwords, no Apple fee; Face ID / Touch ID sign-in on iPhone and iPad.
