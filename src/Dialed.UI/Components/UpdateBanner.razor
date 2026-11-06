@@ -1,0 +1,24 @@
+@using Dialed.Client
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IPwaState Pwa
+
+@* Shown when a new version is downloaded and waiting; reloading is the user's choice so nothing is lost mid-brew. *@
+@if (Pwa.UpdateAvailable)
+{
+    <div class="dialed-banner dialed-banner-info dialed-update-banner" role="status">
+        <span class="dialed-banner-icon" aria-hidden="true">
+            <FluentIcon Value="@(new Icons.Regular.Size24.ArrowSync())" Color="Color.Custom" CustomColor="currentColor" />
+        </span>
+        <span class="dialed-banner-message">@L["Update_Available"]</span>
+        <button type="button" class="dialed-banner-action" @onclick="Pwa.ApplyUpdateAsync">@L["Update_Reload"]</button>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Pwa.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Pwa.Changed -= OnChanged;
+}

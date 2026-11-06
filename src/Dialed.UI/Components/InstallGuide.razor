@@ -1,0 +1,28 @@
+@using Dialed.Client
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IPwaState Pwa
+
+@* iOS has no install prompt, so Safari users get these steps. Hidden once installed and in every other browser. *@
+@if (Pwa.NeedsInstallGuide)
+{
+    <div class="dialed-install-guide">
+      <Card>
+        <h2>@L["Install_Title"]</h2>
+        <p>@L["Install_Intro"]</p>
+        <ol>
+            <li>@L["Install_Step1"]</li>
+            <li>@L["Install_Step2"]</li>
+            <li>@L["Install_Step3"]</li>
+        </ol>
+      </Card>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Pwa.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Pwa.Changed -= OnChanged;
+}

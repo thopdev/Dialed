@@ -284,6 +284,30 @@ button.dialed-chip::after {
     border: 1px solid var(--colorPaletteMarigoldBorder1, #f9d3b4);
 }
 
+.dialed-banner-info {
+    background: var(--colorBrandBackground2, #f4ece6);
+    color: var(--colorBrandForeground1, #6f4e37);
+    border: 1px solid var(--colorBrandStroke2, #d9c4b4);
+}
+
+.dialed-update-banner {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-install-guide {
+    margin-bottom: var(--dialed-space-4);
+}
+
+.dialed-install-guide h2 {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-l);
+}
+
+.dialed-install-guide ol {
+    margin: 0;
+    padding-left: var(--dialed-space-5);
+}
+
 .dialed-banner-icon {
     display: flex;
     flex: none;
