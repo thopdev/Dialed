@@ -45,6 +45,13 @@ public sealed class HouseholdAccessControl<T>(IHttpContextAccessor httpContext) 
             throw new HttpException(StatusCodes.Status403Forbidden, "Not a member of this household.");
         }
 
+        // The toolkit calls this hook before the repository generates missing ids, so generate the packed id here.
+        // (Offline clients always send their own ids.)
+        if (operation == TableOperation.Create && string.IsNullOrEmpty(entity.Id))
+        {
+            entity.Id = HouseholdIds.New(entity.HouseholdId);
+        }
+
         if (!HouseholdIds.TryGetHousehold(entity.Id, out var idHousehold) || idHousehold != entity.HouseholdId)
         {
             throw new HttpException(StatusCodes.Status400BadRequest, "Id must start with the entity's householdId.");
