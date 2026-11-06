@@ -1,0 +1,27 @@
+@inject IStringLocalizer<Strings> L
+
+<PageTitle>@L["PageTitle_Format", Title]</PageTitle>
+
+<header class="dialed-page-header">
+    @if (BackHref is not null)
+    {
+        <a class="dialed-back" href="@BackHref">‹ @L["Back"]</a>
+    }
+    <h1>@Title</h1>
+    @if (Actions is not null)
+    {
+        <div class="dialed-page-actions">@Actions</div>
+    }
+</header>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    /// <summary>Shows a back link (narrow screens, detail pages).</summary>
+    [Parameter]
+    public string? BackHref { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}

@@ -1,0 +1,12 @@
+@inject IStringLocalizer<Strings> L
+
+<nav aria-label="@L["Nav_Label"]">
+    <FluentNav Width="100%">
+        @foreach (var item in AppNavigation.Items)
+        {
+            <FluentNavItem Href="@item.Href" Match="@item.Match" IconRest="@item.IconRest" IconActive="@item.IconActive">
+                @L[item.TitleKey]
+            </FluentNavItem>
+        }
+    </FluentNav>
+</nav>

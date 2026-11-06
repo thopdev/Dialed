@@ -1,0 +1,22 @@
+@*
+    List/detail pattern for iPad and iPhone, driven by the available width (CSS container query),
+    so it also adapts to iPad split view and Slide Over:
+    - wide: list and detail side by side
+    - narrow: the list, or the detail when an item is selected (detail has a back link)
+*@
+<div class="dialed-list-detail @(HasSelection ? "has-selection" : "")">
+    <section class="dialed-list-pane">@List</section>
+    <section class="dialed-detail-pane">@Detail</section>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment List { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public RenderFragment Detail { get; set; } = default!;
+
+    /// <summary>True when the route points at an item; on narrow screens the detail then replaces the list.</summary>
+    [Parameter]
+    public bool HasSelection { get; set; }
+}

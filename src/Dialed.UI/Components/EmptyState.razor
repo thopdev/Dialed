@@ -1,0 +1,13 @@
+@* Minimal empty state; the illustrated version comes with the design system (#45). *@
+<div class="dialed-empty">
+    <p>@Message</p>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Message { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

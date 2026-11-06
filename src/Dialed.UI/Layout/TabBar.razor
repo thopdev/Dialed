@@ -1,0 +1,17 @@
+@inject IStringLocalizer<Strings> L
+
+@* iPhone-style bottom tab bar; hidden on wide screens. NavLink adds "active" to the current tab. *@
+<nav class="dialed-tabbar" aria-label="@L["Nav_Label"]">
+    @foreach (var item in AppNavigation.Items)
+    {
+        <NavLink class="dialed-tab" href="@item.Href" Match="@item.Match">
+            <span class="dialed-tab-icon dialed-tab-icon-rest" aria-hidden="true">
+                <FluentIcon Value="@item.IconRest" Color="Color.Custom" CustomColor="currentColor" />
+            </span>
+            <span class="dialed-tab-icon dialed-tab-icon-active" aria-hidden="true">
+                <FluentIcon Value="@item.IconActive" Color="Color.Custom" CustomColor="currentColor" />
+            </span>
+            <span class="dialed-tab-label">@L[item.TitleKey]</span>
+        </NavLink>
+    }
+</nav>
