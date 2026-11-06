@@ -40,7 +40,7 @@ jobs:
             done
           } >> "$GITHUB_STEP_SUMMARY"
 
-  datasync-cosmos:
+  cosmos-spikes:
     runs-on: ubuntu-latest
     services:
       cosmos:
@@ -58,7 +58,9 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Build
-        run: dotnet build spikes/DatasyncSpike.Tests --configuration Release
+        run: |
+          dotnet build spikes/DatasyncSpike.Tests --configuration Release
+          dotnet build spikes/PasskeySpike.Tests --configuration Release
 
       - name: Wait for the Cosmos DB emulator
         run: |
@@ -70,3 +72,7 @@ jobs:
 
       - name: Test Datasync on Cosmos DB
         run: dotnet test --project spikes/DatasyncSpike.Tests --configuration Release --no-build --output detailed
+
+      - name: Test passkeys on Cosmos DB
+        if: success() || failure()
+        run: dotnet test --project spikes/PasskeySpike.Tests --configuration Release --no-build --output detailed

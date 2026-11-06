@@ -4,4 +4,6 @@
   <Project Path="StorageSpike.SqliteWasm/StorageSpike.SqliteWasm.csproj" />
   <Project Path="DatasyncSpike/DatasyncSpike.csproj" />
   <Project Path="DatasyncSpike.Tests/DatasyncSpike.Tests.csproj" />
+  <Project Path="PasskeySpike/PasskeySpike.csproj" />
+  <Project Path="PasskeySpike.Tests/PasskeySpike.Tests.csproj" />
 </Solution>
