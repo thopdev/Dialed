@@ -1,0 +1,220 @@
+/*
+  App shell (#44). Colours come from Fluent UI tokens, so light/dark and the brand theme (#45) apply.
+  Breakpoint: below 768px wide (iPhone, iPad split view up to about half the screen) the app uses a
+  bottom tab bar; from 768px (iPad full screen, two-thirds split view, desktop) a sidebar.
+*/
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--colorNeutralBackground1, #fff);
+    color: var(--colorNeutralForeground1, #242424);
+    font-family: var(--fontFamilyBase, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dialed-shell {
+    --dialed-tabbar-height: 56px;
+    --dialed-sidebar-width: 240px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas: "content" "tabbar";
+    height: 100dvh;
+}
+
+/* ---- Content ---------------------------------------------------------------------------- */
+
+.dialed-content {
+    grid-area: content;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    container-type: inline-size; /* list/detail reacts to the space it gets, not the screen */
+    padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 16px max(16px, env(safe-area-inset-left));
+}
+
+.dialed-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.dialed-page-header h1 {
+    flex: 1;
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.dialed-page-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.dialed-back {
+    flex-basis: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--colorBrandForeground1, #6f4e37);
+    text-decoration: none;
+}
+
+.dialed-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--colorNeutralForeground3, #616161);
+}
+
+.dialed-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 48px 16px;
+    color: var(--colorNeutralForeground3, #616161);
+}
+
+.dialed-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 48px 16px;
+    text-align: center;
+    color: var(--colorPaletteRedForeground1, #b10e1c);
+}
+
+.dialed-error h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--colorNeutralForeground1, #242424);
+}
+
+.dialed-error p {
+    margin: 0 0 8px;
+    color: var(--colorNeutralForeground2, #424242);
+}
+
+/* ---- Bottom tab bar (narrow) ------------------------------------------------------------- */
+
+.dialed-tabbar {
+    grid-area: tabbar;
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+    background: var(--colorNeutralBackground1, #fff);
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.dialed-tab {
+    flex: 1;
+    min-height: var(--dialed-tabbar-height);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--colorNeutralForeground3, #616161);
+    text-decoration: none;
+    font-size: 0.6875rem;
+}
+
+.dialed-tab.active {
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+.dialed-tab-icon {
+    display: flex;
+}
+
+.dialed-tab .dialed-tab-icon-active,
+.dialed-tab.active .dialed-tab-icon-rest {
+    display: none;
+}
+
+.dialed-tab.active .dialed-tab-icon-active {
+    display: flex;
+}
+
+/* ---- Sidebar (wide) --------------------------------------------------------------------- */
+
+.dialed-sidebar {
+    grid-area: sidebar;
+    display: none;
+    flex-direction: column;
+    border-right: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+    background: var(--colorNeutralBackground2, #fafafa);
+    padding: max(16px, env(safe-area-inset-top)) 8px 16px max(8px, env(safe-area-inset-left));
+    overflow-y: auto;
+}
+
+.dialed-sidebar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 4px 12px 16px;
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+@media (min-width: 768px) {
+    .dialed-shell {
+        grid-template-columns: var(--dialed-sidebar-width) 1fr;
+        grid-template-rows: 1fr;
+        grid-template-areas: "sidebar content";
+    }
+
+    .dialed-sidebar {
+        display: flex;
+    }
+
+    .dialed-tabbar {
+        display: none;
+    }
+
+    .dialed-content {
+        padding-left: 24px;
+        padding-right: max(24px, env(safe-area-inset-right));
+    }
+}
+
+/* ---- List / detail ------------------------------------------------------------------------ */
+
+.dialed-list-detail {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    min-height: 100%;
+}
+
+.dialed-list-detail .dialed-detail-pane,
+.dialed-list-detail.has-selection .dialed-list-pane {
+    display: none;
+}
+
+.dialed-list-detail.has-selection .dialed-detail-pane {
+    display: block;
+}
+
+@container (min-width: 640px) {
+    .dialed-list-detail,
+    .dialed-list-detail.has-selection {
+        grid-template-columns: minmax(260px, 2fr) 3fr;
+    }
+
+    .dialed-list-detail .dialed-list-pane,
+    .dialed-list-detail .dialed-detail-pane {
+        display: block;
+    }
+
+    .dialed-list-detail .dialed-detail-pane {
+        border-left: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+        padding-left: 24px;
+    }
+
+    /* Side by side, the list is always visible, so the detail needs no back link. */
+    .dialed-list-detail .dialed-detail-pane .dialed-back {
+        display: none;
+    }
+}

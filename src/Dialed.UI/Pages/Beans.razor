@@ -1,0 +1,26 @@
+@page "/beans"
+@page "/beans/{Id}"
+@inject IStringLocalizer<Strings> L
+
+@* Shell for the bean list (#48 fills it); shows the list/detail behaviour on iPad and iPhone. *@
+<ListDetailLayout HasSelection="@(Id is not null)">
+    <List>
+        <PageHeader Title="@L["Nav_Beans"]" />
+        <EmptyState Message="@L["Beans_Empty"]" />
+    </List>
+    <Detail>
+        @if (Id is null)
+        {
+            <EmptyState Message="@L["Beans_SelectPrompt"]" />
+        }
+        else
+        {
+            <PageHeader Title="@L["Beans_Detail", Id]" BackHref="beans" />
+        }
+    </Detail>
+</ListDetailLayout>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+}

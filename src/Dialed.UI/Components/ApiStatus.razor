@@ -1,10 +1,11 @@
 @* Shows whether the app can reach the API - handy when checking the dev tunnel on an iPhone. *@
 @inject HttpClient Http
+@inject IStringLocalizer<Strings> L
 
-<p class="api-status">API: @status</p>
+<p class="api-status">@L["Api_Status", status ?? L["Api_Checking"].Value]</p>
 
 @code {
-    private string status = "checking...";
+    private string? status;
 
     protected override async Task OnInitializedAsync()
     {
@@ -14,7 +15,7 @@
         }
         catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
         {
-            status = "unreachable";
+            status = L["Api_Unreachable"];
         }
     }
 }

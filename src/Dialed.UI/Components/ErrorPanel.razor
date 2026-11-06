@@ -1,0 +1,13 @@
+@inject IStringLocalizer<Strings> L
+
+<div class="dialed-error" role="alert">
+    <FluentIcon Value="@(new Icons.Regular.Size24.ErrorCircle())" Color="Color.Custom" CustomColor="currentColor" />
+    <h1>@L["Error_Title"]</h1>
+    <p>@L["Error_Message"]</p>
+    <FluentButton Appearance="ButtonAppearance.Primary" OnClick="OnRetry">@L["Error_Retry"]</FluentButton>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnRetry { get; set; }
+}

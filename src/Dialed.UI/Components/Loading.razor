@@ -1,0 +1,22 @@
+@inject IStringLocalizer<Strings> L
+
+@* Shows a spinner while IsLoading, otherwise the content. Skeleton loaders follow in #45. *@
+@if (IsLoading)
+{
+    <div class="dialed-loading" role="status" aria-live="polite">
+        <FluentSpinner />
+        <span>@L["Loading"]</span>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

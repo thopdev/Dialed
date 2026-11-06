@@ -1,6 +1,38 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject IStringLocalizer<Strings> L
 
-@* Placeholder layout - navigation for iPhone and iPad comes with #44. *@
-<main>
-    @Body
-</main>
+@*
+    One layout for every width, switched by CSS (wwwroot/css/shell.css):
+    - narrow (iPhone, iPad split view up to ~half screen): content + bottom tab bar
+    - wide (iPad full screen or two-thirds split, desktop): sidebar + content
+*@
+<FluentProviders />
+
+<div class="dialed-shell">
+    <aside class="dialed-sidebar">
+        <div class="dialed-sidebar-brand">@L["App_Name"]</div>
+        <SideNav />
+    </aside>
+
+    <main class="dialed-content">
+        <ErrorBoundary @ref="errorBoundary">
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent Context="exception">
+                <ErrorPanel OnRetry="Recover" />
+            </ErrorContent>
+        </ErrorBoundary>
+    </main>
+
+    <TabBar />
+</div>
+
+@code {
+    private ErrorBoundary? errorBoundary;
+
+    // Navigating away from a broken screen should show the next one, not the error again.
+    protected override void OnParametersSet() => errorBoundary?.Recover();
+
+    private void Recover() => errorBoundary?.Recover();
+}
