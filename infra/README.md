@@ -33,3 +33,13 @@ azd deploy                 # builds and ships the API (Container Apps) and Funct
 - **Data Protection keys** (ADR-0010) must be persisted to Storage/Key Vault before the API runs more than one replica; the Key Vault and roles are ready for that (#30).
 
 CI compiles and lints the templates on every change (`infra` job).
+
+## Connecting GitHub to the PWA deploy (#22)
+After `azd provision` (once per environment):
+```
+# deployment token of the Static Web App -> repository secret
+gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN --body "$(az staticwebapp secrets list --name swa-dialed-dev --resource-group rg-dialed-dev --query properties.apiKey -o tsv)"
+# API address the dev and preview builds call -> repository variable
+gh variable set DEV_API_URL --body "$(azd env get-value API_URL)"
+```
+Until both exist, `.github/workflows/web.yml` skips the deploy. PR previews are allowed by the API through the `App__Origins__1` pattern.
