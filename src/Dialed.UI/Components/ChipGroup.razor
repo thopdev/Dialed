@@ -1,0 +1,10 @@
+<div class="dialed-chips" role="group" aria-label="@Label">@ChildContent</div>
+
+@code {
+    /// <summary>What the chips are for, read out by screen readers (e.g. "Brew method").</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

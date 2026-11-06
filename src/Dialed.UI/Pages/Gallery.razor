@@ -1,0 +1,130 @@
+@page "/dev/gallery"
+@using Dialed.Client
+@inject IAppEnvironment AppEnvironment
+@inject IStringLocalizer<Strings> L
+
+@* Component gallery: every building block in one place, for checking light/dark mode and iPhone/iPad sizes. Development builds only. *@
+@if (!AppEnvironment.IsDevelopment)
+{
+    <PageHeader Title="@L["NotFound_Title"]" />
+    <p>@L["NotFound_Message"]</p>
+}
+else
+{
+    <div class="dialed-gallery">
+        <PageHeader Title="Component gallery" />
+
+        <section>
+            <h2>Colours (from the espresso-brown brand colour)</h2>
+            <div class="dialed-gallery-swatches">
+                @foreach (var (name, token) in Swatches)
+                {
+                    <div class="dialed-swatch" style="background: var(@token)">@name</div>
+                }
+            </div>
+        </section>
+
+        <section>
+            <h2>Type scale</h2>
+            <div class="dialed-gallery-stack">
+                <span style="font-size: var(--dialed-text-3xl)">Extra large 3xl</span>
+                <span style="font-size: var(--dialed-text-2xl)">Title 2xl</span>
+                <span style="font-size: var(--dialed-text-xl)">Heading xl</span>
+                <span style="font-size: var(--dialed-text-l)">Subheading l</span>
+                <span style="font-size: var(--dialed-text-m)">Body m</span>
+                <span style="font-size: var(--dialed-text-s)">Secondary s</span>
+                <span style="font-size: var(--dialed-text-xs)">Caption xs</span>
+            </div>
+        </section>
+
+        <section>
+            <h2>Card</h2>
+            <div class="dialed-gallery-stack">
+                <Card>A plain card with some content.</Card>
+                <Card Href="beans">A card that links to Beans</Card>
+            </div>
+        </section>
+
+        <section>
+            <h2>List row</h2>
+            <ListRow Title="Ethiopia Guji" Subtitle="Tim Wendelboe · light roast" Href="beans/1">
+                <Trailing><StarRating Value="4" ReadOnly="true" /></Trailing>
+            </ListRow>
+            <ListRow Title="Colombia Huila" Subtitle="Bonanza · medium roast" Href="beans/2" />
+            <ListRow Title="No link" Subtitle="A row without chevron" />
+        </section>
+
+        <section>
+            <h2>Star rating</h2>
+            <div class="dialed-gallery-stack">
+                <StarRating @bind-Value="rating" />
+                <span>Rating: @rating</span>
+                <StarRating Value="3" ReadOnly="true" />
+            </div>
+        </section>
+
+        <section>
+            <h2>Taste sliders</h2>
+            <div class="dialed-gallery-stack">
+                <TasteSlider Label="Acidity ↔ bitterness" LowLabel="Sour" HighLabel="Bitter" @bind-Value="sourBitter" />
+                <TasteSlider Label="Body" LowLabel="Thin" HighLabel="Heavy" @bind-Value="body" />
+                <span>Sour/bitter: @sourBitter · body: @body</span>
+            </div>
+        </section>
+
+        <section>
+            <h2>Chips</h2>
+            <ChipGroup Label="Brew method">
+                @foreach (var method in Methods)
+                {
+                    <Chip Selected="@(selectedMethod == method)" OnClick="() => selectedMethod = method">@method</Chip>
+                }
+            </ChipGroup>
+            <p><Chip>Label only</Chip></p>
+        </section>
+
+        <section>
+            <h2>Empty state</h2>
+            <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Title="No beans yet" Message="Add your first bag to get started." />
+        </section>
+
+        <section>
+            <h2>Skeleton loader</h2>
+            <div class="dialed-gallery-stack">
+                <Skeleton Shape="Skeleton.SkeletonShape.Card" />
+                <Skeleton Width="70%" />
+                <Skeleton Width="40%" />
+                <Skeleton Shape="Skeleton.SkeletonShape.Circle" />
+            </div>
+        </section>
+
+        <section>
+            <h2>Error banner</h2>
+            <div class="dialed-gallery-stack">
+                <ErrorBanner Message="Couldn't sync your brews." OnRetry="@(() => Task.CompletedTask)" />
+                <ErrorBanner Message="You're offline. Changes are saved on this device." Severity="ErrorBanner.BannerSeverity.Warning" />
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    private static readonly string[] Methods = ["Espresso", "V60", "AeroPress", "French press", "Moka pot"];
+
+    private static readonly (string Name, string Token)[] Swatches =
+    [
+        ("Brand", "--colorBrandBackground"),
+        ("Brand hover", "--colorBrandBackgroundHover"),
+        ("Background 1", "--colorNeutralBackground1"),
+        ("Background 2", "--colorNeutralBackground2"),
+        ("Foreground 1", "--colorNeutralForeground1"),
+        ("Foreground 3", "--colorNeutralForeground3"),
+        ("Stroke", "--colorNeutralStroke1"),
+        ("Danger", "--colorPaletteRedForeground1"),
+    ];
+
+    private int rating = 3;
+    private int sourBitter = 5;
+    private int body = 7;
+    private string selectedMethod = "V60";
+}

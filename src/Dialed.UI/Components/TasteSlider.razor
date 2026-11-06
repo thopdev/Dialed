@@ -1,0 +1,61 @@
+@*
+    A slider between two opposite tastes, e.g. sour <-> bitter. The middle is balanced.
+    Native range input: smooth with a thumb on iOS, keyboard and VoiceOver accessible, 44 pt tall.
+*@
+<div class="dialed-taste">
+    <label class="dialed-taste-label" for="@InputId">@Label</label>
+    <div class="dialed-taste-track">
+        <span class="dialed-taste-end" aria-hidden="true">@LowLabel</span>
+        <input id="@InputId"
+               type="range"
+               min="@Min"
+               max="@Max"
+               step="1"
+               value="@Value"
+               aria-valuetext="@ValueText"
+               @onchange="OnChange" />
+        <span class="dialed-taste-end" aria-hidden="true">@HighLabel</span>
+    </div>
+</div>
+
+@code {
+    private readonly string InputId = "taste-" + Guid.NewGuid().ToString("N")[..8];
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>What the low end means, e.g. "Sour".</summary>
+    [Parameter, EditorRequired]
+    public string LowLabel { get; set; } = "";
+
+    /// <summary>What the high end means, e.g. "Bitter".</summary>
+    [Parameter, EditorRequired]
+    public string HighLabel { get; set; } = "";
+
+    [Parameter]
+    public int Value { get; set; } = 5;
+
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
+
+    [Parameter]
+    public int Min { get; set; } = 0;
+
+    [Parameter]
+    public int Max { get; set; } = 10;
+
+    private string ValueText
+    {
+        get
+        {
+            var middle = (Min + Max) / 2;
+            return Value == middle ? $"{LowLabel} / {HighLabel}: balanced"
+                : Value < middle ? $"{LowLabel} {middle - Value}" : $"{HighLabel} {Value - middle}";
+        }
+    }
+
+    private Task OnChange(ChangeEventArgs args) =>
+        int.TryParse(args.Value?.ToString(), out var value)
+            ? ValueChanged.InvokeAsync(Math.Clamp(value, Min, Max))
+            : Task.CompletedTask;
+}

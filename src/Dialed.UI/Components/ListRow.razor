@@ -1,0 +1,55 @@
+@* One row of a list: optional leading visual, title, subtitle, trailing content and a chevron when it links somewhere. *@
+@if (Href is null)
+{
+    <div class="dialed-row" @attributes="AdditionalAttributes">@Content</div>
+}
+else
+{
+    <a class="dialed-row dialed-row-link" href="@Href" @attributes="AdditionalAttributes">@Content</a>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public string? Subtitle { get; set; }
+
+    /// <summary>Navigates here when tapped; shows a chevron.</summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    [Parameter]
+    public RenderFragment? Leading { get; set; }
+
+    [Parameter]
+    public RenderFragment? Trailing { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private RenderFragment Content => __builder =>
+    {
+        if (Leading is not null)
+        {
+            <span class="dialed-row-leading">@Leading</span>
+        }
+        <span class="dialed-row-text">
+            <span class="dialed-row-title">@Title</span>
+            @if (Subtitle is not null)
+            {
+                <span class="dialed-row-subtitle">@Subtitle</span>
+            }
+        </span>
+        @if (Trailing is not null)
+        {
+            <span class="dialed-row-trailing">@Trailing</span>
+        }
+        @if (Href is not null)
+        {
+            <span class="dialed-row-chevron" aria-hidden="true">
+                <FluentIcon Value="@(new Icons.Regular.Size24.ChevronRight())" Color="Color.Custom" CustomColor="currentColor" />
+            </span>
+        }
+    };
+}

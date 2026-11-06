@@ -1,0 +1,29 @@
+@inject IStringLocalizer<Strings> L
+
+@* Placeholder while content loads; shimmer stops when the user prefers reduced motion. Announced once as "Loading". *@
+<div class="dialed-skeleton dialed-skeleton-@Shape.ToString().ToLowerInvariant()"
+     style="@Style"
+     role="status"
+     aria-label="@L["Loading"]"></div>
+
+@code {
+    public enum SkeletonShape
+    {
+        Line,
+        Circle,
+        Card,
+    }
+
+    [Parameter]
+    public SkeletonShape Shape { get; set; } = SkeletonShape.Line;
+
+    /// <summary>CSS width, e.g. "60%" or "120px". Defaults to the full width (line, card) or 48px (circle).</summary>
+    [Parameter]
+    public string? Width { get; set; }
+
+    [Parameter]
+    public string? Height { get; set; }
+
+    private string? Style =>
+        string.Join(';', new[] { Width is null ? null : $"width:{Width}", Height is null ? null : $"height:{Height}" }.Where(s => s is not null));
+}

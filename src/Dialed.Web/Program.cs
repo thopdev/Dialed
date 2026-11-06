@@ -1,5 +1,6 @@
 using Dialed.Client;
 using Dialed.UI;
+using Dialed.Web;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -14,6 +15,7 @@ var apiBaseAddress = ApiEndpoint.Resolve(builder.Configuration["Api:BaseUrl"], a
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = apiBaseAddress });
 
 // UI: Fluent UI Blazor components and IStringLocalizer<Strings> (English resources in Dialed.UI).
+builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddFluentUIComponents();
 builder.Services.AddLocalization();
 
