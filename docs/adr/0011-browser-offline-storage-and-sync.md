@@ -24,6 +24,18 @@ The app must be offline-first (log brews, add bags, edit recipes without a conne
 3. Push/pull against the Datasync server with Cosmos DB (`/householdId` partitioning or the `/id` fallback) and the RU cost of a 1,000-item pull.
 4. Cross-tab locking works in Safari.
 
+## Spike results (#37)
+
+**Server side - confirmed** (`spikes/DatasyncSpike`, 9 integration tests against the Linux Cosmos DB emulator, 2026-11-06):
+- **One container `household-data`, partition key `/householdId`**, `entity` discriminator per type; composite index `(updatedAt, id)` for delta pulls. The `/id` fallback is not needed.
+- **Packed ids `{householdId}:{guid}`** via custom `CosmosTableOptions<T>` (the same pattern the toolkit tests as `PackedKeyOptions`): point reads and writes know their partition from the id alone.
+- **Access control**: `GetDataView()` = the caller's households. On update the toolkit authorizes the *existing* entity, so the *incoming* entity is validated in `PreCommitHookAsync` (member of its household, id prefix = householdId) - this blocks moving items between households. `PreCommitHookAsync` runs *before* the repository's id generator, so a missing id is generated there.
+- Soft delete + `updatedAt gt …&__includedeleted=true` gives correct delta pulls; stale `If-Match` returns 412.
+- The toolkit's .NET client (online operations) works against it, so `Dialed.Client` can use it or plain `HttpClient`.
+- **Request units: not measurable on the emulator** (it reports a flat 1 RU per operation and ignores page sizes). Measure in Azure `dev` once #24 is done.
+
+**Browser side - in progress** (`spikes/StorageSpike.*`): Bit.Bsqlite is the favourite (no `wasm-tools` workload, no build warnings, supports MAUI Blazor Hybrid, company-maintained); SqliteWasmBlazor needs the workload, has runtime-unsafe varargs imports and a vulnerable transitive dependency. Waiting for the iPhone/iPad home-screen test (timings, Web Locks, survival after 8+ days unused) before deciding.
+
 ## Consequences
 - Full control and a data layer that is portable to MAUI, at the cost of writing and testing the sync engine ourselves.
 - Both SQLite-WASM libraries are young; keep them behind the EF Core provider so they can be swapped, with IndexedDB (Dexie) as the last-resort fallback.
