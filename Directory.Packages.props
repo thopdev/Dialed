@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <AspNetCoreVersion>10.0.12</AspNetCoreVersion>
+    <AspNetCoreVersion>10.0.14</AspNetCoreVersion>
     <!-- Keep in sync with the Aspire.AppHost.Sdk version in src/Dialed.AppHost/Dialed.AppHost.csproj -->
     <AspireVersion>13.6.4</AspireVersion>
     <OpenTelemetryVersion>1.17.0</OpenTelemetryVersion>
@@ -17,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup Label="Service defaults (OpenTelemetry, resilience, service discovery)">
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.10.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.11.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryVersion)" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryVersion)" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryVersion)" />
