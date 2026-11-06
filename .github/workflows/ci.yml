@@ -69,3 +69,26 @@ jobs:
             TestResults
             coverage
           if-no-files-found: ignore
+
+  # Compiles and lints the Bicep templates (no Azure login needed). Runs only when infrastructure changes.
+  infra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect infra changes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          if git diff --quiet "$base" HEAD -- infra azure.yaml 2>/dev/null; then echo "changed=false" >> "$GITHUB_OUTPUT"; else echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Bicep build and lint
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          az bicep install
+          az bicep build --file infra/main.bicep --stdout > /dev/null
+          az bicep lint --file infra/main.bicep

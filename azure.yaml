@@ -1,0 +1,18 @@
+# Azure Developer CLI project (ADR-0007). `azd provision` creates the environment from infra/, `azd deploy` ships the API and Functions.
+# The PWA is published by the Static Web Apps GitHub Action (#22), not by azd.
+name: dialed
+metadata:
+  template: dialed@0.1.0
+infra:
+  provider: bicep
+  path: infra
+  module: main
+services:
+  api:
+    project: ./src/Dialed.Api
+    language: dotnet
+    host: containerapp
+  functions:
+    project: ./src/Dialed.Functions
+    language: dotnet
+    host: function
