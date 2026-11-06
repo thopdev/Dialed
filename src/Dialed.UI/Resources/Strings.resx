@@ -35,4 +35,11 @@
   <data name="Rating_Label" xml:space="preserve"><value>Rating</value></data>
   <data name="Rating_Value" xml:space="preserve"><value>{0} of {1} stars</value><comment>{0} = given stars, {1} = maximum</comment></data>
   <data name="Dismiss" xml:space="preserve"><value>Dismiss</value></data>
+  <data name="Update_Available" xml:space="preserve"><value>A new version of Dialed is available.</value></data>
+  <data name="Update_Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Install_Title" xml:space="preserve"><value>Add Dialed to your Home Screen</value></data>
+  <data name="Install_Intro" xml:space="preserve"><value>Open Dialed like any other app, full screen and ready offline.</value></data>
+  <data name="Install_Step1" xml:space="preserve"><value>Tap the Share button in Safari's toolbar.</value></data>
+  <data name="Install_Step2" xml:space="preserve"><value>Scroll down and choose "Add to Home Screen".</value></data>
+  <data name="Install_Step3" xml:space="preserve"><value>Tap "Add". Dialed now appears on your Home Screen.</value></data>
 </root>
