@@ -10,9 +10,12 @@ public abstract class UiTestContext : BunitContext
 {
     protected TestEnvironment Environment { get; } = new();
 
+    protected TestPwaState Pwa { get; } = new();
+
     protected UiTestContext()
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
+        Services.AddSingleton<IPwaState>(Pwa);
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddFluentUIComponents();
         Services.AddLocalization();
@@ -22,6 +25,31 @@ public abstract class UiTestContext : BunitContext
     protected sealed class TestEnvironment : IAppEnvironment
     {
         public bool IsDevelopment { get; set; }
+    }
+
+    protected sealed class TestPwaState : IPwaState
+    {
+        public bool UpdateAvailable { get; private set; }
+
+        public bool IsInstalled { get; set; }
+
+        public bool NeedsInstallGuide { get; set; }
+
+        public int UpdatesApplied { get; private set; }
+
+        public event Action? Changed;
+
+        public Task ApplyUpdateAsync()
+        {
+            UpdatesApplied++;
+            return Task.CompletedTask;
+        }
+
+        public void PublishUpdate()
+        {
+            UpdateAvailable = true;
+            Changed?.Invoke();
+        }
     }
 
     private sealed class FailingHandler : HttpMessageHandler
