@@ -1,4 +1,5 @@
 using Dialed.Client.Platform;
+using Microsoft.JSInterop;
 
 namespace Dialed.Web.Platform;
 
