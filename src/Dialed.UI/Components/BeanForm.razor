@@ -142,6 +142,8 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
+    protected override void OnInitialized() => visibility = Preferences.Profile.DefaultVisibility;
+
     protected override void OnParametersSet()
     {
         if (ReferenceEquals(Bean, loaded))
