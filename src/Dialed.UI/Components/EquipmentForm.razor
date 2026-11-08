@@ -52,6 +52,11 @@
     }
 
     <div class="dialed-field">
+        <label>@L["Photo_Title"]</label>
+        <PhotoStrip PhotoIds="@photoIds" PhotoIdsChanged="@(v => photoIds = v)" Label="@L["Photo_Title"].Value" />
+    </div>
+
+    <div class="dialed-field">
         <label for="gear-notes">@L["Gear_Notes"]</label>
         <textarea id="gear-notes" rows="3" @bind="notes"></textarea>
     </div>
@@ -67,6 +72,7 @@
     private string brand = "";
     private string? model;
     private string? notes;
+    private IReadOnlyList<string> photoIds = [];
     private GrindSettingKind scaleKind = GrindSettingKind.Clicks;
     private decimal? scaleMin;
     private decimal? scaleMax;
@@ -99,6 +105,7 @@
         brand = Item?.Brand ?? "";
         model = Item?.Model;
         notes = Item?.Notes;
+        photoIds = Item?.PhotoIds ?? [];
         if (Item?.GrindScale is { } scale)
         {
             scaleKind = scale.Kind;
@@ -135,6 +142,7 @@
             Model = Clean(model),
             GrindScale = kind == EquipmentKind.Grinder ? scale : null,
             Notes = Clean(notes),
+            PhotoIds = photoIds,
         };
         await OnSubmit.InvokeAsync(item);
     }

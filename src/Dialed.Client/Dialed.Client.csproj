@@ -6,6 +6,10 @@
   -->
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Dialed.Domain\Dialed.Domain.csproj" />
   </ItemGroup>
 

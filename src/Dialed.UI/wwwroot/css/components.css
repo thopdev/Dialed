@@ -874,3 +874,41 @@ button.dialed-chip::after {
 .dialed-field-pair input {
     width: 5em;
 }
+
+.dialed-photo-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.dialed-photo {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dialed-photo img {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.dialed-photo-missing {
+    width: 96px;
+    height: 96px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-size: 12px;
+    border: 1px dashed currentColor;
+    border-radius: 8px;
+}
+
+.dialed-photo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}

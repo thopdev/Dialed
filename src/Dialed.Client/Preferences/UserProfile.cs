@@ -7,7 +7,8 @@ public sealed record UserProfile(
     string DisplayName,
     Visibility DefaultVisibility,
     IReadOnlyList<string> FavouriteMethods,
-    bool OnboardingDone)
+    bool OnboardingDone,
+    string? AvatarPhotoId = null)
 {
     public static UserProfile Default { get; } = new("", Visibility.Household, [], false);
 
@@ -16,7 +17,8 @@ public sealed record UserProfile(
         && DisplayName == other.DisplayName
         && DefaultVisibility == other.DefaultVisibility
         && OnboardingDone == other.OnboardingDone
+        && AvatarPhotoId == other.AvatarPhotoId
         && FavouriteMethods.SequenceEqual(other.FavouriteMethods);
 
-    public override int GetHashCode() => HashCode.Combine(DisplayName, DefaultVisibility, OnboardingDone, FavouriteMethods.Count);
+    public override int GetHashCode() => HashCode.Combine(DisplayName, DefaultVisibility, OnboardingDone, FavouriteMethods.Count, AvatarPhotoId);
 }

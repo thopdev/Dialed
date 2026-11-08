@@ -111,6 +111,11 @@
     </div>
 
     <div class="dialed-field">
+        <label>@L["Photo_Title"]</label>
+        <PhotoStrip PhotoIds="@photoIds" PhotoIdsChanged="@(v => photoIds = v)" Label="@L["Photo_Title"].Value" />
+    </div>
+
+    <div class="dialed-field">
         <label for="brew-notes">@L["Bean_Notes"]</label>
         <textarea id="brew-notes" rows="3" @bind="notes"></textarea>
     </div>
@@ -138,6 +143,7 @@
     private int sweetness;
     private int rating;
     private string? notes;
+    private IReadOnlyList<string> photoIds = [];
     private string? doseError;
     private Brew? loaded;
     private bool seeded;
@@ -191,6 +197,7 @@
         sweetness = Initial.Taste.Sweetness;
         rating = Initial.Rating ?? 0;
         notes = Initial.Notes;
+        photoIds = Initial.PhotoIds;
     }
 
     private void OnMethodChanged(ChangeEventArgs e)
@@ -233,6 +240,7 @@
             Taste = new Taste(acidity, strength, body, sweetness),
             Rating = rating > 0 ? rating : null,
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
+            PhotoIds = photoIds,
         };
         await OnSubmit.InvokeAsync(brew);
     }

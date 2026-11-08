@@ -173,6 +173,7 @@
                     @Fact("Bean_Decaf", current.IsDecaf ? L["Yes"].Value : null)
                     @Fact("Bean_Visibility", L[$"Visibility_{current.Visibility}"].Value)
                 </dl>
+                <PhotoStrip PhotoIds="@current.PhotoIds" ReadOnly="true" Label="@L["Photo_Title"].Value" />
                 @if (current.Notes is not null)
                 {
                     <p class="dialed-vendor-notes">@current.Notes</p>
