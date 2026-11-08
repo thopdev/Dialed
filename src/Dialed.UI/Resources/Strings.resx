@@ -220,4 +220,43 @@
   <data name="EquipmentKind_Scale" xml:space="preserve"><value>Scale</value></data>
   <data name="EquipmentKind_Filter" xml:space="preserve"><value>Filter</value></data>
   <data name="EquipmentKind_Water" xml:space="preserve"><value>Water</value></data>
+  <data name="Recipes_New" xml:space="preserve"><value>Add recipe</value></data>
+  <data name="Recipes_SelectPrompt" xml:space="preserve"><value>Select a recipe to see how it is made.</value></data>
+  <data name="Recipes_NotFound" xml:space="preserve"><value>This recipe no longer exists.</value></data>
+  <data name="Recipe_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Recipe_NameRequired" xml:space="preserve"><value>Enter a name.</value></data>
+  <data name="Recipe_Method" xml:space="preserve"><value>Method</value></data>
+  <data name="Recipe_Bean" xml:space="preserve"><value>Bean</value></data>
+  <data name="Recipe_Grinder" xml:space="preserve"><value>Grinder</value></data>
+  <data name="Recipe_Brewer" xml:space="preserve"><value>Brewer</value></data>
+  <data name="Recipe_Dose" xml:space="preserve"><value>Dose</value></data>
+  <data name="Recipe_Water" xml:space="preserve"><value>Water</value></data>
+  <data name="Recipe_Yield" xml:space="preserve"><value>Yield</value></data>
+  <data name="Recipe_Ratio" xml:space="preserve"><value>Ratio</value></data>
+  <data name="Recipe_PerLitre" xml:space="preserve"><value>{0} g per litre</value></data>
+  <data name="Recipe_Temp" xml:space="preserve"><value>Temperature</value></data>
+  <data name="Recipe_Grind" xml:space="preserve"><value>Grind setting</value></data>
+  <data name="Recipe_GrindNeedsGrinder" xml:space="preserve"><value>Choose a grinder to set the grind.</value></data>
+  <data name="Recipe_Time" xml:space="preserve"><value>Time (s)</value></data>
+  <data name="Recipe_Preinfusion" xml:space="preserve"><value>Pre-infusion (s)</value></data>
+  <data name="Recipe_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Recipe_Steps" xml:space="preserve"><value>Steps</value></data>
+  <data name="Recipe_Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Recipe_DeleteTitle" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Step_Kind" xml:space="preserve"><value>Step</value></data>
+  <data name="Step_At" xml:space="preserve"><value>Starts at (s)</value></data>
+  <data name="Step_Duration" xml:space="preserve"><value>Lasts (s)</value></data>
+  <data name="Step_Water" xml:space="preserve"><value>Total water after step</value></data>
+  <data name="Step_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Step_Add" xml:space="preserve"><value>Add step</value></data>
+  <data name="Step_Up" xml:space="preserve"><value>Move up</value></data>
+  <data name="Step_Down" xml:space="preserve"><value>Move down</value></data>
+  <data name="Step_Remove" xml:space="preserve"><value>Remove step</value></data>
+  <data name="Step_ToWater" xml:space="preserve"><value>to {0}</value></data>
+  <data name="StepKind_Bloom" xml:space="preserve"><value>Bloom</value></data>
+  <data name="StepKind_Pour" xml:space="preserve"><value>Pour</value></data>
+  <data name="StepKind_Stir" xml:space="preserve"><value>Stir</value></data>
+  <data name="StepKind_Swirl" xml:space="preserve"><value>Swirl</value></data>
+  <data name="StepKind_Press" xml:space="preserve"><value>Press</value></data>
+  <data name="StepKind_Wait" xml:space="preserve"><value>Wait</value></data>
 </root>

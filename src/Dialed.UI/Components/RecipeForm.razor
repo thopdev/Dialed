@@ -1,0 +1,394 @@
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Equipment
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject UnitFormatter Units
+
+@* Method-aware recipe form: only the parameters the chosen method uses. Dose, liquid and ratio: edit any two and the third follows. *@
+<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <div class="dialed-field">
+        <label for="recipe-name">@L["Recipe_Name"]</label>
+        <input id="recipe-name" type="text" @bind="name" @bind:event="oninput" autocomplete="off"
+               aria-invalid="@(nameError is not null ? "true" : null)" />
+        @if (nameError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@nameError</div>
+        }
+    </div>
+
+    <div class="dialed-field">
+        <label for="recipe-method">@L["Recipe_Method"]</label>
+        <select id="recipe-method" value="@methodCode" @onchange="OnMethodChanged">
+            @foreach (var option in BrewMethodCatalog.Default.Methods)
+            {
+                <option value="@option.Code">@option.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-field">
+        <label for="recipe-bean">@L["Recipe_Bean"]</label>
+        <select id="recipe-bean" @bind="beanId">
+            <option value="">@L["Bean_None"]</option>
+            @foreach (var bean in Beans)
+            {
+                <option value="@bean.Id">@bean.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-field">
+        <label for="recipe-grinder">@L["Recipe_Grinder"]</label>
+        <select id="recipe-grinder" @bind="grinderId">
+            <option value="">@L["Bean_None"]</option>
+            @foreach (var gear in Grinders)
+            {
+                <option value="@gear.Id">@GearTitle(gear)</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-field">
+        <label for="recipe-brewer">@L["Recipe_Brewer"]</label>
+        <select id="recipe-brewer" @bind="brewerId">
+            <option value="">@L["Bean_None"]</option>
+            @foreach (var gear in Brewers)
+            {
+                <option value="@gear.Id">@GearTitle(gear)</option>
+            }
+        </select>
+    </div>
+
+    @if (Uses(BrewParameter.Dose))
+    {
+        <div class="dialed-field">
+            <label for="recipe-dose">@L["Recipe_Dose"] (@Units.WeightLabel)</label>
+            <input id="recipe-dose" type="number" inputmode="decimal" step="any" min="0" @bind="Dose" @bind:event="onchange" />
+        </div>
+    }
+
+    @if (UsesLiquid)
+    {
+        <div class="dialed-field">
+            <label for="recipe-liquid">@(Uses(BrewParameter.Water) ? L["Recipe_Water"] : L["Recipe_Yield"]) (@Units.WeightLabel)</label>
+            <input id="recipe-liquid" type="number" inputmode="decimal" step="any" min="0" @bind="Liquid" @bind:event="onchange" />
+        </div>
+        <div class="dialed-field">
+            <label for="recipe-ratio">@L["Recipe_Ratio"] (1:x)</label>
+            <input id="recipe-ratio" type="number" inputmode="decimal" step="any" min="0" @bind="Ratio" @bind:event="onchange" />
+            @if (triangle.Ratio is { } ratio && ratio > 0m)
+            {
+                <small class="dialed-muted" id="recipe-per-litre">@string.Format(L["Recipe_PerLitre"].Value, (1000m / ratio).ToString("0.#"))</small>
+            }
+        </div>
+    }
+
+    @if (Uses(BrewParameter.Temperature))
+    {
+        <div class="dialed-field">
+            <label for="recipe-temp">@L["Recipe_Temp"] (@Units.TemperatureLabel)</label>
+            <input id="recipe-temp" type="number" inputmode="decimal" step="any" @bind="temp" @bind:event="onchange" />
+        </div>
+    }
+
+    @if (Uses(BrewParameter.Grind))
+    {
+        @if (SelectedGrinder?.GrindScale is { } scale)
+        {
+            <GrindSettingInput Label="@L["Recipe_Grind"]" Scale="scale" @bind-Value="grind" />
+        }
+        else
+        {
+            <p class="dialed-muted">@L["Recipe_GrindNeedsGrinder"]</p>
+        }
+    }
+
+    @if (Uses(BrewParameter.Time))
+    {
+        <div class="dialed-field">
+            <label for="recipe-time">@L["Recipe_Time"]</label>
+            <input id="recipe-time" type="number" inputmode="numeric" min="0" @bind="timeS" @bind:event="onchange" />
+        </div>
+    }
+
+    @if (Uses(BrewParameter.Preinfusion))
+    {
+        <div class="dialed-field">
+            <label for="recipe-pre">@L["Recipe_Preinfusion"]</label>
+            <input id="recipe-pre" type="number" inputmode="numeric" min="0" @bind="preinfusionS" @bind:event="onchange" />
+        </div>
+    }
+
+    @if (Uses(BrewParameter.Filter))
+    {
+        <div class="dialed-field">
+            <label for="recipe-filter">@L["Recipe_Filter"]</label>
+            <input id="recipe-filter" type="text" @bind="filter" autocomplete="off" />
+        </div>
+    }
+
+    @if (Uses(BrewParameter.Steps))
+    {
+        <fieldset class="dialed-field dialed-steps">
+            <legend>@L["Recipe_Steps"]</legend>
+            @for (var i = 0; i < steps.Count; i++)
+            {
+                var index = i;
+                var step = steps[i];
+                <div class="dialed-step" data-step="@index">
+                    <div class="dialed-field">
+                        <label for="@($"step-kind-{index}")">@L["Step_Kind"]</label>
+                        <select id="@($"step-kind-{index}")" @bind="step.Kind">
+                            @foreach (var kind in Enum.GetValues<RecipeStepKind>())
+                            {
+                                <option value="@kind">@L[$"StepKind_{kind}"]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="dialed-field">
+                        <label for="@($"step-at-{index}")">@L["Step_At"]</label>
+                        <input id="@($"step-at-{index}")" type="number" min="0" inputmode="numeric" @bind="step.AtS" @bind:event="onchange" />
+                    </div>
+                    <div class="dialed-field">
+                        <label for="@($"step-duration-{index}")">@L["Step_Duration"]</label>
+                        <input id="@($"step-duration-{index}")" type="number" min="0" inputmode="numeric" @bind="step.DurationS" @bind:event="onchange" />
+                    </div>
+                    <div class="dialed-field">
+                        <label for="@($"step-water-{index}")">@L["Step_Water"] (@Units.WeightLabel)</label>
+                        <input id="@($"step-water-{index}")" type="number" min="0" step="any" inputmode="decimal" @bind="step.Water" @bind:event="onchange" />
+                    </div>
+                    <div class="dialed-field">
+                        <label for="@($"step-note-{index}")">@L["Step_Note"]</label>
+                        <input id="@($"step-note-{index}")" type="text" @bind="step.Note" autocomplete="off" />
+                    </div>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button" aria-label="@L["Step_Up"]" disabled="@(index == 0)" @onclick="() => Move(index, -1)">↑</button>
+                        <button type="button" class="dialed-button" aria-label="@L["Step_Down"]" disabled="@(index == steps.Count - 1)" @onclick="() => Move(index, 1)">↓</button>
+                        <button type="button" class="dialed-button" aria-label="@L["Step_Remove"]" @onclick="() => steps.RemoveAt(index)">×</button>
+                    </div>
+                </div>
+            }
+            <button type="button" id="recipe-add-step" class="dialed-button" @onclick="AddStep">@L["Step_Add"]</button>
+        </fieldset>
+    }
+
+    <div class="dialed-field">
+        <label for="recipe-notes">@L["Recipe_Notes"]</label>
+        <textarea id="recipe-notes" rows="3" @bind="notes"></textarea>
+    </div>
+
+    <div class="dialed-field">
+        <label for="recipe-visibility">@L["Bean_Visibility"]</label>
+        <select id="recipe-visibility" @bind="visibility">
+            @foreach (var option in Enum.GetValues<Visibility>())
+            {
+                <option value="@option">@L[$"Visibility_{option}"]</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
+        <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
+    </div>
+</form>
+
+@code {
+    private sealed class StepRow
+    {
+        public RecipeStepKind Kind { get; set; }
+
+        public int? AtS { get; set; }
+
+        public int? DurationS { get; set; }
+
+        public decimal? Water { get; set; }
+
+        public string? Note { get; set; }
+    }
+
+    private string name = "";
+    private string methodCode = "";
+    private string beanId = "";
+    private string grinderId = "";
+    private string brewerId = "";
+    private RatioTriangle triangle = new();
+    private decimal? temp;
+    private decimal? grind;
+    private int? timeS;
+    private int? preinfusionS;
+    private string? filter;
+    private string? notes;
+    private Visibility visibility = Visibility.Household;
+    private readonly List<StepRow> steps = [];
+    private string? nameError;
+    private Recipe? loaded;
+    private bool seeded;
+
+    /// <summary>The recipe being edited; <c>null</c> for a new one.</summary>
+    [Parameter]
+    public Recipe? Recipe { get; set; }
+
+    /// <summary>Method preselected for a new recipe.</summary>
+    [Parameter]
+    public string? MethodCode { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<Bean> Beans { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<EquipmentItem> Gear { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<MethodDefault> Defaults { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public EventCallback<Recipe> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private IEnumerable<EquipmentItem> Grinders => Gear.Where(g => g.Kind == EquipmentKind.Grinder);
+
+    private IEnumerable<EquipmentItem> Brewers => Gear.Where(g => g.Kind is EquipmentKind.Brewer or EquipmentKind.EspressoMachine);
+
+    private EquipmentItem? SelectedGrinder => Gear.FirstOrDefault(g => g.Id == grinderId);
+
+    private BrewMethod? Method => BrewMethodCatalog.Default.Find(methodCode);
+
+    private bool Uses(BrewParameter parameter) => Method?.Uses(parameter) ?? true;
+
+    private bool UsesLiquid => Uses(BrewParameter.Water) || Uses(BrewParameter.Yield);
+
+    private decimal? Dose
+    {
+        get => triangle.Dose;
+        set => triangle.Set(RatioField.Dose, value);
+    }
+
+    private decimal? Liquid
+    {
+        get => triangle.Liquid;
+        set => triangle.Set(RatioField.Liquid, value);
+    }
+
+    private decimal? Ratio
+    {
+        get => triangle.Ratio;
+        set => triangle.Set(RatioField.Ratio, value);
+    }
+
+    private static string GearTitle(EquipmentItem item) => string.IsNullOrWhiteSpace(item.Model) ? item.Brand : $"{item.Brand} {item.Model}";
+
+    protected override void OnParametersSet()
+    {
+        if (seeded && ReferenceEquals(Recipe, loaded))
+        {
+            return;
+        }
+
+        seeded = true;
+        loaded = Recipe;
+        name = Recipe?.Name ?? "";
+        methodCode = Recipe?.MethodCode ?? MethodCode ?? BrewMethodCatalog.Default.Methods[0].Code;
+        beanId = Recipe?.BeanId ?? "";
+        grinderId = Recipe?.GrinderId ?? "";
+        brewerId = Recipe?.BrewerId ?? "";
+        if (Recipe is null)
+        {
+            ApplyDefaults();
+        }
+
+        var liquid = Recipe?.WaterG ?? Recipe?.YieldG;
+        triangle = new RatioTriangle(Show(Recipe?.DoseG), Show(liquid));
+        temp = Recipe?.TempC is { } c ? Math.Round(Units.ToDisplayTemperature(c), 1) : null;
+        grind = Recipe?.GrindSetting;
+        timeS = Recipe?.TimeS;
+        preinfusionS = Recipe?.PreinfusionS;
+        filter = Recipe?.Filter;
+        notes = Recipe?.Notes;
+        visibility = Recipe?.Visibility ?? Visibility.Household;
+        steps.Clear();
+        foreach (var step in Recipe?.Steps ?? [])
+        {
+            steps.Add(new StepRow { Kind = step.Kind, AtS = step.AtS, DurationS = step.DurationS, Water = Show(step.WaterG), Note = step.Note });
+        }
+    }
+
+    private decimal? Show(decimal? grams) => grams is { } g ? Math.Round(Units.ToDisplayWeight(g), 1) : null;
+
+    private decimal? Store(decimal? shown) => shown is { } v ? Math.Round(Units.FromDisplayWeight(v), 1) : null;
+
+    private void ApplyDefaults()
+    {
+        var row = Defaults.FirstOrDefault(d => d.MethodCode == methodCode);
+        grinderId = row?.GrinderId ?? "";
+        brewerId = row?.BrewerId ?? "";
+    }
+
+    private void OnMethodChanged(ChangeEventArgs e)
+    {
+        methodCode = e.Value?.ToString() ?? methodCode;
+        if (Recipe is null)
+        {
+            ApplyDefaults();
+        }
+    }
+
+    private void AddStep()
+    {
+        var last = steps.Count > 0 ? steps[^1] : null;
+        steps.Add(new StepRow
+        {
+            Kind = steps.Count == 0 ? RecipeStepKind.Bloom : RecipeStepKind.Pour,
+            AtS = last is null ? 0 : (last.AtS ?? 0) + (last.DurationS ?? 0),
+        });
+    }
+
+    private void Move(int index, int by)
+    {
+        var target = index + by;
+        if (target < 0 || target >= steps.Count)
+        {
+            return;
+        }
+
+        (steps[index], steps[target]) = (steps[target], steps[index]);
+    }
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task SubmitAsync()
+    {
+        nameError = string.IsNullOrWhiteSpace(name) ? L["Recipe_NameRequired"].Value : null;
+        if (nameError is not null)
+        {
+            return;
+        }
+
+        var useSteps = Uses(BrewParameter.Steps);
+        var recipe = (Recipe ?? new Recipe { MethodCode = methodCode, Name = name }) with
+        {
+            MethodCode = methodCode,
+            Name = name.Trim(),
+            BeanId = beanId == "" ? null : beanId,
+            GrinderId = grinderId == "" ? null : grinderId,
+            BrewerId = brewerId == "" ? null : brewerId,
+            DoseG = Uses(BrewParameter.Dose) ? Store(triangle.Dose) : null,
+            WaterG = Uses(BrewParameter.Water) ? Store(triangle.Liquid) : null,
+            YieldG = !Uses(BrewParameter.Water) && Uses(BrewParameter.Yield) ? Store(triangle.Liquid) : null,
+            GrindSetting = Uses(BrewParameter.Grind) && SelectedGrinder?.GrindScale is not null ? grind : null,
+            TempC = Uses(BrewParameter.Temperature) && temp is { } t ? Math.Round(Units.FromDisplayTemperature(t), 1) : null,
+            TimeS = Uses(BrewParameter.Time) ? timeS : null,
+            PreinfusionS = Uses(BrewParameter.Preinfusion) ? preinfusionS : null,
+            Filter = Uses(BrewParameter.Filter) ? Clean(filter) : null,
+            Steps = useSteps
+                ? [.. steps.OrderBy(s => s.AtS ?? 0).Select(s => new RecipeStep(s.Kind, s.AtS ?? 0, s.DurationS, Store(s.Water), Clean(s.Note)))]
+                : [],
+            Notes = Clean(notes),
+            Visibility = visibility,
+        };
+        await OnSubmit.InvokeAsync(recipe);
+    }
+}

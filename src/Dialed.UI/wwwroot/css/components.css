@@ -698,3 +698,16 @@ button.dialed-chip::after {
     width: 24px;
     height: 24px;
 }
+
+/* ---- Recipes (#61) --------------------------------------------------------------------------- */
+
+.dialed-step {
+    margin-bottom: var(--dialed-space-3);
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-step-list {
+    padding-left: var(--dialed-space-5);
+}
