@@ -140,7 +140,7 @@ public sealed class PhotoTests : UiTestContext
         Camera.Next = Jpeg();
         Bean? submitted = null;
         var form = Render<BeanForm>(p => p.Add(x => x.OnSubmit, EventCallback.Factory.Create<Bean>(this, b => submitted = b)));
-        form.Find("#bean-name").Change("Gesha");
+        form.Find("#bean-name").Input("Gesha");
         form.Find("button.photo-camera").Click();
 
         form.Find("form").Submit();
@@ -155,7 +155,7 @@ public sealed class PhotoTests : UiTestContext
         Camera.Next = Jpeg();
         Vendor? submitted = null;
         var form = Render<VendorForm>(p => p.Add(x => x.OnSubmit, EventCallback.Factory.Create<Vendor>(this, v => submitted = v)));
-        form.Find("#vendor-name").Change("Tim Wendelboe");
+        form.Find("#vendor-name").Input("Tim Wendelboe");
         form.Find("input[type=checkbox]").Change(true);
         form.Find("button.photo-camera").Click();
 
