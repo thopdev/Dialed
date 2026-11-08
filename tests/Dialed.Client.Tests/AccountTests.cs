@@ -171,13 +171,13 @@ public sealed class AccountTests
     }
 
     [Fact]
-    public void Records_use_the_signed_in_household_and_fall_back_to_local()
+    public async Task Records_use_the_signed_in_household_and_fall_back_to_local()
     {
         var session = new AuthSession(new InMemorySessionStore());
         var context = new SessionContext(session);
         context.HouseholdId.ShouldBe("local-household");
 
-        session.SetAsync(Tokens(DateTimeOffset.MaxValue), Ct).GetAwaiter().GetResult();
+        await session.SetAsync(Tokens(DateTimeOffset.MaxValue), Ct);
 
         context.HouseholdId.ShouldBe("h-u1");
         context.UserId.ShouldBe("u1");
