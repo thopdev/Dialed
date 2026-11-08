@@ -11,6 +11,9 @@ namespace Dialed.UI.Tests;
 
 public sealed class HomeInventoryTests : UiTestContext
 {
+    public HomeInventoryTests() => Services.GetRequiredService<IUserPreferences>()
+        .SetProfileAsync(UserProfile.Default with { OnboardingDone = true }).GetAwaiter().GetResult();
+
     private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;
 
     private static DateOnly Today => DateOnly.FromDateTime(DateTime.Now);

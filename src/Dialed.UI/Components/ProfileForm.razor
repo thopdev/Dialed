@@ -1,0 +1,45 @@
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject Dialed.Client.Preferences.IUserPreferences Preferences
+
+@* Display name and the visibility new items start with. The avatar follows with photos (#67). *@
+<form class="dialed-form" id="profile-form" @onsubmit="SaveAsync" @onsubmit:preventDefault>
+    <div class="dialed-field">
+        <label for="profile-name">@L["Profile_Name"]</label>
+        <input id="profile-name" type="text" maxlength="60" @bind="name" />
+    </div>
+    <div class="dialed-field">
+        <label for="profile-visibility">@L["Profile_DefaultVisibility"]</label>
+        <select id="profile-visibility" @bind="visibility">
+            @foreach (var option in Enum.GetValues<Visibility>())
+            {
+                <option value="@option">@L[$"Visibility_{option}"]</option>
+            }
+        </select>
+    </div>
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
+        @if (saved)
+        {
+            <span role="status">@L["Stock_Saved"]</span>
+        }
+    </div>
+</form>
+
+@code {
+    private string name = "";
+    private Visibility visibility;
+    private bool saved;
+
+    protected override void OnInitialized()
+    {
+        name = Preferences.Profile.DisplayName;
+        visibility = Preferences.Profile.DefaultVisibility;
+    }
+
+    private async Task SaveAsync()
+    {
+        await Preferences.SetProfileAsync(Preferences.Profile with { DisplayName = name.Trim(), DefaultVisibility = visibility });
+        saved = true;
+    }
+}

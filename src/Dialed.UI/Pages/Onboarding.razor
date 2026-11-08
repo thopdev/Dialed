@@ -1,0 +1,106 @@
+@page "/welcome"
+@using Dialed.Client
+@using Dialed.Client.Data
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject Dialed.Client.Preferences.IUserPreferences Preferences
+@inject IPwaState Pwa
+@inject IRepository<EquipmentItem> GearStore
+@inject NavigationManager Navigation
+
+<PageHeader Title="@L["Onboarding_Title"]" />
+<p class="dialed-muted" id="onboarding-progress">@string.Format(L["Onboarding_Progress"].Value, index + 1, steps.Count)</p>
+
+@switch (steps[index])
+{
+    case "install":
+        <h2>@L["Onboarding_InstallTitle"]</h2>
+        <InstallGuide />
+        break;
+    case "units":
+        <h2>@L["Units_Title"]</h2>
+        <UnitsSetting />
+        break;
+    case "methods":
+        <h2>@L["Fav_Title"]</h2>
+        <FavouriteMethodsPicker />
+        break;
+    case "gear":
+        <h2>@L["Onboarding_GearTitle"]</h2>
+        <p class="dialed-muted">@L["Onboarding_GearHint"]</p>
+        <div class="dialed-form">
+            <fieldset class="dialed-field-pair">
+                <legend>@L["Onboarding_Grinder"]</legend>
+                <label>@L["Gear_Brand"] <input id="ob-grinder-brand" type="text" @bind="grinderBrand" /></label>
+                <label>@L["Gear_Model"] <input id="ob-grinder-model" type="text" @bind="grinderModel" /></label>
+            </fieldset>
+            <fieldset class="dialed-field-pair">
+                <legend>@L["Onboarding_Brewer"]</legend>
+                <label>@L["Gear_Brand"] <input id="ob-brewer-brand" type="text" @bind="brewerBrand" /></label>
+                <label>@L["Gear_Model"] <input id="ob-brewer-model" type="text" @bind="brewerModel" /></label>
+            </fieldset>
+        </div>
+        break;
+}
+
+<div class="dialed-form-actions">
+    @if (index > 0)
+    {
+        <button id="onboarding-back" type="button" class="dialed-button" @onclick="Back">@L["Onboarding_Back"]</button>
+    }
+    <button id="onboarding-next" type="button" class="dialed-button dialed-button-primary" @onclick="NextAsync">
+        @(index == steps.Count - 1 ? L["Onboarding_Finish"] : L["Onboarding_Next"])
+    </button>
+    <button id="onboarding-skip" type="button" class="dialed-button" @onclick="SkipAsync">@L["Onboarding_Skip"]</button>
+</div>
+
+@code {
+    private List<string> steps = [];
+    private int index;
+    private string grinderBrand = "";
+    private string grinderModel = "";
+    private string brewerBrand = "";
+    private string brewerModel = "";
+
+    protected override void OnInitialized()
+    {
+        steps = [.. new[] { Pwa.NeedsInstallGuide && !Pwa.IsInstalled ? "install" : null, "units", "methods", "gear" }.OfType<string>()];
+    }
+
+    private void Back() => index = Math.Max(0, index - 1);
+
+    private async Task NextAsync()
+    {
+        if (steps[index] == "gear")
+        {
+            await SaveGearAsync();
+            await CompleteAsync();
+            return;
+        }
+
+        index++;
+    }
+
+    private Task SkipAsync() => CompleteAsync();
+
+    private async Task SaveGearAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(grinderBrand))
+        {
+            await GearStore.SaveAsync(new EquipmentItem { Kind = EquipmentKind.Grinder, Brand = grinderBrand.Trim(), Model = Clean(grinderModel) });
+        }
+
+        if (!string.IsNullOrWhiteSpace(brewerBrand))
+        {
+            await GearStore.SaveAsync(new EquipmentItem { Kind = EquipmentKind.Brewer, Brand = brewerBrand.Trim(), Model = Clean(brewerModel) });
+        }
+    }
+
+    private static string? Clean(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task CompleteAsync()
+    {
+        await Preferences.SetProfileAsync(Preferences.Profile with { OnboardingDone = true });
+        Navigation.NavigateTo("");
+    }
+}

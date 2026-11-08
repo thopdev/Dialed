@@ -11,9 +11,13 @@ public interface IUserPreferences
     /// <summary>Low-stock threshold and rest/peak windows.</summary>
     InventorySettings Inventory { get; }
 
+    UserProfile Profile { get; }
+
     event Action? Changed;
 
     Task SetUnitsAsync(UnitSystem units);
 
     Task SetInventoryAsync(InventorySettings settings);
+
+    Task SetProfileAsync(UserProfile profile);
 }

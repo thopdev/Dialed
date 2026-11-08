@@ -31,8 +31,8 @@ public sealed class UnitsSettingTests : UiTestContext
     }
 
     [Fact]
-    public void More_page_offers_the_units_setting()
+    public void Settings_page_offers_the_units_setting()
     {
-        Render<More>().FindAll(".dialed-units-setting").Count.ShouldBe(1);
+        Render<Settings>().FindAll(".dialed-units-setting").Count.ShouldBe(1);
     }
 }

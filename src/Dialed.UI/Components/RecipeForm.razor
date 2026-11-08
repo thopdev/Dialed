@@ -3,6 +3,7 @@
 @using Dialed.Domain.Equipment
 @using Dialed.Domain.Model
 @inject IStringLocalizer<Strings> L
+@inject Dialed.Client.Preferences.IUserPreferences Preferences
 @inject UnitFormatter Units
 
 @* Method-aware recipe form: only the parameters the chosen method uses. Dose, liquid and ratio: edit any two and the third follows. *@
@@ -20,7 +21,7 @@
     <div class="dialed-field">
         <label for="recipe-method">@L["Recipe_Method"]</label>
         <select id="recipe-method" value="@methodCode" @onchange="OnMethodChanged">
-            @foreach (var option in BrewMethodCatalog.Default.Methods)
+            @foreach (var option in BrewMethodCatalog.Default.Ordered(Preferences.Profile.FavouriteMethods))
             {
                 <option value="@option.Code">@option.Name</option>
             }
@@ -308,7 +309,7 @@
         preinfusionS = Recipe?.PreinfusionS;
         filter = Recipe?.Filter;
         notes = Recipe?.Notes;
-        visibility = Recipe?.Visibility ?? Visibility.Household;
+        visibility = Recipe?.Visibility ?? Preferences.Profile.DefaultVisibility;
         steps.Clear();
         foreach (var step in Recipe?.Steps ?? [])
         {

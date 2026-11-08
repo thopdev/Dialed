@@ -6,6 +6,7 @@
 <PageHeader Title="@L["Nav_More"]" />
 
 <div class="dialed-list">
+    <ListRow Title="@L["Settings_Title"]" Href="settings" />
     <ListRow Title="@L["More_Vendors"]" Href="vendors" />
     <ListRow Title="@L["History_Title"]" Href="history" />
     <ListRow Title="@L["Stock_Title"]" Href="inventory" />
@@ -13,15 +14,6 @@
     <ListRow Title="@L["Gear_Title"]" Href="equipment" />
     <ListRow Title="@L["Nav_People"]" Href="people" />
 </div>
-
-<UnitsSetting />
-
-<InventorySettingsForm />
-
-<InstallGuide />
-
-<h2>@L["More_Diagnostics"]</h2>
-<ApiStatus />
 
 @if (AppEnvironment.IsDevelopment)
 {

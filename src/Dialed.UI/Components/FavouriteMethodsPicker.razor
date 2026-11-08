@@ -1,0 +1,35 @@
+@using Dialed.Domain.BrewMethods
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject Dialed.Client.Preferences.IUserPreferences Preferences
+
+@* Favourite brew methods: they come first in the method pickers. *@
+<fieldset class="dialed-favourite-methods">
+    <legend>@L["Fav_Title"]</legend>
+    <div class="dialed-chips">
+        @foreach (var method in BrewMethodCatalog.Default.Methods)
+        {
+            var code = method.Code;
+            <Chip Selected="IsFavourite(code)" OnClick="@(() => ToggleAsync(code))">@method.Name</Chip>
+        }
+    </div>
+</fieldset>
+
+@code {
+    protected override void OnInitialized() => Preferences.Changed += OnChanged;
+
+    private bool IsFavourite(string code) => Preferences.Profile.FavouriteMethods.Contains(code, StringComparer.OrdinalIgnoreCase);
+
+    private Task ToggleAsync(string code)
+    {
+        var current = Preferences.Profile.FavouriteMethods;
+        IReadOnlyList<string> next = IsFavourite(code)
+            ? [.. current.Where(c => !string.Equals(c, code, StringComparison.OrdinalIgnoreCase))]
+            : [.. current, code];
+        return Preferences.SetProfileAsync(Preferences.Profile with { FavouriteMethods = next });
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Preferences.Changed -= OnChanged;
+}

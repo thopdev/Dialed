@@ -1,0 +1,72 @@
+@page "/settings"
+@using System.Reflection
+@using Dialed.Client
+@inject IStringLocalizer<Strings> L
+
+<PageHeader Title="@L["Settings_Title"]" BackHref="more" />
+
+<section id="settings-profile">
+    <h2>@L["Settings_Profile"]</h2>
+    <ProfileForm />
+</section>
+
+<section id="settings-passkeys">
+    <h2>@L["Settings_Passkeys"]</h2>
+    <p class="dialed-muted">@L["Settings_ComingWithAccounts"]</p>
+</section>
+
+<section id="settings-units">
+    <UnitsSetting />
+</section>
+
+<section id="settings-methods">
+    <FavouriteMethodsPicker />
+</section>
+
+<section id="settings-inventory">
+    <InventorySettingsForm />
+</section>
+
+<section id="settings-household">
+    <h2>@L["Settings_Household"]</h2>
+    <p class="dialed-muted">@L["Settings_ComingWithAccounts"]</p>
+</section>
+
+<section id="settings-setup">
+    <h2>@L["Settings_Setup"]</h2>
+    <a id="settings-reopen-onboarding" class="dialed-button" href="welcome">@L["Settings_ReopenSetup"]</a>
+</section>
+
+<InstallGuide />
+
+<section id="settings-sync">
+    <h2>@L["More_Diagnostics"]</h2>
+    <ApiStatus />
+    <p class="dialed-muted">@L["Settings_SyncLater"]</p>
+</section>
+
+<section id="settings-storage">
+    <h2>@L["Settings_Storage"]</h2>
+    <p class="dialed-muted">@L["Settings_StorageLater"]</p>
+</section>
+
+<section id="settings-privacy">
+    <h2>@L["Settings_Privacy"]</h2>
+    <p class="dialed-muted">@L["Settings_PrivacyLater"]</p>
+</section>
+
+<section id="settings-account">
+    <h2>@L["Settings_Account"]</h2>
+    <p class="dialed-muted">@L["Settings_ComingWithAccounts"]</p>
+    <div class="dialed-form-actions">
+        <button type="button" class="dialed-button" disabled>@L["Settings_SignOut"]</button>
+        <button type="button" class="dialed-button" disabled>@L["Settings_DeleteAccount"]</button>
+    </div>
+</section>
+
+<p class="dialed-muted" id="settings-version">@string.Format(L["Settings_Version"].Value, Version)</p>
+
+@code {
+    private static string Version =>
+        typeof(Settings).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "dev";
+}
