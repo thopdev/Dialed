@@ -228,6 +228,12 @@
 
     private void OnStoreChanged() => _ = InvokeAsync(async () =>
     {
+        if (editing)
+        {
+            // Keep the copy being edited, so typed input is not lost and a clash shows as a conflict on save.
+            return;
+        }
+
         await LoadAsync();
         StateHasChanged();
     });
@@ -253,11 +259,13 @@
             await VendorStore.SaveAsync(vendor);
             editing = false;
             error = null;
+            await LoadAsync();
         }
         catch (ConflictException)
         {
             error = L["Error_Conflict"];
             editing = false;
+            await LoadAsync();
         }
     }
 
