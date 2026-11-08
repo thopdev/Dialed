@@ -25,7 +25,7 @@ public sealed class DefaultRecipeCatalogTests
         var espresso = DefaultRecipeCatalog.Default.ForMethod("espresso")!;
 
         (espresso.YieldG / espresso.DoseG).ShouldBe(2m);
-        espresso.TimeS.ShouldBeInRange(25, 30);
+        espresso.TimeS!.Value.ShouldBeInRange(25, 30);
     }
 
     [Fact]
