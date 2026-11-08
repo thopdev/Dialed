@@ -146,4 +146,78 @@
   <data name="BagStatus_Open" xml:space="preserve"><value>Open</value></data>
   <data name="BagStatus_Frozen" xml:space="preserve"><value>Frozen</value></data>
   <data name="BagStatus_Finished" xml:space="preserve"><value>Finished</value></data>
+  <data name="More_Bags" xml:space="preserve"><value>Bags</value></data>
+  <data name="Bean_AddBag" xml:space="preserve"><value>Add bag</value></data>
+  <data name="Bags_Title" xml:space="preserve"><value>Bags</value></data>
+  <data name="Bags_New" xml:space="preserve"><value>Add bag</value></data>
+  <data name="Bags_Empty" xml:space="preserve"><value>No bags yet. Add the first one you bought.</value></data>
+  <data name="Bags_Filter" xml:space="preserve"><value>Show</value></data>
+  <data name="Bags_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Bags_All" xml:space="preserve"><value>All</value></data>
+  <data name="Bags_NoResults" xml:space="preserve"><value>No active bags.</value></data>
+  <data name="Bags_SelectPrompt" xml:space="preserve"><value>Select a bag to see its details.</value></data>
+  <data name="Bags_NotFound" xml:space="preserve"><value>This bag no longer exists.</value></data>
+  <data name="Bag_Bean" xml:space="preserve"><value>Bean</value></data>
+  <data name="Bag_ChooseBean" xml:space="preserve"><value>Choose a bean</value></data>
+  <data name="Bag_NewBean" xml:space="preserve"><value>New bean</value></data>
+  <data name="Bag_BeanRequired" xml:space="preserve"><value>Choose a bean.</value></data>
+  <data name="Bag_Seller" xml:space="preserve"><value>Bought from</value></data>
+  <data name="Bag_Price" xml:space="preserve"><value>Price (EUR)</value></data>
+  <data name="Bag_Weight" xml:space="preserve"><value>Weight (g)</value></data>
+  <data name="Bag_WeightRequired" xml:space="preserve"><value>Enter the weight of the bag.</value></data>
+  <data name="Bag_RoastDate" xml:space="preserve"><value>Roast date</value></data>
+  <data name="Bag_PurchasedOn" xml:space="preserve"><value>Purchased on</value></data>
+  <data name="Bag_OpenedOn" xml:space="preserve"><value>Opened on</value></data>
+  <data name="Bag_FrozenSince" xml:space="preserve"><value>Frozen since</value></data>
+  <data name="Bag_FinishedOn" xml:space="preserve"><value>Finished on</value></data>
+  <data name="Bag_Storage" xml:space="preserve"><value>Storage</value></data>
+  <data name="BagStorage_Pantry" xml:space="preserve"><value>Pantry</value></data>
+  <data name="BagStorage_Fridge" xml:space="preserve"><value>Fridge</value></data>
+  <data name="BagStorage_Freezer" xml:space="preserve"><value>Freezer</value></data>
+  <data name="Bag_Remaining" xml:space="preserve"><value>Left</value></data>
+  <data name="Bag_Age" xml:space="preserve"><value>Age</value></data>
+  <data name="Bag_AgeDays" xml:space="preserve"><value>{0} days (not counting time frozen)</value></data>
+  <data name="Bag_StepDate" xml:space="preserve"><value>Date for the action</value></data>
+  <data name="Bag_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Bag_Freeze" xml:space="preserve"><value>Freeze</value></data>
+  <data name="Bag_Thaw" xml:space="preserve"><value>Thaw</value></data>
+  <data name="Bag_Finish" xml:space="preserve"><value>Finish</value></data>
+  <data name="Bag_StepInvalid" xml:space="preserve"><value>That date does not work for this action.</value></data>
+  <data name="Bag_OfferFinish" xml:space="preserve"><value>Nothing is left in this bag. Mark it finished?</value></data>
+  <data name="Bag_BoughtAgain" xml:space="preserve"><value>Bought again</value></data>
+  <data name="Bag_UnknownBean" xml:space="preserve"><value>Unknown bean</value></data>
+  <data name="Bag_DeleteTitle" xml:space="preserve"><value>Delete this bag?</value></data>
+  <data name="Bag_DeleteBody" xml:space="preserve"><value>This cannot be undone.</value></data>
+  <data name="Bag_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Gear_Title" xml:space="preserve"><value>Equipment</value></data>
+  <data name="Gear_New" xml:space="preserve"><value>Add equipment</value></data>
+  <data name="Gear_Empty" xml:space="preserve"><value>No equipment yet. Add your grinder or brewer.</value></data>
+  <data name="Gear_SelectPrompt" xml:space="preserve"><value>Select equipment to see its details.</value></data>
+  <data name="Gear_NotFound" xml:space="preserve"><value>This equipment no longer exists.</value></data>
+  <data name="Gear_Kind" xml:space="preserve"><value>Kind</value></data>
+  <data name="Gear_Brand" xml:space="preserve"><value>Brand</value></data>
+  <data name="Gear_BrandRequired" xml:space="preserve"><value>Enter a brand.</value></data>
+  <data name="Gear_Model" xml:space="preserve"><value>Model</value></data>
+  <data name="Gear_Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Gear_Scale" xml:space="preserve"><value>Grind setting scale</value></data>
+  <data name="Gear_ScaleClicks" xml:space="preserve"><value>Clicks from closed</value></data>
+  <data name="Gear_ScaleNumber" xml:space="preserve"><value>Numbered dial</value></data>
+  <data name="Gear_ScaleMin" xml:space="preserve"><value>Lowest setting</value></data>
+  <data name="Gear_ScaleMax" xml:space="preserve"><value>Highest setting</value></data>
+  <data name="Gear_ScaleStep" xml:space="preserve"><value>Step (empty = stepless)</value></data>
+  <data name="Grind_ErrorRange" xml:space="preserve"><value>The highest setting must be above the lowest.</value></data>
+  <data name="Grind_ErrorStep" xml:space="preserve"><value>The step must fit within the range.</value></data>
+  <data name="Grind_ErrorMissing" xml:space="preserve"><value>Enter the highest setting.</value></data>
+  <data name="Gear_Defaults" xml:space="preserve"><value>Defaults per method</value></data>
+  <data name="Gear_DefaultsHelp" xml:space="preserve"><value>The grinder and brewer that a new recipe for each method starts with.</value></data>
+  <data name="Gear_DefaultFor" xml:space="preserve"><value>Default for</value></data>
+  <data name="Gear_DeleteTitle" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Gear_DeleteBody" xml:space="preserve"><value>It is also removed as a default. This cannot be undone.</value></data>
+  <data name="EquipmentKind_Grinder" xml:space="preserve"><value>Grinder</value></data>
+  <data name="EquipmentKind_Brewer" xml:space="preserve"><value>Brewer</value></data>
+  <data name="EquipmentKind_EspressoMachine" xml:space="preserve"><value>Espresso machine</value></data>
+  <data name="EquipmentKind_Kettle" xml:space="preserve"><value>Kettle</value></data>
+  <data name="EquipmentKind_Scale" xml:space="preserve"><value>Scale</value></data>
+  <data name="EquipmentKind_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="EquipmentKind_Water" xml:space="preserve"><value>Water</value></data>
 </root>

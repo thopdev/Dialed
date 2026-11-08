@@ -1,0 +1,141 @@
+@using Dialed.Domain.Equipment
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+
+@* Create/edit form for a piece of gear. Grinders also define the scale their setting is entered on. *@
+<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <div class="dialed-field">
+        <label for="gear-kind">@L["Gear_Kind"]</label>
+        <select id="gear-kind" @bind="kind">
+            @foreach (var option in Enum.GetValues<EquipmentKind>())
+            {
+                <option value="@option">@L[$"EquipmentKind_{option}"]</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-field">
+        <label for="gear-brand">@L["Gear_Brand"]</label>
+        <input id="gear-brand" type="text" @bind="brand" @bind:event="oninput" autocomplete="off"
+               aria-invalid="@(brandError is not null ? "true" : null)" />
+        @if (brandError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@brandError</div>
+        }
+    </div>
+
+    <div class="dialed-field">
+        <label for="gear-model">@L["Gear_Model"]</label>
+        <input id="gear-model" type="text" @bind="model" autocomplete="off" />
+    </div>
+
+    @if (kind == EquipmentKind.Grinder)
+    {
+        <fieldset class="dialed-field">
+            <legend>@L["Gear_Scale"]</legend>
+            <label class="dialed-check"><input id="gear-scale-clicks" type="radio" name="gear-scale" checked="@(scaleKind == GrindSettingKind.Clicks)" @onchange="@(() => scaleKind = GrindSettingKind.Clicks)" /> @L["Gear_ScaleClicks"]</label>
+            <label class="dialed-check"><input id="gear-scale-number" type="radio" name="gear-scale" checked="@(scaleKind == GrindSettingKind.Number)" @onchange="@(() => scaleKind = GrindSettingKind.Number)" /> @L["Gear_ScaleNumber"]</label>
+            <label for="gear-scale-min">@L["Gear_ScaleMin"]</label>
+            <input id="gear-scale-min" type="number" step="any" @bind="scaleMin" />
+            <label for="gear-scale-max">@L["Gear_ScaleMax"]</label>
+            <input id="gear-scale-max" type="number" step="any" @bind="scaleMax" />
+            @if (scaleKind == GrindSettingKind.Number)
+            {
+                <label for="gear-scale-step">@L["Gear_ScaleStep"]</label>
+                <input id="gear-scale-step" type="number" step="any" min="0" @bind="scaleStep" />
+            }
+            @if (scaleError is not null)
+            {
+                <div class="dialed-field-error" role="alert">@scaleError</div>
+            }
+        </fieldset>
+    }
+
+    <div class="dialed-field">
+        <label for="gear-notes">@L["Gear_Notes"]</label>
+        <textarea id="gear-notes" rows="3" @bind="notes"></textarea>
+    </div>
+
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
+        <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
+    </div>
+</form>
+
+@code {
+    private EquipmentKind kind = EquipmentKind.Grinder;
+    private string brand = "";
+    private string? model;
+    private string? notes;
+    private GrindSettingKind scaleKind = GrindSettingKind.Clicks;
+    private decimal? scaleMin;
+    private decimal? scaleMax;
+    private decimal? scaleStep;
+    private string? brandError;
+    private string? scaleError;
+    private EquipmentItem? loaded;
+    private bool seeded;
+
+    /// <summary>The gear being edited; <c>null</c> for new gear.</summary>
+    [Parameter]
+    public EquipmentItem? Item { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<EquipmentItem> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (seeded && ReferenceEquals(Item, loaded))
+        {
+            return;
+        }
+
+        seeded = true;
+        loaded = Item;
+        kind = Item?.Kind ?? EquipmentKind.Grinder;
+        brand = Item?.Brand ?? "";
+        model = Item?.Model;
+        notes = Item?.Notes;
+        if (Item?.GrindScale is { } scale)
+        {
+            scaleKind = scale.Kind;
+            scaleMin = scale.Min;
+            scaleMax = scale.Max;
+            scaleStep = scale.IsStepped && scale.Kind == GrindSettingKind.Number ? scale.Step : null;
+        }
+    }
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task SubmitAsync()
+    {
+        brandError = string.IsNullOrWhiteSpace(brand) ? L["Gear_BrandRequired"].Value : null;
+        scaleError = null;
+        GrindScale? scale = null;
+        if (kind == EquipmentKind.Grinder)
+        {
+            if (!GrindScaleInput.TryCreate(scaleKind, scaleMin, scaleMax, scaleStep, out scale, out var errorKey))
+            {
+                scaleError = L[errorKey!].Value;
+            }
+        }
+
+        if (brandError is not null || scaleError is not null)
+        {
+            return;
+        }
+
+        var item = (Item ?? new EquipmentItem { Kind = kind, Brand = brand }) with
+        {
+            Kind = kind,
+            Brand = brand.Trim(),
+            Model = Clean(model),
+            GrindScale = kind == EquipmentKind.Grinder ? scale : null,
+            Notes = Clean(notes),
+        };
+        await OnSubmit.InvokeAsync(item);
+    }
+}

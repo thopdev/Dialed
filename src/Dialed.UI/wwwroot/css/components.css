@@ -685,3 +685,16 @@ button.dialed-chip::after {
 .dialed-facts dd {
     margin: 0;
 }
+
+/* ---- Equipment (#58) ------------------------------------------------------------------------- */
+
+.dialed-defaults-row {
+    margin-bottom: var(--dialed-space-4);
+    padding-bottom: var(--dialed-space-3);
+    border-bottom: 1px solid var(--colorNeutralStroke2);
+}
+
+.dialed-field input[type="radio"] {
+    width: 24px;
+    height: 24px;
+}

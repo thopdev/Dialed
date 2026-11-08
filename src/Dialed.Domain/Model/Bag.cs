@@ -29,7 +29,13 @@ public sealed record Bag : SyncEntity
 
     public DateOnly? OpenedOn { get; init; }
 
+    /// <summary>When the current freeze started; <c>null</c> unless the bag is frozen right now.</summary>
     public DateOnly? FrozenOn { get; init; }
+
+    /// <summary>Days spent frozen in earlier freezes. Frozen days do not count toward the bag's age.</summary>
+    public int FrozenDays { get; init; }
+
+    public DateOnly? FinishedOn { get; init; }
 
     public BagStorage Storage { get; init; } = BagStorage.Pantry;
 

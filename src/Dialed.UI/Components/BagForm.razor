@@ -1,0 +1,139 @@
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+
+@* Create/edit form for a bag. The parent saves the result; a new bag always starts Sealed. *@
+<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <div class="dialed-field">
+        <label for="bag-bean">@L["Bag_Bean"]</label>
+        <select id="bag-bean" @bind="beanId" aria-invalid="@(beanError is not null ? "true" : null)">
+            <option value="">@L["Bag_ChooseBean"]</option>
+            @foreach (var bean in Beans)
+            {
+                <option value="@bean.Id">@bean.Name</option>
+            }
+        </select>
+        @if (beanError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@beanError</div>
+        }
+        <a href="beans/new">@L["Bag_NewBean"]</a>
+    </div>
+
+    <VendorPicker Label="@L["Bag_Seller"]" @bind-SelectedId="sellerId" Kind="VendorKinds.Seller" />
+
+    <div class="dialed-field">
+        <label for="bag-price">@L["Bag_Price"]</label>
+        <input id="bag-price" type="number" inputmode="decimal" step="0.01" min="0" @bind="price" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="bag-weight">@L["Bag_Weight"]</label>
+        <input id="bag-weight" type="number" inputmode="decimal" step="any" min="0" @bind="weight"
+               aria-invalid="@(weightError is not null ? "true" : null)" />
+        @if (weightError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@weightError</div>
+        }
+    </div>
+
+    <div class="dialed-field">
+        <label for="bag-roast-date">@L["Bag_RoastDate"]</label>
+        <input id="bag-roast-date" type="date" @bind="roastDate" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="bag-purchased">@L["Bag_PurchasedOn"]</label>
+        <input id="bag-purchased" type="date" @bind="purchasedOn" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="bag-storage">@L["Bag_Storage"]</label>
+        <select id="bag-storage" @bind="storage">
+            @foreach (var option in Enum.GetValues<BagStorage>())
+            {
+                <option value="@option">@L[$"BagStorage_{option}"]</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
+        <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
+    </div>
+</form>
+
+@code {
+    private string beanId = "";
+    private string? sellerId;
+    private decimal? price;
+    private decimal? weight;
+    private DateOnly? roastDate;
+    private DateOnly? purchasedOn;
+    private BagStorage storage = BagStorage.Pantry;
+    private string? beanError;
+    private string? weightError;
+    private Bag? loaded;
+    private bool seeded;
+
+    /// <summary>The bag being edited, or a prefilled new one (no Id yet); <c>null</c> for a blank form.</summary>
+    [Parameter]
+    public Bag? Bag { get; set; }
+
+    [Parameter]
+    public IReadOnlyList<Bean> Beans { get; set; } = [];
+
+    /// <summary>Preselected bean for a new bag.</summary>
+    [Parameter]
+    public string? BeanId { get; set; }
+
+    /// <summary>Default purchase date for a new bag.</summary>
+    [Parameter]
+    public DateOnly? Today { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<Bag> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (seeded && ReferenceEquals(Bag, loaded))
+        {
+            return;
+        }
+
+        seeded = true;
+        loaded = Bag;
+        beanId = Bag?.BeanId ?? BeanId ?? "";
+        sellerId = Bag?.SellerId;
+        price = Bag?.PriceCents is { } cents ? cents / 100m : null;
+        weight = Bag?.WeightG;
+        roastDate = Bag?.RoastDate;
+        purchasedOn = Bag is null ? Today : Bag.PurchasedOn;
+        storage = Bag?.Storage ?? BagStorage.Pantry;
+    }
+
+    private async Task SubmitAsync()
+    {
+        beanError = string.IsNullOrEmpty(beanId) ? L["Bag_BeanRequired"].Value : null;
+        weightError = weight is > 0 ? null : L["Bag_WeightRequired"].Value;
+        if (beanError is not null || weightError is not null)
+        {
+            return;
+        }
+
+        var bag = (Bag ?? new Bag { BeanId = beanId, WeightG = weight!.Value }) with
+        {
+            BeanId = beanId,
+            SellerId = sellerId,
+            PriceCents = price is { } p and >= 0 ? (int)Math.Round(p * 100m, MidpointRounding.AwayFromZero) : null,
+            Currency = price is null ? null : (Bag?.Currency ?? "EUR"),
+            WeightG = weight!.Value,
+            RoastDate = roastDate,
+            PurchasedOn = purchasedOn,
+            Storage = storage,
+        };
+        await OnSubmit.InvokeAsync(bag);
+    }
+}

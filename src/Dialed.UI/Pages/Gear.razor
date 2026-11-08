@@ -1,0 +1,291 @@
+@page "/equipment"
+@page "/equipment/{Id}"
+@using Dialed.Client.Data
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Equipment
+@using Dialed.Domain.Model
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<EquipmentItem> GearStore
+@inject IRepository<MethodDefault> DefaultStore
+@inject NavigationManager Navigation
+
+<ListDetailLayout HasSelection="@(Id is not null)">
+    <List>
+        <PageHeader Title="@L["Gear_Title"]" BackHref="more">
+            <Actions>
+                <a class="dialed-button dialed-button-primary" href="equipment/new">@L["Gear_New"]</a>
+            </Actions>
+        </PageHeader>
+
+        @if (items is null)
+        {
+            <Loading IsLoading="true" />
+        }
+        else if (items.Count == 0)
+        {
+            <EmptyState Message="@L["Gear_Empty"]" />
+        }
+        else
+        {
+            <div class="dialed-field">
+                <label for="gear-filter">@L["Gear_Kind"]</label>
+                <select id="gear-filter" @bind="kindFilter">
+                    <option value="">@L["Beans_Any"]</option>
+                    @foreach (var option in Enum.GetValues<EquipmentKind>())
+                    {
+                        <option value="@option">@L[$"EquipmentKind_{option}"]</option>
+                    }
+                </select>
+            </div>
+            <div class="dialed-list">
+                @foreach (var item in Visible)
+                {
+                    <ListRow Title="@Title(item)" Subtitle="@L[$"EquipmentKind_{item.Kind}"].Value" Href="@($"equipment/{item.Id}")" />
+                }
+            </div>
+            <div class="dialed-list">
+                <ListRow Title="@L["Gear_Defaults"]" Href="equipment/defaults" />
+            </div>
+        }
+    </List>
+    <Detail>
+        @if (Id is null)
+        {
+            <EmptyState Message="@L["Gear_SelectPrompt"]" />
+        }
+        else if (Id == "new")
+        {
+            <PageHeader Title="@L["Gear_New"]" BackHref="equipment" />
+            <EquipmentForm OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("equipment"))" />
+        }
+        else if (Id == "defaults")
+        {
+            <PageHeader Title="@L["Gear_Defaults"]" BackHref="equipment" />
+            <p class="dialed-muted">@L["Gear_DefaultsHelp"]</p>
+            @foreach (var method in BrewMethodCatalog.Default.Methods)
+            {
+                var code = method.Code;
+                var row = defaults.FirstOrDefault(d => d.MethodCode == code);
+                <div class="dialed-defaults-row" data-method="@(code)">
+                    <strong>@method.Name</strong>
+                    <div class="dialed-field">
+                        <label for="@($"default-grinder-{code}")">@L["EquipmentKind_Grinder"]</label>
+                        <select id="@($"default-grinder-{code}")" value="@row?.GrinderId" @onchange="e => SetDefaultAsync(code, e.Value?.ToString(), grinder: true)">
+                            <option value="">@L["Bean_None"]</option>
+                            @foreach (var gear in items!.Where(i => i.Kind == EquipmentKind.Grinder))
+                            {
+                                <option value="@gear.Id">@Title(gear)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="dialed-field">
+                        <label for="@($"default-brewer-{code}")">@L["EquipmentKind_Brewer"]</label>
+                        <select id="@($"default-brewer-{code}")" value="@row?.BrewerId" @onchange="e => SetDefaultAsync(code, e.Value?.ToString(), grinder: false)">
+                            <option value="">@L["Bean_None"]</option>
+                            @foreach (var gear in items!.Where(i => i.Kind is EquipmentKind.Brewer or EquipmentKind.EspressoMachine))
+                            {
+                                <option value="@gear.Id">@Title(gear)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            }
+        }
+        else if (current is null)
+        {
+            <PageHeader Title="@L["Gear_Title"]" BackHref="equipment" />
+            <EmptyState Message="@L["Gear_NotFound"]" />
+        }
+        else if (editing)
+        {
+            <PageHeader Title="@Title(current)" BackHref="equipment" />
+            <EquipmentForm Item="current" OnSubmit="UpdateAsync" OnCancel="@(() => editing = false)" />
+        }
+        else
+        {
+            <PageHeader Title="@Title(current)" BackHref="equipment">
+                <Actions>
+                    <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
+                    <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                </Actions>
+            </PageHeader>
+
+            @if (error is not null)
+            {
+                <ErrorBanner Message="@error" />
+            }
+
+            @if (confirmingDelete)
+            {
+                <div class="dialed-confirm" role="alertdialog" aria-label="@string.Format(L["Gear_DeleteTitle"].Value, Title(current))">
+                    <p><strong>@string.Format(L["Gear_DeleteTitle"].Value, Title(current))</strong></p>
+                    <p>@L["Gear_DeleteBody"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+
+            <Card>
+                <dl class="dialed-facts">
+                    <dt>@L["Gear_Kind"]</dt>
+                    <dd>@L[$"EquipmentKind_{current.Kind}"]</dd>
+                    @if (current.GrindScale is { } scale)
+                    {
+                        <dt>@L["Gear_Scale"]</dt>
+                        <dd>@GrindScaleInput.Describe(scale)</dd>
+                    }
+                    @if (DefaultFor(current) is { Count: > 0 } methods)
+                    {
+                        <dt>@L["Gear_DefaultFor"]</dt>
+                        <dd>@string.Join(", ", methods)</dd>
+                    }
+                </dl>
+                @if (current.Notes is not null)
+                {
+                    <p class="dialed-vendor-notes">@current.Notes</p>
+                }
+            </Card>
+        }
+    </Detail>
+</ListDetailLayout>
+
+@code {
+    private IReadOnlyList<EquipmentItem>? items;
+    private IReadOnlyList<MethodDefault> defaults = [];
+    private EquipmentItem? current;
+    private string kindFilter = "";
+    private bool editing;
+    private bool confirmingDelete;
+    private string? error;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private IReadOnlyList<EquipmentItem> Visible =>
+        [.. (items ?? []).Where(i => kindFilter == "" || i.Kind.ToString() == kindFilter)
+            .OrderBy(i => i.Kind).ThenBy(i => i.Brand, StringComparer.OrdinalIgnoreCase).ThenBy(i => i.Model, StringComparer.OrdinalIgnoreCase)];
+
+    private static string Title(EquipmentItem item) => string.IsNullOrWhiteSpace(item.Model) ? item.Brand : $"{item.Brand} {item.Model}";
+
+    private List<string> DefaultFor(EquipmentItem item) =>
+        [.. defaults.Where(d => d.GrinderId == item.Id || d.BrewerId == item.Id)
+            .Select(d => BrewMethodCatalog.Default.Find(d.MethodCode)?.Name ?? d.MethodCode)];
+
+    protected override async Task OnInitializedAsync()
+    {
+        GearStore.Changed += OnStoreChanged;
+        DefaultStore.Changed += OnStoreChanged;
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        editing = false;
+        confirmingDelete = false;
+        error = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        items = await GearStore.ListAsync();
+        defaults = await DefaultStore.ListAsync();
+        current = Id is null or "new" or "defaults" ? null : items.FirstOrDefault(i => i.Id == Id);
+    }
+
+    private void OnStoreChanged() => _ = InvokeAsync(async () =>
+    {
+        if (editing)
+        {
+            return;
+        }
+
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private async Task CreateAsync(EquipmentItem item)
+    {
+        var saved = await GearStore.SaveAsync(item);
+        Navigation.NavigateTo($"equipment/{saved.Id}");
+    }
+
+    private async Task UpdateAsync(EquipmentItem item)
+    {
+        try
+        {
+            await GearStore.SaveAsync(item);
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
+        editing = false;
+        await LoadAsync();
+    }
+
+    private async Task SetDefaultAsync(string methodCode, string? gearId, bool grinder)
+    {
+        var chosen = string.IsNullOrEmpty(gearId) ? null : gearId;
+        var existing = defaults.FirstOrDefault(d => d.MethodCode == methodCode);
+        var updated = (existing ?? new MethodDefault { MethodCode = methodCode }) with
+        {
+            GrinderId = grinder ? chosen : existing?.GrinderId,
+            BrewerId = grinder ? existing?.BrewerId : chosen,
+        };
+
+        if (updated.IsEmpty)
+        {
+            if (existing is not null)
+            {
+                await DefaultStore.DeleteAsync(existing.Id);
+            }
+        }
+        else
+        {
+            await DefaultStore.SaveAsync(updated);
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        // Gear that is no longer there cannot stay a default.
+        foreach (var row in defaults.Where(d => d.GrinderId == current.Id || d.BrewerId == current.Id))
+        {
+            var cleared = row with
+            {
+                GrinderId = row.GrinderId == current.Id ? null : row.GrinderId,
+                BrewerId = row.BrewerId == current.Id ? null : row.BrewerId,
+            };
+            if (cleared.IsEmpty)
+            {
+                await DefaultStore.DeleteAsync(row.Id);
+            }
+            else
+            {
+                await DefaultStore.SaveAsync(cleared);
+            }
+        }
+
+        await GearStore.DeleteAsync(current.Id);
+        Navigation.NavigateTo("equipment");
+    }
+
+    public void Dispose()
+    {
+        GearStore.Changed -= OnStoreChanged;
+        DefaultStore.Changed -= OnStoreChanged;
+    }
+}
