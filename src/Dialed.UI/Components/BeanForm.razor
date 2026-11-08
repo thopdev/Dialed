@@ -1,0 +1,221 @@
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+
+@* Create/edit form for a bean. Offline-first: the parent saves the result. *@
+<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <div class="dialed-field">
+        <label for="bean-name">@L["Bean_Name"]</label>
+        <input id="bean-name" type="text" @bind="name" @bind:event="oninput" autocomplete="off"
+               aria-invalid="@(nameError is not null ? "true" : null)" />
+        @if (nameError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@nameError</div>
+        }
+    </div>
+
+    <VendorPicker Label="@L["Bean_Roaster"]" @bind-SelectedId="roasterId" Kind="VendorKinds.Roaster" />
+
+    <div class="dialed-field">
+        <label for="bean-country">@L["Bean_Country"]</label>
+        <input id="bean-country" type="text" @bind="country" autocomplete="off" />
+    </div>
+    <div class="dialed-field">
+        <label for="bean-region">@L["Bean_Region"]</label>
+        <input id="bean-region" type="text" @bind="region" autocomplete="off" />
+    </div>
+    <div class="dialed-field">
+        <label for="bean-farm">@L["Bean_Farm"]</label>
+        <input id="bean-farm" type="text" @bind="farm" autocomplete="off" />
+    </div>
+    <div class="dialed-field">
+        <label for="bean-producer">@L["Bean_Producer"]</label>
+        <input id="bean-producer" type="text" @bind="producer" autocomplete="off" />
+    </div>
+
+    <ChipInput Label="@L["Bean_Varieties"]" @bind-Values="varieties" />
+
+    <div class="dialed-field">
+        <label for="bean-process">@L["Bean_Process"]</label>
+        <select id="bean-process" value="@processChoice" @onchange="OnProcessChanged">
+            <option value="">@L["Bean_None"]</option>
+            @foreach (var known in BeanQuery.KnownProcesses)
+            {
+                <option value="@known">@known</option>
+            }
+            <option value="@OtherValue">@L["Bean_Other"]</option>
+        </select>
+        @if (processChoice == OtherValue)
+        {
+            <label for="bean-process-other">@L["Bean_ProcessOther"]</label>
+            <input id="bean-process-other" type="text" @bind="processOther" autocomplete="off" />
+        }
+    </div>
+
+    <div class="dialed-field">
+        <label for="bean-altitude">@L["Bean_Altitude"]</label>
+        <input id="bean-altitude" type="number" inputmode="numeric" min="0" max="5000" @bind="altitude" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="bean-roast-level">@L["Bean_RoastLevel"]</label>
+        <select id="bean-roast-level" @bind="roastLevel">
+            <option value="">@L["Bean_None"]</option>
+            @foreach (var level in Enum.GetValues<RoastLevel>())
+            {
+                <option value="@level">@L[$"RoastLevel_{level}"]</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-field">
+        <label for="bean-roast-style">@L["Bean_RoastStyle"]</label>
+        <select id="bean-roast-style" @bind="roastStyle">
+            <option value="">@L["Bean_None"]</option>
+            @foreach (var style in Enum.GetValues<RoastStyle>())
+            {
+                <option value="@style">@L[$"RoastStyle_{style}"]</option>
+            }
+        </select>
+    </div>
+
+    <label class="dialed-check"><input id="bean-decaf" type="checkbox" @bind="isDecaf" /> @L["Bean_Decaf"]</label>
+
+    <ChipInput Label="@L["Bean_TastingNotes"]" @bind-Values="tastingNotes" />
+
+    <div class="dialed-field">
+        <label>@L["Bean_Rating"]</label>
+        <StarRating @bind-Value="rating" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="bean-notes">@L["Bean_Notes"]</label>
+        <textarea id="bean-notes" rows="3" @bind="notes"></textarea>
+    </div>
+
+    <div class="dialed-field">
+        <label for="bean-visibility">@L["Bean_Visibility"]</label>
+        <select id="bean-visibility" @bind="visibility">
+            @foreach (var option in Enum.GetValues<Visibility>())
+            {
+                <option value="@option">@L[$"Visibility_{option}"]</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
+        <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
+    </div>
+</form>
+
+@code {
+    private const string OtherValue = "__other";
+
+    private string name = "";
+    private string? roasterId;
+    private string? country;
+    private string? region;
+    private string? farm;
+    private string? producer;
+    private IReadOnlyList<string> varieties = [];
+    private string processChoice = "";
+    private string? processOther;
+    private int? altitude;
+    private RoastLevel? roastLevel;
+    private RoastStyle? roastStyle;
+    private bool isDecaf;
+    private IReadOnlyList<string> tastingNotes = [];
+    private int rating;
+    private string? notes;
+    private Visibility visibility = Visibility.Household;
+    private string? nameError;
+    private Bean? loaded;
+
+    /// <summary>The bean being edited; <c>null</c> for a new one.</summary>
+    [Parameter]
+    public Bean? Bean { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<Bean> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Bean, loaded))
+        {
+            return;
+        }
+
+        loaded = Bean;
+        name = Bean?.Name ?? "";
+        roasterId = Bean?.RoasterId;
+        country = Bean?.Origin.Country;
+        region = Bean?.Origin.Region;
+        farm = Bean?.Origin.Farm;
+        producer = Bean?.Origin.Producer;
+        varieties = Bean?.Varieties ?? [];
+        var process = Bean?.Process;
+        if (string.IsNullOrEmpty(process))
+        {
+            processChoice = "";
+        }
+        else if (BeanQuery.IsKnownProcess(process))
+        {
+            processChoice = BeanQuery.KnownProcesses.First(p => string.Equals(p, process, StringComparison.OrdinalIgnoreCase));
+        }
+        else
+        {
+            processChoice = OtherValue;
+            processOther = process;
+        }
+
+        altitude = Bean?.AltitudeM;
+        roastLevel = Bean?.RoastLevel;
+        roastStyle = Bean?.RoastStyle;
+        isDecaf = Bean?.IsDecaf ?? false;
+        tastingNotes = Bean?.TastingNotes ?? [];
+        rating = Bean?.Rating ?? 0;
+        notes = Bean?.Notes;
+        visibility = Bean?.Visibility ?? Visibility.Household;
+    }
+
+    private void OnProcessChanged(ChangeEventArgs e) => processChoice = e.Value?.ToString() ?? "";
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task SubmitAsync()
+    {
+        nameError = string.IsNullOrWhiteSpace(name) ? L["Bean_NameRequired"].Value : null;
+        if (nameError is not null)
+        {
+            return;
+        }
+
+        var process = processChoice switch
+        {
+            "" => null,
+            OtherValue => Clean(processOther),
+            _ => processChoice,
+        };
+
+        var bean = (Bean ?? new Bean { Name = name }) with
+        {
+            Name = name.Trim(),
+            RoasterId = roasterId,
+            Origin = new BeanOrigin(Clean(country), Clean(region), Clean(farm), Clean(producer)),
+            Varieties = varieties,
+            Process = process,
+            AltitudeM = altitude is > 0 ? altitude : null,
+            RoastLevel = roastLevel,
+            RoastStyle = roastStyle,
+            IsDecaf = isDecaf,
+            TastingNotes = tastingNotes,
+            Rating = rating > 0 ? rating : null,
+            Notes = Clean(notes),
+            Visibility = visibility,
+        };
+        await OnSubmit.InvokeAsync(bean);
+    }
+}

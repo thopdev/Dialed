@@ -1,26 +1,338 @@
 @page "/beans"
 @page "/beans/{Id}"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Model
+@implements IDisposable
 @inject IStringLocalizer<Strings> L
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Vendor> VendorStore
+@inject UnitFormatter Units
+@inject NavigationManager Navigation
 
-@* Shell for the bean list (#48 fills it); shows the list/detail behaviour on iPad and iPhone. *@
 <ListDetailLayout HasSelection="@(Id is not null)">
     <List>
-        <PageHeader Title="@L["Nav_Beans"]" />
-        <EmptyState Message="@L["Beans_Empty"]" />
+        <PageHeader Title="@L["Nav_Beans"]">
+            <Actions>
+                <a class="dialed-button dialed-button-primary" href="beans/new">@L["Beans_New"]</a>
+            </Actions>
+        </PageHeader>
+
+        @if (beans is null)
+        {
+            <Loading IsLoading="true" />
+        }
+        else if (beans.Count == 0)
+        {
+            <EmptyState Message="@L["Beans_Empty"]" />
+        }
+        else
+        {
+            <div class="dialed-field">
+                <label for="bean-search">@L["Beans_Search"]</label>
+                <input id="bean-search" type="search" autocomplete="off" @bind="search" @bind:event="oninput" />
+            </div>
+            <div class="dialed-filters">
+                <div class="dialed-field">
+                    <label for="bean-filter-roaster">@L["Bean_Roaster"]</label>
+                    <select id="bean-filter-roaster" @bind="roasterFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var vendor in roasters)
+                        {
+                            <option value="@vendor.Id">@vendor.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="dialed-field">
+                    <label for="bean-filter-process">@L["Bean_Process"]</label>
+                    <select id="bean-filter-process" @bind="processFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var process in ProcessOptions)
+                        {
+                            <option value="@process">@process</option>
+                        }
+                    </select>
+                </div>
+                <div class="dialed-field">
+                    <label for="bean-filter-roast">@L["Bean_RoastLevel"]</label>
+                    <select id="bean-filter-roast" @bind="roastFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var level in Enum.GetValues<RoastLevel>())
+                        {
+                            <option value="@level">@L[$"RoastLevel_{level}"]</option>
+                        }
+                    </select>
+                </div>
+                <div class="dialed-field">
+                    <label for="bean-sort">@L["Beans_Sort"]</label>
+                    <select id="bean-sort" @bind="sort">
+                        @foreach (var option in Enum.GetValues<BeanSort>())
+                        {
+                            <option value="@option">@L[$"BeanSort_{option}"]</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <ChipGroup Label="@L["Beans_Stock"]">
+                <Chip Selected="@(stockFilter is null)" OnClick="@(() => stockFilter = null)">@L["Beans_All"]</Chip>
+                <Chip Selected="@(stockFilter == true)" OnClick="@(() => stockFilter = true)">@L["Beans_InStock"]</Chip>
+            </ChipGroup>
+
+            @if (Visible.Count == 0)
+            {
+                <EmptyState Message="@L["Beans_NoResults"]" />
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var bean in Visible)
+                    {
+                        <ListRow Title="@bean.Name" Subtitle="@Subtitle(bean)" Href="@($"beans/{bean.Id}")" />
+                    }
+                </div>
+            }
+        }
     </List>
     <Detail>
         @if (Id is null)
         {
             <EmptyState Message="@L["Beans_SelectPrompt"]" />
         }
+        else if (Id == "new")
+        {
+            <PageHeader Title="@L["Beans_New"]" BackHref="beans" />
+            <BeanForm OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("beans"))" />
+        }
+        else if (current is null)
+        {
+            <PageHeader Title="@L["Nav_Beans"]" BackHref="beans" />
+            <EmptyState Message="@L["Beans_NotFound"]" />
+        }
+        else if (editing)
+        {
+            <PageHeader Title="@current.Name" BackHref="beans" />
+            <BeanForm Bean="current" OnSubmit="UpdateAsync" OnCancel="@(() => editing = false)" />
+        }
         else
         {
-            <PageHeader Title="@L["Beans_Detail", Id]" BackHref="beans" />
+            <PageHeader Title="@current.Name" BackHref="beans">
+                <Actions>
+                    <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
+                    <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                </Actions>
+            </PageHeader>
+
+            @if (error is not null)
+            {
+                <ErrorBanner Message="@error" />
+            }
+
+            @if (confirmingDelete)
+            {
+                <div class="dialed-confirm" role="alertdialog" aria-label="@string.Format(L["Bean_DeleteTitle"].Value, current.Name)">
+                    <p><strong>@string.Format(L["Bean_DeleteTitle"].Value, current.Name)</strong></p>
+                    <p>
+                        @if (currentBags.Count > 0)
+                        {
+                            @string.Format(L["Bean_DeleteUsed"].Value, currentBags.Count)
+                        }
+                        else
+                        {
+                            @L["Bean_DeleteUnused"]
+                        }
+                    </p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+
+            <Card>
+                @if (RoasterName(current) is { } roaster)
+                {
+                    <p><a href="@($"vendors/{current.RoasterId}")">@roaster</a></p>
+                }
+                @if (OriginText(current) is { } origin)
+                {
+                    <p class="dialed-vendor-place">@origin</p>
+                }
+                @if (current.Rating is { } stars)
+                {
+                    <StarRating Value="stars" ReadOnly="true" />
+                }
+                <dl class="dialed-facts">
+                    @Fact("Bean_Process", current.Process)
+                    @Fact("Bean_Altitude", current.AltitudeM is { } m ? $"{m} m" : null)
+                    @Fact("Bean_RoastLevel", current.RoastLevel is { } level ? L[$"RoastLevel_{level}"].Value : null)
+                    @Fact("Bean_RoastStyle", current.RoastStyle is { } style ? L[$"RoastStyle_{style}"].Value : null)
+                    @Fact("Bean_Varieties", current.Varieties.Count > 0 ? string.Join(", ", current.Varieties) : null)
+                    @Fact("Bean_TastingNotes", current.TastingNotes.Count > 0 ? string.Join(", ", current.TastingNotes) : null)
+                    @Fact("Bean_Decaf", current.IsDecaf ? L["Yes"].Value : null)
+                    @Fact("Bean_Visibility", L[$"Visibility_{current.Visibility}"].Value)
+                </dl>
+                @if (current.Notes is not null)
+                {
+                    <p class="dialed-vendor-notes">@current.Notes</p>
+                }
+            </Card>
+
+            <h2>@L["Bean_BagsHeading"]</h2>
+            @if (currentBags.Count == 0)
+            {
+                <p class="dialed-muted">@L["Bean_NoBags"]</p>
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var bag in currentBags)
+                    {
+                        <ListRow Title="@Units.Weight(bag.WeightG)" Subtitle="@L[$"BagStatus_{bag.Status}"].Value" />
+                    }
+                </div>
+            }
         }
     </Detail>
 </ListDetailLayout>
 
 @code {
+    private IReadOnlyList<Bean>? beans;
+    private IReadOnlyList<Bag> bags = [];
+    private IReadOnlyList<Vendor> vendors = [];
+    private IReadOnlyList<Vendor> roasters = [];
+    private Bean? current;
+    private IReadOnlyList<Bag> currentBags = [];
+    private string search = "";
+    private string roasterFilter = "";
+    private string processFilter = "";
+    private string roastFilter = "";
+    private bool? stockFilter;
+    private BeanSort sort = BeanSort.Name;
+    private bool editing;
+    private bool confirmingDelete;
+    private string? error;
+
     [Parameter]
     public string? Id { get; set; }
+
+    private IEnumerable<string> ProcessOptions =>
+        BeanQuery.KnownProcesses.Concat((beans ?? []).Select(b => b.Process).OfType<string>())
+            .Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase);
+
+    private IReadOnlyList<Bean> Visible => BeanQuery.Apply(beans ?? [], bags, new BeanFilter(
+        search,
+        roasterFilter == "" ? null : roasterFilter,
+        processFilter == "" ? null : processFilter,
+        Enum.TryParse<RoastLevel>(roastFilter, out var level) ? level : null,
+        stockFilter), sort);
+
+    private RenderFragment Fact(string labelKey, string? value) => __builder =>
+    {
+        if (value is not null)
+        {
+            <dt>@L[labelKey]</dt>
+            <dd>@value</dd>
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        BeanStore.Changed += OnStoreChanged;
+        BagStore.Changed += OnStoreChanged;
+        VendorStore.Changed += OnStoreChanged;
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        editing = false;
+        confirmingDelete = false;
+        error = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        beans = await BeanStore.ListAsync();
+        bags = await BagStore.ListAsync();
+        vendors = await VendorStore.ListAsync();
+        roasters = [.. vendors.Where(v => (v.Kinds & VendorKinds.Roaster) != 0).OrderBy(v => v.Name)];
+        current = Id is null or "new" ? null : beans.FirstOrDefault(bean => bean.Id == Id);
+        currentBags = current is null ? [] : [.. bags.Where(bag => bag.BeanId == current.Id)];
+    }
+
+    private void OnStoreChanged() => _ = InvokeAsync(async () =>
+    {
+        if (editing)
+        {
+            return;
+        }
+
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private string? RoasterName(Bean bean) => vendors.FirstOrDefault(v => v.Id == bean.RoasterId)?.Name;
+
+    private static string? OriginText(Bean bean)
+    {
+        var parts = new[] { bean.Origin.Country, bean.Origin.Region, bean.Origin.Farm, bean.Origin.Producer }
+            .Where(p => !string.IsNullOrWhiteSpace(p));
+        var text = string.Join(", ", parts);
+        return text.Length == 0 ? null : text;
+    }
+
+    private string? Subtitle(Bean bean)
+    {
+        var parts = new[] { RoasterName(bean), bean.Origin.Country }.Where(p => !string.IsNullOrWhiteSpace(p));
+        var text = string.Join(" · ", parts);
+        return text.Length == 0 ? null : text;
+    }
+
+    private async Task CreateAsync(Bean bean)
+    {
+        var saved = await BeanStore.SaveAsync(bean);
+        Navigation.NavigateTo($"beans/{saved.Id}");
+    }
+
+    private async Task UpdateAsync(Bean bean)
+    {
+        try
+        {
+            await BeanStore.SaveAsync(bean);
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
+        editing = false;
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        // A bag has no meaning without its bean, so its bags go with it.
+        foreach (var bag in currentBags)
+        {
+            await BagStore.DeleteAsync(bag.Id);
+        }
+
+        await BeanStore.DeleteAsync(current.Id);
+        Navigation.NavigateTo("beans");
+    }
+
+    public void Dispose()
+    {
+        BeanStore.Changed -= OnStoreChanged;
+        BagStore.Changed -= OnStoreChanged;
+        VendorStore.Changed -= OnStoreChanged;
+    }
 }
