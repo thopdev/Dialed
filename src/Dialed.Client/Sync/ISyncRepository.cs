@@ -15,4 +15,10 @@ public interface ISyncRepository<T> : IRepository<T>
 
     /// <summary>Stores a record exactly as the server has it. Does not raise <see cref="LocalChanged"/>, so it is not pushed back.</summary>
     Task<T> ApplyRemoteAsync(T remote, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Re-stamps every record that belongs to another household or person than the current context (data made before sign-in)
+    /// and raises <see cref="LocalChanged"/> for each, so it is pushed. Returns how many records changed.
+    /// </summary>
+    Task<int> AdoptAsync(CancellationToken cancellationToken = default);
 }

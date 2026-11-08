@@ -15,6 +15,18 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
     public async Task<int> PendingCountAsync(CancellationToken cancellationToken = default) =>
         (await state.PendingAsync(cancellationToken)).Count;
 
+    /// <summary>After sign-in: records made on this device before it belonged to a household move into the person's household and are queued.</summary>
+    public async Task<int> AdoptLocalRecordsAsync(CancellationToken cancellationToken = default)
+    {
+        var adopted = 0;
+        foreach (var table in byName.Values)
+        {
+            adopted += await table.AdoptLocalRecordsAsync(cancellationToken);
+        }
+
+        return adopted;
+    }
+
     public async Task<SyncResult> SyncAsync(CancellationToken cancellationToken = default)
     {
         if (!await gate.WaitAsync(0, cancellationToken))

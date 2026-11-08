@@ -1,5 +1,6 @@
 using Bunit;
 using Dialed.Client;
+using Dialed.Client.Account;
 using Dialed.Client.Data;
 using Dialed.Client.Platform;
 using Dialed.Client.Preferences;
@@ -30,6 +31,12 @@ public abstract class UiTestContext : BunitContext
 
     protected TestNetwork Network { get; } = new();
 
+    /// <summary>The passkey prompt: set <see cref="TestPasskeys.Next"/> to what the user does with it.</summary>
+    protected TestPasskeys Passkeys { get; } = new();
+
+    /// <summary>The API's account endpoints: set <see cref="TestAccountServer.Respond"/> to change what it answers.</summary>
+    protected TestAccountServer Accounts { get; } = new();
+
     protected UiTestContext()
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
@@ -49,6 +56,11 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IConnectivity>(Network);
         Services.AddSingleton<IAppLifecycle, TestLifecycle>();
         Services.AddDialedSync();
+        Services.AddSingleton<IPasskeyClient>(Passkeys);
+        Services.AddSingleton<ISessionStore, InMemorySessionStore>();
+        Services.AddSingleton<AuthSession>();
+        Services.AddSingleton(new AccountApi(new HttpClient(Accounts) { BaseAddress = new Uri("https://api.test/") }));
+        Services.AddSingleton<AccountService>();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddFluentUIComponents();
         Services.AddLocalization();
@@ -120,6 +132,55 @@ public abstract class UiTestContext : BunitContext
             }
 
             return Task.FromResult(new PullPage<T>([], false));
+        }
+    }
+
+    protected sealed class TestPasskeys : IPasskeyClient
+    {
+        public PasskeyOutcome Next { get; set; } = new(PasskeyStatus.Success, "{\"id\":\"cred\"}");
+
+        public bool Supported { get; set; } = true;
+
+        public Task<bool> IsSupportedAsync() => Task.FromResult(Supported);
+
+        public Task<bool> IsAutofillSupportedAsync() => Task.FromResult(false);
+
+        public Task<PasskeyOutcome> CreateAsync(string optionsJson) => Task.FromResult(Next);
+
+        public Task<PasskeyOutcome> GetAsync(string optionsJson, bool autofill = false) => Task.FromResult(Next);
+
+        public Task CancelPendingAsync() => Task.CompletedTask;
+    }
+
+    /// <summary>A stand-in for the API's account endpoints: ceremonies succeed and hand out tokens unless told otherwise.</summary>
+    protected sealed class TestAccountServer : HttpMessageHandler
+    {
+        public const string TokensJson = "{\"accessToken\":\"a\",\"accessTokenExpiresAt\":\"2099-01-01T00:00:00+00:00\",\"refreshToken\":\"r\",\"userId\":\"u1\",\"displayName\":\"Thomas\",\"householdId\":\"h-u1\"}";
+
+        public List<string> Paths { get; } = [];
+
+        /// <summary>Overrides the answer for a path (<c>auth/signup</c>, ...); return <c>null</c> for the default answer.</summary>
+        public Func<string, HttpResponseMessage?>? Respond { get; set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var path = request.RequestUri!.AbsolutePath.TrimStart('/');
+            Paths.Add(path);
+            if (Respond?.Invoke(path) is { } custom)
+            {
+                return Task.FromResult(custom);
+            }
+
+            var json = path switch
+            {
+                "auth/signup/options" or "auth/signin/options" => "{\"options\":{\"challenge\":\"c\"},\"state\":\"s\"}",
+                "auth/signup" or "auth/signin" => TokensJson,
+                _ => "{}",
+            };
+            return Task.FromResult(new HttpResponseMessage(path == "auth/signout" ? System.Net.HttpStatusCode.NoContent : System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+            });
         }
     }
 

@@ -436,4 +436,13 @@
   <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
   <data name="Sync_Indicator_Pending" xml:space="preserve"><value>{0} not yet synced</value></data>
   <data name="Sync_Indicator_Offline" xml:space="preserve"><value>Offline: {0} not yet synced</value></data>
+  <data name="Account_SignedInAs" xml:space="preserve"><value>Signed in as {0}</value></data>
+  <data name="Account_LocalOnly" xml:space="preserve"><value>You are not signed in: everything stays on this device. Create an account with a passkey to sync between devices and share with your household.</value></data>
+  <data name="Account_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Account_SignUp" xml:space="preserve"><value>Create account with a passkey</value></data>
+  <data name="Account_SignIn" xml:space="preserve"><value>Sign in with a passkey</value></data>
+  <data name="Account_EmailInvalid" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="Account_Cancelled" xml:space="preserve"><value>Cancelled. Nothing was changed.</value></data>
+  <data name="Account_NotSupported" xml:space="preserve"><value>This browser cannot use passkeys.</value></data>
+  <data name="Account_Unavailable" xml:space="preserve"><value>That did not work. Check your connection and try again.</value></data>
 </root>

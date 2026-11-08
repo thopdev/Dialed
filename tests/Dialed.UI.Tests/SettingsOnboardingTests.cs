@@ -33,9 +33,9 @@ public sealed class SettingsOnboardingTests : UiTestContext
     }
 
     [Fact]
-    public void Account_actions_are_disabled_until_accounts_exist()
+    public void Deleting_the_account_is_not_available_yet()
     {
-        Render<Settings>().FindAll("#settings-account button").ShouldAllBe(b => b.HasAttribute("disabled"));
+        Render<Settings>().FindAll("#settings-account button").Last().HasAttribute("disabled").ShouldBeTrue();
     }
 
     [Fact]
