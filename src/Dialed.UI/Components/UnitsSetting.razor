@@ -1,0 +1,28 @@
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Units
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IUserPreferences Preferences
+
+@* Display only: everything is stored in grams, millilitres and °C. *@
+<fieldset class="dialed-units-setting">
+    <legend>@L["Units_Title"]</legend>
+    <label>
+        <input type="radio" name="units" value="metric" checked="@(Preferences.Units == UnitSystem.Metric)"
+               @onchange="@(() => Preferences.SetUnitsAsync(UnitSystem.Metric))" />
+        @L["Units_Metric"]
+    </label>
+    <label>
+        <input type="radio" name="units" value="imperial" checked="@(Preferences.Units == UnitSystem.Imperial)"
+               @onchange="@(() => Preferences.SetUnitsAsync(UnitSystem.Imperial))" />
+        @L["Units_Imperial"]
+    </label>
+</fieldset>
+
+@code {
+    protected override void OnInitialized() => Preferences.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Preferences.Changed -= OnChanged;
+}
