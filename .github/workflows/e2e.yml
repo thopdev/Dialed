@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # Playwright does not support WebKit on ubuntu-latest (Ubuntu 26) yet
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
