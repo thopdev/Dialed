@@ -4,7 +4,7 @@
     <FluentNav Width="100%">
         @foreach (var item in AppNavigation.Items)
         {
-            <FluentNavItem Href="@item.Href" Match="@item.Match" IconRest="@item.IconRest" IconActive="@item.IconActive">
+            <FluentNavItem Href="@(item.Href.Length == 0 ? "/" : item.Href)" Match="@item.Match" IconRest="@item.IconRest" IconActive="@item.IconActive">
                 @L[item.TitleKey]
                 @if (item.ShowsLowStockBadge)
                 {
