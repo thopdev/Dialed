@@ -6,6 +6,12 @@ public interface IUserDirectory
     Task<AppUser?> FindByIdAsync(string id, CancellationToken cancellationToken = default);
 
     Task AddAsync(AppUser user, CancellationToken cancellationToken = default);
+
+    /// <summary>Everyone currently in the household.</summary>
+    Task<IReadOnlyList<AppUser>> ListByHouseholdAsync(string householdId, CancellationToken cancellationToken = default);
+
+    /// <summary>Moves the person to another household (joining, leaving or being removed). Returns the updated user, or <c>null</c> when unknown.</summary>
+    Task<AppUser?> SetHouseholdAsync(string userId, string householdId, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryUserDirectory : IUserDirectory
@@ -37,6 +43,29 @@ public sealed class InMemoryUserDirectory : IUserDirectory
         }
 
         return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<AppUser>> ListByHouseholdAsync(string householdId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<AppUser>>([.. users.Values.Where(u => u.HouseholdId == householdId).OrderBy(u => u.DisplayName, StringComparer.OrdinalIgnoreCase)]);
+        }
+    }
+
+    public Task<AppUser?> SetHouseholdAsync(string userId, string householdId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            if (!users.TryGetValue(userId, out var user))
+            {
+                return Task.FromResult<AppUser?>(null);
+            }
+
+            var moved = user with { HouseholdId = householdId };
+            users[userId] = moved;
+            return Task.FromResult<AppUser?>(moved);
+        }
     }
 }
 
