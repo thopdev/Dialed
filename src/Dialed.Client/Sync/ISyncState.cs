@@ -6,6 +6,9 @@ namespace Dialed.Client.Sync;
 /// </summary>
 public interface ISyncState
 {
+    /// <summary>Raised when a record is added to the outbox (a local change that needs syncing).</summary>
+    event Action? OutboxChanged;
+
     /// <summary>Adds the record to the outbox unless it is already waiting there.</summary>
     Task EnqueueAsync(string table, string entityId, CancellationToken cancellationToken = default);
 
