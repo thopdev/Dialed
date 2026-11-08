@@ -166,11 +166,13 @@ public sealed class HouseholdTests(WebApplicationFactory<Program> factory) : ICl
         using var ownerLeaves = await owner.Client.PostAsync("/households/mine/leave", null, Ct);
         ownerLeaves.StatusCode.ShouldBe(HttpStatusCode.Conflict);
 
-        using var memberClient = Authorized(factory, (await Refreshed(member)).AccessToken);
+        var joined = await Refreshed(member);
+        using var memberClient = Authorized(factory, joined.AccessToken);
         using var left = await memberClient.PostAsync("/households/mine/leave", null, Ct);
         left.StatusCode.ShouldBe(HttpStatusCode.OK);
         (await Body<HouseholdDto>(left)).Id.ShouldBe(member.User.HouseholdId);
-        (await Refreshed(member)).HouseholdId.ShouldBe(member.User.HouseholdId);
+        // Refresh tokens rotate: the second refresh must use the token the first one returned.
+        (await Refreshed(member with { Tokens = joined })).HouseholdId.ShouldBe(member.User.HouseholdId);
     }
 
     [Fact]
