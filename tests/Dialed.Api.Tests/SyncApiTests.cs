@@ -32,7 +32,7 @@ public sealed class SyncApiTests(WebApplicationFactory<Program> factory) : IClas
         return bean;
     }
 
-    private static Task<HttpResponseMessage> Push(HttpClient client, string table, JsonObject entity, string? ifMatch = null)
+    private static async Task<HttpResponseMessage> Push(HttpClient client, string table, JsonObject entity, string? ifMatch = null)
     {
         using var request = new HttpRequestMessage(HttpMethod.Put, $"/sync/{table}/{entity["id"]}") { Content = JsonContent.Create(entity) };
         if (ifMatch is not null)
@@ -40,7 +40,7 @@ public sealed class SyncApiTests(WebApplicationFactory<Program> factory) : IClas
             request.Headers.TryAddWithoutValidation("If-Match", $"\"{ifMatch}\"");
         }
 
-        return client.SendAsync(request, Ct);
+        return await client.SendAsync(request, Ct);
     }
 
     private static async Task<SyncPageDto> Pull(HttpClient client, string table, string query = "")
