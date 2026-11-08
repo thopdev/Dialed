@@ -1,5 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared domain model and rules. No references to other Dialed projects or to ASP.NET Core. -->
+
+  <ItemGroup>
+    <!-- Versioned reference data, bundled in the assembly so the app works offline. -->
+    <EmbeddedResource Include="BrewMethods\brew-methods.json" LogicalName="Dialed.Domain.brew-methods.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dialed.Domain.Tests" />
+  </ItemGroup>
 
 </Project>
