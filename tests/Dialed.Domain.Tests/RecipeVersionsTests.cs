@@ -92,25 +92,25 @@ public sealed class RecipeVersionsTests
     [Fact]
     public void Diff_lists_only_what_changed()
     {
-        var from = R("1") with { DoseG = 15m, WaterG = 240m, GrindSetting = 20m, TempC = 94m };
-        var to = from with { GrindSetting = 18m, WaterG = 250m };
+        var before = R("1") with { DoseG = 15m, WaterG = 240m, GrindSetting = 20m, TempC = 94m };
+        var after = before with { GrindSetting = 18m, WaterG = 250m };
 
-        var diff = RecipeVersions.Diff(from, to);
+        var diff = RecipeVersions.Diff(before, after);
 
         diff.Parameters.Select(p => (p.Parameter, p.Planned, p.Actual)).ShouldBe(
             [(BrewParameter.Water, (decimal?)240m, (decimal?)250m), (BrewParameter.Grind, (decimal?)20m, (decimal?)18m)]);
         diff.StepsChanged.ShouldBeFalse();
         diff.GrinderChanged.ShouldBeFalse();
         diff.IsEmpty.ShouldBeFalse();
-        RecipeVersions.Diff(from, from).IsEmpty.ShouldBeTrue();
+        RecipeVersions.Diff(before, before).IsEmpty.ShouldBeTrue();
     }
 
     [Fact]
     public void Diff_notices_steps_and_grinder()
     {
-        var from = R("1") with { Steps = [new RecipeStep(RecipeStepKind.Bloom, 0, 30, 45m)], GrinderId = "g1" };
+        var before = R("1") with { Steps = [new RecipeStep(RecipeStepKind.Bloom, 0, 30, 45m)], GrinderId = "g1" };
 
-        var diff = RecipeVersions.Diff(from, from with { Steps = [new RecipeStep(RecipeStepKind.Bloom, 0, 40, 45m)], GrinderId = "g2" });
+        var diff = RecipeVersions.Diff(before, before with { Steps = [new RecipeStep(RecipeStepKind.Bloom, 0, 40, 45m)], GrinderId = "g2" });
 
         diff.StepsChanged.ShouldBeTrue();
         diff.GrinderChanged.ShouldBeTrue();
