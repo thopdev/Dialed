@@ -1,0 +1,13 @@
+{
+  "name": "dialed-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Playwright smoke tests for the Dialed PWA in WebKit (iPhone and iPad profiles).",
+  "scripts": {
+    "test": "playwright test",
+    "serve": "node serve.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

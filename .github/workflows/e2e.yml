@@ -1,0 +1,65 @@
+name: E2E
+
+# Playwright smoke tests in WebKit (the Safari engine) with iPhone and iPad profiles (#110).
+# Publishes the PWA and serves it locally, so no Azure is needed. Not a required check yet: it is new,
+# and sign-in flows follow once accounts exist.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04  # Playwright does not support WebKit on ubuntu-latest (Ubuntu 26) yet
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Publish the PWA
+        run: dotnet publish src/Dialed.Web/Dialed.Web.csproj --configuration Release --output publish
+
+      - name: Install Playwright and WebKit
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps webkit
+
+      - name: Run smoke tests
+        working-directory: e2e
+        env:
+          E2E_ROOT: ${{ github.workspace }}/publish/wwwroot
+        run: npx playwright test
+
+      - name: Show page snapshots of failed tests
+        if: failure()
+        working-directory: e2e
+        run: |
+          for f in $(find test-results -name error-context.md | head -4); do echo "::group::$f"; head -60 "$f"; echo '::endgroup::'; done
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          if-no-files-found: ignore
