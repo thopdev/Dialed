@@ -15,6 +15,7 @@
     <Project Path="tests/Dialed.AppHost.Tests/Dialed.AppHost.Tests.csproj" />
     <Project Path="tests/Dialed.ArchitectureTests/Dialed.ArchitectureTests.csproj" />
     <Project Path="tests/Dialed.Client.Tests/Dialed.Client.Tests.csproj" />
+    <Project Path="tests/Dialed.Domain.Tests/Dialed.Domain.Tests.csproj" />
     <Project Path="tests/Dialed.UI.Tests/Dialed.UI.Tests.csproj" />
   </Folder>
 </Solution>
