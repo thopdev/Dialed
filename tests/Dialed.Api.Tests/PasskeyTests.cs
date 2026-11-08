@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Dialed.Api.Tests;
 
@@ -238,7 +237,7 @@ public sealed class PasskeyTests(PasskeyApp app) : IClassFixture<PasskeyApp>
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(origins.Select((o, i) => new KeyValuePair<string, string?>($"App:Origins:{i}", o)))
             .Build();
-        return new OriginPolicy(AllowedOrigins.From(configuration), AllowedOrigins.Patterns(configuration), Options.Create(options));
+        return new OriginPolicy(AllowedOrigins.From(configuration), AllowedOrigins.Patterns(configuration), Microsoft.Extensions.Options.Options.Create(options));
     }
 
     private async Task<TokenResponse> SignUp(string email, string displayName, string origin = PasskeyApp.AppOrigin)
