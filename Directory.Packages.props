@@ -38,6 +38,8 @@
     <PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Localization" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="Azure Functions">

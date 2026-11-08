@@ -18,6 +18,7 @@ var apiBaseAddress = ApiEndpoint.Resolve(builder.Configuration["Api:BaseUrl"], a
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = apiBaseAddress });
 
 // UI: Fluent UI Blazor components and IStringLocalizer<Strings> (English resources in Dialed.UI).
+builder.Services.AddDialedData();
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());
