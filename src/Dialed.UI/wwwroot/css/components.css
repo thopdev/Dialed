@@ -711,3 +711,34 @@ button.dialed-chip::after {
 .dialed-step-list {
     padding-left: var(--dialed-space-5);
 }
+
+/* ---- Brew history (#66) ---------------------------------------------------------------------- */
+
+.dialed-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-weight: 600;
+    color: var(--colorNeutralForegroundOnBrand);
+    background: var(--colorBrandBackground);
+    border-radius: 50%;
+}
+
+.dialed-compare {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dialed-compare th,
+.dialed-compare td {
+    padding: var(--dialed-space-2);
+    text-align: left;
+    border-bottom: 1px solid var(--colorNeutralStroke2);
+}
+
+.dialed-compare tr.differs td:last-child {
+    font-weight: 600;
+    color: var(--colorBrandForeground1);
+}

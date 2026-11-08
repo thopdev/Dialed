@@ -313,4 +313,20 @@
   <data name="MilkType_Soy" xml:space="preserve"><value>Soy</value></data>
   <data name="MilkType_Almond" xml:space="preserve"><value>Almond</value></data>
   <data name="MilkType_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="History_Title" xml:space="preserve"><value>Brew history</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>No brews yet. Your brews will be listed here.</value></data>
+  <data name="History_SelectPrompt" xml:space="preserve"><value>Select a brew to see its details.</value></data>
+  <data name="History_NotFound" xml:space="preserve"><value>This brew no longer exists.</value></data>
+  <data name="History_Person" xml:space="preserve"><value>Person</value></data>
+  <data name="History_MinRating" xml:space="preserve"><value>Rating at least</value></data>
+  <data name="History_You" xml:space="preserve"><value>You</value></data>
+  <data name="History_Parameters" xml:space="preserve"><value>Parameters</value></data>
+  <data name="History_Planned" xml:space="preserve"><value>Recipe</value></data>
+  <data name="History_Actual" xml:space="preserve"><value>Brewed</value></data>
+  <data name="History_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="History_Recipe" xml:space="preserve"><value>Recipe: {0}</value></data>
+  <data name="History_Milk" xml:space="preserve"><value>{0} milk</value></data>
+  <data name="History_Balanced" xml:space="preserve"><value>Balanced</value></data>
+  <data name="History_DeleteTitle" xml:space="preserve"><value>Delete this brew?</value></data>
+  <data name="History_DeleteBody" xml:space="preserve"><value>The coffee goes back into the bag. This cannot be undone.</value></data>
 </root>

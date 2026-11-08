@@ -1,0 +1,338 @@
+@page "/history"
+@page "/history/{Id}"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Model
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Brew> BrewStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Recipe> RecipeStore
+@inject IRepository<EquipmentItem> GearStore
+@inject ICurrentContext Context
+@inject UnitFormatter Units
+@inject NavigationManager Navigation
+
+<ListDetailLayout HasSelection="@(Id is not null)">
+    <List>
+        <PageHeader Title="@L["History_Title"]" BackHref="more" />
+
+        @if (brews is null)
+        {
+            <Loading IsLoading="true" />
+        }
+        else if (brews.Count == 0)
+        {
+            <EmptyState Message="@L["History_Empty"]" />
+        }
+        else
+        {
+            <div class="dialed-filters">
+                <div class="dialed-field">
+                    <label for="history-bean">@L["Recipe_Bean"]</label>
+                    <select id="history-bean" @bind="beanFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var bean in beans)
+                        {
+                            <option value="@bean.Id">@bean.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="dialed-field">
+                    <label for="history-method">@L["Recipe_Method"]</label>
+                    <select id="history-method" @bind="methodFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var code in brews.Select(b => b.MethodCode).Distinct().Order())
+                        {
+                            <option value="@code">@MethodName(code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="dialed-field">
+                    <label for="history-person">@L["History_Person"]</label>
+                    <select id="history-person" @bind="personFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var person in brews.Select(b => b.CreatedBy).Distinct().Order())
+                        {
+                            <option value="@person">@PersonName(person)</option>
+                        }
+                    </select>
+                </div>
+                <div class="dialed-field">
+                    <label for="history-rating">@L["History_MinRating"]</label>
+                    <select id="history-rating" @bind="ratingFilter">
+                        <option value="0">@L["Beans_Any"]</option>
+                        @for (var stars = 1; stars <= 5; stars++)
+                        {
+                            <option value="@stars">@stars ★</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            @if (Visible.Count == 0)
+            {
+                <EmptyState Message="@L["Beans_NoResults"]" />
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var brew in Visible)
+                    {
+                        <ListRow Title="@BeanOf(brew)" Subtitle="@Subtitle(brew)" Href="@($"history/{brew.Id}")">
+                            <Leading><span class="dialed-avatar" aria-hidden="true">@Initial(brew.CreatedBy)</span></Leading>
+                        </ListRow>
+                    }
+                </div>
+            }
+        }
+    </List>
+    <Detail>
+        @if (Id is null)
+        {
+            <EmptyState Message="@L["History_SelectPrompt"]" />
+        }
+        else if (current is null)
+        {
+            <PageHeader Title="@L["History_Title"]" BackHref="history" />
+            <EmptyState Message="@L["History_NotFound"]" />
+        }
+        else if (editing)
+        {
+            <PageHeader Title="@BeanOf(current)" BackHref="history" />
+            <BrewForm Initial="current" Gear="gear" OnSubmit="UpdateAsync" OnCancel="@(() => editing = false)" />
+        }
+        else
+        {
+            <PageHeader Title="@BeanOf(current)" BackHref="history">
+                <Actions>
+                    @if (IsMine(current))
+                    {
+                        <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                    }
+                </Actions>
+            </PageHeader>
+
+            @if (error is not null)
+            {
+                <ErrorBanner Message="@error" />
+            }
+
+            @if (confirmingDelete)
+            {
+                <div class="dialed-confirm" role="alertdialog" aria-label="@L["History_DeleteTitle"]">
+                    <p><strong>@L["History_DeleteTitle"]</strong></p>
+                    <p>@L["History_DeleteBody"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+
+            <Card>
+                <p class="dialed-person"><span class="dialed-avatar" aria-hidden="true">@Initial(current.CreatedBy)</span> <span id="history-person-name">@PersonName(current.CreatedBy)</span> · @current.BrewedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
+                <p>@L[$"DrinkType_{current.DrinkType}"] · @MethodName(current.MethodCode)@(MilkText(current))</p>
+                @if (current.Rating is { } stars)
+                {
+                    <StarRating Value="stars" ReadOnly="true" />
+                }
+            </Card>
+
+            <h2>@L["History_Parameters"]</h2>
+            <table class="dialed-compare">
+                <thead>
+                    <tr><th></th><th>@L["History_Planned"]</th><th>@L["History_Actual"]</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in comparison)
+                    {
+                        <tr class="@(row.Differs ? "differs" : null)" data-parameter="@row.Parameter">
+                            <th scope="row">@ParameterLabel(row.Parameter)</th>
+                            <td>@Format(row.Parameter, row.Planned)</td>
+                            <td>@Format(row.Parameter, row.Actual)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (recipe is not null)
+            {
+                <p><a href="@($"recipes/{recipe.Id}")">@string.Format(L["History_Recipe"].Value, recipe.Name)</a></p>
+            }
+
+            @if (!current.Taste.IsBalanced)
+            {
+                <h2>@L["Brew_Taste"]</h2>
+                <dl class="dialed-facts">
+                    @TasteFact("Taste_Acidity", "Taste_Sour", "Taste_Bitter", current.Taste.Acidity)
+                    @TasteFact("Taste_Strength", "Taste_Weak", "Taste_Strong", current.Taste.Strength)
+                    @TasteFact("Taste_Body", "Taste_Thin", "Taste_Heavy", current.Taste.Body)
+                    @TasteFact("Taste_Sweetness", "Taste_Flat", "Taste_Sweet", current.Taste.Sweetness)
+                </dl>
+            }
+
+            @if (current.Notes is not null)
+            {
+                <p class="dialed-vendor-notes">@current.Notes</p>
+            }
+        }
+    </Detail>
+</ListDetailLayout>
+
+@code {
+    private IReadOnlyList<Brew>? brews;
+    private IReadOnlyList<Bag> bags = [];
+    private IReadOnlyList<Bean> beans = [];
+    private IReadOnlyList<EquipmentItem> gear = [];
+    private IReadOnlyList<ParameterDelta> comparison = [];
+    private Brew? current;
+    private Recipe? recipe;
+    private string beanFilter = "";
+    private string methodFilter = "";
+    private string personFilter = "";
+    private int ratingFilter;
+    private bool editing;
+    private bool confirmingDelete;
+    private string? error;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private IReadOnlyList<Brew> Visible => BrewHistory.Apply(brews ?? [], bags, new BrewFilter(
+        beanFilter == "" ? null : beanFilter,
+        methodFilter == "" ? null : methodFilter,
+        personFilter == "" ? null : personFilter,
+        ratingFilter == 0 ? null : ratingFilter));
+
+    protected override async Task OnInitializedAsync()
+    {
+        BrewStore.Changed += OnStoreChanged;
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        editing = false;
+        confirmingDelete = false;
+        error = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        brews = await BrewStore.ListAsync();
+        bags = await BagStore.ListAsync();
+        beans = [.. (await BeanStore.ListAsync()).OrderBy(b => b.Name)];
+        gear = await GearStore.ListAsync();
+        current = Id is null ? null : brews.FirstOrDefault(b => b.Id == Id);
+        recipe = current?.RecipeId is { } recipeId ? await RecipeStore.GetAsync(recipeId) : null;
+        comparison = current is null ? [] : BrewHistory.Compare(current, recipe);
+    }
+
+    private void OnStoreChanged() => _ = InvokeAsync(async () =>
+    {
+        if (editing)
+        {
+            return;
+        }
+
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private bool IsMine(Brew brew) => brew.CreatedBy == Context.UserId;
+
+    private string PersonName(string userId) => userId == Context.UserId ? L["History_You"].Value : userId;
+
+    private string Initial(string userId) => PersonName(userId) is { Length: > 0 } name ? name[..1].ToUpperInvariant() : "?";
+
+    private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
+
+    private string BeanOf(Brew brew)
+    {
+        var beanId = bags.FirstOrDefault(b => b.Id == brew.BagId)?.BeanId;
+        return beans.FirstOrDefault(b => b.Id == beanId)?.Name ?? L["Bag_UnknownBean"].Value;
+    }
+
+    private string Subtitle(Brew brew)
+    {
+        var parts = new List<string> { brew.BrewedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm"), L[$"DrinkType_{brew.DrinkType}"].Value };
+        if (brew.Rating is { } rating)
+        {
+            parts.Add($"{rating} ★");
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private string MilkText(Brew brew) =>
+        brew.MilkMl is { } ml
+            ? " · " + string.Format(L["History_Milk"].Value, Units.System == Dialed.Domain.Units.UnitSystem.Imperial
+                ? Dialed.Domain.Units.UnitFormatting.FormatVolume(ml, Units.System)
+                : $"{ml} ml")
+            : "";
+
+    private string ParameterLabel(BrewParameter parameter) => parameter switch
+    {
+        BrewParameter.Dose => L["Recipe_Dose"].Value,
+        BrewParameter.Water => L["Recipe_Water"].Value,
+        BrewParameter.Yield => L["Recipe_Yield"].Value,
+        BrewParameter.Grind => L["Recipe_Grind"].Value,
+        BrewParameter.Temperature => L["Recipe_Temp"].Value,
+        _ => L["History_Time"].Value,
+    };
+
+    private string Format(BrewParameter parameter, decimal? value)
+    {
+        if (value is not { } v)
+        {
+            return "–";
+        }
+
+        return parameter switch
+        {
+            BrewParameter.Dose or BrewParameter.Water or BrewParameter.Yield => Units.Weight(v),
+            BrewParameter.Temperature => Units.Temperature(v),
+            BrewParameter.Time => $"{v:0} s",
+            _ => Dialed.Domain.Equipment.GrindScale.Format(v),
+        };
+    }
+
+    private RenderFragment TasteFact(string labelKey, string lowKey, string highKey, int value) => __builder =>
+    {
+        <dt>@L[labelKey]</dt>
+        <dd>@(value == 0 ? L["History_Balanced"].Value : value < 0 ? $"{L[lowKey]} {-value}" : $"{L[highKey]} {value}")</dd>
+    };
+
+    private async Task UpdateAsync(Brew brew)
+    {
+        try
+        {
+            await BrewStore.SaveAsync(brew);
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
+        editing = false;
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (current is null || !IsMine(current))
+        {
+            return;
+        }
+
+        await BrewStore.DeleteAsync(current.Id);
+        Navigation.NavigateTo("history");
+    }
+
+    public void Dispose() => BrewStore.Changed -= OnStoreChanged;
+}
