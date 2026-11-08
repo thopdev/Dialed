@@ -9,14 +9,23 @@ public sealed class InMemorySyncState : ISyncState
     private readonly List<ConflictLogEntry> conflicts = [];
     private long nextSequence = 1;
 
+    public event Action? OutboxChanged;
+
     public Task EnqueueAsync(string table, string entityId, CancellationToken cancellationToken = default)
     {
+        var added = false;
         lock (gate)
         {
             if (!outbox.Any(e => e.Table == table && e.EntityId == entityId))
             {
                 outbox.Add(new OutboxEntry(nextSequence++, table, entityId));
+                added = true;
             }
+        }
+
+        if (added)
+        {
+            OutboxChanged?.Invoke();
         }
 
         return Task.CompletedTask;
