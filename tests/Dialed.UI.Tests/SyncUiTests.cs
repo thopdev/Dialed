@@ -16,12 +16,12 @@ public sealed class SyncUiTests : UiTestContext
 
     private IRepository<Vendor> Vendors => Services.GetRequiredService<IRepository<Vendor>>();
 
-    private async Task AddVendor() => await Vendors.SaveAsync(new Vendor { Name = "Roaster" }, TestContext.Current.CancellationToken);
+    private async Task AddVendor() => await Vendors.SaveAsync(new Vendor { Name = "Roaster" }, Xunit.TestContext.Current.CancellationToken);
 
     [Fact]
     public async Task Diagnostics_say_when_nobody_is_signed_in()
     {
-        await Sync.SyncNowAsync(TestContext.Current.CancellationToken);
+        await Sync.SyncNowAsync(Xunit.TestContext.Current.CancellationToken);
 
         var diagnostics = Render<SyncDiagnostics>();
 
@@ -34,7 +34,7 @@ public sealed class SyncUiTests : UiTestContext
         Tokens.Value = "tkn";
         Transport.Offline = true;
         await AddVendor();
-        await Sync.SyncNowAsync(TestContext.Current.CancellationToken);
+        await Sync.SyncNowAsync(Xunit.TestContext.Current.CancellationToken);
         var diagnostics = Render<SyncDiagnostics>();
         diagnostics.Find("#sync-pending").TextContent.ShouldContain("1");
         diagnostics.Find("#sync-status").TextContent.ShouldContain("offline");
@@ -55,7 +55,7 @@ public sealed class SyncUiTests : UiTestContext
     public async Task The_indicator_stays_quiet_when_not_signed_in()
     {
         await AddVendor();
-        await Sync.SyncNowAsync(TestContext.Current.CancellationToken);
+        await Sync.SyncNowAsync(Xunit.TestContext.Current.CancellationToken);
 
         Render<SyncIndicator>().FindAll("#sync-indicator").ShouldBeEmpty();
     }
@@ -66,7 +66,7 @@ public sealed class SyncUiTests : UiTestContext
         Tokens.Value = "tkn";
         Transport.Offline = true;
         await AddVendor();
-        await Sync.SyncNowAsync(TestContext.Current.CancellationToken);
+        await Sync.SyncNowAsync(Xunit.TestContext.Current.CancellationToken);
 
         Render<SyncIndicator>().Find("#sync-indicator").TextContent.ShouldContain("1 not yet synced");
     }
