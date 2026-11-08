@@ -52,7 +52,7 @@ public sealed class HttpSyncTransportTests
         request.RequestUri!.AbsolutePath.ShouldBe("/sync/vendors/v1");
         request.Headers.GetValues("If-Match").Single().ShouldBe("\"1\"");
         request.Headers.Authorization!.Parameter.ShouldBe("tkn");
-        handler.LastBody.ShouldContain("\"name\":\"Roaster\"");
+        handler.LastBody!.ShouldContain("\"name\":\"Roaster\"");
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class HttpSyncTransportTests
         var result = await transport.PushAsync("vendors", new Vendor { Id = "v1", Name = "x" }, null, TestContext.Current.CancellationToken);
 
         result.Outcome.ShouldBe(PushOutcome.Rejected);
-        result.Message.ShouldContain("nope");
+        result.Message!.ShouldContain("nope");
     }
 
     [Theory]
