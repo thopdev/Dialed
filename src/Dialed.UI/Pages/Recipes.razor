@@ -5,6 +5,7 @@
 @using Dialed.Domain.BrewMethods
 @using Dialed.Domain.Equipment
 @using Dialed.Domain.Model
+@using System.Globalization
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Recipe> RecipeStore
@@ -26,17 +27,24 @@
         {
             <Loading IsLoading="true" />
         }
-        else if (recipes.Count == 0)
-        {
-            <EmptyState Message="@L["Recipes_Empty"]" />
-        }
         else
         {
+            @if (recipes.Count == 0)
+            {
+                <EmptyState Message="@L["Recipes_Empty"]" />
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var recipe in Sorted)
+                    {
+                        <ListRow Title="@recipe.Name" Subtitle="@Subtitle(recipe)" Href="@($"recipes/{recipe.Id}")" />
+                    }
+                </div>
+            }
+
             <div class="dialed-list">
-                @foreach (var recipe in Sorted)
-                {
-                    <ListRow Title="@recipe.Name" Subtitle="@Subtitle(recipe)" Href="@($"recipes/{recipe.Id}")" />
-                }
+                <ListRow Title="@L["Templates_Title"]" Subtitle="@L["Templates_Subtitle"]" Href="recipes/templates" />
             </div>
         }
     </List>
@@ -49,6 +57,26 @@
         {
             <PageHeader Title="@L["Recipes_New"]" BackHref="recipes" />
             <RecipeForm Beans="beans" Gear="gear" Defaults="defaults" OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("recipes"))" />
+        }
+        else if (Id == "templates")
+        {
+            <PageHeader Title="@L["Templates_Title"]" BackHref="recipes" />
+            <p class="dialed-muted">@string.Format(L["Templates_Help"].Value, DefaultRecipeCatalog.Default.Version)</p>
+            @foreach (var template in DefaultRecipeCatalog.Default.Recipes)
+            {
+                var item = template;
+                <Card>
+                    <div class="dialed-template" data-method="@(item.MethodCode)">
+                        <h2>@item.Name</h2>
+                        <p class="dialed-muted">@MethodName(item.MethodCode) · @TemplateSummary(item)</p>
+                        @if (item.Notes is not null)
+                        {
+                            <p>@item.Notes</p>
+                        }
+                        <button type="button" class="dialed-button dialed-button-primary" @onclick="() => UseTemplateAsync(item)">@L["Templates_Use"]</button>
+                    </div>
+                </Card>
+            }
         }
         else if (current is null)
         {
@@ -213,7 +241,7 @@
         beans = [.. (await BeanStore.ListAsync()).OrderBy(b => b.Name)];
         gear = await GearStore.ListAsync();
         defaults = await DefaultStore.ListAsync();
-        current = Id is null or "new" ? null : recipes.FirstOrDefault(r => r.Id == Id);
+        current = Id is null or "new" or "templates" ? null : recipes.FirstOrDefault(r => r.Id == Id);
     }
 
     private void OnStoreChanged() => _ = InvokeAsync(async () =>
@@ -272,6 +300,45 @@
         }
 
         return string.Join(" · ", parts);
+    }
+
+    private string TemplateSummary(RecipeTemplate template)
+    {
+        var parts = new List<string>();
+        if (template.DoseG is { } dose)
+        {
+            parts.Add(Units.Weight(dose));
+        }
+
+        if ((template.WaterG ?? template.YieldG) is { } liquid)
+        {
+            parts.Add(Units.Weight(liquid));
+        }
+
+        if (template.DoseG is > 0m && (template.WaterG ?? template.YieldG) is { } l)
+        {
+            parts.Add("1:" + Math.Round(l / template.DoseG.Value, 2).ToString("0.##", CultureInfo.InvariantCulture));
+        }
+
+        if (template.TempC is { } temp)
+        {
+            parts.Add(Units.Temperature(temp));
+        }
+
+        if (template.TimeS is { } time)
+        {
+            parts.Add($"{time} s");
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    // Copies the read-only template into the household as a personal recipe, with the method's usual grinder and brewer.
+    private async Task UseTemplateAsync(RecipeTemplate template)
+    {
+        var row = defaults.FirstOrDefault(d => d.MethodCode == template.MethodCode);
+        var saved = await RecipeStore.SaveAsync(template.ToRecipe(row?.GrinderId, row?.BrewerId));
+        Navigation.NavigateTo($"recipes/{saved.Id}");
     }
 
     private async Task CreateAsync(Recipe recipe)

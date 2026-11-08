@@ -259,4 +259,8 @@
   <data name="StepKind_Swirl" xml:space="preserve"><value>Swirl</value></data>
   <data name="StepKind_Press" xml:space="preserve"><value>Press</value></data>
   <data name="StepKind_Wait" xml:space="preserve"><value>Wait</value></data>
+  <data name="Templates_Title" xml:space="preserve"><value>Starting points</value></data>
+  <data name="Templates_Subtitle" xml:space="preserve"><value>A default recipe for every method</value></data>
+  <data name="Templates_Help" xml:space="preserve"><value>Generic recipes (version {0}). Use one to copy it into your own recipes and adjust it.</value></data>
+  <data name="Templates_Use" xml:space="preserve"><value>Use as starting point</value></data>
 </root>

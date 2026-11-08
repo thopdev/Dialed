@@ -1,5 +1,6 @@
 using Bunit;
 using Dialed.Client.Data;
+using Dialed.Domain.BrewMethods;
 using Dialed.Domain.Equipment;
 using Dialed.Domain.Model;
 using Dialed.UI.Components;
@@ -177,6 +178,34 @@ public sealed class RecipeTests : UiTestContext
 
         page.Markup.ShouldContain("Your recipes will show up here.");
         page.Find("a[href='recipes/new']").ShouldNotBeNull();
+        page.Find("a[href='recipes/templates']").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Templates_page_lists_a_default_for_every_method()
+    {
+        var page = Render<Recipes>(p => p.Add(x => x.Id, "templates"));
+
+        page.FindAll(".dialed-template").Count.ShouldBe(Dialed.Domain.BrewMethods.BrewMethodCatalog.Default.Methods.Count);
+        page.Find(".dialed-template[data-method='espresso']").TextContent.ShouldContain("1:2");
+    }
+
+    [Fact]
+    public async Task Using_a_template_copies_it_into_my_recipes_with_the_default_grinder()
+    {
+        var grinder = await Gear.SaveAsync(new EquipmentItem { Kind = EquipmentKind.Grinder, Brand = "Comandante", GrindScale = GrindScale.Clicks(40m) }, Ct);
+        await Defaults.SaveAsync(new MethodDefault { MethodCode = "v60", GrinderId = grinder.Id }, Ct);
+        var page = Render<Recipes>(p => p.Add(x => x.Id, "templates"));
+
+        page.Find(".dialed-template[data-method='v60'] button").Click();
+
+        var saved = (await Recipes.ListAsync(Ct)).Single();
+        saved.MethodCode.ShouldBe("v60");
+        saved.IsDefaultTemplate.ShouldBeFalse();
+        saved.Steps.Count.ShouldBe(3);
+        saved.GrinderId.ShouldBe(grinder.Id);
+        Services.GetRequiredService<NavigationManager>().Uri.ShouldEndWith($"recipes/{saved.Id}");
+        (await Recipes.ListAsync(Ct)).Count.ShouldBe(1);
     }
 
     [Fact]
