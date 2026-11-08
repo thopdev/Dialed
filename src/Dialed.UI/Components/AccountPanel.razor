@@ -1,0 +1,89 @@
+@using Dialed.Client.Account
+@implements IDisposable
+@inject AccountService Account
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+
+@* Sign up, sign in and sign out with a passkey. Without an account everything stays on this device. *@
+<div id="account-panel">
+    @if (Session.IsSignedIn)
+    {
+        <p id="account-signed-in">@L["Account_SignedInAs", Session.DisplayName ?? ""]</p>
+        <div class="dialed-form-actions">
+            <button id="account-signout" type="button" class="dialed-button" disabled="@busy" @onclick="SignOutAsync">@L["Settings_SignOut"]</button>
+        </div>
+    }
+    else
+    {
+        <p class="dialed-muted">@L["Account_LocalOnly"]</p>
+        <form class="dialed-form" id="account-signup-form" @onsubmit="SignUpAsync" @onsubmit:preventDefault>
+            <div class="dialed-field">
+                <label for="account-name">@L["Profile_Name"]</label>
+                <input id="account-name" type="text" maxlength="100" autocomplete="name" @bind="displayName" @bind:event="oninput" />
+            </div>
+            <div class="dialed-field">
+                <label for="account-email">@L["Account_Email"]</label>
+                <input id="account-email" type="email" maxlength="256" autocomplete="username webauthn" @bind="email" @bind:event="oninput" />
+            </div>
+            <div class="dialed-form-actions">
+                <button id="account-signup" type="submit" class="dialed-button dialed-button-primary" disabled="@busy">@L["Account_SignUp"]</button>
+                <button id="account-signin" type="button" class="dialed-button" disabled="@busy" @onclick="SignInAsync">@L["Account_SignIn"]</button>
+            </div>
+        </form>
+    }
+
+    @if (message is not null)
+    {
+        <p id="account-message" role="status">@message</p>
+    }
+</div>
+
+@code {
+    private string displayName = "";
+    private string email = "";
+    private bool busy;
+    private string? message;
+
+    protected override void OnInitialized() => Session.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task SignUpAsync()
+    {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+        {
+            message = L["Account_EmailInvalid"];
+            return;
+        }
+
+        await RunAsync(() => Account.SignUpAsync(email.Trim(), displayName.Trim()));
+    }
+
+    private Task SignInAsync() => RunAsync(() => Account.SignInAsync());
+
+    private async Task SignOutAsync()
+    {
+        busy = true;
+        message = null;
+        await Account.SignOutAsync();
+        busy = false;
+    }
+
+    private async Task RunAsync(Func<Task<AccountResult>> action)
+    {
+        busy = true;
+        message = null;
+        var result = await action();
+        busy = false;
+        message = result.Outcome switch
+        {
+            AccountOutcome.Success => null,
+            AccountOutcome.Cancelled => L["Account_Cancelled"],
+            AccountOutcome.NotSupported => L["Account_NotSupported"],
+            AccountOutcome.Refused => result.Message,
+            _ => L["Account_Unavailable"],
+        };
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

@@ -230,6 +230,34 @@ export function passkeyGet(optionsJson, autofill) {
     return runPasskey(() => navigator.credentials.get(request));
 }
 
+// ---- Sign-in session (kept between launches) ----------------------------------------------------------
+
+const sessionKey = 'dialed.session.v1';
+
+export function sessionLoad() {
+    try {
+        return localStorage.getItem(sessionKey);
+    } catch {
+        return null; // storage blocked: the sign-in lasts until the app closes
+    }
+}
+
+export function sessionSave(json) {
+    try {
+        localStorage.setItem(sessionKey, json);
+    } catch {
+        // see above
+    }
+}
+
+export function sessionClear() {
+    try {
+        localStorage.removeItem(sessionKey);
+    } catch {
+        // see above
+    }
+}
+
 // ---- Storage persistence ---------------------------------------------------------------------------
 
 export async function storagePersisted() {

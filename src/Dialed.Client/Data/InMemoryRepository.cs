@@ -127,4 +127,37 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
         Changed?.Invoke();
         return Task.FromResult(stored);
     }
+
+    public Task<int> AdoptAsync(CancellationToken cancellationToken = default)
+    {
+        List<T> adopted = [];
+        lock (gate)
+        {
+            var now = time.GetUtcNow();
+            foreach (var record in records.Values.Where(r => r.HouseholdId != context.HouseholdId).ToList())
+            {
+                var stamped = record with
+                {
+                    HouseholdId = context.HouseholdId,
+                    CreatedBy = context.UserId,
+                    UpdatedBy = context.UserId,
+                    UpdatedAt = now,
+                    Version = record.Version + 1,
+                };
+                records[stamped.Id] = stamped;
+                adopted.Add(stamped);
+            }
+        }
+
+        if (adopted.Count > 0)
+        {
+            Changed?.Invoke();
+            foreach (var record in adopted)
+            {
+                LocalChanged?.Invoke(record);
+            }
+        }
+
+        return Task.FromResult(adopted.Count);
+    }
 }

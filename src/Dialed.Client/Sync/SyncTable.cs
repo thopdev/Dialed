@@ -13,6 +13,9 @@ public interface ISyncTable
 
     /// <summary>Pulls every page after the stored watermark and returns how many records were applied.</summary>
     Task<int> PullAsync(int pageSize, CancellationToken cancellationToken);
+
+    /// <summary>Hands records made before sign-in to the current household and queues them for pushing.</summary>
+    Task<int> AdoptLocalRecordsAsync(CancellationToken cancellationToken);
 }
 
 public enum PushStep
@@ -91,6 +94,8 @@ public sealed class SyncTable<T>(string name, ISyncRepository<T> repository, ISy
         await state.RecordFailureAsync(entry.Sequence, "The record kept changing on the server.", cancellationToken);
         return PushStep.Failed;
     }
+
+    public Task<int> AdoptLocalRecordsAsync(CancellationToken cancellationToken) => repository.AdoptAsync(cancellationToken);
 
     public async Task<int> PullAsync(int pageSize, CancellationToken cancellationToken)
     {

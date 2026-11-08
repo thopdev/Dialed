@@ -1,3 +1,4 @@
+using Dialed.Client.Account;
 using Dialed.Client.Data;
 using Dialed.Client.Sync;
 using Dialed.Domain.Model;
@@ -58,5 +59,28 @@ public static class ClientServices
     private sealed class NotSignedIn : IAccessTokenProvider
     {
         public Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
+    }
+
+    /// <summary>
+    /// Accounts: the sign-in session, the API calls, the passkey flow and the access token for sync. Call after
+    /// <see cref="AddDialedData"/> and <see cref="AddDialedSync"/>; the host registers <see cref="AccountApi"/>'s HttpClient through
+    /// <paramref name="api"/> and an <see cref="Platform.IPasskeyClient"/> (and, to keep the sign-in, an <see cref="ISessionStore"/>).
+    /// </summary>
+    public static IServiceCollection AddDialedAccount(this IServiceCollection services, Func<IServiceProvider, AccountApi> api)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(api);
+
+        services.TryAddSingleton<ISessionStore, InMemorySessionStore>();
+        services.TryAddSingleton<AuthSession>();
+        services.TryAddSingleton(api);
+        services.TryAddSingleton<AccountService>();
+
+        // The signed-in person (and their household) stamp new records, and their token authorises sync.
+        services.RemoveAll<ICurrentContext>();
+        services.AddSingleton<ICurrentContext, SessionContext>();
+        services.RemoveAll<IAccessTokenProvider>();
+        services.AddSingleton<IAccessTokenProvider, SessionTokenProvider>();
+        return services;
     }
 }
