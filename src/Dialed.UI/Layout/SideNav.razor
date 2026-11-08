@@ -6,6 +6,10 @@
         {
             <FluentNavItem Href="@item.Href" Match="@item.Match" IconRest="@item.IconRest" IconActive="@item.IconActive">
                 @L[item.TitleKey]
+                @if (item.ShowsLowStockBadge)
+                {
+                    <LowStockBadge />
+                }
             </FluentNavItem>
         }
     </FluentNav>

@@ -1,0 +1,68 @@
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Inventory
+@inject IStringLocalizer<Strings> L
+@inject IUserPreferences Preferences
+@inject UnitFormatter Units
+
+@* Low-stock threshold (shown in the user's units, stored in grams) and rest/peak days per roast. *@
+<form class="dialed-form" id="inventory-settings" @onsubmit="SaveAsync" @onsubmit:preventDefault>
+    <h2>@L["Stock_Settings"]</h2>
+    <div class="dialed-field">
+        <label for="stock-low">@string.Format(L["Stock_LowThreshold"].Value, Units.WeightLabel)</label>
+        <input id="stock-low" type="number" inputmode="decimal" step="any" min="0" @bind="low" />
+    </div>
+    <p class="dialed-muted">@L["Stock_WindowsHint"]</p>
+    @foreach (var row in rows)
+    {
+        <fieldset class="dialed-field-pair">
+            <legend>@L[row.Label]</legend>
+            <label>@L["Stock_RestDays"] <input type="number" min="0" step="1" @bind="row.Rest" data-field="@($"{row.Key}-rest")" /></label>
+            <label>@L["Stock_PeakEnd"] <input type="number" min="0" step="1" @bind="row.PeakEnd" data-field="@($"{row.Key}-peak")" /></label>
+        </fieldset>
+    }
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
+        @if (saved)
+        {
+            <span role="status">@L["Stock_Saved"]</span>
+        }
+    </div>
+</form>
+
+@code {
+    private sealed class Row(string key, string label, RestWindow window)
+    {
+        public string Key { get; } = key;
+
+        public string Label { get; } = label;
+
+        public int Rest { get; set; } = window.RestDays;
+
+        public int PeakEnd { get; set; } = window.PeakEndDays;
+    }
+
+    private decimal low;
+    private List<Row> rows = [];
+    private bool saved;
+
+    protected override void OnInitialized()
+    {
+        var settings = Preferences.Inventory;
+        low = Math.Round(Units.ToDisplayWeight(settings.LowStockG), 1);
+        rows =
+        [
+            new("light", "Stock_Light", settings.RestWindows.Light),
+            new("medium", "Stock_Medium", settings.RestWindows.Medium),
+            new("dark", "Stock_Dark", settings.RestWindows.Dark),
+        ];
+    }
+
+    private async Task SaveAsync()
+    {
+        RestWindow Window(Row row) => new(Math.Max(0, row.Rest), Math.Max(Math.Max(0, row.Rest), row.PeakEnd));
+        await Preferences.SetInventoryAsync(new InventorySettings(
+            Math.Max(0m, Units.FromDisplayWeight(low)),
+            new RestWindows(Window(rows[0]), Window(rows[1]), Window(rows[2]))));
+        saved = true;
+    }
+}

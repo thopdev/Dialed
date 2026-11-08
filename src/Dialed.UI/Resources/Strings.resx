@@ -9,6 +9,7 @@
   <data name="App_Tagline" xml:space="preserve"><value>Get every cup dialed in.</value></data>
   <data name="PageTitle_Format" xml:space="preserve"><value>{0} · Dialed</value><comment>{0} = page name</comment></data>
   <data name="Nav_Label" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
   <data name="Nav_Brew" xml:space="preserve"><value>Brew</value></data>
   <data name="Nav_Beans" xml:space="preserve"><value>Beans</value></data>
   <data name="Nav_Recipes" xml:space="preserve"><value>Recipes</value></data>
@@ -356,4 +357,35 @@
   <data name="Shot_TooShort" xml:space="preserve"><value>Too short</value></data>
   <data name="Shot_InBand" xml:space="preserve"><value>In the target window</value></data>
   <data name="Shot_TooLong" xml:space="preserve"><value>Too long</value></data>
+  <data name="Home_WelcomeTitle" xml:space="preserve"><value>Welcome to Dialed</value></data>
+  <data name="Home_Welcome" xml:space="preserve"><value>Add your first coffee bean to start tracking bags and brews.</value></data>
+  <data name="Home_AddFirstBean" xml:space="preserve"><value>Add your first bean</value></data>
+  <data name="Home_LogBrew" xml:space="preserve"><value>Log brew</value></data>
+  <data name="Home_ScanBag" xml:space="preserve"><value>Scan bag</value></data>
+  <data name="Home_ScanHint" xml:space="preserve"><value>Scanning is coming; for now Scan bag opens the new bag form.</value></data>
+  <data name="Home_OpenBags" xml:space="preserve"><value>Open bags</value></data>
+  <data name="Home_NoOpenBags" xml:space="preserve"><value>No open bags.</value></data>
+  <data name="Home_BrewAgain" xml:space="preserve"><value>Brew again</value></data>
+  <data name="Stock_Title" xml:space="preserve"><value>Inventory</value></data>
+  <data name="Stock_Empty" xml:space="preserve"><value>No bags yet.</value></data>
+  <data name="Stock_Group_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Stock_Group_Sealed" xml:space="preserve"><value>Sealed</value></data>
+  <data name="Stock_Group_Frozen" xml:space="preserve"><value>Frozen</value></data>
+  <data name="Stock_Cups" xml:space="preserve"><value>about {0} cups</value></data>
+  <data name="Stock_DaysSinceRoast" xml:space="preserve"><value>{0} days since roast</value></data>
+  <data name="Stock_Low" xml:space="preserve"><value>Low</value></data>
+  <data name="Stock_LowBadge" xml:space="preserve"><value>{0} bags running low</value></data>
+  <data name="Fresh_Resting" xml:space="preserve"><value>Resting</value></data>
+  <data name="Fresh_Peak" xml:space="preserve"><value>Peak</value></data>
+  <data name="Fresh_Past" xml:space="preserve"><value>Past peak</value></data>
+  <data name="Fresh_Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Stock_Settings" xml:space="preserve"><value>Inventory settings</value></data>
+  <data name="Stock_LowThreshold" xml:space="preserve"><value>Low stock below ({0})</value></data>
+  <data name="Stock_WindowsHint" xml:space="preserve"><value>Days after roasting when coffee is ready and when it starts to fade.</value></data>
+  <data name="Stock_Light" xml:space="preserve"><value>Light roast</value></data>
+  <data name="Stock_Medium" xml:space="preserve"><value>Medium roast</value></data>
+  <data name="Stock_Dark" xml:space="preserve"><value>Dark roast</value></data>
+  <data name="Stock_RestDays" xml:space="preserve"><value>Ready after (days)</value></data>
+  <data name="Stock_PeakEnd" xml:space="preserve"><value>Fades after (days)</value></data>
+  <data name="Stock_Saved" xml:space="preserve"><value>Saved</value></data>
 </root>
