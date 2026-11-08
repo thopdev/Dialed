@@ -1,0 +1,144 @@
+@using Dialed.Client.Data
+@using Dialed.Domain.Model
+@using Dialed.Domain.Text
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Vendor> Vendors
+
+@* Pick a vendor while filling in another form: type to find (forgiving of typos), or create it on the spot with just a name. *@
+<div class="dialed-picker">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@inputId">@Label</label>
+    }
+
+    @if (selected is not null)
+    {
+        <div class="dialed-picker-selected">
+            <Chip Selected="true">@selected.Name</Chip>
+            <button type="button" class="dialed-picker-clear" aria-label="@L["Picker_Clear"]" @onclick="ClearAsync">×</button>
+        </div>
+    }
+    else
+    {
+        <input id="@inputId" type="text" autocomplete="off" role="combobox" aria-expanded="@(HasSuggestions ? "true" : "false")"
+               value="@query" @oninput="OnInput" placeholder="@L["Picker_Placeholder"]" />
+        @if (HasSuggestions)
+        {
+            <ul class="dialed-picker-list" role="listbox">
+                @foreach (var vendor in suggestions)
+                {
+                    <li role="option">
+                        <button type="button" class="dialed-picker-option" @onclick="() => SelectAsync(vendor)">
+                            @vendor.Name
+                            @if (!string.IsNullOrEmpty(vendor.City) || !string.IsNullOrEmpty(vendor.Country))
+                            {
+                                <span class="dialed-picker-detail">@string.Join(", ", new[] { vendor.City, vendor.Country }.Where(part => !string.IsNullOrEmpty(part)))</span>
+                            }
+                        </button>
+                    </li>
+                }
+                @if (CanCreate)
+                {
+                    <li role="option">
+                        <button type="button" class="dialed-picker-option dialed-picker-create" @onclick="CreateAsync">
+                            @string.Format(L["Picker_Create"].Value, query.Trim())
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    private static int counter;
+
+    private readonly string inputId = $"vendor-picker-{Interlocked.Increment(ref counter)}";
+    private IReadOnlyList<Vendor> all = [];
+    private IReadOnlyList<Vendor> suggestions = [];
+    private Vendor? selected;
+    private string query = "";
+    private string? lastSelectedId;
+
+    /// <summary>Id of the chosen vendor, or <c>null</c>.</summary>
+    [Parameter]
+    public string? SelectedId { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SelectedIdChanged { get; set; }
+
+    /// <summary>Which kind of vendor is wanted; new vendors get this kind and only vendors of this kind are suggested.</summary>
+    [Parameter]
+    public VendorKinds Kind { get; set; } = VendorKinds.Roaster;
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    private bool HasSuggestions => query.Trim().Length > 0;
+
+    /// <summary>"Create ..." is offered unless a vendor with exactly that name already exists.</summary>
+    private bool CanCreate => HasSuggestions
+        && !all.Any(vendor => FuzzyMatch.Normalize(vendor.Name) == FuzzyMatch.Normalize(query));
+
+    protected override async Task OnInitializedAsync()
+    {
+        Vendors.Changed += OnVendorsChanged;
+        await LoadAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Only follow the parent when it chose something else than we know; a just-created vendor is not in the loaded list yet.
+        if (SelectedId != lastSelectedId)
+        {
+            lastSelectedId = SelectedId;
+            selected = all.FirstOrDefault(vendor => vendor.Id == SelectedId);
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        all = [.. (await Vendors.ListAsync()).Where(vendor => VendorRules.MatchesKind(vendor, Kind))];
+        selected = SelectedId is null ? null : all.FirstOrDefault(vendor => vendor.Id == SelectedId) ?? selected;
+        Refresh();
+    }
+
+    private void OnVendorsChanged() => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private void OnInput(ChangeEventArgs args)
+    {
+        query = args.Value?.ToString() ?? "";
+        Refresh();
+    }
+
+    private void Refresh() => suggestions = FuzzyMatch.Rank(all, query, vendor => vendor.Name);
+
+    private async Task SelectAsync(Vendor vendor)
+    {
+        selected = vendor;
+        lastSelectedId = vendor.Id;
+        query = "";
+        suggestions = [];
+        await SelectedIdChanged.InvokeAsync(vendor.Id);
+    }
+
+    private async Task CreateAsync()
+    {
+        var created = await Vendors.SaveAsync(new Vendor { Name = query.Trim(), Kinds = Kind });
+        await SelectAsync(created);
+    }
+
+    private async Task ClearAsync()
+    {
+        selected = null;
+        lastSelectedId = null;
+        await SelectedIdChanged.InvokeAsync(null);
+    }
+
+    public void Dispose() => Vendors.Changed -= OnVendorsChanged;
+}

@@ -1,0 +1,300 @@
+@page "/vendors"
+@page "/vendors/{Id}"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Model
+@using Dialed.Domain.Text
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Vendor> VendorStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Bag> BagStore
+@inject UnitFormatter Units
+@inject NavigationManager Navigation
+
+<ListDetailLayout HasSelection="@(Id is not null)">
+    <List>
+        <PageHeader Title="@L["Vendors_Title"]" BackHref="more">
+            <Actions>
+                <a class="dialed-button dialed-button-primary" href="vendors/new">@L["Vendors_New"]</a>
+            </Actions>
+        </PageHeader>
+
+        @if (vendors is null)
+        {
+            <Loading IsLoading="true" />
+        }
+        else if (vendors.Count == 0)
+        {
+            <EmptyState Message="@L["Vendors_Empty"]" />
+        }
+        else
+        {
+            <div class="dialed-field">
+                <label for="vendor-search">@L["Vendors_Search"]</label>
+                <input id="vendor-search" type="search" autocomplete="off" @bind="search" @bind:event="oninput" />
+            </div>
+            <ChipGroup Label="@L["Vendors_Filter"]">
+                <Chip Selected="@(filter == VendorKinds.None)" OnClick="@(() => filter = VendorKinds.None)">@L["Vendors_All"]</Chip>
+                <Chip Selected="@(filter == VendorKinds.Roaster)" OnClick="@(() => filter = VendorKinds.Roaster)">@L["Vendors_Roasters"]</Chip>
+                <Chip Selected="@(filter == VendorKinds.Seller)" OnClick="@(() => filter = VendorKinds.Seller)">@L["Vendors_Sellers"]</Chip>
+            </ChipGroup>
+
+            @if (Visible.Count == 0)
+            {
+                <EmptyState Message="@L["Vendors_NoResults"]" />
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var vendor in Visible)
+                    {
+                        <ListRow Title="@vendor.Name" Subtitle="@Place(vendor)" Href="@($"vendors/{vendor.Id}")" />
+                    }
+                </div>
+            }
+        }
+    </List>
+    <Detail>
+        @if (Id is null)
+        {
+            <EmptyState Message="@L["Vendors_SelectPrompt"]" />
+        }
+        else if (Id == "new")
+        {
+            <PageHeader Title="@L["Vendors_New"]" BackHref="vendors" />
+            <VendorForm OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("vendors"))" />
+        }
+        else if (current is null)
+        {
+            <PageHeader Title="@L["Vendors_Title"]" BackHref="vendors" />
+            <EmptyState Message="@L["Vendors_NotFound"]" />
+        }
+        else if (editing)
+        {
+            <PageHeader Title="@current.Name" BackHref="vendors" />
+            <VendorForm Vendor="current" OnSubmit="UpdateAsync" OnCancel="@(() => editing = false)" />
+        }
+        else
+        {
+            <PageHeader Title="@current.Name" BackHref="vendors">
+                <Actions>
+                    <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
+                    <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                </Actions>
+            </PageHeader>
+
+            @if (error is not null)
+            {
+                <ErrorBanner Message="@error" />
+            }
+
+            @if (confirmingDelete)
+            {
+                <div class="dialed-confirm" role="alertdialog" aria-label="@string.Format(L["Vendor_DeleteTitle"].Value, current.Name)">
+                    <p><strong>@string.Format(L["Vendor_DeleteTitle"].Value, current.Name)</strong></p>
+                    <p>
+                        @if (usage.IsUsed)
+                        {
+                            @string.Format(L["Vendor_DeleteUsed"].Value, usage.Beans, usage.Bags)
+                        }
+                        else
+                        {
+                            @L["Vendor_DeleteUnused"]
+                        }
+                    </p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+
+            <Card>
+                <ChipGroup Label="@L["Vendor_Kinds"]">
+                    @if ((current.Kinds & VendorKinds.Roaster) != 0)
+                    {
+                        <Chip>@L["Vendor_Roaster"]</Chip>
+                    }
+                    @if ((current.Kinds & VendorKinds.Seller) != 0)
+                    {
+                        <Chip>@L["Vendor_Seller"]</Chip>
+                    }
+                </ChipGroup>
+                @if (Place(current) is { } place)
+                {
+                    <p class="dialed-vendor-place">@place</p>
+                }
+                @if (current.Website is not null)
+                {
+                    <p><a href="@current.Website" target="_blank" rel="noopener noreferrer">@current.Website</a></p>
+                }
+                @if (current.Notes is not null)
+                {
+                    <p class="dialed-vendor-notes">@current.Notes</p>
+                }
+            </Card>
+
+            <h2>@L["Vendor_BeansHeading"]</h2>
+            @if (roasted.Count == 0)
+            {
+                <p class="dialed-muted">@L["Vendor_NoBeans"]</p>
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var bean in roasted)
+                    {
+                        <ListRow Title="@bean.Name" />
+                    }
+                </div>
+            }
+
+            <h2>@L["Vendor_BagsHeading"]</h2>
+            @if (bought.Count == 0)
+            {
+                <p class="dialed-muted">@L["Vendor_NoBags"]</p>
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var bag in bought)
+                    {
+                        <ListRow Title="@BeanName(bag.BeanId)" Subtitle="@Units.Weight(bag.WeightG)" />
+                    }
+                </div>
+            }
+        }
+    </Detail>
+</ListDetailLayout>
+
+@code {
+    private IReadOnlyList<Vendor>? vendors;
+    private IReadOnlyList<Bean> beans = [];
+    private IReadOnlyList<Bag> bags = [];
+    private Vendor? current;
+    private IReadOnlyList<Bean> roasted = [];
+    private IReadOnlyList<Bag> bought = [];
+    private VendorUsage usage = new(0, 0);
+    private string search = "";
+    private VendorKinds filter = VendorKinds.None;
+    private bool editing;
+    private bool confirmingDelete;
+    private string? error;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private IReadOnlyList<Vendor> Visible
+    {
+        get
+        {
+            var filtered = (vendors ?? []).Where(vendor => VendorRules.MatchesKind(vendor, filter));
+            return string.IsNullOrWhiteSpace(search)
+                ? [.. filtered.OrderBy(vendor => FuzzyMatch.Normalize(vendor.Name), StringComparer.Ordinal)]
+                : FuzzyMatch.Rank(filtered, search, vendor => vendor.Name);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        VendorStore.Changed += OnStoreChanged;
+        BeanStore.Changed += OnStoreChanged;
+        BagStore.Changed += OnStoreChanged;
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        editing = false;
+        confirmingDelete = false;
+        error = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        vendors = await VendorStore.ListAsync();
+        beans = await BeanStore.ListAsync();
+        bags = await BagStore.ListAsync();
+        current = Id is null or "new" ? null : vendors.FirstOrDefault(vendor => vendor.Id == Id);
+        if (current is not null)
+        {
+            roasted = [.. beans.Where(bean => bean.RoasterId == current.Id).OrderBy(bean => bean.Name)];
+            bought = [.. bags.Where(bag => bag.SellerId == current.Id)];
+            usage = VendorRules.UsageOf(current.Id, beans, bags);
+        }
+    }
+
+    private void OnStoreChanged() => _ = InvokeAsync(async () =>
+    {
+        if (editing)
+        {
+            // Keep the copy being edited, so typed input is not lost and a clash shows as a conflict on save.
+            return;
+        }
+
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private static string? Place(Vendor vendor)
+    {
+        var place = string.Join(", ", new[] { vendor.City, vendor.Country }.Where(part => !string.IsNullOrEmpty(part)));
+        return place.Length == 0 ? null : place;
+    }
+
+    private string BeanName(string beanId) => beans.FirstOrDefault(bean => bean.Id == beanId)?.Name ?? "?";
+
+    private async Task CreateAsync(Vendor vendor)
+    {
+        var saved = await VendorStore.SaveAsync(vendor);
+        Navigation.NavigateTo($"vendors/{saved.Id}");
+    }
+
+    private async Task UpdateAsync(Vendor vendor)
+    {
+        try
+        {
+            await VendorStore.SaveAsync(vendor);
+            editing = false;
+            error = null;
+            await LoadAsync();
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+            editing = false;
+            await LoadAsync();
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        // Beans and bags stay; they just lose their link to the deleted vendor.
+        foreach (var bean in beans.Where(bean => bean.RoasterId == current.Id))
+        {
+            await BeanStore.SaveAsync(bean with { RoasterId = null });
+        }
+
+        foreach (var bag in bags.Where(bag => bag.SellerId == current.Id))
+        {
+            await BagStore.SaveAsync(bag with { SellerId = null });
+        }
+
+        await VendorStore.DeleteAsync(current.Id);
+        Navigation.NavigateTo("vendors");
+    }
+
+    public void Dispose()
+    {
+        VendorStore.Changed -= OnStoreChanged;
+        BeanStore.Changed -= OnStoreChanged;
+        BagStore.Changed -= OnStoreChanged;
+    }
+}

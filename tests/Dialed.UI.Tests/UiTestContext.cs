@@ -1,5 +1,6 @@
 using Bunit;
 using Dialed.Client;
+using Dialed.Client.Data;
 using Dialed.Client.Preferences;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -17,6 +18,9 @@ public abstract class UiTestContext : BunitContext
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
         Services.AddSingleton<IPwaState>(Pwa);
+        Services.AddSingleton(TimeProvider.System);
+        Services.AddSingleton<ICurrentContext, LocalContext>();
+        Services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
         Services.AddSingleton<IUserPreferences, InMemoryUserPreferences>();
         Services.AddSingleton<UnitFormatter>();
         JSInterop.Mode = JSRuntimeMode.Loose;
