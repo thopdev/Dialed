@@ -268,4 +268,49 @@
   <data name="Recipe_Favourite" xml:space="preserve"><value>Favourite</value></data>
   <data name="Recipe_Unfavourite" xml:space="preserve"><value>Remove favourite</value></data>
   <data name="Bean_BestRecipe" xml:space="preserve"><value>Best recipe: {0}</value></data>
+  <data name="Brew_NoBags" xml:space="preserve"><value>No bags to brew from yet. Add a bag first.</value></data>
+  <data name="Brew_PickBag" xml:space="preserve"><value>Choose the bag you are brewing from.</value></data>
+  <data name="Brew_SelectPrompt" xml:space="preserve"><value>Select a bag to start a brew.</value></data>
+  <data name="Brew_Left" xml:space="preserve"><value>{0} left</value></data>
+  <data name="Brew_Again" xml:space="preserve"><value>Brew again</value></data>
+  <data name="Brew_WithRecipe" xml:space="preserve"><value>Brew with a recipe</value></data>
+  <data name="Brew_NoRecipes" xml:space="preserve"><value>No recipes yet.</value></data>
+  <data name="Brew_WithoutRecipe" xml:space="preserve"><value>Brew without a recipe</value></data>
+  <data name="Brew_LogTitle" xml:space="preserve"><value>Log a brew</value></data>
+  <data name="Brew_Save" xml:space="preserve"><value>Save brew</value></data>
+  <data name="Brew_Drink" xml:space="preserve"><value>Drink</value></data>
+  <data name="Brew_Milk" xml:space="preserve"><value>Milk</value></data>
+  <data name="Brew_MilkType" xml:space="preserve"><value>Milk type</value></data>
+  <data name="Brew_DoseRequired" xml:space="preserve"><value>Enter the dose.</value></data>
+  <data name="Brew_Taste" xml:space="preserve"><value>How did it taste?</value></data>
+  <data name="Taste_Acidity" xml:space="preserve"><value>Acidity</value></data>
+  <data name="Taste_Sour" xml:space="preserve"><value>Sour</value></data>
+  <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
+  <data name="Taste_Strength" xml:space="preserve"><value>Strength</value></data>
+  <data name="Taste_Weak" xml:space="preserve"><value>Weak</value></data>
+  <data name="Taste_Strong" xml:space="preserve"><value>Strong</value></data>
+  <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>
+  <data name="Taste_Thin" xml:space="preserve"><value>Thin</value></data>
+  <data name="Taste_Heavy" xml:space="preserve"><value>Heavy</value></data>
+  <data name="Taste_Sweetness" xml:space="preserve"><value>Sweetness</value></data>
+  <data name="Taste_Flat" xml:space="preserve"><value>Flat</value></data>
+  <data name="Taste_Sweet" xml:space="preserve"><value>Sweet</value></data>
+  <data name="DrinkType_Espresso" xml:space="preserve"><value>Espresso</value></data>
+  <data name="DrinkType_Ristretto" xml:space="preserve"><value>Ristretto</value></data>
+  <data name="DrinkType_Lungo" xml:space="preserve"><value>Lungo</value></data>
+  <data name="DrinkType_Americano" xml:space="preserve"><value>Americano</value></data>
+  <data name="DrinkType_Cortado" xml:space="preserve"><value>Cortado</value></data>
+  <data name="DrinkType_Cappuccino" xml:space="preserve"><value>Cappuccino</value></data>
+  <data name="DrinkType_FlatWhite" xml:space="preserve"><value>Flat white</value></data>
+  <data name="DrinkType_Latte" xml:space="preserve"><value>Latte</value></data>
+  <data name="DrinkType_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="DrinkType_ColdBrew" xml:space="preserve"><value>Cold brew</value></data>
+  <data name="DrinkType_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="MilkType_Whole" xml:space="preserve"><value>Whole</value></data>
+  <data name="MilkType_SemiSkimmed" xml:space="preserve"><value>Semi-skimmed</value></data>
+  <data name="MilkType_Skimmed" xml:space="preserve"><value>Skimmed</value></data>
+  <data name="MilkType_Oat" xml:space="preserve"><value>Oat</value></data>
+  <data name="MilkType_Soy" xml:space="preserve"><value>Soy</value></data>
+  <data name="MilkType_Almond" xml:space="preserve"><value>Almond</value></data>
+  <data name="MilkType_Other" xml:space="preserve"><value>Other</value></data>
 </root>

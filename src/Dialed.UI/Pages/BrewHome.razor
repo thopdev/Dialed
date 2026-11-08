@@ -1,0 +1,158 @@
+@page "/"
+@page "/brew/{BagId}"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Inventory
+@using Dialed.Domain.Model
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Recipe> RecipeStore
+@inject IRepository<Brew> BrewStore
+@inject UnitFormatter Units
+
+<ListDetailLayout HasSelection="@(BagId is not null)">
+    <List>
+        <PageHeader Title="@L["Nav_Brew"]" />
+
+        @if (bags is null)
+        {
+            <Loading IsLoading="true" />
+        }
+        else if (Active.Count == 0)
+        {
+            <EmptyState Message="@L["Brew_NoBags"]" />
+            <a class="dialed-button dialed-button-primary" href="bags/new">@L["Bags_New"]</a>
+        }
+        else
+        {
+            <p class="dialed-muted">@L["Brew_PickBag"]</p>
+            <div class="dialed-list">
+                @foreach (var bag in Active)
+                {
+                    <ListRow Title="@BeanName(bag.BeanId)" Subtitle="@LeftText(bag)" Href="@($"brew/{bag.Id}")" />
+                }
+            </div>
+        }
+    </List>
+    <Detail>
+        @if (BagId is null)
+        {
+            <EmptyState Message="@L["Brew_SelectPrompt"]" />
+        }
+        else if (current is null)
+        {
+            <PageHeader Title="@L["Nav_Brew"]" BackHref="/" />
+            <EmptyState Message="@L["Bags_NotFound"]" />
+        }
+        else
+        {
+            <PageHeader Title="@BeanName(current.BeanId)" BackHref="/" />
+            <p class="dialed-muted">@LeftText(current)</p>
+
+            @if (last is not null)
+            {
+                <a id="brew-again" class="dialed-button dialed-button-primary" href="@($"brew/{current.Id}/log/again/{last.Id}")">@L["Brew_Again"] · @Describe(last)</a>
+            }
+
+            <h2>@L["Brew_WithRecipe"]</h2>
+            @if (recipesForBag.Count == 0)
+            {
+                <p class="dialed-muted">@L["Brew_NoRecipes"]</p>
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var recipe in recipesForBag)
+                    {
+                        <ListRow Title="@recipe.Name" Subtitle="@MethodName(recipe.MethodCode)" Href="@($"brew/{current.Id}/log/recipe/{recipe.Id}")" />
+                    }
+                </div>
+            }
+
+            <div class="dialed-form-actions">
+                <a id="brew-blank" class="dialed-button" href="@($"brew/{current.Id}/log")">@L["Brew_WithoutRecipe"]</a>
+            </div>
+        }
+    </Detail>
+</ListDetailLayout>
+
+@code {
+    private IReadOnlyList<Bag>? bags;
+    private IReadOnlyList<Bean> beans = [];
+    private IReadOnlyList<Brew> brews = [];
+    private IReadOnlyList<Recipe> recipes = [];
+    private Bag? current;
+    private Brew? last;
+    private IReadOnlyList<Recipe> recipesForBag = [];
+
+    [Parameter]
+    public string? BagId { get; set; }
+
+    private IReadOnlyList<Bag> Active =>
+        [.. (bags ?? []).Where(b => b.Status != BagStatus.Finished && b.Status != BagStatus.Frozen).OrderBy(b => BeanName(b.BeanId), StringComparer.OrdinalIgnoreCase)];
+
+    protected override async Task OnInitializedAsync()
+    {
+        BagStore.Changed += OnStoreChanged;
+        BrewStore.Changed += OnStoreChanged;
+        RecipeStore.Changed += OnStoreChanged;
+        BeanStore.Changed += OnStoreChanged;
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        bags = await BagStore.ListAsync();
+        beans = await BeanStore.ListAsync();
+        brews = await BrewStore.ListAsync();
+        recipes = await RecipeStore.ListAsync();
+        current = BagId is null ? null : bags.FirstOrDefault(b => b.Id == BagId);
+        last = current is null ? null : BrewPrefill.Last(current.Id, brews);
+        recipesForBag = current is null
+            ? []
+            : [.. recipes.Where(r => r.BeanId == current.BeanId || r.BeanId is null)
+                .OrderByDescending(r => r.BeanId == current.BeanId)
+                .ThenBy(r => r.Name, StringComparer.OrdinalIgnoreCase)];
+    }
+
+    private void OnStoreChanged() => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private string BeanName(string beanId) => beans.FirstOrDefault(b => b.Id == beanId)?.Name ?? L["Bag_UnknownBean"].Value;
+
+    private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
+
+    private string LeftText(Bag bag)
+    {
+        var remaining = BagInventory.Remaining(bag.WeightG, brews.Where(b => b.BagId == bag.Id && !b.Deleted).Select(b => b.DoseG), []);
+        return string.Format(L["Brew_Left"].Value, Units.Weight(BagInventory.Display(remaining)));
+    }
+
+    private string Describe(Brew brew)
+    {
+        var parts = new List<string> { Units.Weight(brew.DoseG) };
+        if ((brew.WaterG ?? brew.YieldG) is { } liquid)
+        {
+            parts.Add(Units.Weight(liquid));
+        }
+
+        parts.Add(MethodName(brew.MethodCode));
+        return string.Join(" · ", parts);
+    }
+
+    public void Dispose()
+    {
+        BagStore.Changed -= OnStoreChanged;
+        BrewStore.Changed -= OnStoreChanged;
+        RecipeStore.Changed -= OnStoreChanged;
+        BeanStore.Changed -= OnStoreChanged;
+    }
+}
