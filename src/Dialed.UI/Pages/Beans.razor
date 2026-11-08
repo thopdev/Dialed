@@ -179,6 +179,9 @@
             </Card>
 
             <h2>@L["Bean_BagsHeading"]</h2>
+            <div class="dialed-form-actions">
+                <a class="dialed-button" href="@($"bags/new?beanId={current.Id}")">@L["Bean_AddBag"]</a>
+            </div>
             @if (currentBags.Count == 0)
             {
                 <p class="dialed-muted">@L["Bean_NoBags"]</p>
@@ -188,7 +191,7 @@
                 <div class="dialed-list">
                     @foreach (var bag in currentBags)
                     {
-                        <ListRow Title="@Units.Weight(bag.WeightG)" Subtitle="@L[$"BagStatus_{bag.Status}"].Value" />
+                        <ListRow Title="@Units.Weight(bag.WeightG)" Subtitle="@L[$"BagStatus_{bag.Status}"].Value" Href="@($"bags/{bag.Id}")" />
                     }
                 </div>
             }

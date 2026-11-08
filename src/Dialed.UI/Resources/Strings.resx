@@ -146,4 +146,47 @@
   <data name="BagStatus_Open" xml:space="preserve"><value>Open</value></data>
   <data name="BagStatus_Frozen" xml:space="preserve"><value>Frozen</value></data>
   <data name="BagStatus_Finished" xml:space="preserve"><value>Finished</value></data>
+  <data name="More_Bags" xml:space="preserve"><value>Bags</value></data>
+  <data name="Bean_AddBag" xml:space="preserve"><value>Add bag</value></data>
+  <data name="Bags_Title" xml:space="preserve"><value>Bags</value></data>
+  <data name="Bags_New" xml:space="preserve"><value>Add bag</value></data>
+  <data name="Bags_Empty" xml:space="preserve"><value>No bags yet. Add the first one you bought.</value></data>
+  <data name="Bags_Filter" xml:space="preserve"><value>Show</value></data>
+  <data name="Bags_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Bags_All" xml:space="preserve"><value>All</value></data>
+  <data name="Bags_NoResults" xml:space="preserve"><value>No active bags.</value></data>
+  <data name="Bags_SelectPrompt" xml:space="preserve"><value>Select a bag to see its details.</value></data>
+  <data name="Bags_NotFound" xml:space="preserve"><value>This bag no longer exists.</value></data>
+  <data name="Bag_Bean" xml:space="preserve"><value>Bean</value></data>
+  <data name="Bag_ChooseBean" xml:space="preserve"><value>Choose a bean</value></data>
+  <data name="Bag_NewBean" xml:space="preserve"><value>New bean</value></data>
+  <data name="Bag_BeanRequired" xml:space="preserve"><value>Choose a bean.</value></data>
+  <data name="Bag_Seller" xml:space="preserve"><value>Bought from</value></data>
+  <data name="Bag_Price" xml:space="preserve"><value>Price (EUR)</value></data>
+  <data name="Bag_Weight" xml:space="preserve"><value>Weight (g)</value></data>
+  <data name="Bag_WeightRequired" xml:space="preserve"><value>Enter the weight of the bag.</value></data>
+  <data name="Bag_RoastDate" xml:space="preserve"><value>Roast date</value></data>
+  <data name="Bag_PurchasedOn" xml:space="preserve"><value>Purchased on</value></data>
+  <data name="Bag_OpenedOn" xml:space="preserve"><value>Opened on</value></data>
+  <data name="Bag_FrozenSince" xml:space="preserve"><value>Frozen since</value></data>
+  <data name="Bag_FinishedOn" xml:space="preserve"><value>Finished on</value></data>
+  <data name="Bag_Storage" xml:space="preserve"><value>Storage</value></data>
+  <data name="BagStorage_Pantry" xml:space="preserve"><value>Pantry</value></data>
+  <data name="BagStorage_Fridge" xml:space="preserve"><value>Fridge</value></data>
+  <data name="BagStorage_Freezer" xml:space="preserve"><value>Freezer</value></data>
+  <data name="Bag_Remaining" xml:space="preserve"><value>Left</value></data>
+  <data name="Bag_Age" xml:space="preserve"><value>Age</value></data>
+  <data name="Bag_AgeDays" xml:space="preserve"><value>{0} days (not counting time frozen)</value></data>
+  <data name="Bag_StepDate" xml:space="preserve"><value>Date for the action</value></data>
+  <data name="Bag_Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Bag_Freeze" xml:space="preserve"><value>Freeze</value></data>
+  <data name="Bag_Thaw" xml:space="preserve"><value>Thaw</value></data>
+  <data name="Bag_Finish" xml:space="preserve"><value>Finish</value></data>
+  <data name="Bag_StepInvalid" xml:space="preserve"><value>That date does not work for this action.</value></data>
+  <data name="Bag_OfferFinish" xml:space="preserve"><value>Nothing is left in this bag. Mark it finished?</value></data>
+  <data name="Bag_BoughtAgain" xml:space="preserve"><value>Bought again</value></data>
+  <data name="Bag_UnknownBean" xml:space="preserve"><value>Unknown bean</value></data>
+  <data name="Bag_DeleteTitle" xml:space="preserve"><value>Delete this bag?</value></data>
+  <data name="Bag_DeleteBody" xml:space="preserve"><value>This cannot be undone.</value></data>
+  <data name="Bag_Status" xml:space="preserve"><value>Status</value></data>
 </root>

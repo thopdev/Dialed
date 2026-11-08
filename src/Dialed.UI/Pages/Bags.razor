@@ -1,0 +1,339 @@
+@page "/bags"
+@page "/bags/{Id}"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Inventory
+@using Dialed.Domain.Model
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Vendor> VendorStore
+@inject UnitFormatter Units
+@inject NavigationManager Navigation
+@inject TimeProvider Time
+
+<ListDetailLayout HasSelection="@(Id is not null)">
+    <List>
+        <PageHeader Title="@L["Bags_Title"]" BackHref="more">
+            <Actions>
+                <a class="dialed-button dialed-button-primary" href="bags/new">@L["Bags_New"]</a>
+            </Actions>
+        </PageHeader>
+
+        @if (bags is null)
+        {
+            <Loading IsLoading="true" />
+        }
+        else if (bags.Count == 0)
+        {
+            <EmptyState Message="@L["Bags_Empty"]" />
+        }
+        else
+        {
+            <ChipGroup Label="@L["Bags_Filter"]">
+                <Chip Selected="@(!showFinished)" OnClick="@(() => showFinished = false)">@L["Bags_Active"]</Chip>
+                <Chip Selected="@showFinished" OnClick="@(() => showFinished = true)">@L["Bags_All"]</Chip>
+            </ChipGroup>
+
+            @if (Visible.Count == 0)
+            {
+                <EmptyState Message="@L["Bags_NoResults"]" />
+            }
+            else
+            {
+                <div class="dialed-list">
+                    @foreach (var bag in Visible)
+                    {
+                        <ListRow Title="@BeanName(bag.BeanId)" Subtitle="@Summary(bag)" Href="@($"bags/{bag.Id}")" />
+                    }
+                </div>
+            }
+        }
+    </List>
+    <Detail>
+        @if (Id is null)
+        {
+            <EmptyState Message="@L["Bags_SelectPrompt"]" />
+        }
+        else if (Id == "new")
+        {
+            <PageHeader Title="@L["Bags_New"]" BackHref="bags" />
+            <BagForm Beans="beans" BeanId="@BeanId" Today="Today" OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("bags"))" />
+        }
+        else if (current is null)
+        {
+            <PageHeader Title="@L["Bags_Title"]" BackHref="bags" />
+            <EmptyState Message="@L["Bags_NotFound"]" />
+        }
+        else if (editing)
+        {
+            <PageHeader Title="@BeanName(current.BeanId)" BackHref="bags" />
+            <BagForm Bag="current" Beans="beans" OnSubmit="UpdateAsync" OnCancel="@(() => editing = false)" />
+        }
+        else
+        {
+            <PageHeader Title="@BeanName(current.BeanId)" BackHref="bags">
+                <Actions>
+                    <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
+                    <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                </Actions>
+            </PageHeader>
+
+            @if (error is not null)
+            {
+                <ErrorBanner Message="@error" />
+            }
+
+            @if (confirmingDelete)
+            {
+                <div class="dialed-confirm" role="alertdialog" aria-label="@L["Bag_DeleteTitle"]">
+                    <p><strong>@L["Bag_DeleteTitle"]</strong></p>
+                    <p>@L["Bag_DeleteBody"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+
+            @if (BagInventory.ShouldOfferFinish(current.Status, remaining))
+            {
+                <div class="dialed-confirm" role="status" id="bag-offer-finish">
+                    <p>@L["Bag_OfferFinish"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-primary" @onclick="@(() => Step(BagLifecycle.TryFinish))">@L["Bag_Finish"]</button>
+                    </div>
+                </div>
+            }
+
+            <Card>
+                <ChipGroup Label="@L["Bag_Status"]"><Chip Selected="true">@L[$"BagStatus_{current.Status}"]</Chip></ChipGroup>
+                <dl class="dialed-facts">
+                    <dt>@L["Bag_Remaining"]</dt>
+                    <dd>@Units.Weight(BagInventory.Display(remaining)) / @Units.Weight(current.WeightG)</dd>
+                    @if (BagLifecycle.AgeDays(current, Today) is { } age)
+                    {
+                        <dt>@L["Bag_Age"]</dt>
+                        <dd>@string.Format(L["Bag_AgeDays"].Value, age)</dd>
+                    }
+                    @if (SellerName(current) is { } seller)
+                    {
+                        <dt>@L["Bag_Seller"]</dt>
+                        <dd><a href="@($"vendors/{current.SellerId}")">@seller</a></dd>
+                    }
+                    @if (current.PriceCents is { } cents)
+                    {
+                        <dt>@L["Bag_Price"]</dt>
+                        <dd>@((cents / 100m).ToString("0.00")) @current.Currency</dd>
+                    }
+                    @DateFact("Bag_RoastDate", current.RoastDate)
+                    @DateFact("Bag_PurchasedOn", current.PurchasedOn)
+                    @DateFact("Bag_OpenedOn", current.OpenedOn)
+                    @DateFact("Bag_FrozenSince", current.FrozenOn)
+                    @DateFact("Bag_FinishedOn", current.FinishedOn)
+                    <dt>@L["Bag_Storage"]</dt>
+                    <dd>@L[$"BagStorage_{current.Storage}"]</dd>
+                </dl>
+            </Card>
+
+            @if (current.Status != BagStatus.Finished)
+            {
+                <div class="dialed-field">
+                    <label for="bag-step-date">@L["Bag_StepDate"]</label>
+                    <input id="bag-step-date" type="date" @bind="stepDate" />
+                </div>
+                <div class="dialed-form-actions">
+                    @if (BagLifecycle.CanOpen(current))
+                    {
+                        <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryOpen))">@L["Bag_Open"]</button>
+                    }
+                    @if (BagLifecycle.CanFreeze(current))
+                    {
+                        <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryFreeze))">@L["Bag_Freeze"]</button>
+                    }
+                    @if (BagLifecycle.CanThaw(current))
+                    {
+                        <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryThaw))">@L["Bag_Thaw"]</button>
+                    }
+                    <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryFinish))">@L["Bag_Finish"]</button>
+                </div>
+            }
+
+            <div class="dialed-form-actions">
+                <button type="button" class="dialed-button" @onclick="BoughtAgainAsync">@L["Bag_BoughtAgain"]</button>
+            </div>
+        }
+    </Detail>
+</ListDetailLayout>
+
+@code {
+    private delegate bool LifecycleStep(Bag bag, DateOnly date, out Bag result);
+
+    private IReadOnlyList<Bag>? bags;
+    private IReadOnlyList<Bean> beans = [];
+    private IReadOnlyList<Vendor> vendors = [];
+    private Bag? current;
+    private decimal remaining;
+    private bool showFinished;
+    private bool editing;
+    private bool confirmingDelete;
+    private string? error;
+    private DateOnly? stepDate;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>Preselects the bean when adding a bag from a bean's page.</summary>
+    [Parameter, SupplyParameterFromQuery(Name = "beanId")]
+    public string? BeanId { get; set; }
+
+    private DateOnly Today => DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+
+    private IReadOnlyList<Bag> Visible =>
+        [.. (bags ?? []).Where(bag => showFinished || bag.Status != BagStatus.Finished)
+            .OrderBy(bag => bag.Status == BagStatus.Finished)
+            .ThenByDescending(bag => bag.PurchasedOn ?? DateOnly.MinValue)
+            .ThenByDescending(bag => bag.CreatedAt)];
+
+    private RenderFragment DateFact(string labelKey, DateOnly? date) => __builder =>
+    {
+        if (date is { } value)
+        {
+            <dt>@L[labelKey]</dt>
+            <dd>@value.ToString("yyyy-MM-dd")</dd>
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        BagStore.Changed += OnStoreChanged;
+        BeanStore.Changed += OnStoreChanged;
+        VendorStore.Changed += OnStoreChanged;
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        editing = false;
+        confirmingDelete = false;
+        error = null;
+        stepDate = Today;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        bags = await BagStore.ListAsync();
+        beans = [.. (await BeanStore.ListAsync()).OrderBy(bean => bean.Name)];
+        vendors = await VendorStore.ListAsync();
+        current = Id is null or "new" ? null : bags.FirstOrDefault(bag => bag.Id == Id);
+
+        // No brews are logged yet (#64), so nothing but the bag weight counts toward what is left.
+        remaining = current is null ? 0m : BagInventory.Remaining(current.WeightG, [], []);
+    }
+
+    private void OnStoreChanged() => _ = InvokeAsync(async () =>
+    {
+        if (editing)
+        {
+            return;
+        }
+
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private string BeanName(string beanId) => beans.FirstOrDefault(bean => bean.Id == beanId)?.Name ?? L["Bag_UnknownBean"].Value;
+
+    private string? SellerName(Bag bag) => vendors.FirstOrDefault(vendor => vendor.Id == bag.SellerId)?.Name;
+
+    private string Summary(Bag bag)
+    {
+        var parts = new List<string> { Units.Weight(bag.WeightG), L[$"BagStatus_{bag.Status}"].Value };
+        if (BagLifecycle.AgeDays(bag, Today) is { } age && bag.Status != BagStatus.Finished)
+        {
+            parts.Add(string.Format(L["Bag_AgeDays"].Value, age));
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private async Task CreateAsync(Bag bag)
+    {
+        var saved = await BagStore.SaveAsync(bag with { Status = BagStatus.Sealed });
+        Navigation.NavigateTo($"bags/{saved.Id}");
+    }
+
+    private async Task UpdateAsync(Bag bag)
+    {
+        try
+        {
+            await BagStore.SaveAsync(bag);
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
+        editing = false;
+        await LoadAsync();
+    }
+
+    private async Task Step(LifecycleStep step)
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        if (step(current, stepDate ?? Today, out var changed))
+        {
+            try
+            {
+                await BagStore.SaveAsync(changed);
+                error = null;
+            }
+            catch (ConflictException)
+            {
+                error = L["Error_Conflict"];
+            }
+        }
+        else
+        {
+            error = L["Bag_StepInvalid"];
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task BoughtAgainAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        var saved = await BagStore.SaveAsync(BagLifecycle.BoughtAgain(current, Today));
+        Navigation.NavigateTo($"bags/{saved.Id}");
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        await BagStore.DeleteAsync(current.Id);
+        Navigation.NavigateTo("bags");
+    }
+
+    public void Dispose()
+    {
+        BagStore.Changed -= OnStoreChanged;
+        BeanStore.Changed -= OnStoreChanged;
+        VendorStore.Changed -= OnStoreChanged;
+    }
+}
