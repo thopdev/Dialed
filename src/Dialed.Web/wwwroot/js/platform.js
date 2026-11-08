@@ -268,6 +268,11 @@ export async function wakeLockRelease() {
 export async function playCue(cue) {
     const Context = window.AudioContext ?? window.webkitAudioContext;
     if (!Context) return;
+    // Timer cues are functional, so they sound even when the iPhone's ring/silent switch is on silent
+    // (Safari 16.4+; browsers without the Audio Session API keep the default behaviour).
+    if (navigator.audioSession) {
+        navigator.audioSession.type = 'playback';
+    }
     state.audio ??= new Context();
     if (state.audio.state === 'suspended') await state.audio.resume();
     const beeps = cue === 'done' ? [[880, 0, 0.18], [880, 0.28, 0.18], [1175, 0.56, 0.35]] : [[1000, 0, 0.06]];
