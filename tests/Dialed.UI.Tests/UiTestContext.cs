@@ -1,6 +1,7 @@
 using Bunit;
 using Dialed.Client;
 using Dialed.Client.Account;
+using Dialed.Client.Households;
 using Dialed.Client.Data;
 using Dialed.Client.Platform;
 using Dialed.Client.Preferences;
@@ -37,6 +38,9 @@ public abstract class UiTestContext : BunitContext
     /// <summary>The API's account endpoints: set <see cref="TestAccountServer.Respond"/> to change what it answers.</summary>
     protected TestAccountServer Accounts { get; } = new();
 
+    /// <summary>The API's household endpoints: a household of one by default.</summary>
+    protected TestHouseholdServer HouseholdServer { get; } = new();
+
     protected UiTestContext()
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
@@ -61,6 +65,8 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<AuthSession>();
         Services.AddSingleton(new AccountApi(new HttpClient(Accounts) { BaseAddress = new Uri("https://api.test/") }));
         Services.AddSingleton<AccountService>();
+        Services.AddSingleton(new HouseholdApi(new HttpClient(HouseholdServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
+        Services.AddSingleton<HouseholdManager>();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddFluentUIComponents();
         Services.AddLocalization();
@@ -182,6 +188,55 @@ public abstract class UiTestContext : BunitContext
                 Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
             });
         }
+    }
+
+    /// <summary>A stand-in for the household endpoints; set <see cref="Members"/> and <see cref="YouAreOwner"/> to shape the household.</summary>
+    protected sealed class TestHouseholdServer : HttpMessageHandler
+    {
+        public List<(string Name, string Id)> Members { get; set; } = [("You", "u1")];
+
+        public bool YouAreOwner { get; set; } = true;
+
+        public List<string> Calls { get; } = [];
+
+        /// <summary>Overrides the answer for "METHOD path"; return <c>null</c> for the default answer.</summary>
+        public Func<string, HttpResponseMessage?>? Respond { get; set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var call = $"{request.Method} {request.RequestUri!.AbsolutePath.TrimStart('/')}";
+            Calls.Add(call);
+            if (Respond?.Invoke(call) is { } custom)
+            {
+                return Task.FromResult(custom);
+            }
+
+            if (call == "POST households/mine/invites")
+            {
+                return Task.FromResult(Json("{\"code\":\"ABCD2345\",\"expiresAt\":\"2099-01-01T00:00:00+00:00\"}"));
+            }
+
+            if (call.StartsWith("DELETE households/mine/members/", StringComparison.Ordinal))
+            {
+                Members.RemoveAll(m => m.Id == call["DELETE households/mine/members/".Length..]);
+            }
+            else if (call == "POST households/mine/join")
+            {
+                Members = [("Owner", "owner"), ("You", "u1")];
+                YouAreOwner = false;
+            }
+            else if (call == "POST households/mine/leave")
+            {
+                Members = [("You", "u1")];
+                YouAreOwner = true;
+            }
+
+            var members = string.Join(",", Members.Select((m, i) => $"{{\"userId\":\"{m.Id}\",\"displayName\":\"{m.Name}\",\"isOwner\":{(YouAreOwner ? (m.Id == "u1" ? "true" : "false") : (m.Id == "owner" ? "true" : "false"))}}}"));
+            return Task.FromResult(Json($"{{\"id\":\"h1\",\"name\":\"Our household\",\"members\":[{members}],\"youAreOwner\":{(YouAreOwner ? "true" : "false")}}}"));
+        }
+
+        private static HttpResponseMessage Json(string json) =>
+            new(System.Net.HttpStatusCode.OK) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
     }
 
     protected sealed class TestPhotoCapture : IPhotoCapture

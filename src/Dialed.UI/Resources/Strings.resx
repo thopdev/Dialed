@@ -445,4 +445,16 @@
   <data name="Account_Cancelled" xml:space="preserve"><value>Cancelled. Nothing was changed.</value></data>
   <data name="Account_NotSupported" xml:space="preserve"><value>This browser cannot use passkeys.</value></data>
   <data name="Account_Unavailable" xml:space="preserve"><value>That did not work. Check your connection and try again.</value></data>
+  <data name="Household_SignInFirst" xml:space="preserve"><value>Sign in (see Account below) to share your coffee with other people in a household.</value></data>
+  <data name="Household_Loading" xml:space="preserve"><value>Loading your household...</value></data>
+  <data name="Household_LoadFailed" xml:space="preserve"><value>Could not load your household. Check your connection.</value></data>
+  <data name="Household_Owner" xml:space="preserve"><value>owner</value></data>
+  <data name="Household_Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Household_ConfirmRemove" xml:space="preserve"><value>Really remove</value></data>
+  <data name="Household_CreateInvite" xml:space="preserve"><value>Create invite code</value></data>
+  <data name="Household_InviteCode" xml:space="preserve"><value>Invite code: {0} (valid until {1}, works once)</value></data>
+  <data name="Household_HaveCode" xml:space="preserve"><value>Have an invite code?</value></data>
+  <data name="Household_Join" xml:space="preserve"><value>Join household</value></data>
+  <data name="Household_Leave" xml:space="preserve"><value>Leave household</value></data>
+  <data name="Household_ConfirmLeave" xml:space="preserve"><value>Really leave</value></data>
 </root>

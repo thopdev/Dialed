@@ -1,5 +1,6 @@
 using Dialed.Client;
 using Dialed.Client.Account;
+using Dialed.Client.Households;
 using Dialed.Client.Sync;
 using Dialed.Client.Preferences;
 using Dialed.UI;
@@ -24,7 +25,9 @@ builder.Services.AddDialedData();
 builder.Services.AddSingleton<ISyncTransport>(sp => new HttpSyncTransport(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddSingleton<ISessionStore, BrowserSessionStore>();
 builder.Services.AddDialedSync();
-builder.Services.AddDialedAccount(_ => new AccountApi(new HttpClient { BaseAddress = apiBaseAddress }));
+builder.Services.AddDialedAccount(
+    _ => new AccountApi(new HttpClient { BaseAddress = apiBaseAddress }),
+    sp => new HouseholdApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());

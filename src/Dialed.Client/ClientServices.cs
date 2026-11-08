@@ -1,5 +1,6 @@
 using Dialed.Client.Account;
 using Dialed.Client.Data;
+using Dialed.Client.Households;
 using Dialed.Client.Sync;
 using Dialed.Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,15 +67,18 @@ public static class ClientServices
     /// <see cref="AddDialedData"/> and <see cref="AddDialedSync"/>; the host registers <see cref="AccountApi"/>'s HttpClient through
     /// <paramref name="api"/> and an <see cref="Platform.IPasskeyClient"/> (and, to keep the sign-in, an <see cref="ISessionStore"/>).
     /// </summary>
-    public static IServiceCollection AddDialedAccount(this IServiceCollection services, Func<IServiceProvider, AccountApi> api)
+    public static IServiceCollection AddDialedAccount(this IServiceCollection services, Func<IServiceProvider, AccountApi> api, Func<IServiceProvider, HouseholdApi> households)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(api);
+        ArgumentNullException.ThrowIfNull(households);
 
         services.TryAddSingleton<ISessionStore, InMemorySessionStore>();
         services.TryAddSingleton<AuthSession>();
         services.TryAddSingleton(api);
+        services.TryAddSingleton(households);
         services.TryAddSingleton<AccountService>();
+        services.TryAddSingleton<HouseholdManager>();
 
         // The signed-in person (and their household) stamp new records, and their token authorises sync.
         services.RemoveAll<ICurrentContext>();

@@ -107,6 +107,17 @@ public sealed class InMemorySyncState : ISyncState
         return Task.CompletedTask;
     }
 
+    public Task ResetServerStateAsync(CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            versions.Clear();
+            watermarks.Clear();
+        }
+
+        return Task.CompletedTask;
+    }
+
     public Task AddConflictAsync(ConflictLogEntry entry, CancellationToken cancellationToken = default)
     {
         lock (gate)
