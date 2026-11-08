@@ -84,7 +84,7 @@ public sealed class HttpSyncTransportTests
     {
         var (transport, _) = Create(_ => Json(status, """{"error":"nope"}"""));
 
-        var result = await transport.PushAsync("vendors", new Vendor { Id = "v1" }, null, TestContext.Current.CancellationToken);
+        var result = await transport.PushAsync("vendors", new Vendor { Id = "v1", Name = "x" }, null, TestContext.Current.CancellationToken);
 
         result.Outcome.ShouldBe(PushOutcome.Rejected);
         result.Message.ShouldContain("nope");
@@ -98,7 +98,7 @@ public sealed class HttpSyncTransportTests
     {
         var (transport, _) = Create(_ => new HttpResponseMessage(status));
 
-        await Should.ThrowAsync<SyncTransportException>(() => transport.PushAsync("vendors", new Vendor { Id = "v1" }, null, TestContext.Current.CancellationToken));
+        await Should.ThrowAsync<SyncTransportException>(() => transport.PushAsync("vendors", new Vendor { Id = "v1", Name = "x" }, null, TestContext.Current.CancellationToken));
         await Should.ThrowAsync<SyncTransportException>(() => transport.PullAsync<Vendor>("vendors", null, 10, TestContext.Current.CancellationToken));
     }
 
