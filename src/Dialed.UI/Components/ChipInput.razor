@@ -1,0 +1,61 @@
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+
+@* A list of short values shown as removable chips (varieties, tasting notes). Enter or the Add button adds the typed value. *@
+<div class="dialed-chip-input">
+    <label for="@inputId">@Label</label>
+    @if (Values.Count > 0)
+    {
+        <ul class="dialed-chip-list">
+            @foreach (var value in Values)
+            {
+                var captured = value;
+                <li>
+                    <Chip Selected="true">@captured</Chip>
+                    <button type="button" class="dialed-picker-clear" aria-label="@string.Format(L["Chip_Remove"].Value, captured)"
+                            @onclick="() => RemoveAsync(captured)">×</button>
+                </li>
+            }
+        </ul>
+    }
+    <div class="dialed-chip-add">
+        <input id="@inputId" type="text" autocomplete="off" @bind="text" @bind:event="oninput"
+               @onkeydown="OnKeyDown" />
+        <button type="button" class="dialed-button" @onclick="AddAsync">@L["Chip_Add"]</button>
+    </div>
+</div>
+
+@code {
+    private readonly string inputId = $"chips-{Guid.NewGuid():N}";
+    private string text = "";
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    [Parameter]
+    public IReadOnlyList<string> Values { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<IReadOnlyList<string>> ValuesChanged { get; set; }
+
+    private async Task AddAsync()
+    {
+        var updated = BeanQuery.AddUnique(Values, text);
+        text = "";
+        if (!ReferenceEquals(updated, Values))
+        {
+            await ValuesChanged.InvokeAsync(updated);
+        }
+    }
+
+    private Task RemoveAsync(string value) =>
+        ValuesChanged.InvokeAsync([.. Values.Where(v => !string.Equals(v, value, StringComparison.OrdinalIgnoreCase))]);
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await AddAsync();
+        }
+    }
+}

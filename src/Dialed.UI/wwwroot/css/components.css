@@ -607,3 +607,81 @@ button.dialed-chip::after {
     color: var(--colorNeutralForeground3);
     font-size: 0.875rem;
 }
+
+/* ---- Beans (#52) ----------------------------------------------------------------------------- */
+
+.dialed-field select,
+.dialed-field input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: var(--dialed-space-2) var(--dialed-space-3);
+    font: inherit;
+    color: inherit;
+    background: var(--colorNeutralBackground1);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: var(--dialed-space-2);
+}
+
+.dialed-chip-input {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-1);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-chip-input > label {
+    font-weight: 600;
+}
+
+.dialed-chip-input input[type="text"] {
+    flex: 1;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: var(--dialed-space-2) var(--dialed-space-3);
+    font: inherit;
+    color: inherit;
+    background: var(--colorNeutralBackground1);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-chip-list li {
+    display: flex;
+    align-items: center;
+}
+
+.dialed-chip-add {
+    display: flex;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-facts {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--dialed-space-1) var(--dialed-space-3);
+    margin: var(--dialed-space-3) 0;
+}
+
+.dialed-facts dt {
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-facts dd {
+    margin: 0;
+}
