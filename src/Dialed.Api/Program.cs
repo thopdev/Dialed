@@ -1,5 +1,6 @@
 using Dialed.Api.Auth;
 using Dialed.Api.Configuration;
+using Dialed.Api.Households;
 using Dialed.Api.Passkeys;
 using Dialed.Api.Seeding;
 using Dialed.Api.Sync;
@@ -19,6 +20,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 builder.Services.AddDialedAuth(builder.Configuration, builder.Environment);
 builder.Services.AddDialedPasskeys(builder.Configuration);
 builder.Services.AddDialedSync();
+builder.Services.AddDialedHouseholds(builder.Environment);
 builder.Services.AddDevelopmentSeeding(builder.Configuration);
 
 var app = builder.Build();
@@ -32,5 +34,6 @@ app.MapGet("/", () => "Dialed API");
 app.MapDialedAuth(app.Environment);
 app.MapDialedPasskeys();
 app.MapDialedSync();
+app.MapDialedHouseholds();
 
 app.Run();
