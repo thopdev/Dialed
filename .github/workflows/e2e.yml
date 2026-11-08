@@ -48,6 +48,12 @@ jobs:
           E2E_ROOT: ${{ github.workspace }}/publish/wwwroot
         run: npx playwright test
 
+      - name: Show page snapshots of failed tests
+        if: failure()
+        working-directory: e2e
+        run: |
+          for f in $(find test-results -name error-context.md | head -4); do echo "::group::$f"; head -60 "$f"; echo '::endgroup::'; done
+
       - name: Upload report
         if: failure()
         uses: actions/upload-artifact@v7

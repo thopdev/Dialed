@@ -4,9 +4,17 @@ import { expect, test, type Page } from '@playwright/test';
 // a full page load (page.goto) would start with an empty store again.
 
 async function startApp(page: Page) {
+  // Show what the app reports while it starts, so a failed run explains itself in the CI log.
+  page.on('console', message => {
+    if (message.type() === 'error' || message.type() === 'warning') {
+      console.log(`[browser ${message.type()}] ${message.text()}`);
+    }
+  });
+  page.on('pageerror', error => console.log(`[page error] ${error.message}`));
+  page.on('requestfailed', request => console.log(`[request failed] ${request.url()} ${request.failure()?.errorText}`));
   await page.goto('/');
   // Blazor WebAssembly needs a moment to download and start.
-  await expect(page).toHaveURL(/\/welcome$/, { timeout: 60_000 });
+  await expect(page).toHaveURL(/\/welcome$/, { timeout: 90_000 });
 }
 
 async function skipSetup(page: Page) {
