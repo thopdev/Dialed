@@ -95,9 +95,9 @@
 
     private async Task SubmitAsync()
     {
-        nameError = string.IsNullOrWhiteSpace(name) ? L["Vendor_NameRequired"] : null;
-        kindsError = isRoaster || isSeller ? null : L["Vendor_KindRequired"];
-        websiteError = VendorRules.TryNormalizeWebsite(website, out var normalized) ? null : L["Vendor_WebsiteInvalid"];
+        nameError = string.IsNullOrWhiteSpace(name) ? L["Vendor_NameRequired"].Value : null;
+        kindsError = isRoaster || isSeller ? null : L["Vendor_KindRequired"].Value;
+        websiteError = VendorRules.TryNormalizeWebsite(website, out var normalized) ? null : L["Vendor_WebsiteInvalid"].Value;
         if (nameError is not null || kindsError is not null || websiteError is not null)
         {
             return;
