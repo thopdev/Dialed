@@ -49,4 +49,8 @@
   <data name="Grind_Min" xml:space="preserve"><value>The lowest setting is {0}.</value></data>
   <data name="Grind_Max" xml:space="preserve"><value>The highest setting is {0}.</value></data>
   <data name="Grind_Step" xml:space="preserve"><value>Use steps of {0}.</value></data>
+
+  <data name="Units_Title" xml:space="preserve"><value>Units</value></data>
+  <data name="Units_Metric" xml:space="preserve"><value>Metric (g, ml, °C)</value></data>
+  <data name="Units_Imperial" xml:space="preserve"><value>Imperial (oz, fl oz, °F)</value></data>
 </root>

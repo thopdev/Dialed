@@ -1,4 +1,5 @@
 using Dialed.Client;
+using Dialed.Client.Preferences;
 using Dialed.UI;
 using Dialed.Web;
 using Dialed.Web.Platform;
@@ -20,6 +21,8 @@ builder.Services.AddScoped(_ => new HttpClient { BaseAddress = apiBaseAddress })
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());
+builder.Services.AddSingleton<IUserPreferences, InMemoryUserPreferences>();
+builder.Services.AddSingleton<UnitFormatter>();
 builder.Services.AddBrowserPlatform();
 builder.Services.AddFluentUIComponents();
 builder.Services.AddLocalization();
