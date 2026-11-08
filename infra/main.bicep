@@ -206,5 +206,6 @@ output API_URL string = api.outputs.url
 output WEB_URL string = staticWebApp.outputs.origin
 output STATIC_WEB_APP_NAME string = staticWebApp.outputs.name
 output FUNCTIONS_APP_NAME string = functions.outputs.name
+output FUNCTIONS_URL string = 'https://${functions.outputs.hostname}'
 output COSMOS_ENDPOINT string = cosmosDatabase.outputs.endpoint
 output KEY_VAULT_URI string = keyVault.outputs.uri

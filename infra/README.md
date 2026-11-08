@@ -33,3 +33,12 @@ azd deploy                 # builds and ships the API (Container Apps) and Funct
 - **Data Protection keys** (ADR-0010) must be persisted to Storage/Key Vault before the API runs more than one replica; the Key Vault and roles are ready for that (#30).
 
 CI compiles and lints the templates on every change (`infra` job).
+
+## Deploying from GitHub (#25)
+Every push to `main` runs `.github/workflows/deploy-dev.yml`: `azd provision` when `infra/**` or `azure.yaml` changed, then `azd deploy` for the API and Functions, then a smoke test of `/health` (API) and `/api/health` (Functions). It signs in with OIDC; GitHub holds no Azure secret.
+
+One-time setup (needs `az login` and `gh auth login`, run from the repo root):
+```
+./infra/scripts/setup-github-oidc.ps1
+```
+It creates the app registration `dialed-github-deploy` with a federated credential for the GitHub environment `dev`, grants it Contributor and Role Based Access Control Administrator on the subscription (the Bicep creates role assignments), creates the `dev` environment and sets the variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `AZURE_ENV_NAME` and `AZURE_LOCATION`. Until those exist the workflow skips itself. Run it manually from the Actions tab (with *provision* ticked) for the first deploy.

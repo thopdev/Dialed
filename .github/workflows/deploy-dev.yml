@@ -1,0 +1,100 @@
+name: Deploy dev
+
+# Every merge to main provisions (when infra changed) and deploys the API and Functions to the dev environment.
+# Signs in to Azure with OIDC (federated credential, no client secret). Set up once with
+# infra/scripts/setup-github-oidc.ps1; until then this workflow skips itself.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '.vscode/**'
+  workflow_dispatch:
+    inputs:
+      provision:
+        description: Run azd provision even if infra did not change
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ vars.AZURE_CLIENT_ID != '' }}
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: Azure/setup-azd@v2
+
+      - name: Sign in to Azure (OIDC)
+        run: |
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider github \
+            --tenant-id "$AZURE_TENANT_ID"
+
+      - name: Create azd environment
+        run: azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" --location "$AZURE_LOCATION"
+
+      - name: Detect infrastructure changes
+        id: infra
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.provision }}" = "true" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet HEAD~1 HEAD -- infra azure.yaml 2>/dev/null; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Provision infrastructure
+        if: steps.infra.outputs.changed == 'true'
+        run: azd provision --no-prompt
+
+      # Without a provision the outputs (registry, URLs, ...) are read back from the last deployment in Azure.
+      - name: Load environment values
+        if: steps.infra.outputs.changed != 'true'
+        run: azd env refresh --no-prompt
+
+      - name: Deploy API and Functions
+        run: azd deploy --all --no-prompt
+
+      - name: Smoke test
+        run: |
+          api="$(azd env get-value API_URL)/health"
+          functions="$(azd env get-value FUNCTIONS_URL)/api/health"
+          for url in "$api" "$functions"; do
+            ok=false
+            for attempt in $(seq 1 12); do
+              status="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$url" || true)"
+              echo "$url -> $status (attempt $attempt)"
+              if [ "$status" = "200" ]; then ok=true; break; fi
+              sleep 10
+            done
+            if [ "$ok" != "true" ]; then
+              echo "::error::Smoke test failed: $url is not healthy"
+              exit 1
+            fi
+          done
