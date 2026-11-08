@@ -129,6 +129,10 @@
                 {
                     <p><a href="@current.Website" target="_blank" rel="noopener noreferrer">@current.Website</a></p>
                 }
+                @if (current.LogoPhotoId is not null)
+                {
+                    <PhotoStrip PhotoIds="@(new[] { current.LogoPhotoId })" ReadOnly="true" Label="@L["Vendor_Logo"].Value" />
+                }
                 @if (current.Notes is not null)
                 {
                     <p class="dialed-vendor-notes">@current.Notes</p>

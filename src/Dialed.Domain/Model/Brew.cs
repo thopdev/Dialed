@@ -77,6 +77,8 @@ public sealed record Brew : SyncEntity
     public int? Rating { get; init; }
 
     public string? Notes { get; init; }
+
+    public IReadOnlyList<string> PhotoIds { get; init; } = [];
 }
 
 public static class DrinkTypes

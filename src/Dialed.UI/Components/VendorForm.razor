@@ -44,6 +44,11 @@
     </div>
 
     <div class="dialed-field">
+        <label>@L["Vendor_Logo"]</label>
+        <PhotoStrip PhotoIds="@(logoId is null ? [] : [logoId])" PhotoIdsChanged="@(v => logoId = v.FirstOrDefault())" Single="true" Label="@L["Vendor_Logo"].Value" />
+    </div>
+
+    <div class="dialed-field">
         <label for="vendor-notes">@L["Vendor_Notes"]</label>
         <textarea id="vendor-notes" rows="3" @bind="notes"></textarea>
     </div>
@@ -62,6 +67,7 @@
     private string? city;
     private string? website;
     private string? notes;
+    private string? logoId;
     private string? nameError;
     private string? kindsError;
     private string? websiteError;
@@ -90,6 +96,7 @@
             city = Vendor?.City;
             website = Vendor?.Website;
             notes = Vendor?.Notes;
+            logoId = Vendor?.LogoPhotoId;
         }
     }
 
@@ -112,6 +119,7 @@
             City = Clean(city),
             Website = normalized,
             Notes = Clean(notes),
+            LogoPhotoId = logoId,
         };
         await OnSubmit.InvokeAsync(edited);
     }

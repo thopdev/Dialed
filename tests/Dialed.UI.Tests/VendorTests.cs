@@ -98,7 +98,7 @@ public sealed class VendorTests : UiTestContext
         var cancelled = false;
         var form = Render<VendorForm>(p => p.Add(x => x.OnCancel, EventCallback.Factory.Create(this, () => cancelled = true)));
 
-        form.Find("button[type=button]").Click();
+        form.FindAll("button[type=button]").Last().Click();
 
         cancelled.ShouldBeTrue();
     }
