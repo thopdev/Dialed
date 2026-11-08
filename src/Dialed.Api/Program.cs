@@ -1,5 +1,6 @@
 using Dialed.Api.Auth;
 using Dialed.Api.Configuration;
+using Dialed.Api.Passkeys;
 using Dialed.Api.Seeding;
 using Dialed.Api.Sync;
 
@@ -16,6 +17,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .AllowAnyMethod()));
 
 builder.Services.AddDialedAuth(builder.Configuration, builder.Environment);
+builder.Services.AddDialedPasskeys(builder.Configuration);
 builder.Services.AddDialedSync();
 builder.Services.AddDevelopmentSeeding(builder.Configuration);
 
@@ -28,6 +30,7 @@ app.UseAuthorization();
 app.MapDefaultEndpoints();
 app.MapGet("/", () => "Dialed API");
 app.MapDialedAuth(app.Environment);
+app.MapDialedPasskeys();
 app.MapDialedSync();
 
 app.Run();
