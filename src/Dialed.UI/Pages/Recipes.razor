@@ -35,12 +35,36 @@
             }
             else
             {
-                <div class="dialed-list">
-                    @foreach (var recipe in Sorted)
-                    {
-                        <ListRow Title="@recipe.Name" Subtitle="@Subtitle(recipe)" Href="@($"recipes/{recipe.Id}")" />
-                    }
+                <div class="dialed-field">
+                    <label for="recipe-filter-bean">@L["Recipe_Bean"]</label>
+                    <select id="recipe-filter-bean" @bind="beanFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var bean in beans)
+                        {
+                            <option value="@bean.Id">@bean.Name</option>
+                        }
+                    </select>
                 </div>
+                <ChipGroup Label="@L["Recipes_Show"]">
+                    <Chip Selected="@(!favouritesOnly)" OnClick="@(() => favouritesOnly = false)">@L["Beans_All"]</Chip>
+                    <Chip Selected="@favouritesOnly" OnClick="@(() => favouritesOnly = true)">@L["Recipes_Favourites"]</Chip>
+                </ChipGroup>
+
+                @if (Groups.Count == 0)
+                {
+                    <EmptyState Message="@L["Beans_NoResults"]" />
+                }
+
+                @foreach (var group in Groups)
+                {
+                    <h2 class="dialed-group-title" data-method="@(group.MethodCode)">@MethodName(group.MethodCode)</h2>
+                    <div class="dialed-list">
+                        @foreach (var recipe in group.Recipes)
+                        {
+                            <ListRow Title="@(recipe.IsFavourite ? "★ " + recipe.Name : recipe.Name)" Subtitle="@Subtitle(recipe)" Href="@($"recipes/{recipe.Id}")" />
+                        }
+                    </div>
+                }
             }
 
             <div class="dialed-list">
@@ -94,6 +118,7 @@
                 <Actions>
                     @if (!current.IsDefaultTemplate)
                     {
+                        <button type="button" id="recipe-favourite" class="dialed-button" aria-pressed="@(current.IsFavourite ? "true" : "false")" @onclick="ToggleFavouriteAsync">@(current.IsFavourite ? L["Recipe_Unfavourite"] : L["Recipe_Favourite"])</button>
                         <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
                         <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
                     }
@@ -215,8 +240,11 @@
     [Parameter]
     public string? Id { get; set; }
 
-    private IReadOnlyList<Recipe> Sorted =>
-        [.. (recipes ?? []).OrderBy(r => MethodName(r.MethodCode), StringComparer.OrdinalIgnoreCase).ThenBy(r => r.Name, StringComparer.OrdinalIgnoreCase)];
+    private string beanFilter = "";
+    private bool favouritesOnly;
+
+    private IReadOnlyList<RecipeGroup> Groups =>
+        RecipeQuery.Group(recipes ?? [], new RecipeFilter(beanFilter == "" ? null : beanFilter, favouritesOnly), MethodName);
 
     protected override async Task OnInitializedAsync()
     {
@@ -360,6 +388,26 @@
         }
 
         editing = false;
+        await LoadAsync();
+    }
+
+    private async Task ToggleFavouriteAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await RecipeStore.SaveAsync(current with { IsFavourite = !current.IsFavourite });
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
         await LoadAsync();
     }
 

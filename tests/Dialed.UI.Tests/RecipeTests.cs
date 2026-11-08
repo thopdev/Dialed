@@ -220,6 +220,62 @@ public sealed class RecipeTests : UiTestContext
     }
 
     [Fact]
+    public async Task List_is_grouped_by_method_and_filters_by_bean_and_favourites()
+    {
+        var bean = await Services.GetRequiredService<IRepository<Bean>>().SaveAsync(new Bean { Name = "Gesha" }, Ct);
+        await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning", BeanId = bean.Id }, Ct);
+        await Recipes.SaveAsync(new Recipe { MethodCode = "espresso", Name = "House", IsFavourite = true }, Ct);
+        var page = Render<Recipes>();
+
+        page.FindAll(".dialed-group-title").Select(h => h.TextContent).ShouldBe(["Espresso", "Hario V60"]);
+
+        page.Find("#recipe-filter-bean").Change(bean.Id);
+        page.FindAll(".dialed-row-title").Select(t => t.TextContent).ShouldContain("Morning");
+        page.FindAll(".dialed-group-title").Count.ShouldBe(1);
+        page.Find("#recipe-filter-bean").Change("");
+
+        page.FindAll(".dialed-chip").First(c => c.TextContent == "Favourites").Click();
+        page.FindAll(".dialed-group-title").Select(h => h.TextContent).ShouldBe(["Espresso"]);
+        page.FindAll(".dialed-row-title").Select(t => t.TextContent).ShouldContain("★ House");
+    }
+
+    [Fact]
+    public async Task Favourite_can_be_toggled_on_the_detail_page()
+    {
+        var recipe = await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning" }, Ct);
+        var page = Render<Recipes>(p => p.Add(x => x.Id, recipe.Id));
+
+        page.Find("#recipe-favourite").Click();
+        (await Recipes.GetAsync(recipe.Id, Ct))!.IsFavourite.ShouldBeTrue();
+
+        page.WaitForAssertion(() => page.Find("#recipe-favourite").TextContent.ShouldBe("Remove favourite"));
+        page.Find("#recipe-favourite").Click();
+        (await Recipes.GetAsync(recipe.Id, Ct))!.IsFavourite.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Bean_detail_links_to_the_best_recipe_for_the_bean()
+    {
+        var bean = await Services.GetRequiredService<IRepository<Bean>>().SaveAsync(new Bean { Name = "Gesha" }, Ct);
+        await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Plain", BeanId = bean.Id }, Ct);
+        var best = await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Favourite one", BeanId = bean.Id, IsFavourite = true }, Ct);
+
+        var page = Render<Beans>(p => p.Add(x => x.Id, bean.Id));
+
+        var link = page.Find("#bean-best-recipe");
+        link.GetAttribute("href").ShouldBe($"recipes/{best.Id}");
+        link.TextContent.ShouldContain("Favourite one");
+    }
+
+    [Fact]
+    public async Task Bean_without_recipes_shows_no_shortcut()
+    {
+        var bean = await Services.GetRequiredService<IRepository<Bean>>().SaveAsync(new Bean { Name = "Gesha" }, Ct);
+
+        Render<Beans>(p => p.Add(x => x.Id, bean.Id)).FindAll("#bean-best-recipe").ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Detail_shows_parameters_and_steps()
     {
         var recipe = await Recipes.SaveAsync(new Recipe

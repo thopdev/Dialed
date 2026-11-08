@@ -8,6 +8,7 @@
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Bag> BagStore
 @inject IRepository<Vendor> VendorStore
+@inject IRepository<Recipe> RecipeStore
 @inject UnitFormatter Units
 @inject NavigationManager Navigation
 
@@ -178,6 +179,11 @@
                 }
             </Card>
 
+            @if (bestRecipe is not null)
+            {
+                <p><a id="bean-best-recipe" class="dialed-button" href="@($"recipes/{bestRecipe.Id}")">@string.Format(L["Bean_BestRecipe"].Value, bestRecipe.Name)</a></p>
+            }
+
             <h2>@L["Bean_BagsHeading"]</h2>
             <div class="dialed-form-actions">
                 <a class="dialed-button" href="@($"bags/new?beanId={current.Id}")">@L["Bean_AddBag"]</a>
@@ -206,6 +212,7 @@
     private IReadOnlyList<Vendor> roasters = [];
     private Bean? current;
     private IReadOnlyList<Bag> currentBags = [];
+    private Recipe? bestRecipe;
     private string search = "";
     private string roasterFilter = "";
     private string processFilter = "";
@@ -244,6 +251,7 @@
         BeanStore.Changed += OnStoreChanged;
         BagStore.Changed += OnStoreChanged;
         VendorStore.Changed += OnStoreChanged;
+        RecipeStore.Changed += OnStoreChanged;
         await LoadAsync();
     }
 
@@ -263,6 +271,7 @@
         roasters = [.. vendors.Where(v => (v.Kinds & VendorKinds.Roaster) != 0).OrderBy(v => v.Name)];
         current = Id is null or "new" ? null : beans.FirstOrDefault(bean => bean.Id == Id);
         currentBags = current is null ? [] : [.. bags.Where(bag => bag.BeanId == current.Id)];
+        bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, await RecipeStore.ListAsync());
     }
 
     private void OnStoreChanged() => _ = InvokeAsync(async () =>
@@ -337,5 +346,6 @@
         BeanStore.Changed -= OnStoreChanged;
         BagStore.Changed -= OnStoreChanged;
         VendorStore.Changed -= OnStoreChanged;
+        RecipeStore.Changed -= OnStoreChanged;
     }
 }

@@ -263,4 +263,9 @@
   <data name="Templates_Subtitle" xml:space="preserve"><value>A default recipe for every method</value></data>
   <data name="Templates_Help" xml:space="preserve"><value>Generic recipes (version {0}). Use one to copy it into your own recipes and adjust it.</value></data>
   <data name="Templates_Use" xml:space="preserve"><value>Use as starting point</value></data>
+  <data name="Recipes_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Recipes_Favourites" xml:space="preserve"><value>Favourites</value></data>
+  <data name="Recipe_Favourite" xml:space="preserve"><value>Favourite</value></data>
+  <data name="Recipe_Unfavourite" xml:space="preserve"><value>Remove favourite</value></data>
+  <data name="Bean_BestRecipe" xml:space="preserve"><value>Best recipe: {0}</value></data>
 </root>
