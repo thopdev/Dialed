@@ -10,7 +10,7 @@ namespace Dialed.UI.Tests;
 
 public sealed class VendorTests : UiTestContext
 {
-    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+    private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;
 
     private IRepository<Vendor> Vendors => Services.GetRequiredService<IRepository<Vendor>>();
 
