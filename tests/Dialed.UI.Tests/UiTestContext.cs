@@ -27,6 +27,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
         Services.AddSingleton<IUserPreferences, InMemoryUserPreferences>();
         Services.AddSingleton<UnitFormatter>();
+        Services.AddSingleton<BrewTimerHandoff>();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddFluentUIComponents();
         Services.AddLocalization();

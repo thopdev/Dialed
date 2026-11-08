@@ -342,4 +342,18 @@
   <data name="Version_Stats" xml:space="preserve"><value>{0} · {1} brew(s)</value></data>
   <data name="Version_StepsChanged" xml:space="preserve"><value>Steps changed</value></data>
   <data name="Version_GrinderChanged" xml:space="preserve"><value>Grinder changed</value></data>
+  <data name="Timer_Start" xml:space="preserve"><value>Timer</value></data>
+  <data name="Timer_StartFor" xml:space="preserve"><value>Start the timer for {0}</value></data>
+  <data name="Timer_StartButton" xml:space="preserve"><value>Start</value></data>
+  <data name="Timer_Finish" xml:space="preserve"><value>Finish and log</value></data>
+  <data name="Timer_Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Timer_Elapsed" xml:space="preserve"><value>Elapsed time</value></data>
+  <data name="Timer_GetReady" xml:space="preserve"><value>Get ready</value></data>
+  <data name="Timer_Target" xml:space="preserve"><value>Pour to {0}</value></data>
+  <data name="Timer_Next" xml:space="preserve"><value>Next: {0} in {1}</value></data>
+  <data name="Timer_Done" xml:space="preserve"><value>Done. Finish to log the brew.</value></data>
+  <data name="Timer_Band" xml:space="preserve"><value>Target {0}-{1} s</value></data>
+  <data name="Shot_TooShort" xml:space="preserve"><value>Too short</value></data>
+  <data name="Shot_InBand" xml:space="preserve"><value>In the target window</value></data>
+  <data name="Shot_TooLong" xml:space="preserve"><value>Too long</value></data>
 </root>

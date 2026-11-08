@@ -67,7 +67,10 @@
                 <div class="dialed-list">
                     @foreach (var recipe in recipesForBag)
                     {
-                        <ListRow Title="@recipe.Name" Subtitle="@MethodName(recipe.MethodCode)" Href="@($"brew/{current.Id}/log/recipe/{recipe.Id}")" />
+                        <div class="dialed-recipe-choice">
+                            <ListRow Title="@recipe.Name" Subtitle="@MethodName(recipe.MethodCode)" Href="@($"brew/{current.Id}/log/recipe/{recipe.Id}")" />
+                            <a class="dialed-button" href="@($"brew/{current.Id}/timer/{recipe.Id}")" aria-label="@string.Format(L["Timer_StartFor"].Value, recipe.Name)">@L["Timer_Start"]</a>
+                        </div>
                     }
                 </div>
             }

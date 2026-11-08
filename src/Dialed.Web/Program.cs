@@ -23,6 +23,7 @@ builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());
 builder.Services.AddSingleton<IUserPreferences, InMemoryUserPreferences>();
 builder.Services.AddSingleton<UnitFormatter>();
+builder.Services.AddSingleton<BrewTimerHandoff>();
 builder.Services.AddBrowserPlatform();
 builder.Services.AddFluentUIComponents();
 builder.Services.AddLocalization();

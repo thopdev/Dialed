@@ -12,6 +12,7 @@
 @inject IRepository<MethodDefault> DefaultStore
 @inject NavigationManager Navigation
 @inject TimeProvider Time
+@inject BrewTimerHandoff TimerHandoff
 
 <PageHeader Title="@L["Brew_LogTitle"]" BackHref="@($"brew/{BagId}")" />
 
@@ -75,6 +76,12 @@ else
             var defaults = await DefaultStore.ListAsync();
             var method = Dialed.Domain.BrewMethods.BrewMethodCatalog.Default.Methods[0].Code;
             initial = BrewPrefill.Blank(bag, method, defaults.FirstOrDefault(d => d.MethodCode == method)?.GrinderId, now);
+        }
+
+        // A finished timer run fills in the measured time (once).
+        if (BrewId is null && TimerHandoff.Take(RecipeId) is { } measured)
+        {
+            initial = initial with { TimeS = measured };
         }
 
         loading = false;
