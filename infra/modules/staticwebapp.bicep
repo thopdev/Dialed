@@ -18,3 +18,8 @@ resource site 'Microsoft.Web/staticSites@2023-12-01' = {
 output name string = site.name
 output defaultHostname string = site.properties.defaultHostname
 output origin string = 'https://${site.properties.defaultHostname}'
+
+// PR preview environments live at {name}-{pr}.{region}.{n}.azurestaticapps.net, next to {name}.{n}.azurestaticapps.net.
+// The API allows them through a pattern (App__Origins), see AllowedOrigins in Dialed.Api.
+var labels = split(site.properties.defaultHostname, '.')
+output previewOriginPattern string = 'https://${labels[0]}-*.*.${join(skip(labels, 1), '.')}'

@@ -177,6 +177,7 @@ module api 'modules/containerapp.bicep' = {
     imageName: apiImageName
     appSettings: union(sharedSettings, {
       App__Origins__0: staticWebApp.outputs.origin
+      App__Origins__1: staticWebApp.outputs.previewOriginPattern
       Passkeys__Origins__0: staticWebApp.outputs.origin
     })
   }

@@ -1,0 +1,82 @@
+name: Deploy PWA
+
+# Publishes Dialed.Web to Azure Static Web Apps: every merge to main updates dev, every pull request gets
+# a preview environment (URL is posted on the PR) that is removed when the PR closes (#22).
+# Needs the repository secret AZURE_STATIC_WEB_APPS_API_TOKEN (from `azd provision`, see infra/README.md) and the
+# repository variable DEV_API_URL (the `API_URL` output). Until they exist the workflow skips the deploy instead of failing.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Pull requests from forks have no access to secrets.
+    if: github.event_name == 'push' || (github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    env:
+      SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+      DEV_API_URL: ${{ vars.DEV_API_URL }}
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$SWA_TOKEN" ]; then
+            echo "::notice::AZURE_STATIC_WEB_APPS_API_TOKEN is not set yet; skipping the PWA deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.config.outputs.ready == 'true'
+
+      - uses: actions/setup-dotnet@v6
+        if: steps.config.outputs.ready == 'true'
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Point the app at the dev API
+        if: steps.config.outputs.ready == 'true' && env.DEV_API_URL != ''
+        run: |
+          jq --arg url "$DEV_API_URL" '.Api.BaseUrl = $url' src/Dialed.Web/wwwroot/appsettings.json > appsettings.tmp
+          mv appsettings.tmp src/Dialed.Web/wwwroot/appsettings.json
+
+      - name: Publish
+        if: steps.config.outputs.ready == 'true'
+        run: dotnet publish src/Dialed.Web/Dialed.Web.csproj --configuration Release --output publish
+
+      - name: Deploy to Static Web Apps
+        if: steps.config.outputs.ready == 'true'
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: publish/wwwroot
+          api_location: ''
+          skip_app_build: true
+          skip_api_build: true
+
+  close-preview:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    env:
+      SWA_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+    steps:
+      - name: Remove the preview environment
+        if: env.SWA_TOKEN != ''
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: close

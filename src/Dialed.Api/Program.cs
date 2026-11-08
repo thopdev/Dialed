@@ -7,8 +7,9 @@ builder.AddServiceDefaults();
 
 // The PWA is served from another origin (localhost port, dev tunnel, Static Web Apps).
 var allowedOrigins = AllowedOrigins.From(builder.Configuration);
+var originPatterns = AllowedOrigins.Patterns(builder.Configuration);
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
-    .WithOrigins(allowedOrigins)
+    .SetIsOriginAllowed(origin => AllowedOrigins.IsAllowed(origin, allowedOrigins, originPatterns))
     .AllowAnyHeader()
     .AllowAnyMethod()));
 
