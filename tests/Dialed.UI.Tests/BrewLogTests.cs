@@ -1,6 +1,7 @@
 using Bunit;
 using Dialed.Client.Data;
 using Dialed.Domain.Equipment;
+using Dialed.Domain.Inventory;
 using Dialed.Domain.Model;
 using Dialed.UI.Components;
 using Dialed.UI.Pages;
