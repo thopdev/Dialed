@@ -1,0 +1,256 @@
+@page "/brew/{BagId}/timer/{RecipeId}"
+@using Dialed.Client
+@using Dialed.Client.Data
+@using Dialed.Client.Platform
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Model
+@implements IAsyncDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Recipe> RecipeStore
+@inject IWakeLock WakeLock
+@inject ISoundCue Sound
+@inject BrewTimerHandoff Handoff
+@inject UnitFormatter Units
+@inject NavigationManager Navigation
+@inject TimeProvider Time
+
+@if (loading)
+{
+    <Loading IsLoading="true" />
+}
+else if (recipe is null)
+{
+    <PageHeader Title="@L["Nav_Recipes"]" BackHref="@($"brew/{BagId}")" />
+    <EmptyState Message="@L["Recipes_NotFound"]" />
+}
+else
+{
+    <div class="dialed-timer @StatusClass" data-mode="@(isEspresso ? "espresso" : "guided")" data-step-key="@stepKey">
+        <PageHeader Title="@recipe.Name" BackHref="@($"brew/{BagId}")" />
+
+        <div id="timer-clock" class="dialed-timer-clock" role="timer" aria-label="@L["Timer_Elapsed"]">@Clock(elapsed)</div>
+
+        @if (isEspresso)
+        {
+            <p id="timer-band" class="dialed-timer-sub">@string.Format(L["Timer_Band"].Value, band.LowerS, band.UpperS)</p>
+            @if (running)
+            {
+                <p id="timer-shot-status" class="dialed-timer-step">@L[$"Shot_{band.StatusAt(elapsed)}"]</p>
+            }
+        }
+        else
+        {
+            @if (state.Current is { } step)
+            {
+                <p id="timer-step" class="dialed-timer-step" @key="stepKey">@L[$"StepKind_{step.Kind}"]@(string.IsNullOrWhiteSpace(step.Note) ? "" : " · " + step.Note)</p>
+            }
+            else if (running)
+            {
+                <p id="timer-step" class="dialed-timer-step" @key="stepKey">@L["Timer_GetReady"]</p>
+            }
+
+            @if (state.TargetWaterG is { } target)
+            {
+                <p id="timer-target" class="dialed-timer-target">@string.Format(L["Timer_Target"].Value, Units.Weight(target))</p>
+            }
+
+            @if (state.IsFinished)
+            {
+                <p id="timer-done" class="dialed-timer-step">@L["Timer_Done"]</p>
+            }
+            else if (state.Next is { } next)
+            {
+                <p id="timer-next" class="dialed-timer-sub">
+                    @string.Format(L["Timer_Next"].Value, L[$"StepKind_{next.Kind}"].Value, Clock(state.SecondsToNext ?? 0))
+                    @if (next.WaterG is { } nextWater)
+                    {
+                        <span> · @string.Format(L["Timer_Target"].Value, Units.Weight(nextWater))</span>
+                    }
+                </p>
+            }
+        }
+
+        <div class="dialed-form-actions dialed-timer-actions">
+            @if (!running)
+            {
+                <button type="button" id="timer-start" class="dialed-button dialed-button-primary" @onclick="StartAsync">@L["Timer_StartButton"]</button>
+            }
+            else
+            {
+                <button type="button" id="timer-finish" class="dialed-button dialed-button-primary" @onclick="FinishAsync">@L["Timer_Finish"]</button>
+            }
+
+            @if (running || elapsed > 0)
+            {
+                <button type="button" id="timer-reset" class="dialed-button" @onclick="ResetAsync">@L["Timer_Reset"]</button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private bool loading = true;
+    private Recipe? recipe;
+    private BrewTimeline timeline = new([]);
+    private ShotBand band = ShotBand.Default;
+    private bool isEspresso;
+    private bool running;
+    private int elapsed;
+    private int stepKey;
+    private bool doneCued;
+    private DateTimeOffset startedAt;
+    private TimerState state = new BrewTimeline([]).At(0);
+    private CancellationTokenSource? loop;
+
+    [Parameter]
+    public string BagId { get; set; } = "";
+
+    [Parameter]
+    public string RecipeId { get; set; } = "";
+
+    private string StatusClass =>
+        isEspresso && running ? $"shot-{band.StatusAt(elapsed).ToString().ToLowerInvariant()}" : state.IsFinished ? "finished" : "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        loading = true;
+        await StopLoopAsync(releaseWakeLock: true);
+        running = false;
+        elapsed = 0;
+        recipe = await RecipeStore.GetAsync(RecipeId);
+        if (recipe is not null)
+        {
+            timeline = BrewTimeline.For(recipe);
+            band = ShotBand.For(recipe);
+            // Espresso (or anything without steps) gets the simple shot timer; steps drive the guided timer.
+            isEspresso = recipe.Steps.Count == 0;
+            state = timeline.At(0);
+        }
+
+        loading = false;
+    }
+
+    private static string Clock(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
+
+    private async Task StartAsync()
+    {
+        running = true;
+        doneCued = false;
+        elapsed = 0;
+        stepKey = 0;
+        state = timeline.At(0);
+        startedAt = Time.GetUtcNow();
+
+        // Both calls need to come from this tap: browsers only allow audio and wake locks after a user gesture.
+        await SafeAsync(() => WakeLock.AcquireAsync());
+        await SafeAsync(() => Sound.PlayAsync(SoundCue.Tick));
+
+        loop = new CancellationTokenSource();
+        _ = RunAsync(loop.Token);
+    }
+
+    private async Task RunAsync(CancellationToken token)
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(250), Time);
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                await InvokeAsync(Refresh);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Stopped on purpose.
+        }
+    }
+
+    /// <summary>Reads the clock and updates what is shown; called by the tick loop (and by tests with a manual clock).</summary>
+    public async Task Refresh()
+    {
+        if (!running)
+        {
+            return;
+        }
+
+        var previous = elapsed;
+        elapsed = Math.Max(0, (int)(Time.GetUtcNow() - startedAt).TotalSeconds);
+        state = timeline.At(elapsed);
+
+        if (!isEspresso && timeline.StepStartedBetween(previous, elapsed))
+        {
+            stepKey++;
+            await SafeAsync(() => Sound.PlayAsync(SoundCue.Tick));
+        }
+
+        if (!isEspresso && state.IsFinished && !doneCued)
+        {
+            doneCued = true;
+            await SafeAsync(() => Sound.PlayAsync(SoundCue.Done));
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task FinishAsync()
+    {
+        await Refresh();
+        var seconds = elapsed;
+        await StopLoopAsync(releaseWakeLock: true);
+        running = false;
+        Handoff.Set(RecipeId, seconds);
+        Navigation.NavigateTo($"brew/{BagId}/log/recipe/{RecipeId}");
+    }
+
+    private async Task ResetAsync()
+    {
+        await StopLoopAsync(releaseWakeLock: true);
+        running = false;
+        elapsed = 0;
+        stepKey = 0;
+        state = timeline.At(0);
+    }
+
+    private async Task StopLoopAsync(bool releaseWakeLock)
+    {
+        if (loop is not null)
+        {
+            await loop.CancelAsync();
+            loop.Dispose();
+            loop = null;
+        }
+
+        if (releaseWakeLock)
+        {
+            await SafeAsync(() => WakeLock.ReleaseAsync());
+        }
+    }
+
+    // The screen staying awake and the beep are comforts: a refusal or a JS error must never stop the timer.
+    private static async Task SafeAsync(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception)
+        {
+            // Ignored on purpose.
+        }
+    }
+
+    private static async Task SafeAsync(Func<Task<bool>> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception)
+        {
+            // Ignored on purpose.
+        }
+    }
+
+    public async ValueTask DisposeAsync() => await StopLoopAsync(releaseWakeLock: true);
+}

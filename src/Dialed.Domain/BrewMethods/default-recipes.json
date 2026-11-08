@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "recipes": [
+    { "methodCode": "espresso", "name": "Classic espresso 1:2", "doseG": 18, "yieldG": 36, "tempC": 93, "timeS": 28, "preinfusionS": 5,
+      "notes": "Aim for 25-30 seconds. Sour and thin: grind finer. Bitter and harsh: grind coarser." },
+    { "methodCode": "v60", "name": "Balanced V60", "doseG": 15, "waterG": 240, "tempC": 94, "timeS": 180, "filter": "Paper",
+      "steps": [
+        { "kind": "bloom", "atS": 0, "durationS": 30, "waterG": 45 },
+        { "kind": "pour", "atS": 45, "durationS": 30, "waterG": 150 },
+        { "kind": "pour", "atS": 90, "durationS": 40, "waterG": 240 }
+      ] },
+    { "methodCode": "kalita-wave", "name": "Balanced Kalita Wave", "doseG": 15, "waterG": 240, "tempC": 93, "timeS": 195, "filter": "Paper",
+      "steps": [
+        { "kind": "bloom", "atS": 0, "durationS": 30, "waterG": 45 },
+        { "kind": "pour", "atS": 30, "durationS": 30, "waterG": 140 },
+        { "kind": "pour", "atS": 75, "durationS": 40, "waterG": 240 }
+      ] },
+    { "methodCode": "chemex", "name": "Classic Chemex", "doseG": 30, "waterG": 500, "tempC": 94, "timeS": 270, "filter": "Chemex bonded paper",
+      "steps": [
+        { "kind": "bloom", "atS": 0, "durationS": 45, "waterG": 60 },
+        { "kind": "pour", "atS": 45, "durationS": 50, "waterG": 300 },
+        { "kind": "pour", "atS": 105, "durationS": 50, "waterG": 500 }
+      ] },
+    { "methodCode": "origami", "name": "Balanced Origami", "doseG": 15, "waterG": 240, "tempC": 93, "timeS": 180, "filter": "Paper",
+      "steps": [
+        { "kind": "bloom", "atS": 0, "durationS": 30, "waterG": 45 },
+        { "kind": "pour", "atS": 45, "durationS": 30, "waterG": 150 },
+        { "kind": "pour", "atS": 90, "durationS": 40, "waterG": 240 }
+      ] },
+    { "methodCode": "aeropress", "name": "Standard AeroPress", "doseG": 15, "waterG": 225, "tempC": 90, "timeS": 120, "filter": "Paper",
+      "steps": [
+        { "kind": "pour", "atS": 0, "durationS": 20, "waterG": 225 },
+        { "kind": "stir", "atS": 20, "durationS": 10 },
+        { "kind": "press", "atS": 90, "durationS": 30 }
+      ] },
+    { "methodCode": "french-press", "name": "Classic French press", "doseG": 30, "waterG": 500, "tempC": 95, "timeS": 240,
+      "notes": "Break the crust at four minutes and press gently." },
+    { "methodCode": "clever-dripper", "name": "Easy Clever Dripper", "doseG": 20, "waterG": 300, "tempC": 95, "timeS": 180, "filter": "Paper" },
+    { "methodCode": "moka-pot", "name": "Moka pot", "doseG": 16, "waterG": 150,
+      "notes": "Fill the base with hot water to just below the valve and remove from the heat when it starts to sputter." },
+    { "methodCode": "cold-brew", "name": "Cold brew concentrate 1:10", "doseG": 100, "waterG": 1000, "timeS": 43200, "filter": "Paper",
+      "notes": "Steep 12 hours in the fridge, dilute 1:1 with water or milk." },
+    { "methodCode": "siphon", "name": "Classic siphon", "doseG": 20, "waterG": 300, "tempC": 92, "timeS": 90, "filter": "Cloth" },
+    { "methodCode": "cezve", "name": "Turkish coffee", "doseG": 8, "waterG": 100, "timeS": 120,
+      "notes": "Heat slowly, take it off just as the foam rises." },
+    { "methodCode": "batch-brewer", "name": "Batch brew 1:16", "doseG": 60, "waterG": 1000, "tempC": 93, "filter": "Paper" },
+    { "methodCode": "other", "name": "Generic starting point", "doseG": 15, "waterG": 240, "tempC": 93, "timeS": 180 }
+  ]
+}

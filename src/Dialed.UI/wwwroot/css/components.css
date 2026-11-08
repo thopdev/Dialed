@@ -698,3 +698,139 @@ button.dialed-chip::after {
     width: 24px;
     height: 24px;
 }
+
+/* ---- Recipes (#61) --------------------------------------------------------------------------- */
+
+.dialed-step {
+    margin-bottom: var(--dialed-space-3);
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-step-list {
+    padding-left: var(--dialed-space-5);
+}
+
+/* ---- Brew history (#66) ---------------------------------------------------------------------- */
+
+.dialed-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-weight: 600;
+    color: var(--colorNeutralForegroundOnBrand);
+    background: var(--colorBrandBackground);
+    border-radius: 50%;
+}
+
+.dialed-compare {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dialed-compare th,
+.dialed-compare td {
+    padding: var(--dialed-space-2);
+    text-align: left;
+    border-bottom: 1px solid var(--colorNeutralStroke2);
+}
+
+.dialed-compare tr.differs td:last-child {
+    font-weight: 600;
+    color: var(--colorBrandForeground1);
+}
+
+/* ---- Recipe versions (#62) ------------------------------------------------------------------- */
+
+.dialed-versions {
+    padding-left: var(--dialed-space-5);
+}
+
+.dialed-versions li {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-versions li.current {
+    font-weight: 400;
+}
+
+.dialed-version-changes {
+    margin: var(--dialed-space-1) 0;
+}
+
+/* ---- Brew timer (#65): large and readable from arm's length, full width on iPad ----------------- */
+
+.dialed-recipe-choice {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-recipe-choice > :first-child {
+    flex: 1;
+}
+
+.dialed-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    min-height: 70vh;
+    padding: var(--dialed-space-4);
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+.dialed-timer-clock {
+    font-size: clamp(4rem, 22vw, 10rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.dialed-timer-step {
+    margin: 0;
+    font-size: clamp(2rem, 8vw, 4rem);
+    font-weight: 700;
+}
+
+.dialed-timer-target {
+    margin: 0;
+    font-size: clamp(1.5rem, 6vw, 3rem);
+    color: var(--colorBrandForeground1);
+}
+
+.dialed-timer-sub {
+    margin: 0;
+    font-size: clamp(1.125rem, 4vw, 1.75rem);
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-timer-actions .dialed-button {
+    min-width: 10rem;
+    min-height: 56px;
+    font-size: 1.25rem;
+}
+
+.dialed-timer.shot-inband,
+.dialed-timer.finished {
+    background: var(--colorPaletteGreenBackground2);
+}
+
+.dialed-timer.shot-toolong {
+    background: var(--colorPaletteRedBackground2);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-timer .dialed-timer-step {
+        animation: dialed-step-pulse 0.5s ease;
+    }
+}
+
+@keyframes dialed-step-pulse {
+    from { transform: scale(1.15); }
+    to { transform: scale(1); }
+}

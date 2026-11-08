@@ -1,0 +1,96 @@
+@page "/brew/{BagId}/log"
+@page "/brew/{BagId}/log/recipe/{RecipeId}"
+@page "/brew/{BagId}/log/again/{BrewId}"
+@using Dialed.Client
+@using Dialed.Client.Data
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Recipe> RecipeStore
+@inject IRepository<Brew> BrewStore
+@inject IRepository<EquipmentItem> GearStore
+@inject IRepository<MethodDefault> DefaultStore
+@inject NavigationManager Navigation
+@inject TimeProvider Time
+@inject BrewTimerHandoff TimerHandoff
+
+<PageHeader Title="@L["Brew_LogTitle"]" BackHref="@($"brew/{BagId}")" />
+
+@if (loading)
+{
+    <Loading IsLoading="true" />
+}
+else if (initial is null)
+{
+    <EmptyState Message="@L["Bags_NotFound"]" />
+}
+else
+{
+    @if (beanName is not null)
+    {
+        <p class="dialed-muted">@beanName</p>
+    }
+
+    <BrewForm Initial="initial" Gear="gear" OnSubmit="SaveAsync" OnCancel="@(() => Navigation.NavigateTo($"brew/{BagId}"))" />
+}
+
+@code {
+    private bool loading = true;
+    private Brew? initial;
+    private IReadOnlyList<EquipmentItem> gear = [];
+    private string? beanName;
+
+    [Parameter]
+    public string BagId { get; set; } = "";
+
+    [Parameter]
+    public string? RecipeId { get; set; }
+
+    [Parameter]
+    public string? BrewId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        loading = true;
+        var bag = await BagStore.GetAsync(BagId);
+        gear = await GearStore.ListAsync();
+        if (bag is null)
+        {
+            initial = null;
+            loading = false;
+            return;
+        }
+
+        beanName = (await BeanStore.GetAsync(bag.BeanId))?.Name;
+        var now = Time.GetUtcNow();
+        if (RecipeId is not null && await RecipeStore.GetAsync(RecipeId) is { } recipe)
+        {
+            initial = BrewPrefill.FromRecipe(bag, recipe, now);
+        }
+        else if (BrewId is not null && await BrewStore.GetAsync(BrewId) is { } previous)
+        {
+            initial = BrewPrefill.Again(bag, previous, now);
+        }
+        else
+        {
+            var defaults = await DefaultStore.ListAsync();
+            var method = Dialed.Domain.BrewMethods.BrewMethodCatalog.Default.Methods[0].Code;
+            initial = BrewPrefill.Blank(bag, method, defaults.FirstOrDefault(d => d.MethodCode == method)?.GrinderId, now);
+        }
+
+        // A finished timer run fills in the measured time (once).
+        if (BrewId is null && TimerHandoff.Take(RecipeId) is { } measured)
+        {
+            initial = initial with { TimeS = measured };
+        }
+
+        loading = false;
+    }
+
+    private async Task SaveAsync(Brew brew)
+    {
+        await BrewStore.SaveAsync(brew with { BrewedAt = Time.GetUtcNow() });
+        Navigation.NavigateTo($"brew/{BagId}");
+    }
+}

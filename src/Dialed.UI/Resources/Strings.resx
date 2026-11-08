@@ -220,4 +220,140 @@
   <data name="EquipmentKind_Scale" xml:space="preserve"><value>Scale</value></data>
   <data name="EquipmentKind_Filter" xml:space="preserve"><value>Filter</value></data>
   <data name="EquipmentKind_Water" xml:space="preserve"><value>Water</value></data>
+  <data name="Recipes_New" xml:space="preserve"><value>Add recipe</value></data>
+  <data name="Recipes_SelectPrompt" xml:space="preserve"><value>Select a recipe to see how it is made.</value></data>
+  <data name="Recipes_NotFound" xml:space="preserve"><value>This recipe no longer exists.</value></data>
+  <data name="Recipe_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Recipe_NameRequired" xml:space="preserve"><value>Enter a name.</value></data>
+  <data name="Recipe_Method" xml:space="preserve"><value>Method</value></data>
+  <data name="Recipe_Bean" xml:space="preserve"><value>Bean</value></data>
+  <data name="Recipe_Grinder" xml:space="preserve"><value>Grinder</value></data>
+  <data name="Recipe_Brewer" xml:space="preserve"><value>Brewer</value></data>
+  <data name="Recipe_Dose" xml:space="preserve"><value>Dose</value></data>
+  <data name="Recipe_Water" xml:space="preserve"><value>Water</value></data>
+  <data name="Recipe_Yield" xml:space="preserve"><value>Yield</value></data>
+  <data name="Recipe_Ratio" xml:space="preserve"><value>Ratio</value></data>
+  <data name="Recipe_PerLitre" xml:space="preserve"><value>{0} g per litre</value></data>
+  <data name="Recipe_Temp" xml:space="preserve"><value>Temperature</value></data>
+  <data name="Recipe_Grind" xml:space="preserve"><value>Grind setting</value></data>
+  <data name="Recipe_GrindNeedsGrinder" xml:space="preserve"><value>Choose a grinder to set the grind.</value></data>
+  <data name="Recipe_Time" xml:space="preserve"><value>Time (s)</value></data>
+  <data name="Recipe_Preinfusion" xml:space="preserve"><value>Pre-infusion (s)</value></data>
+  <data name="Recipe_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Recipe_Steps" xml:space="preserve"><value>Steps</value></data>
+  <data name="Recipe_Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Recipe_DeleteTitle" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Step_Kind" xml:space="preserve"><value>Step</value></data>
+  <data name="Step_At" xml:space="preserve"><value>Starts at (s)</value></data>
+  <data name="Step_Duration" xml:space="preserve"><value>Lasts (s)</value></data>
+  <data name="Step_Water" xml:space="preserve"><value>Total water after step</value></data>
+  <data name="Step_Note" xml:space="preserve"><value>Note</value></data>
+  <data name="Step_Add" xml:space="preserve"><value>Add step</value></data>
+  <data name="Step_Up" xml:space="preserve"><value>Move up</value></data>
+  <data name="Step_Down" xml:space="preserve"><value>Move down</value></data>
+  <data name="Step_Remove" xml:space="preserve"><value>Remove step</value></data>
+  <data name="Step_ToWater" xml:space="preserve"><value>to {0}</value></data>
+  <data name="StepKind_Bloom" xml:space="preserve"><value>Bloom</value></data>
+  <data name="StepKind_Pour" xml:space="preserve"><value>Pour</value></data>
+  <data name="StepKind_Stir" xml:space="preserve"><value>Stir</value></data>
+  <data name="StepKind_Swirl" xml:space="preserve"><value>Swirl</value></data>
+  <data name="StepKind_Press" xml:space="preserve"><value>Press</value></data>
+  <data name="StepKind_Wait" xml:space="preserve"><value>Wait</value></data>
+  <data name="Templates_Title" xml:space="preserve"><value>Starting points</value></data>
+  <data name="Templates_Subtitle" xml:space="preserve"><value>A default recipe for every method</value></data>
+  <data name="Templates_Help" xml:space="preserve"><value>Generic recipes (version {0}). Use one to copy it into your own recipes and adjust it.</value></data>
+  <data name="Templates_Use" xml:space="preserve"><value>Use as starting point</value></data>
+  <data name="Recipes_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Recipes_Favourites" xml:space="preserve"><value>Favourites</value></data>
+  <data name="Recipe_Favourite" xml:space="preserve"><value>Favourite</value></data>
+  <data name="Recipe_Unfavourite" xml:space="preserve"><value>Remove favourite</value></data>
+  <data name="Bean_BestRecipe" xml:space="preserve"><value>Best recipe: {0}</value></data>
+  <data name="Brew_NoBags" xml:space="preserve"><value>No bags to brew from yet. Add a bag first.</value></data>
+  <data name="Brew_PickBag" xml:space="preserve"><value>Choose the bag you are brewing from.</value></data>
+  <data name="Brew_SelectPrompt" xml:space="preserve"><value>Select a bag to start a brew.</value></data>
+  <data name="Brew_Left" xml:space="preserve"><value>{0} left</value></data>
+  <data name="Brew_Again" xml:space="preserve"><value>Brew again</value></data>
+  <data name="Brew_WithRecipe" xml:space="preserve"><value>Brew with a recipe</value></data>
+  <data name="Brew_NoRecipes" xml:space="preserve"><value>No recipes yet.</value></data>
+  <data name="Brew_WithoutRecipe" xml:space="preserve"><value>Brew without a recipe</value></data>
+  <data name="Brew_LogTitle" xml:space="preserve"><value>Log a brew</value></data>
+  <data name="Brew_Save" xml:space="preserve"><value>Save brew</value></data>
+  <data name="Brew_Drink" xml:space="preserve"><value>Drink</value></data>
+  <data name="Brew_Milk" xml:space="preserve"><value>Milk</value></data>
+  <data name="Brew_MilkType" xml:space="preserve"><value>Milk type</value></data>
+  <data name="Brew_DoseRequired" xml:space="preserve"><value>Enter the dose.</value></data>
+  <data name="Brew_Taste" xml:space="preserve"><value>How did it taste?</value></data>
+  <data name="Taste_Acidity" xml:space="preserve"><value>Acidity</value></data>
+  <data name="Taste_Sour" xml:space="preserve"><value>Sour</value></data>
+  <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
+  <data name="Taste_Strength" xml:space="preserve"><value>Strength</value></data>
+  <data name="Taste_Weak" xml:space="preserve"><value>Weak</value></data>
+  <data name="Taste_Strong" xml:space="preserve"><value>Strong</value></data>
+  <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>
+  <data name="Taste_Thin" xml:space="preserve"><value>Thin</value></data>
+  <data name="Taste_Heavy" xml:space="preserve"><value>Heavy</value></data>
+  <data name="Taste_Sweetness" xml:space="preserve"><value>Sweetness</value></data>
+  <data name="Taste_Flat" xml:space="preserve"><value>Flat</value></data>
+  <data name="Taste_Sweet" xml:space="preserve"><value>Sweet</value></data>
+  <data name="DrinkType_Espresso" xml:space="preserve"><value>Espresso</value></data>
+  <data name="DrinkType_Ristretto" xml:space="preserve"><value>Ristretto</value></data>
+  <data name="DrinkType_Lungo" xml:space="preserve"><value>Lungo</value></data>
+  <data name="DrinkType_Americano" xml:space="preserve"><value>Americano</value></data>
+  <data name="DrinkType_Cortado" xml:space="preserve"><value>Cortado</value></data>
+  <data name="DrinkType_Cappuccino" xml:space="preserve"><value>Cappuccino</value></data>
+  <data name="DrinkType_FlatWhite" xml:space="preserve"><value>Flat white</value></data>
+  <data name="DrinkType_Latte" xml:space="preserve"><value>Latte</value></data>
+  <data name="DrinkType_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="DrinkType_ColdBrew" xml:space="preserve"><value>Cold brew</value></data>
+  <data name="DrinkType_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="MilkType_Whole" xml:space="preserve"><value>Whole</value></data>
+  <data name="MilkType_SemiSkimmed" xml:space="preserve"><value>Semi-skimmed</value></data>
+  <data name="MilkType_Skimmed" xml:space="preserve"><value>Skimmed</value></data>
+  <data name="MilkType_Oat" xml:space="preserve"><value>Oat</value></data>
+  <data name="MilkType_Soy" xml:space="preserve"><value>Soy</value></data>
+  <data name="MilkType_Almond" xml:space="preserve"><value>Almond</value></data>
+  <data name="MilkType_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="History_Title" xml:space="preserve"><value>Brew history</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>No brews yet. Your brews will be listed here.</value></data>
+  <data name="History_SelectPrompt" xml:space="preserve"><value>Select a brew to see its details.</value></data>
+  <data name="History_NotFound" xml:space="preserve"><value>This brew no longer exists.</value></data>
+  <data name="History_Person" xml:space="preserve"><value>Person</value></data>
+  <data name="History_MinRating" xml:space="preserve"><value>Rating at least</value></data>
+  <data name="History_You" xml:space="preserve"><value>You</value></data>
+  <data name="History_Parameters" xml:space="preserve"><value>Parameters</value></data>
+  <data name="History_Planned" xml:space="preserve"><value>Recipe</value></data>
+  <data name="History_Actual" xml:space="preserve"><value>Brewed</value></data>
+  <data name="History_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="History_Recipe" xml:space="preserve"><value>Recipe: {0}</value></data>
+  <data name="History_Milk" xml:space="preserve"><value>{0} milk</value></data>
+  <data name="History_Balanced" xml:space="preserve"><value>Balanced</value></data>
+  <data name="History_DeleteTitle" xml:space="preserve"><value>Delete this brew?</value></data>
+  <data name="History_DeleteBody" xml:space="preserve"><value>The coffee goes back into the bag. This cannot be undone.</value></data>
+  <data name="Version_PromptTitle" xml:space="preserve"><value>This recipe has brews</value></data>
+  <data name="Version_PromptBody" xml:space="preserve"><value>Save your changes as a new version to keep the history of how you dialed in, or update this version.</value></data>
+  <data name="Version_SaveNew" xml:space="preserve"><value>Save as new version</value></data>
+  <data name="Version_UpdateThis" xml:space="preserve"><value>Update this version</value></data>
+  <data name="Version_Older" xml:space="preserve"><value>This is an older version of the recipe.</value></data>
+  <data name="Version_MakeCurrent" xml:space="preserve"><value>Make current</value></data>
+  <data name="Version_Title" xml:space="preserve"><value>Versions</value></data>
+  <data name="Version_Label" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="Version_Current" xml:space="preserve"><value>Current</value></data>
+  <data name="Version_NoBrews" xml:space="preserve"><value>No brews yet</value></data>
+  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1} brew(s)</value></data>
+  <data name="Version_StepsChanged" xml:space="preserve"><value>Steps changed</value></data>
+  <data name="Version_GrinderChanged" xml:space="preserve"><value>Grinder changed</value></data>
+  <data name="Timer_Start" xml:space="preserve"><value>Timer</value></data>
+  <data name="Timer_StartFor" xml:space="preserve"><value>Start the timer for {0}</value></data>
+  <data name="Timer_StartButton" xml:space="preserve"><value>Start</value></data>
+  <data name="Timer_Finish" xml:space="preserve"><value>Finish and log</value></data>
+  <data name="Timer_Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Timer_Elapsed" xml:space="preserve"><value>Elapsed time</value></data>
+  <data name="Timer_GetReady" xml:space="preserve"><value>Get ready</value></data>
+  <data name="Timer_Target" xml:space="preserve"><value>Pour to {0}</value></data>
+  <data name="Timer_Next" xml:space="preserve"><value>Next: {0} in {1}</value></data>
+  <data name="Timer_Done" xml:space="preserve"><value>Done. Finish to log the brew.</value></data>
+  <data name="Timer_Band" xml:space="preserve"><value>Target {0}-{1} s</value></data>
+  <data name="Shot_TooShort" xml:space="preserve"><value>Too short</value></data>
+  <data name="Shot_InBand" xml:space="preserve"><value>In the target window</value></data>
+  <data name="Shot_TooLong" xml:space="preserve"><value>Too long</value></data>
 </root>

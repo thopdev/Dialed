@@ -1,0 +1,238 @@
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Equipment
+@using Dialed.Domain.Model
+@using Dialed.Domain.Units
+@inject IStringLocalizer<Strings> L
+@inject UnitFormatter Units
+
+@* Log one brew: prefilled (from a recipe or an earlier brew), everything editable, then taste feedback. *@
+<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <div class="dialed-field">
+        <label for="brew-method">@L["Recipe_Method"]</label>
+        <select id="brew-method" value="@methodCode" @onchange="OnMethodChanged">
+            @foreach (var option in BrewMethodCatalog.Default.Methods)
+            {
+                <option value="@option.Code">@option.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="dialed-field">
+        <label for="brew-drink">@L["Brew_Drink"]</label>
+        <select id="brew-drink" value="@drink" @onchange="OnDrinkChanged">
+            @foreach (var option in Enum.GetValues<DrinkType>())
+            {
+                <option value="@option">@L[$"DrinkType_{option}"]</option>
+            }
+        </select>
+    </div>
+
+    @if (DrinkTypes.UsesMilk(drink))
+    {
+        <div class="dialed-field">
+            <label for="brew-milk-ml">@L["Brew_Milk"] (@UnitFormatting.VolumeLabel(Units.System))</label>
+            <input id="brew-milk-ml" type="number" inputmode="decimal" step="any" min="0" @bind="milk" @bind:event="onchange" />
+        </div>
+        <div class="dialed-field">
+            <label for="brew-milk-type">@L["Brew_MilkType"]</label>
+            <select id="brew-milk-type" @bind="milkType">
+                <option value="">@L["Bean_None"]</option>
+                @foreach (var option in Enum.GetValues<MilkType>())
+                {
+                    <option value="@option">@L[$"MilkType_{option}"]</option>
+                }
+            </select>
+        </div>
+    }
+
+    <div class="dialed-field">
+        <label for="brew-dose">@L["Recipe_Dose"] (@Units.WeightLabel)</label>
+        <input id="brew-dose" type="number" inputmode="decimal" step="any" min="0" @bind="dose" @bind:event="onchange"
+               aria-invalid="@(doseError is not null ? "true" : null)" />
+        @if (doseError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@doseError</div>
+        }
+    </div>
+
+    @if (UsesLiquid)
+    {
+        <div class="dialed-field">
+            <label for="brew-liquid">@(Uses(BrewParameter.Water) ? L["Recipe_Water"] : L["Recipe_Yield"]) (@Units.WeightLabel)</label>
+            <input id="brew-liquid" type="number" inputmode="decimal" step="any" min="0" @bind="liquid" @bind:event="onchange" />
+        </div>
+    }
+
+    <div class="dialed-field">
+        <label for="brew-grinder">@L["Recipe_Grinder"]</label>
+        <select id="brew-grinder" @bind="grinderId">
+            <option value="">@L["Bean_None"]</option>
+            @foreach (var gear in Grinders)
+            {
+                <option value="@gear.Id">@(string.IsNullOrWhiteSpace(gear.Model) ? gear.Brand : $"{gear.Brand} {gear.Model}")</option>
+            }
+        </select>
+    </div>
+
+    @if (Uses(BrewParameter.Grind) && SelectedGrinder?.GrindScale is { } scale)
+    {
+        <GrindSettingInput Label="@L["Recipe_Grind"]" Scale="scale" @bind-Value="grind" />
+    }
+
+    @if (Uses(BrewParameter.Temperature))
+    {
+        <div class="dialed-field">
+            <label for="brew-temp">@L["Recipe_Temp"] (@Units.TemperatureLabel)</label>
+            <input id="brew-temp" type="number" inputmode="decimal" step="any" @bind="temp" @bind:event="onchange" />
+        </div>
+    }
+
+    @if (Uses(BrewParameter.Time))
+    {
+        <div class="dialed-field">
+            <label for="brew-time">@L["Recipe_Time"]</label>
+            <input id="brew-time" type="number" inputmode="numeric" min="0" @bind="timeS" @bind:event="onchange" />
+        </div>
+    }
+
+    <fieldset class="dialed-field dialed-taste-group">
+        <legend>@L["Brew_Taste"]</legend>
+        <TasteSlider Label="@L["Taste_Acidity"]" LowLabel="@L["Taste_Sour"]" HighLabel="@L["Taste_Bitter"]" Min="Taste.Min" Max="Taste.Max" @bind-Value="acidity" />
+        <TasteSlider Label="@L["Taste_Strength"]" LowLabel="@L["Taste_Weak"]" HighLabel="@L["Taste_Strong"]" Min="Taste.Min" Max="Taste.Max" @bind-Value="strength" />
+        <TasteSlider Label="@L["Taste_Body"]" LowLabel="@L["Taste_Thin"]" HighLabel="@L["Taste_Heavy"]" Min="Taste.Min" Max="Taste.Max" @bind-Value="body" />
+        <TasteSlider Label="@L["Taste_Sweetness"]" LowLabel="@L["Taste_Flat"]" HighLabel="@L["Taste_Sweet"]" Min="Taste.Min" Max="Taste.Max" @bind-Value="sweetness" />
+    </fieldset>
+
+    <div class="dialed-field">
+        <label>@L["Bean_Rating"]</label>
+        <StarRating @bind-Value="rating" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="brew-notes">@L["Bean_Notes"]</label>
+        <textarea id="brew-notes" rows="3" @bind="notes"></textarea>
+    </div>
+
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Brew_Save"]</button>
+        <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
+    </div>
+</form>
+
+@code {
+    private string methodCode = "";
+    private DrinkType drink;
+    private decimal? milk;
+    private MilkType? milkType;
+    private decimal? dose;
+    private decimal? liquid;
+    private string grinderId = "";
+    private decimal? grind;
+    private decimal? temp;
+    private int? timeS;
+    private int acidity;
+    private int strength;
+    private int body;
+    private int sweetness;
+    private int rating;
+    private string? notes;
+    private string? doseError;
+    private Brew? loaded;
+    private bool seeded;
+
+    /// <summary>The starting values (from a recipe, an earlier brew, or blank).</summary>
+    [Parameter, EditorRequired]
+    public Brew Initial { get; set; } = default!;
+
+    [Parameter]
+    public IReadOnlyList<EquipmentItem> Gear { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public EventCallback<Brew> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private IEnumerable<EquipmentItem> Grinders => Gear.Where(g => g.Kind == EquipmentKind.Grinder);
+
+    private EquipmentItem? SelectedGrinder => Gear.FirstOrDefault(g => g.Id == grinderId);
+
+    private BrewMethod? Method => BrewMethodCatalog.Default.Find(methodCode);
+
+    private bool Uses(BrewParameter parameter) => Method?.Uses(parameter) ?? true;
+
+    private bool UsesLiquid => Uses(BrewParameter.Water) || Uses(BrewParameter.Yield);
+
+    protected override void OnParametersSet()
+    {
+        if (seeded && ReferenceEquals(Initial, loaded))
+        {
+            return;
+        }
+
+        seeded = true;
+        loaded = Initial;
+        methodCode = Initial.MethodCode;
+        drink = Initial.DrinkType;
+        milk = Initial.MilkMl is { } ml ? Math.Round(UnitFormatting.ToDisplayVolume(ml, Units.System), 1) : null;
+        milkType = Initial.MilkType;
+        dose = Initial.DoseG > 0m ? Math.Round(Units.ToDisplayWeight(Initial.DoseG), 1) : null;
+        var liquidG = Initial.WaterG ?? Initial.YieldG;
+        liquid = liquidG is { } g ? Math.Round(Units.ToDisplayWeight(g), 1) : null;
+        grinderId = Initial.GrinderId ?? "";
+        grind = Initial.GrindSetting;
+        temp = Initial.TempC is { } c ? Math.Round(Units.ToDisplayTemperature(c), 1) : null;
+        timeS = Initial.TimeS;
+        acidity = Initial.Taste.Acidity;
+        strength = Initial.Taste.Strength;
+        body = Initial.Taste.Body;
+        sweetness = Initial.Taste.Sweetness;
+        rating = Initial.Rating ?? 0;
+        notes = Initial.Notes;
+    }
+
+    private void OnMethodChanged(ChangeEventArgs e)
+    {
+        methodCode = e.Value?.ToString() ?? methodCode;
+        drink = DrinkTypes.DefaultFor(methodCode);
+    }
+
+    private void OnDrinkChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<DrinkType>(e.Value?.ToString(), out var parsed))
+        {
+            drink = parsed;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        doseError = dose is > 0m ? null : L["Brew_DoseRequired"].Value;
+        if (doseError is not null)
+        {
+            return;
+        }
+
+        var water = Uses(BrewParameter.Water);
+        var liquidG = liquid is { } l ? Math.Round(Units.FromDisplayWeight(l), 1) : (decimal?)null;
+        var brew = Initial with
+        {
+            MethodCode = methodCode,
+            DrinkType = drink,
+            MilkMl = DrinkTypes.UsesMilk(drink) && milk is { } m ? (int)Math.Round(UnitFormatting.FromDisplayVolume(m, Units.System)) : null,
+            MilkType = DrinkTypes.UsesMilk(drink) ? milkType : null,
+            DoseG = Math.Round(Units.FromDisplayWeight(dose!.Value), 1),
+            WaterG = UsesLiquid && water ? liquidG : null,
+            YieldG = UsesLiquid && !water ? liquidG : null,
+            GrinderId = grinderId == "" ? null : grinderId,
+            GrindSetting = Uses(BrewParameter.Grind) && SelectedGrinder?.GrindScale is not null ? grind : null,
+            TempC = Uses(BrewParameter.Temperature) && temp is { } t ? Math.Round(Units.FromDisplayTemperature(t), 1) : null,
+            TimeS = Uses(BrewParameter.Time) ? timeS : null,
+            Taste = new Taste(acidity, strength, body, sweetness),
+            Rating = rating > 0 ? rating : null,
+            Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
+        };
+        await OnSubmit.InvokeAsync(brew);
+    }
+}

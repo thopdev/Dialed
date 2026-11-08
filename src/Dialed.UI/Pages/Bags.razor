@@ -9,6 +9,7 @@
 @inject IRepository<Bag> BagStore
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Vendor> VendorStore
+@inject IRepository<Brew> BrewStore
 @inject UnitFormatter Units
 @inject NavigationManager Navigation
 @inject TimeProvider Time
@@ -173,6 +174,7 @@
     private IReadOnlyList<Bag>? bags;
     private IReadOnlyList<Bean> beans = [];
     private IReadOnlyList<Vendor> vendors = [];
+    private IReadOnlyList<Brew> brews = [];
     private Bag? current;
     private decimal remaining;
     private bool showFinished;
@@ -210,6 +212,7 @@
         BagStore.Changed += OnStoreChanged;
         BeanStore.Changed += OnStoreChanged;
         VendorStore.Changed += OnStoreChanged;
+        BrewStore.Changed += OnStoreChanged;
         await LoadAsync();
     }
 
@@ -229,8 +232,8 @@
         vendors = await VendorStore.ListAsync();
         current = Id is null or "new" ? null : bags.FirstOrDefault(bag => bag.Id == Id);
 
-        // No brews are logged yet (#64), so nothing but the bag weight counts toward what is left.
-        remaining = current is null ? 0m : BagInventory.Remaining(current.WeightG, [], []);
+        brews = await BrewStore.ListAsync();
+        remaining = current is null ? 0m : BagInventory.Remaining(current.WeightG, brews.Where(b => b.BagId == current.Id && !b.Deleted).Select(b => b.DoseG), []);
     }
 
     private void OnStoreChanged() => _ = InvokeAsync(async () =>
@@ -335,5 +338,6 @@
         BagStore.Changed -= OnStoreChanged;
         BeanStore.Changed -= OnStoreChanged;
         VendorStore.Changed -= OnStoreChanged;
+        BrewStore.Changed -= OnStoreChanged;
     }
 }

@@ -1,5 +1,619 @@
 @page "/recipes"
+@page "/recipes/{Id}"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Equipment
+@using Dialed.Domain.Model
+@using System.Globalization
+@implements IDisposable
 @inject IStringLocalizer<Strings> L
+@inject IRepository<Recipe> RecipeStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<EquipmentItem> GearStore
+@inject IRepository<MethodDefault> DefaultStore
+@inject IRepository<Brew> BrewStore
+@inject UnitFormatter Units
+@inject NavigationManager Navigation
 
-<PageHeader Title="@L["Nav_Recipes"]" />
-<EmptyState Message="@L["Recipes_Empty"]" />
+<ListDetailLayout HasSelection="@(Id is not null)">
+    <List>
+        <PageHeader Title="@L["Nav_Recipes"]">
+            <Actions>
+                <a class="dialed-button dialed-button-primary" href="recipes/new">@L["Recipes_New"]</a>
+            </Actions>
+        </PageHeader>
+
+        @if (recipes is null)
+        {
+            <Loading IsLoading="true" />
+        }
+        else
+        {
+            @if (recipes.Count == 0)
+            {
+                <EmptyState Message="@L["Recipes_Empty"]" />
+            }
+            else
+            {
+                <div class="dialed-field">
+                    <label for="recipe-filter-bean">@L["Recipe_Bean"]</label>
+                    <select id="recipe-filter-bean" @bind="beanFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var bean in beans)
+                        {
+                            <option value="@bean.Id">@bean.Name</option>
+                        }
+                    </select>
+                </div>
+                <ChipGroup Label="@L["Recipes_Show"]">
+                    <Chip Selected="@(!favouritesOnly)" OnClick="@(() => favouritesOnly = false)">@L["Beans_All"]</Chip>
+                    <Chip Selected="@favouritesOnly" OnClick="@(() => favouritesOnly = true)">@L["Recipes_Favourites"]</Chip>
+                </ChipGroup>
+
+                @if (Groups.Count == 0)
+                {
+                    <EmptyState Message="@L["Beans_NoResults"]" />
+                }
+
+                @foreach (var group in Groups)
+                {
+                    <h2 class="dialed-group-title" data-method="@(group.MethodCode)">@MethodName(group.MethodCode)</h2>
+                    <div class="dialed-list">
+                        @foreach (var recipe in group.Recipes)
+                        {
+                            <ListRow Title="@(recipe.IsFavourite ? "★ " + recipe.Name : recipe.Name)" Subtitle="@Subtitle(recipe)" Href="@($"recipes/{recipe.Id}")" />
+                        }
+                    </div>
+                }
+            }
+
+            <div class="dialed-list">
+                <ListRow Title="@L["Templates_Title"]" Subtitle="@L["Templates_Subtitle"]" Href="recipes/templates" />
+            </div>
+        }
+    </List>
+    <Detail>
+        @if (Id is null)
+        {
+            <EmptyState Message="@L["Recipes_SelectPrompt"]" />
+        }
+        else if (Id == "new")
+        {
+            <PageHeader Title="@L["Recipes_New"]" BackHref="recipes" />
+            <RecipeForm Beans="beans" Gear="gear" Defaults="defaults" OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("recipes"))" />
+        }
+        else if (Id == "templates")
+        {
+            <PageHeader Title="@L["Templates_Title"]" BackHref="recipes" />
+            <p class="dialed-muted">@string.Format(L["Templates_Help"].Value, DefaultRecipeCatalog.Default.Version)</p>
+            @foreach (var template in DefaultRecipeCatalog.Default.Recipes)
+            {
+                var item = template;
+                <Card>
+                    <div class="dialed-template" data-method="@(item.MethodCode)">
+                        <h2>@item.Name</h2>
+                        <p class="dialed-muted">@MethodName(item.MethodCode) · @TemplateSummary(item)</p>
+                        @if (item.Notes is not null)
+                        {
+                            <p>@item.Notes</p>
+                        }
+                        <button type="button" class="dialed-button dialed-button-primary" @onclick="() => UseTemplateAsync(item)">@L["Templates_Use"]</button>
+                    </div>
+                </Card>
+            }
+        }
+        else if (current is null)
+        {
+            <PageHeader Title="@L["Nav_Recipes"]" BackHref="recipes" />
+            <EmptyState Message="@L["Recipes_NotFound"]" />
+        }
+        else if (editing)
+        {
+            <PageHeader Title="@current.Name" BackHref="recipes" />
+            @if (pendingEdit is not null)
+            {
+                <div class="dialed-confirm" role="alertdialog" id="recipe-version-prompt" aria-label="@L["Version_PromptTitle"]">
+                    <p><strong>@L["Version_PromptTitle"]</strong></p>
+                    <p>@L["Version_PromptBody"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" id="recipe-save-new-version" class="dialed-button dialed-button-primary" @onclick="SaveAsNewVersionAsync">@L["Version_SaveNew"]</button>
+                        <button type="button" id="recipe-update-version" class="dialed-button" @onclick="UpdateThisVersionAsync">@L["Version_UpdateThis"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => pendingEdit = null)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+            <RecipeForm Recipe="current" Beans="beans" Gear="gear" Defaults="defaults" OnSubmit="UpdateAsync" OnCancel="CancelEdit" />
+        }
+        else
+        {
+            <PageHeader Title="@current.Name" BackHref="recipes">
+                <Actions>
+                    @if (!current.IsDefaultTemplate && !current.IsSuperseded)
+                    {
+                        <button type="button" id="recipe-favourite" class="dialed-button" aria-pressed="@(current.IsFavourite ? "true" : "false")" @onclick="ToggleFavouriteAsync">@(current.IsFavourite ? L["Recipe_Unfavourite"] : L["Recipe_Favourite"])</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                    }
+                </Actions>
+            </PageHeader>
+
+            @if (error is not null)
+            {
+                <ErrorBanner Message="@error" />
+            }
+
+            @if (confirmingDelete)
+            {
+                <div class="dialed-confirm" role="alertdialog" aria-label="@string.Format(L["Recipe_DeleteTitle"].Value, current.Name)">
+                    <p><strong>@string.Format(L["Recipe_DeleteTitle"].Value, current.Name)</strong></p>
+                    <p>@L["Gear_DeleteBody"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+
+            @if (current.IsSuperseded)
+            {
+                <div class="dialed-confirm" role="status" id="recipe-older-version">
+                    <p>@L["Version_Older"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-primary" @onclick="() => MakeCurrentAsync(current)">@L["Version_MakeCurrent"]</button>
+                    </div>
+                </div>
+            }
+
+            <Card>
+                <dl class="dialed-facts">
+                    <dt>@L["Recipe_Method"]</dt>
+                    <dd>@MethodName(current.MethodCode)</dd>
+                    @if (BeanName(current.BeanId) is { } bean)
+                    {
+                        <dt>@L["Recipe_Bean"]</dt>
+                        <dd><a href="@($"beans/{current.BeanId}")">@bean</a></dd>
+                    }
+                    @if (GearName(current.GrinderId) is { } grinder)
+                    {
+                        <dt>@L["Recipe_Grinder"]</dt>
+                        <dd>@grinder</dd>
+                    }
+                    @if (GearName(current.BrewerId) is { } brewer)
+                    {
+                        <dt>@L["Recipe_Brewer"]</dt>
+                        <dd>@brewer</dd>
+                    }
+                    @if (current.DoseG is { } dose)
+                    {
+                        <dt>@L["Recipe_Dose"]</dt>
+                        <dd>@Units.Weight(dose)</dd>
+                    }
+                    @if (current.WaterG is { } water)
+                    {
+                        <dt>@L["Recipe_Water"]</dt>
+                        <dd>@Units.Weight(water)</dd>
+                    }
+                    @if (current.YieldG is { } yield)
+                    {
+                        <dt>@L["Recipe_Yield"]</dt>
+                        <dd>@Units.Weight(yield)</dd>
+                    }
+                    @if (current.Ratio is { } ratio)
+                    {
+                        <dt>@L["Recipe_Ratio"]</dt>
+                        <dd>1:@ratio.ToString("0.##")</dd>
+                    }
+                    @if (current.TempC is { } temp)
+                    {
+                        <dt>@L["Recipe_Temp"]</dt>
+                        <dd>@Units.Temperature(temp)</dd>
+                    }
+                    @if (current.GrindSetting is { } grind)
+                    {
+                        <dt>@L["Recipe_Grind"]</dt>
+                        <dd>@GrindScale.Format(grind)</dd>
+                    }
+                    @if (current.TimeS is { } time)
+                    {
+                        <dt>@L["Recipe_Time"]</dt>
+                        <dd>@time s</dd>
+                    }
+                    @if (current.PreinfusionS is { } pre)
+                    {
+                        <dt>@L["Recipe_Preinfusion"]</dt>
+                        <dd>@pre s</dd>
+                    }
+                    @if (current.Filter is { } filter)
+                    {
+                        <dt>@L["Recipe_Filter"]</dt>
+                        <dd>@filter</dd>
+                    }
+                </dl>
+                @if (current.Notes is not null)
+                {
+                    <p class="dialed-vendor-notes">@current.Notes</p>
+                }
+            </Card>
+
+            @if (family.Count > 1)
+            {
+                <h2>@L["Version_Title"]</h2>
+                <ol class="dialed-versions">
+                    @for (var i = 0; i < family.Count; i++)
+                    {
+                        var version = family[i];
+                        var isCurrent = version.Id == familyCurrent?.Id;
+                        <li class="@(isCurrent ? "current" : null)" data-version="@version.Id">
+                            <a href="@($"recipes/{version.Id}")">@string.Format(L["Version_Label"].Value, i + 1)</a>
+                            @if (isCurrent)
+                            {
+                                <strong> · @L["Version_Current"]</strong>
+                            }
+                            <span class="dialed-muted"> · @version.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd") · @StatsText(version)</span>
+                            @if (ChangeText(version) is { Length: > 0 } changes)
+                            {
+                                <div class="dialed-version-changes">@changes</div>
+                            }
+                            @if (!isCurrent)
+                            {
+                                <button type="button" class="dialed-button" @onclick="() => MakeCurrentAsync(version)">@L["Version_MakeCurrent"]</button>
+                            }
+                        </li>
+                    }
+                </ol>
+            }
+
+            @if (current.Steps.Count > 0)
+            {
+                <h2>@L["Recipe_Steps"]</h2>
+                <ol class="dialed-step-list">
+                    @foreach (var step in current.Steps)
+                    {
+                        <li>@StepText(step)</li>
+                    }
+                </ol>
+            }
+        }
+    </Detail>
+</ListDetailLayout>
+
+@code {
+    private IReadOnlyList<Recipe>? recipes;
+    private IReadOnlyList<Bean> beans = [];
+    private IReadOnlyList<EquipmentItem> gear = [];
+    private IReadOnlyList<MethodDefault> defaults = [];
+    private Recipe? current;
+    private Recipe? pendingEdit;
+    private IReadOnlyList<Brew> brews = [];
+    private IReadOnlyList<Recipe> family = [];
+    private Recipe? familyCurrent;
+    private bool editing;
+    private bool confirmingDelete;
+    private string? error;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private string beanFilter = "";
+    private bool favouritesOnly;
+
+    private IReadOnlyList<RecipeGroup> Groups =>
+        RecipeQuery.Group(recipes ?? [], new RecipeFilter(beanFilter == "" ? null : beanFilter, favouritesOnly), MethodName);
+
+    protected override async Task OnInitializedAsync()
+    {
+        RecipeStore.Changed += OnStoreChanged;
+        BeanStore.Changed += OnStoreChanged;
+        GearStore.Changed += OnStoreChanged;
+        DefaultStore.Changed += OnStoreChanged;
+        BrewStore.Changed += OnStoreChanged;
+        await LoadAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        editing = false;
+        confirmingDelete = false;
+        pendingEdit = null;
+        error = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        recipes = await RecipeStore.ListAsync();
+        beans = [.. (await BeanStore.ListAsync()).OrderBy(b => b.Name)];
+        gear = await GearStore.ListAsync();
+        defaults = await DefaultStore.ListAsync();
+        brews = await BrewStore.ListAsync();
+        current = Id is null or "new" or "templates" ? null : recipes.FirstOrDefault(r => r.Id == Id);
+        family = current is null ? [] : RecipeVersions.Family(current, recipes);
+        familyCurrent = RecipeVersions.Current(family);
+    }
+
+    private void OnStoreChanged() => _ = InvokeAsync(async () =>
+    {
+        if (editing)
+        {
+            return;
+        }
+
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
+
+    private string? BeanName(string? id) => id is null ? null : beans.FirstOrDefault(b => b.Id == id)?.Name;
+
+    private string? GearName(string? id)
+    {
+        var item = id is null ? null : gear.FirstOrDefault(g => g.Id == id);
+        return item is null ? null : string.IsNullOrWhiteSpace(item.Model) ? item.Brand : $"{item.Brand} {item.Model}";
+    }
+
+    private string Subtitle(Recipe recipe)
+    {
+        var parts = new List<string> { MethodName(recipe.MethodCode) };
+        if (recipe.Ratio is { } ratio)
+        {
+            parts.Add($"1:{ratio:0.##}");
+        }
+
+        if (BeanName(recipe.BeanId) is { } bean)
+        {
+            parts.Add(bean);
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private string StepText(RecipeStep step)
+    {
+        var parts = new List<string> { $"{step.AtS} s", L[$"StepKind_{step.Kind}"].Value };
+        if (step.WaterG is { } water)
+        {
+            parts.Add(string.Format(L["Step_ToWater"].Value, Units.Weight(water)));
+        }
+
+        if (step.DurationS is { } duration)
+        {
+            parts.Add($"{duration} s");
+        }
+
+        if (!string.IsNullOrWhiteSpace(step.Note))
+        {
+            parts.Add(step.Note!);
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private string TemplateSummary(RecipeTemplate template)
+    {
+        var parts = new List<string>();
+        if (template.DoseG is { } dose)
+        {
+            parts.Add(Units.Weight(dose));
+        }
+
+        if ((template.WaterG ?? template.YieldG) is { } liquid)
+        {
+            parts.Add(Units.Weight(liquid));
+        }
+
+        if (template.DoseG is > 0m && (template.WaterG ?? template.YieldG) is { } l)
+        {
+            parts.Add("1:" + Math.Round(l / template.DoseG.Value, 2).ToString("0.##", CultureInfo.InvariantCulture));
+        }
+
+        if (template.TempC is { } temp)
+        {
+            parts.Add(Units.Temperature(temp));
+        }
+
+        if (template.TimeS is { } time)
+        {
+            parts.Add($"{time} s");
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    // Copies the read-only template into the household as a personal recipe, with the method's usual grinder and brewer.
+    private async Task UseTemplateAsync(RecipeTemplate template)
+    {
+        var row = defaults.FirstOrDefault(d => d.MethodCode == template.MethodCode);
+        var saved = await RecipeStore.SaveAsync(template.ToRecipe(row?.GrinderId, row?.BrewerId));
+        Navigation.NavigateTo($"recipes/{saved.Id}");
+    }
+
+    private async Task CreateAsync(Recipe recipe)
+    {
+        var saved = await RecipeStore.SaveAsync(recipe);
+        Navigation.NavigateTo($"recipes/{saved.Id}");
+    }
+
+    private void CancelEdit()
+    {
+        editing = false;
+        pendingEdit = null;
+    }
+
+    // A recipe that has been brewed with is part of the dial-in history, so ask whether to change it in place or start a new version.
+    private async Task UpdateAsync(Recipe recipe)
+    {
+        if (RecipeVersions.HasBrews(recipe.Id, brews))
+        {
+            pendingEdit = recipe;
+            return;
+        }
+
+        await SaveInPlaceAsync(recipe);
+    }
+
+    private async Task UpdateThisVersionAsync()
+    {
+        if (pendingEdit is { } recipe)
+        {
+            pendingEdit = null;
+            await SaveInPlaceAsync(recipe);
+        }
+    }
+
+    private async Task SaveInPlaceAsync(Recipe recipe)
+    {
+        try
+        {
+            await RecipeStore.SaveAsync(recipe);
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
+        editing = false;
+        await LoadAsync();
+    }
+
+    private async Task SaveAsNewVersionAsync()
+    {
+        if (pendingEdit is not { } edited || current is null)
+        {
+            return;
+        }
+
+        var (created, superseded) = RecipeVersions.NewVersion(current, edited);
+        try
+        {
+            var savedNew = await RecipeStore.SaveAsync(created);
+            await RecipeStore.SaveAsync(superseded);
+            pendingEdit = null;
+            editing = false;
+            Navigation.NavigateTo($"recipes/{savedNew.Id}");
+        }
+        catch (ConflictException)
+        {
+            pendingEdit = null;
+            error = L["Error_Conflict"];
+            editing = false;
+            await LoadAsync();
+        }
+    }
+
+    private async Task MakeCurrentAsync(Recipe? target)
+    {
+        if (target is null)
+        {
+            return;
+        }
+
+        foreach (var change in RecipeVersions.MakeCurrent(target, family))
+        {
+            await RecipeStore.SaveAsync(change);
+        }
+
+        Navigation.NavigateTo($"recipes/{target.Id}");
+        await LoadAsync();
+    }
+
+    private string StatsText(Recipe version)
+    {
+        var stats = RecipeVersions.Stats(version.Id, brews);
+        return stats.BrewCount == 0
+            ? L["Version_NoBrews"].Value
+            : string.Format(L["Version_Stats"].Value, stats.AverageRating is { } avg ? $"{avg:0.0} ★" : "–", stats.BrewCount);
+    }
+
+    private string ChangeText(Recipe version)
+    {
+        var parent = version.ParentRecipeId is { } parentId ? family.FirstOrDefault(r => r.Id == parentId) : null;
+        if (parent is null)
+        {
+            return "";
+        }
+
+        var diff = RecipeVersions.Diff(parent, version);
+        var parts = diff.Parameters.Select(p => $"{ParameterLabel(p.Parameter)} {FormatParameter(p.Parameter, p.Planned)} → {FormatParameter(p.Parameter, p.Actual)}").ToList();
+        if (diff.StepsChanged)
+        {
+            parts.Add(L["Version_StepsChanged"].Value);
+        }
+
+        if (diff.GrinderChanged)
+        {
+            parts.Add(L["Version_GrinderChanged"].Value);
+        }
+
+        return string.Join(", ", parts);
+    }
+
+    private string ParameterLabel(BrewParameter parameter) => parameter switch
+    {
+        BrewParameter.Dose => L["Recipe_Dose"].Value,
+        BrewParameter.Water => L["Recipe_Water"].Value,
+        BrewParameter.Yield => L["Recipe_Yield"].Value,
+        BrewParameter.Grind => L["Recipe_Grind"].Value,
+        BrewParameter.Temperature => L["Recipe_Temp"].Value,
+        BrewParameter.Preinfusion => L["Recipe_Preinfusion"].Value,
+        _ => L["History_Time"].Value,
+    };
+
+    private string FormatParameter(BrewParameter parameter, decimal? value) => value is not { } v
+        ? "–"
+        : parameter switch
+        {
+            BrewParameter.Dose or BrewParameter.Water or BrewParameter.Yield => Units.Weight(v),
+            BrewParameter.Temperature => Units.Temperature(v),
+            BrewParameter.Time or BrewParameter.Preinfusion => $"{v:0} s",
+            _ => GrindScale.Format(v),
+        };
+
+    private async Task ToggleFavouriteAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await RecipeStore.SaveAsync(current with { IsFavourite = !current.IsFavourite });
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        // Deleting the current version brings its parent back as the current one.
+        if (!current.IsSuperseded && current.ParentRecipeId is { } parentId && family.FirstOrDefault(r => r.Id == parentId) is { IsSuperseded: true } parent)
+        {
+            await RecipeStore.SaveAsync(parent with { IsSuperseded = false });
+        }
+
+        await RecipeStore.DeleteAsync(current.Id);
+        Navigation.NavigateTo("recipes");
+    }
+
+    public void Dispose()
+    {
+        RecipeStore.Changed -= OnStoreChanged;
+        BeanStore.Changed -= OnStoreChanged;
+        GearStore.Changed -= OnStoreChanged;
+        DefaultStore.Changed -= OnStoreChanged;
+        BrewStore.Changed -= OnStoreChanged;
+    }
+}
