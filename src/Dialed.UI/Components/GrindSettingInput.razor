@@ -1,0 +1,113 @@
+@using Dialed.Domain.Equipment
+@inject IStringLocalizer<Strings> L
+
+@* Grind setting entry that matches the grinder: − / + steppers for stepped scales (clicks, dial steps), a decimal field for stepless; always checked against the scale's range. *@
+<div class="dialed-grind-input">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label for="@inputId">@Label</label>
+    }
+    <div class="dialed-grind-row">
+        @if (Scale.IsStepped)
+        {
+            <button type="button" class="dialed-grind-step" aria-label="@L["Grind_Decrease"]"
+                    disabled="@(!CanDecrease)" @onclick="DecreaseAsync">−</button>
+        }
+        <input id="@inputId" type="text" inputmode="decimal" autocomplete="off" value="@text"
+               aria-invalid="@(error is not null ? "true" : null)" @onchange="OnTextChangedAsync" />
+        @if (Scale.IsStepped)
+        {
+            <button type="button" class="dialed-grind-step" aria-label="@L["Grind_Increase"]"
+                    disabled="@(!CanIncrease)" @onclick="IncreaseAsync">+</button>
+        }
+        @if (Scale.Kind == GrindSettingKind.Clicks)
+        {
+            <span class="dialed-grind-unit">@L["Grind_Clicks"]</span>
+        }
+    </div>
+    @if (error is not null)
+    {
+        <div class="dialed-grind-error" role="alert">@error</div>
+    }
+</div>
+
+@code {
+    private static int counter;
+
+    private readonly string inputId = $"grind-{Interlocked.Increment(ref counter)}";
+    private string text = string.Empty;
+    private string? error;
+    private decimal? shownValue;
+
+    [Parameter, EditorRequired]
+    public GrindScale Scale { get; set; } = default!;
+
+    [Parameter]
+    public decimal? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<decimal?> ValueChanged { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    private bool CanDecrease => Value is null || Value > Scale.Min;
+
+    private bool CanIncrease => Value is null || Value < Scale.Max;
+
+    protected override void OnParametersSet()
+    {
+        // Follow outside changes (another field, loading a recipe) but never overwrite what is being typed.
+        if (Value != shownValue)
+        {
+            shownValue = Value;
+            text = Value is { } value ? GrindScale.Format(value) : string.Empty;
+            error = null;
+        }
+    }
+
+    private Task DecreaseAsync() => SetAsync(Value is { } value ? Scale.Decrease(value) : Scale.Min);
+
+    private Task IncreaseAsync() => SetAsync(Value is { } value ? Scale.Increase(value) : Scale.Min);
+
+    private async Task SetAsync(decimal value)
+    {
+        shownValue = value;
+        text = GrindScale.Format(value);
+        error = null;
+        await ValueChanged.InvokeAsync(value);
+    }
+
+    private async Task OnTextChangedAsync(ChangeEventArgs args)
+    {
+        text = args.Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            error = null;
+            shownValue = null;
+            await ValueChanged.InvokeAsync(null);
+            return;
+        }
+
+        if (!GrindScale.TryParse(text, out var value))
+        {
+            error = L["Grind_Invalid"];
+            return;
+        }
+
+        error = Scale.Validate(value) switch
+        {
+            GrindValidation.BelowMinimum => string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Grind_Min"].Value, GrindScale.Format(Scale.Min)),
+            GrindValidation.AboveMaximum => string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Grind_Max"].Value, GrindScale.Format(Scale.Max)),
+            GrindValidation.NotOnStep => string.Format(System.Globalization.CultureInfo.CurrentCulture, L["Grind_Step"].Value, GrindScale.Format(Scale.Step)),
+            _ => null,
+        };
+
+        if (error is null)
+        {
+            shownValue = value;
+            text = GrindScale.Format(value);
+            await ValueChanged.InvokeAsync(value);
+        }
+    }
+}
