@@ -44,9 +44,9 @@
                     <label for="history-method">@L["Recipe_Method"]</label>
                     <select id="history-method" @bind="methodFilter">
                         <option value="">@L["Beans_Any"]</option>
-                        @foreach (var code in brews.Select(b => b.MethodCode).Distinct().Order())
+                        @foreach (var methodCode in brews.Select(b => b.MethodCode).Distinct().Order())
                         {
-                            <option value="@code">@MethodName(code)</option>
+                            <option value="@methodCode">@MethodName(methodCode)</option>
                         }
                     </select>
                 </div>
