@@ -21,6 +21,8 @@ public sealed class InMemoryRepositoryTests
         public string HouseholdId => household;
     }
 
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     private static readonly DateTimeOffset Start = new(2026, 11, 8, 12, 0, 0, TimeSpan.Zero);
 
     private readonly FakeTime time = new(Start);
@@ -33,7 +35,7 @@ public sealed class InMemoryRepositoryTests
     {
         var repository = Create();
 
-        var saved = await repository.SaveAsync(new Vendor { Name = "Friedhats" });
+        var saved = await repository.SaveAsync(new Vendor { Name = "Friedhats" }, Ct);
 
         saved.HouseholdId.ShouldBe("h1");
         saved.CreatedBy.ShouldBe("u1");
@@ -49,10 +51,10 @@ public sealed class InMemoryRepositoryTests
     public async Task Saving_a_change_raises_the_version_and_keeps_creation_details()
     {
         var repository = Create();
-        var created = await repository.SaveAsync(new Vendor { Name = "Friedhats" });
+        var created = await repository.SaveAsync(new Vendor { Name = "Friedhats" }, Ct);
         time.Advance(TimeSpan.FromMinutes(5));
 
-        var changed = await repository.SaveAsync(created with { Name = "Friedhats Coffee", CreatedBy = "forged", HouseholdId = "forged" });
+        var changed = await repository.SaveAsync(created with { Name = "Friedhats Coffee", CreatedBy = "forged", HouseholdId = "forged" }, Ct);
 
         changed.Name.ShouldBe("Friedhats Coffee");
         changed.Version.ShouldBe(2);
@@ -60,46 +62,46 @@ public sealed class InMemoryRepositoryTests
         changed.HouseholdId.ShouldBe("h1");
         changed.CreatedAt.ShouldBe(Start);
         changed.UpdatedAt.ShouldBe(Start.AddMinutes(5));
-        (await repository.GetAsync(created.Id))!.Name.ShouldBe("Friedhats Coffee");
+        (await repository.GetAsync(created.Id, Ct))!.Name.ShouldBe("Friedhats Coffee");
     }
 
     [Fact]
     public async Task Saving_from_an_outdated_copy_is_a_conflict()
     {
         var repository = Create();
-        var first = await repository.SaveAsync(new Vendor { Name = "A" });
-        await repository.SaveAsync(first with { Name = "B" });
+        var first = await repository.SaveAsync(new Vendor { Name = "A" }, Ct);
+        await repository.SaveAsync(first with { Name = "B" }, Ct);
 
-        var conflict = await Should.ThrowAsync<ConflictException>(() => repository.SaveAsync(first with { Name = "C" }));
+        var conflict = await Should.ThrowAsync<ConflictException>(() => repository.SaveAsync(first with { Name = "C" }, Ct));
 
         conflict.Id.ShouldBe(first.Id);
-        (await repository.GetAsync(first.Id))!.Name.ShouldBe("B");
+        (await repository.GetAsync(first.Id, Ct))!.Name.ShouldBe("B");
     }
 
     [Fact]
     public async Task Deleted_records_disappear_from_get_and_list()
     {
         var repository = Create();
-        var keep = await repository.SaveAsync(new Vendor { Name = "Keep" });
-        var remove = await repository.SaveAsync(new Vendor { Name = "Remove" });
+        var keep = await repository.SaveAsync(new Vendor { Name = "Keep" }, Ct);
+        var remove = await repository.SaveAsync(new Vendor { Name = "Remove" }, Ct);
 
-        await repository.DeleteAsync(remove.Id);
+        await repository.DeleteAsync(remove.Id, Ct);
 
-        (await repository.GetAsync(remove.Id)).ShouldBeNull();
-        (await repository.ListAsync()).Select(vendor => vendor.Id).ShouldBe([keep.Id]);
+        (await repository.GetAsync(remove.Id, Ct)).ShouldBeNull();
+        (await repository.ListAsync(Ct)).Select(vendor => vendor.Id).ShouldBe([keep.Id]);
     }
 
     [Fact]
     public async Task Deleting_twice_or_a_missing_record_is_not_an_error_and_notifies_once()
     {
         var repository = Create();
-        var vendor = await repository.SaveAsync(new Vendor { Name = "A" });
+        var vendor = await repository.SaveAsync(new Vendor { Name = "A" }, Ct);
         var changes = 0;
         repository.Changed += () => changes++;
 
-        await repository.DeleteAsync(vendor.Id);
-        await repository.DeleteAsync(vendor.Id);
-        await repository.DeleteAsync("does-not-exist");
+        await repository.DeleteAsync(vendor.Id, Ct);
+        await repository.DeleteAsync(vendor.Id, Ct);
+        await repository.DeleteAsync("does-not-exist", Ct);
 
         changes.ShouldBe(1);
     }
@@ -107,7 +109,7 @@ public sealed class InMemoryRepositoryTests
     [Fact]
     public async Task Getting_a_missing_record_returns_null()
     {
-        (await Create().GetAsync("nope")).ShouldBeNull();
+        (await Create().GetAsync("nope", Ct)).ShouldBeNull();
     }
 
     [Fact]
@@ -117,8 +119,8 @@ public sealed class InMemoryRepositoryTests
         var changes = 0;
         repository.Changed += () => changes++;
 
-        var saved = await repository.SaveAsync(new Vendor { Name = "A" });
-        await repository.SaveAsync(saved with { Name = "B" });
+        var saved = await repository.SaveAsync(new Vendor { Name = "A" }, Ct);
+        await repository.SaveAsync(saved with { Name = "B" }, Ct);
 
         changes.ShouldBe(2);
     }
@@ -126,7 +128,7 @@ public sealed class InMemoryRepositoryTests
     [Fact]
     public async Task Null_entities_are_rejected()
     {
-        await Should.ThrowAsync<ArgumentNullException>(() => Create().SaveAsync(null!));
+        await Should.ThrowAsync<ArgumentNullException>(() => Create().SaveAsync(null!, Ct));
     }
 
     [Fact]
@@ -142,10 +144,10 @@ public sealed class InMemoryRepositoryTests
     public async Task Every_entity_type_can_be_stored()
     {
         var context = new Context("u1", "h1");
-        var bean = await new InMemoryRepository<Bean>(context, time).SaveAsync(new Bean { Name = "Gesha" });
-        var bag = await new InMemoryRepository<Bag>(context, time).SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m });
+        var bean = await new InMemoryRepository<Bean>(context, time).SaveAsync(new Bean { Name = "Gesha" }, Ct);
+        var bag = await new InMemoryRepository<Bag>(context, time).SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m }, Ct);
         var gear = await new InMemoryRepository<EquipmentItem>(context, time)
-            .SaveAsync(new EquipmentItem { Kind = EquipmentKind.Grinder, Brand = "Comandante", GrindScale = Dialed.Domain.Equipment.GrindScale.Clicks(40) });
+            .SaveAsync(new EquipmentItem { Kind = EquipmentKind.Grinder, Brand = "Comandante", GrindScale = Dialed.Domain.Equipment.GrindScale.Clicks(40) }, Ct);
 
         bean.Visibility.ShouldBe(Visibility.Household);
         bag.Status.ShouldBe(Dialed.Domain.Inventory.BagStatus.Sealed);
