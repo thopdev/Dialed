@@ -122,8 +122,9 @@ public sealed class BrewTimerTests : UiTestContext
 
         page.Find("#timer-finish").Click();
 
+        // Stopping the tick loop completes asynchronously, so wait for the navigation that ends the handler.
+        page.WaitForAssertion(() => Services.GetRequiredService<NavigationManager>().Uri.ShouldEndWith($"brew/bag1/log/recipe/{recipe.Id}"));
         wake.Released.ShouldBeGreaterThan(0);
-        Services.GetRequiredService<NavigationManager>().Uri.ShouldEndWith($"brew/bag1/log/recipe/{recipe.Id}");
         Services.GetRequiredService<BrewTimerHandoff>().Take(recipe.Id).ShouldBe(171);
     }
 
@@ -150,7 +151,7 @@ public sealed class BrewTimerTests : UiTestContext
 
         page.Find("#timer-reset").Click();
 
-        page.Find("#timer-clock").TextContent.ShouldBe("0:00");
+        page.WaitForAssertion(() => page.Find("#timer-clock").TextContent.ShouldBe("0:00"));
         page.Find("#timer-start").ShouldNotBeNull();
         wake.Released.ShouldBeGreaterThan(0);
     }
