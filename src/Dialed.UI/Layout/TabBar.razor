@@ -12,6 +12,10 @@
                 <FluentIcon Value="@item.IconActive" Color="Color.Custom" CustomColor="currentColor" />
             </span>
             <span class="dialed-tab-label">@L[item.TitleKey]</span>
+            @if (item.ShowsLowStockBadge)
+            {
+                <LowStockBadge />
+            }
         </NavLink>
     }
 </nav>

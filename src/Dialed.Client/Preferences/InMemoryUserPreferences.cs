@@ -1,3 +1,4 @@
+using Dialed.Domain.Inventory;
 using Dialed.Domain.Units;
 
 namespace Dialed.Client.Preferences;
@@ -7,6 +8,8 @@ public sealed class InMemoryUserPreferences : IUserPreferences
 {
     public UnitSystem Units { get; private set; } = UnitSystem.Metric;
 
+    public InventorySettings Inventory { get; private set; } = InventorySettings.Default;
+
     public event Action? Changed;
 
     public Task SetUnitsAsync(UnitSystem units)
@@ -14,6 +17,18 @@ public sealed class InMemoryUserPreferences : IUserPreferences
         if (units != Units)
         {
             Units = units;
+            Changed?.Invoke();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task SetInventoryAsync(InventorySettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        if (settings != Inventory)
+        {
+            Inventory = settings;
             Changed?.Invoke();
         }
 

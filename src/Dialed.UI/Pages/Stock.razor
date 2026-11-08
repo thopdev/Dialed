@@ -1,0 +1,77 @@
+@page "/inventory"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Inventory
+@using Dialed.Domain.Model
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Brew> BrewStore
+@inject IUserPreferences Preferences
+@inject TimeProvider Time
+
+<PageHeader Title="@L["Stock_Title"]" BackHref="more" />
+
+@if (stock is null)
+{
+    <Loading IsLoading="true" />
+}
+else if (Groups.All(g => g.Items.Count == 0))
+{
+    <EmptyState Message="@L["Stock_Empty"]">
+        <a class="dialed-button dialed-button-primary" href="bags/new">@L["Bags_New"]</a>
+    </EmptyState>
+}
+else
+{
+    @foreach (var group in Groups.Where(g => g.Items.Count > 0))
+    {
+        <section data-group="@group.Status.ToString().ToLowerInvariant()">
+            <h2>@L[$"Stock_Group_{group.Status}"] (@group.Items.Count)</h2>
+            <div class="dialed-list">
+                @foreach (var item in group.Items)
+                {
+                    <BagStockRow Stock="item" />
+                }
+            </div>
+        </section>
+    }
+}
+
+@code {
+    private IReadOnlyList<BagStock>? stock;
+
+    private IEnumerable<(BagStatus Status, IReadOnlyList<BagStock> Items)> Groups =>
+        new[] { BagStatus.Open, BagStatus.Sealed, BagStatus.Frozen }.Select(status =>
+            (status, (IReadOnlyList<BagStock>)[.. (stock ?? []).Where(s => s.Bag.Status == status).OrderBy(s => s.BeanName, StringComparer.OrdinalIgnoreCase)]));
+
+    protected override async Task OnInitializedAsync()
+    {
+        BagStore.Changed += OnChanged;
+        BeanStore.Changed += OnChanged;
+        BrewStore.Changed += OnChanged;
+        Preferences.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        stock = InventoryOverview.Build(await BagStore.ListAsync(), await BeanStore.ListAsync(), await BrewStore.ListAsync(), today, Preferences.Inventory);
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        BagStore.Changed -= OnChanged;
+        BeanStore.Changed -= OnChanged;
+        BrewStore.Changed -= OnChanged;
+        Preferences.Changed -= OnChanged;
+    }
+}

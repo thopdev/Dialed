@@ -13,7 +13,7 @@ public sealed class NavigationTests : UiTestContext
     [Fact]
     public void Has_the_five_sections_in_order()
     {
-        AppNavigation.Items.Select(item => item.Href).ShouldBe(["", "beans", "recipes", "people", "more"]);
+        AppNavigation.Items.Select(item => item.Href).ShouldBe(["", "brew", "beans", "recipes", "more"]);
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class NavigationTests : UiTestContext
 
         var tabs = tabBar.FindAll("a.dialed-tab");
         tabs.Count.ShouldBe(5);
-        tabs.Select(tab => tab.QuerySelector(".dialed-tab-label")!.TextContent).ShouldBe(["Brew", "Beans", "Recipes", "People", "More"]);
+        tabs.Select(tab => tab.QuerySelector(".dialed-tab-label")!.TextContent).ShouldBe(["Home", "Brew", "Beans", "Recipes", "More"]);
         tabBar.Find("nav").GetAttribute("aria-label").ShouldBe("Main navigation");
     }
 

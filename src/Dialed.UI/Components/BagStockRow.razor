@@ -1,0 +1,42 @@
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Inventory
+@inject IStringLocalizer<Strings> L
+@inject UnitFormatter Units
+
+@* A bag with what is left, how many cups that is and how fresh it is. *@
+<ListRow Title="@(Stock.BeanName.Length > 0 ? Stock.BeanName : L["Bag_UnknownBean"].Value)" Subtitle="@Subtitle" Href="@($"brew/{Stock.Bag.Id}")" data-bag="@Stock.Bag.Id">
+    <Trailing>
+        @if (Stock.IsLow)
+        {
+            <Chip Selected="true">@L["Stock_Low"]</Chip>
+        }
+        @if (Stock.Freshness != Freshness.Unknown)
+        {
+            <Chip>@L[$"Fresh_{Stock.Freshness}"]</Chip>
+        }
+    </Trailing>
+</ListRow>
+
+@code {
+    [Parameter, EditorRequired]
+    public BagStock Stock { get; set; } = null!;
+
+    private string Subtitle
+    {
+        get
+        {
+            var parts = new List<string> { string.Format(L["Brew_Left"].Value, Units.Weight(Stock.RemainingG)) };
+            if (Stock.Cups is { } cups)
+            {
+                parts.Add(string.Format(L["Stock_Cups"].Value, cups));
+            }
+
+            if (Stock.AgeDays is { } age)
+            {
+                parts.Add(string.Format(L["Stock_DaysSinceRoast"].Value, age));
+            }
+
+            return string.Join(" · ", parts);
+        }
+    }
+}

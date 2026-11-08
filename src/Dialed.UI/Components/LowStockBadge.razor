@@ -1,0 +1,51 @@
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Inventory
+@using Dialed.Domain.Model
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Brew> BrewStore
+@inject IUserPreferences Preferences
+@inject TimeProvider Time
+
+@* Number of open bags below the low-stock threshold; nothing is shown when stock is fine. *@
+@if (count > 0)
+{
+    <span class="dialed-badge" role="status" aria-label="@string.Format(L["Stock_LowBadge"].Value, count)">@count</span>
+}
+
+@code {
+    private int count;
+
+    protected override async Task OnInitializedAsync()
+    {
+        BagStore.Changed += OnChanged;
+        BeanStore.Changed += OnChanged;
+        BrewStore.Changed += OnChanged;
+        Preferences.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        var stock = InventoryOverview.Build(await BagStore.ListAsync(), await BeanStore.ListAsync(), await BrewStore.ListAsync(), today, Preferences.Inventory);
+        count = InventoryOverview.LowStockCount(stock);
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        BagStore.Changed -= OnChanged;
+        BeanStore.Changed -= OnChanged;
+        BrewStore.Changed -= OnChanged;
+        Preferences.Changed -= OnChanged;
+    }
+}

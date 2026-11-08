@@ -1,0 +1,134 @@
+@page "/"
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Inventory
+@using Dialed.Domain.Model
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Brew> BrewStore
+@inject IUserPreferences Preferences
+@inject UnitFormatter Units
+@inject TimeProvider Time
+
+<PageHeader Title="@L["Nav_Home"]" />
+
+@if (stock is null)
+{
+    <Loading IsLoading="true" />
+}
+else if (beanCount == 0)
+{
+    <EmptyState Title="@L["Home_WelcomeTitle"]" Message="@L["Home_Welcome"]">
+        <a id="home-first-bean" class="dialed-button dialed-button-primary" href="beans/new">@L["Home_AddFirstBean"]</a>
+    </EmptyState>
+}
+else
+{
+    <div class="dialed-form-actions dialed-home-actions">
+        <a id="home-log-brew" class="dialed-button dialed-button-primary" href="brew">@L["Home_LogBrew"]</a>
+        <a id="home-scan-bag" class="dialed-button" href="bags/new">@L["Home_ScanBag"]</a>
+    </div>
+    <p class="dialed-muted">@L["Home_ScanHint"]</p>
+
+    <h2>@L["Home_OpenBags"]</h2>
+    @if (OpenBags.Count == 0)
+    {
+        <p class="dialed-muted">@L["Home_NoOpenBags"]</p>
+        <a href="bags/new">@L["Bags_New"]</a>
+    }
+    else
+    {
+        <div class="dialed-list" id="home-open-bags">
+            @foreach (var item in OpenBags)
+            {
+                <BagStockRow Stock="item" />
+            }
+        </div>
+    }
+
+    @if (again.Count > 0)
+    {
+        <h2>@L["Home_BrewAgain"]</h2>
+        <div class="dialed-list" id="home-brew-again">
+            @foreach (var brew in again)
+            {
+                <ListRow Title="@BeanName(brew)" Subtitle="@Describe(brew)" Href="@($"brew/{brew.BagId}/log/again/{brew.Id}")" data-brew="@brew.Id" />
+            }
+        </div>
+    }
+
+    <p><a href="inventory">@L["Stock_Title"]</a></p>
+}
+
+@code {
+    private IReadOnlyList<BagStock>? stock;
+    private IReadOnlyList<Brew> again = [];
+    private int beanCount;
+
+    private IReadOnlyList<BagStock> OpenBags =>
+        [.. (stock ?? []).Where(s => s.Bag.Status == BagStatus.Open).OrderBy(s => s.BeanName, StringComparer.OrdinalIgnoreCase)];
+
+    protected override async Task OnInitializedAsync()
+    {
+        BagStore.Changed += OnChanged;
+        BeanStore.Changed += OnChanged;
+        BrewStore.Changed += OnChanged;
+        Preferences.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var bags = await BagStore.ListAsync();
+        var beans = await BeanStore.ListAsync();
+        var brews = await BrewStore.ListAsync();
+        var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        beanCount = beans.Count(b => !b.Deleted);
+        stock = InventoryOverview.Build(bags, beans, brews, today, Preferences.Inventory);
+        beanNames = beans.ToDictionary(b => b.Id, b => b.Name);
+        bagBeans = bags.ToDictionary(b => b.Id, b => b.BeanId);
+        var usable = stock.Where(s => s.Bag.Status != BagStatus.Finished).Select(s => s.Bag.Id).ToHashSet();
+        again =
+        [
+            .. brews.Where(b => !b.Deleted && b.Rating >= 4 && usable.Contains(b.BagId))
+                .OrderByDescending(b => b.BrewedAt)
+                .Take(3),
+        ];
+    }
+
+    private Dictionary<string, string> beanNames = [];
+    private Dictionary<string, string> bagBeans = [];
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private string BeanName(Brew brew) =>
+        bagBeans.TryGetValue(brew.BagId, out var beanId) && beanNames.TryGetValue(beanId, out var name) ? name : L["Bag_UnknownBean"].Value;
+
+    private string Describe(Brew brew)
+    {
+        var parts = new List<string> { Units.Weight(brew.DoseG) };
+        if ((brew.WaterG ?? brew.YieldG) is { } liquid)
+        {
+            parts.Add(Units.Weight(liquid));
+        }
+
+        parts.Add(BrewMethodCatalog.Default.Find(brew.MethodCode)?.Name ?? brew.MethodCode);
+        parts.Add($"{brew.Rating}/5");
+        return string.Join(" · ", parts);
+    }
+
+    public void Dispose()
+    {
+        BagStore.Changed -= OnChanged;
+        BeanStore.Changed -= OnChanged;
+        BrewStore.Changed -= OnChanged;
+        Preferences.Changed -= OnChanged;
+    }
+}

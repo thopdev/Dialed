@@ -1,4 +1,4 @@
-@page "/"
+@page "/brew"
 @page "/brew/{BagId}"
 @using Dialed.Client.Data
 @using Dialed.Client.Preferences
@@ -44,12 +44,12 @@
         }
         else if (current is null)
         {
-            <PageHeader Title="@L["Nav_Brew"]" BackHref="/" />
+            <PageHeader Title="@L["Nav_Brew"]" BackHref="brew" />
             <EmptyState Message="@L["Bags_NotFound"]" />
         }
         else
         {
-            <PageHeader Title="@BeanName(current.BeanId)" BackHref="/" />
+            <PageHeader Title="@BeanName(current.BeanId)" BackHref="brew" />
             <p class="dialed-muted">@LeftText(current)</p>
 
             @if (last is not null)
