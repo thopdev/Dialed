@@ -12,6 +12,7 @@
 @inject IRepository<Bean> BeanStore
 @inject IRepository<EquipmentItem> GearStore
 @inject IRepository<MethodDefault> DefaultStore
+@inject IRepository<Brew> BrewStore
 @inject UnitFormatter Units
 @inject NavigationManager Navigation
 
@@ -110,13 +111,25 @@
         else if (editing)
         {
             <PageHeader Title="@current.Name" BackHref="recipes" />
-            <RecipeForm Recipe="current" Beans="beans" Gear="gear" Defaults="defaults" OnSubmit="UpdateAsync" OnCancel="@(() => editing = false)" />
+            @if (pendingEdit is not null)
+            {
+                <div class="dialed-confirm" role="alertdialog" id="recipe-version-prompt" aria-label="@L["Version_PromptTitle"]">
+                    <p><strong>@L["Version_PromptTitle"]</strong></p>
+                    <p>@L["Version_PromptBody"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" id="recipe-save-new-version" class="dialed-button dialed-button-primary" @onclick="SaveAsNewVersionAsync">@L["Version_SaveNew"]</button>
+                        <button type="button" id="recipe-update-version" class="dialed-button" @onclick="UpdateThisVersionAsync">@L["Version_UpdateThis"]</button>
+                        <button type="button" class="dialed-button" @onclick="@(() => pendingEdit = null)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+            <RecipeForm Recipe="current" Beans="beans" Gear="gear" Defaults="defaults" OnSubmit="UpdateAsync" OnCancel="CancelEdit" />
         }
         else
         {
             <PageHeader Title="@current.Name" BackHref="recipes">
                 <Actions>
-                    @if (!current.IsDefaultTemplate)
+                    @if (!current.IsDefaultTemplate && !current.IsSuperseded)
                     {
                         <button type="button" id="recipe-favourite" class="dialed-button" aria-pressed="@(current.IsFavourite ? "true" : "false")" @onclick="ToggleFavouriteAsync">@(current.IsFavourite ? L["Recipe_Unfavourite"] : L["Recipe_Favourite"])</button>
                         <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
@@ -138,6 +151,16 @@
                     <div class="dialed-form-actions">
                         <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
                         <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+
+            @if (current.IsSuperseded)
+            {
+                <div class="dialed-confirm" role="status" id="recipe-older-version">
+                    <p>@L["Version_Older"]</p>
+                    <div class="dialed-form-actions">
+                        <button type="button" class="dialed-button dialed-button-primary" @onclick="() => MakeCurrentAsync(current)">@L["Version_MakeCurrent"]</button>
                     </div>
                 </div>
             }
@@ -213,6 +236,34 @@
                 }
             </Card>
 
+            @if (family.Count > 1)
+            {
+                <h2>@L["Version_Title"]</h2>
+                <ol class="dialed-versions">
+                    @for (var i = 0; i < family.Count; i++)
+                    {
+                        var version = family[i];
+                        var isCurrent = version.Id == familyCurrent?.Id;
+                        <li class="@(isCurrent ? "current" : null)" data-version="@version.Id">
+                            <a href="@($"recipes/{version.Id}")">@string.Format(L["Version_Label"].Value, i + 1)</a>
+                            @if (isCurrent)
+                            {
+                                <strong> · @L["Version_Current"]</strong>
+                            }
+                            <span class="dialed-muted"> · @version.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd") · @StatsText(version)</span>
+                            @if (ChangeText(version) is { Length: > 0 } changes)
+                            {
+                                <div class="dialed-version-changes">@changes</div>
+                            }
+                            @if (!isCurrent)
+                            {
+                                <button type="button" class="dialed-button" @onclick="() => MakeCurrentAsync(version)">@L["Version_MakeCurrent"]</button>
+                            }
+                        </li>
+                    }
+                </ol>
+            }
+
             @if (current.Steps.Count > 0)
             {
                 <h2>@L["Recipe_Steps"]</h2>
@@ -233,6 +284,10 @@
     private IReadOnlyList<EquipmentItem> gear = [];
     private IReadOnlyList<MethodDefault> defaults = [];
     private Recipe? current;
+    private Recipe? pendingEdit;
+    private IReadOnlyList<Brew> brews = [];
+    private IReadOnlyList<Recipe> family = [];
+    private Recipe? familyCurrent;
     private bool editing;
     private bool confirmingDelete;
     private string? error;
@@ -252,6 +307,7 @@
         BeanStore.Changed += OnStoreChanged;
         GearStore.Changed += OnStoreChanged;
         DefaultStore.Changed += OnStoreChanged;
+        BrewStore.Changed += OnStoreChanged;
         await LoadAsync();
     }
 
@@ -259,6 +315,7 @@
     {
         editing = false;
         confirmingDelete = false;
+        pendingEdit = null;
         error = null;
         await LoadAsync();
     }
@@ -269,7 +326,10 @@
         beans = [.. (await BeanStore.ListAsync()).OrderBy(b => b.Name)];
         gear = await GearStore.ListAsync();
         defaults = await DefaultStore.ListAsync();
+        brews = await BrewStore.ListAsync();
         current = Id is null or "new" or "templates" ? null : recipes.FirstOrDefault(r => r.Id == Id);
+        family = current is null ? [] : RecipeVersions.Family(current, recipes);
+        familyCurrent = RecipeVersions.Current(family);
     }
 
     private void OnStoreChanged() => _ = InvokeAsync(async () =>
@@ -375,7 +435,34 @@
         Navigation.NavigateTo($"recipes/{saved.Id}");
     }
 
+    private void CancelEdit()
+    {
+        editing = false;
+        pendingEdit = null;
+    }
+
+    // A recipe that has been brewed with is part of the dial-in history, so ask whether to change it in place or start a new version.
     private async Task UpdateAsync(Recipe recipe)
+    {
+        if (RecipeVersions.HasBrews(recipe.Id, brews))
+        {
+            pendingEdit = recipe;
+            return;
+        }
+
+        await SaveInPlaceAsync(recipe);
+    }
+
+    private async Task UpdateThisVersionAsync()
+    {
+        if (pendingEdit is { } recipe)
+        {
+            pendingEdit = null;
+            await SaveInPlaceAsync(recipe);
+        }
+    }
+
+    private async Task SaveInPlaceAsync(Recipe recipe)
     {
         try
         {
@@ -390,6 +477,99 @@
         editing = false;
         await LoadAsync();
     }
+
+    private async Task SaveAsNewVersionAsync()
+    {
+        if (pendingEdit is not { } edited || current is null)
+        {
+            return;
+        }
+
+        var (created, superseded) = RecipeVersions.NewVersion(current, edited);
+        try
+        {
+            var savedNew = await RecipeStore.SaveAsync(created);
+            await RecipeStore.SaveAsync(superseded);
+            pendingEdit = null;
+            editing = false;
+            Navigation.NavigateTo($"recipes/{savedNew.Id}");
+        }
+        catch (ConflictException)
+        {
+            pendingEdit = null;
+            error = L["Error_Conflict"];
+            editing = false;
+            await LoadAsync();
+        }
+    }
+
+    private async Task MakeCurrentAsync(Recipe? target)
+    {
+        if (target is null)
+        {
+            return;
+        }
+
+        foreach (var change in RecipeVersions.MakeCurrent(target, family))
+        {
+            await RecipeStore.SaveAsync(change);
+        }
+
+        Navigation.NavigateTo($"recipes/{target.Id}");
+        await LoadAsync();
+    }
+
+    private string StatsText(Recipe version)
+    {
+        var stats = RecipeVersions.Stats(version.Id, brews);
+        return stats.BrewCount == 0
+            ? L["Version_NoBrews"].Value
+            : string.Format(L["Version_Stats"].Value, stats.AverageRating is { } avg ? $"{avg:0.0} ★" : "–", stats.BrewCount);
+    }
+
+    private string ChangeText(Recipe version)
+    {
+        var parent = version.ParentRecipeId is { } parentId ? family.FirstOrDefault(r => r.Id == parentId) : null;
+        if (parent is null)
+        {
+            return "";
+        }
+
+        var diff = RecipeVersions.Diff(parent, version);
+        var parts = diff.Parameters.Select(p => $"{ParameterLabel(p.Parameter)} {FormatParameter(p.Parameter, p.Planned)} → {FormatParameter(p.Parameter, p.Actual)}").ToList();
+        if (diff.StepsChanged)
+        {
+            parts.Add(L["Version_StepsChanged"].Value);
+        }
+
+        if (diff.GrinderChanged)
+        {
+            parts.Add(L["Version_GrinderChanged"].Value);
+        }
+
+        return string.Join(", ", parts);
+    }
+
+    private string ParameterLabel(BrewParameter parameter) => parameter switch
+    {
+        BrewParameter.Dose => L["Recipe_Dose"].Value,
+        BrewParameter.Water => L["Recipe_Water"].Value,
+        BrewParameter.Yield => L["Recipe_Yield"].Value,
+        BrewParameter.Grind => L["Recipe_Grind"].Value,
+        BrewParameter.Temperature => L["Recipe_Temp"].Value,
+        BrewParameter.Preinfusion => L["Recipe_Preinfusion"].Value,
+        _ => L["History_Time"].Value,
+    };
+
+    private string FormatParameter(BrewParameter parameter, decimal? value) => value is not { } v
+        ? "–"
+        : parameter switch
+        {
+            BrewParameter.Dose or BrewParameter.Water or BrewParameter.Yield => Units.Weight(v),
+            BrewParameter.Temperature => Units.Temperature(v),
+            BrewParameter.Time or BrewParameter.Preinfusion => $"{v:0} s",
+            _ => GrindScale.Format(v),
+        };
 
     private async Task ToggleFavouriteAsync()
     {
@@ -418,6 +598,12 @@
             return;
         }
 
+        // Deleting the current version brings its parent back as the current one.
+        if (!current.IsSuperseded && current.ParentRecipeId is { } parentId && family.FirstOrDefault(r => r.Id == parentId) is { IsSuperseded: true } parent)
+        {
+            await RecipeStore.SaveAsync(parent with { IsSuperseded = false });
+        }
+
         await RecipeStore.DeleteAsync(current.Id);
         Navigation.NavigateTo("recipes");
     }
@@ -428,5 +614,6 @@
         BeanStore.Changed -= OnStoreChanged;
         GearStore.Changed -= OnStoreChanged;
         DefaultStore.Changed -= OnStoreChanged;
+        BrewStore.Changed -= OnStoreChanged;
     }
 }

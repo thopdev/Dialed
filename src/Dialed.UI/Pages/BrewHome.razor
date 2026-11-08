@@ -115,7 +115,7 @@
         last = current is null ? null : BrewPrefill.Last(current.Id, brews);
         recipesForBag = current is null
             ? []
-            : [.. recipes.Where(r => r.BeanId == current.BeanId || r.BeanId is null)
+            : [.. recipes.Where(r => !r.IsSuperseded && (r.BeanId == current.BeanId || r.BeanId is null))
                 .OrderByDescending(r => r.BeanId == current.BeanId)
                 .ThenBy(r => r.Name, StringComparer.OrdinalIgnoreCase)];
     }

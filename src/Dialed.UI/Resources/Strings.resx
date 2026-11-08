@@ -329,4 +329,17 @@
   <data name="History_Balanced" xml:space="preserve"><value>Balanced</value></data>
   <data name="History_DeleteTitle" xml:space="preserve"><value>Delete this brew?</value></data>
   <data name="History_DeleteBody" xml:space="preserve"><value>The coffee goes back into the bag. This cannot be undone.</value></data>
+  <data name="Version_PromptTitle" xml:space="preserve"><value>This recipe has brews</value></data>
+  <data name="Version_PromptBody" xml:space="preserve"><value>Save your changes as a new version to keep the history of how you dialed in, or update this version.</value></data>
+  <data name="Version_SaveNew" xml:space="preserve"><value>Save as new version</value></data>
+  <data name="Version_UpdateThis" xml:space="preserve"><value>Update this version</value></data>
+  <data name="Version_Older" xml:space="preserve"><value>This is an older version of the recipe.</value></data>
+  <data name="Version_MakeCurrent" xml:space="preserve"><value>Make current</value></data>
+  <data name="Version_Title" xml:space="preserve"><value>Versions</value></data>
+  <data name="Version_Label" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="Version_Current" xml:space="preserve"><value>Current</value></data>
+  <data name="Version_NoBrews" xml:space="preserve"><value>No brews yet</value></data>
+  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1} brew(s)</value></data>
+  <data name="Version_StepsChanged" xml:space="preserve"><value>Steps changed</value></data>
+  <data name="Version_GrinderChanged" xml:space="preserve"><value>Grinder changed</value></data>
 </root>

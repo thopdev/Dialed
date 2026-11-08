@@ -22,7 +22,7 @@ public static class RecipeQuery
         ArgumentNullException.ThrowIfNull(filter);
         ArgumentNullException.ThrowIfNull(methodName);
 
-        var query = recipes.Where(r => !r.Deleted);
+        var query = recipes.Where(r => !r.Deleted && !r.IsSuperseded);
         if (filter.BeanId is not null)
         {
             query = query.Where(r => r.BeanId == filter.BeanId);
@@ -52,7 +52,7 @@ public static class RecipeQuery
     {
         ArgumentNullException.ThrowIfNull(recipes);
         return recipes
-            .Where(r => !r.Deleted && r.BeanId == beanId)
+            .Where(r => !r.Deleted && !r.IsSuperseded && r.BeanId == beanId)
             .OrderByDescending(r => averageRatings is not null && averageRatings.TryGetValue(r.Id, out var rating) ? rating : -1m)
             .ThenByDescending(r => r.IsFavourite)
             .ThenByDescending(r => r.UpdatedAt)

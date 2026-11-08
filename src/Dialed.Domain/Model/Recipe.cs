@@ -53,6 +53,9 @@ public sealed record Recipe : SyncEntity
     /// <summary>The version this one replaced (dial-in history, #62).</summary>
     public string? ParentRecipeId { get; init; }
 
+    /// <summary>True for an older version that a newer one replaced; lists only show the current version of each recipe.</summary>
+    public bool IsSuperseded { get; init; }
+
     /// <summary>A read-only starting point shipped with the app (#60).</summary>
     public bool IsDefaultTemplate { get; init; }
 

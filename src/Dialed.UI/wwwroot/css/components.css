@@ -742,3 +742,21 @@ button.dialed-chip::after {
     font-weight: 600;
     color: var(--colorBrandForeground1);
 }
+
+/* ---- Recipe versions (#62) ------------------------------------------------------------------- */
+
+.dialed-versions {
+    padding-left: var(--dialed-space-5);
+}
+
+.dialed-versions li {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-versions li.current {
+    font-weight: 400;
+}
+
+.dialed-version-changes {
+    margin: var(--dialed-space-1) 0;
+}
