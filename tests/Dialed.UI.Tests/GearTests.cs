@@ -111,10 +111,10 @@ public sealed class GearTests : UiTestContext
         await Gear.SaveAsync(new EquipmentItem { Kind = EquipmentKind.Kettle, Brand = "Fellow" }, Ct);
         var page = Render<Gear>();
 
-        page.FindAll(".dialed-row-title").Select(t => t.TextContent).ShouldBe(["Comandante C40", "Fellow"]);
+        page.FindAll(".dialed-row-title").Select(t => t.TextContent).ShouldBe(["Comandante C40", "Fellow", "Defaults per method"]);
 
         page.Find("#gear-filter").Change("Kettle");
-        page.FindAll(".dialed-row-title").Select(t => t.TextContent).ShouldBe(["Fellow"]);
+        page.FindAll(".dialed-row-title").Select(t => t.TextContent).ShouldBe(["Fellow", "Defaults per method"]);
     }
 
     [Fact]
