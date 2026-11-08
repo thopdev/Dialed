@@ -4,6 +4,7 @@
 @using Dialed.Domain.Model
 @using Dialed.Domain.Units
 @inject IStringLocalizer<Strings> L
+@inject Dialed.Client.Preferences.IUserPreferences Preferences
 @inject UnitFormatter Units
 
 @* Log one brew: prefilled (from a recipe or an earlier brew), everything editable, then taste feedback. *@
@@ -11,7 +12,7 @@
     <div class="dialed-field">
         <label for="brew-method">@L["Recipe_Method"]</label>
         <select id="brew-method" value="@methodCode" @onchange="OnMethodChanged">
-            @foreach (var option in BrewMethodCatalog.Default.Methods)
+            @foreach (var option in BrewMethodCatalog.Default.Ordered(Preferences.Profile.FavouriteMethods))
             {
                 <option value="@option.Code">@option.Name</option>
             }

@@ -12,6 +12,7 @@
 @inject IUserPreferences Preferences
 @inject UnitFormatter Units
 @inject TimeProvider Time
+@inject NavigationManager Navigation
 
 <PageHeader Title="@L["Nav_Home"]" />
 
@@ -73,6 +74,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (!Preferences.Profile.OnboardingDone)
+        {
+            Navigation.NavigateTo("welcome");
+            return;
+        }
+
         BagStore.Changed += OnChanged;
         BeanStore.Changed += OnChanged;
         BrewStore.Changed += OnChanged;

@@ -32,6 +32,14 @@ public sealed class BrewMethodCatalog
     /// <summary>The catalog bundled with the app.</summary>
     public static BrewMethodCatalog Default { get; } = LoadEmbedded();
 
+    /// <summary>All methods with the favourites first; both groups keep the catalog order.</summary>
+    public IReadOnlyList<BrewMethod> Ordered(IEnumerable<string> favourites)
+    {
+        ArgumentNullException.ThrowIfNull(favourites);
+        var favourite = favourites.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return [.. Methods.Where(m => favourite.Contains(m.Code)), .. Methods.Where(m => !favourite.Contains(m.Code))];
+    }
+
     public BrewMethod? Find(string code) => byCode.GetValueOrDefault(code);
 
     public BrewMethod Get(string code) =>

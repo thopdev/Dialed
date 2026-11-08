@@ -41,10 +41,10 @@ public sealed class PwaTests : UiTestContext
     }
 
     [Fact]
-    public void More_page_hosts_the_install_guide()
+    public void Settings_page_hosts_the_install_guide()
     {
         Pwa.NeedsInstallGuide = true;
 
-        Render<More>().FindAll(".dialed-install-guide").Count.ShouldBe(1);
+        Render<Settings>().FindAll(".dialed-install-guide").Count.ShouldBe(1);
     }
 }

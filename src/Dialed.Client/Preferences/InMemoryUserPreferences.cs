@@ -10,6 +10,8 @@ public sealed class InMemoryUserPreferences : IUserPreferences
 
     public InventorySettings Inventory { get; private set; } = InventorySettings.Default;
 
+    public UserProfile Profile { get; private set; } = UserProfile.Default;
+
     public event Action? Changed;
 
     public Task SetUnitsAsync(UnitSystem units)
@@ -29,6 +31,18 @@ public sealed class InMemoryUserPreferences : IUserPreferences
         if (settings != Inventory)
         {
             Inventory = settings;
+            Changed?.Invoke();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task SetProfileAsync(UserProfile profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        if (profile != Profile)
+        {
+            Profile = profile;
             Changed?.Invoke();
         }
 

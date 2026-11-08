@@ -1,5 +1,6 @@
 @using Dialed.Domain.Model
 @inject IStringLocalizer<Strings> L
+@inject Dialed.Client.Preferences.IUserPreferences Preferences
 
 @* Create/edit form for a bean. Offline-first: the parent saves the result. *@
 <form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
@@ -141,6 +142,8 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
+    protected override void OnInitialized() => visibility = Preferences.Profile.DefaultVisibility;
+
     protected override void OnParametersSet()
     {
         if (ReferenceEquals(Bean, loaded))
@@ -178,7 +181,7 @@
         tastingNotes = Bean?.TastingNotes ?? [];
         rating = Bean?.Rating ?? 0;
         notes = Bean?.Notes;
-        visibility = Bean?.Visibility ?? Visibility.Household;
+        visibility = Bean?.Visibility ?? Preferences.Profile.DefaultVisibility;
     }
 
     private void OnProcessChanged(ChangeEventArgs e) => processChoice = e.Value?.ToString() ?? "";
