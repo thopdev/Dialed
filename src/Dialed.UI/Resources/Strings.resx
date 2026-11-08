@@ -189,4 +189,35 @@
   <data name="Bag_DeleteTitle" xml:space="preserve"><value>Delete this bag?</value></data>
   <data name="Bag_DeleteBody" xml:space="preserve"><value>This cannot be undone.</value></data>
   <data name="Bag_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Gear_Title" xml:space="preserve"><value>Equipment</value></data>
+  <data name="Gear_New" xml:space="preserve"><value>Add equipment</value></data>
+  <data name="Gear_Empty" xml:space="preserve"><value>No equipment yet. Add your grinder or brewer.</value></data>
+  <data name="Gear_SelectPrompt" xml:space="preserve"><value>Select equipment to see its details.</value></data>
+  <data name="Gear_NotFound" xml:space="preserve"><value>This equipment no longer exists.</value></data>
+  <data name="Gear_Kind" xml:space="preserve"><value>Kind</value></data>
+  <data name="Gear_Brand" xml:space="preserve"><value>Brand</value></data>
+  <data name="Gear_BrandRequired" xml:space="preserve"><value>Enter a brand.</value></data>
+  <data name="Gear_Model" xml:space="preserve"><value>Model</value></data>
+  <data name="Gear_Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Gear_Scale" xml:space="preserve"><value>Grind setting scale</value></data>
+  <data name="Gear_ScaleClicks" xml:space="preserve"><value>Clicks from closed</value></data>
+  <data name="Gear_ScaleNumber" xml:space="preserve"><value>Numbered dial</value></data>
+  <data name="Gear_ScaleMin" xml:space="preserve"><value>Lowest setting</value></data>
+  <data name="Gear_ScaleMax" xml:space="preserve"><value>Highest setting</value></data>
+  <data name="Gear_ScaleStep" xml:space="preserve"><value>Step (empty = stepless)</value></data>
+  <data name="Grind_ErrorRange" xml:space="preserve"><value>The highest setting must be above the lowest.</value></data>
+  <data name="Grind_ErrorStep" xml:space="preserve"><value>The step must fit within the range.</value></data>
+  <data name="Grind_ErrorMissing" xml:space="preserve"><value>Enter the highest setting.</value></data>
+  <data name="Gear_Defaults" xml:space="preserve"><value>Defaults per method</value></data>
+  <data name="Gear_DefaultsHelp" xml:space="preserve"><value>The grinder and brewer that a new recipe for each method starts with.</value></data>
+  <data name="Gear_DefaultFor" xml:space="preserve"><value>Default for</value></data>
+  <data name="Gear_DeleteTitle" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Gear_DeleteBody" xml:space="preserve"><value>It is also removed as a default. This cannot be undone.</value></data>
+  <data name="EquipmentKind_Grinder" xml:space="preserve"><value>Grinder</value></data>
+  <data name="EquipmentKind_Brewer" xml:space="preserve"><value>Brewer</value></data>
+  <data name="EquipmentKind_EspressoMachine" xml:space="preserve"><value>Espresso machine</value></data>
+  <data name="EquipmentKind_Kettle" xml:space="preserve"><value>Kettle</value></data>
+  <data name="EquipmentKind_Scale" xml:space="preserve"><value>Scale</value></data>
+  <data name="EquipmentKind_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="EquipmentKind_Water" xml:space="preserve"><value>Water</value></data>
 </root>
