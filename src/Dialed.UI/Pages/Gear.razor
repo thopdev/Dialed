@@ -67,7 +67,7 @@
             {
                 var code = method.Code;
                 var row = defaults.FirstOrDefault(d => d.MethodCode == code);
-                <div class="dialed-defaults-row" data-method="@code">
+                <div class="dialed-defaults-row" data-method="@(code)">
                     <strong>@method.Name</strong>
                     <div class="dialed-field">
                         <label for="@($"default-grinder-{code}")">@L["EquipmentKind_Grinder"]</label>
