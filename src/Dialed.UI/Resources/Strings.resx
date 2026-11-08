@@ -42,4 +42,7 @@
   <data name="Install_Step1" xml:space="preserve"><value>Tap the Share button in Safari's toolbar.</value></data>
   <data name="Install_Step2" xml:space="preserve"><value>Scroll down and choose "Add to Home Screen".</value></data>
   <data name="Install_Step3" xml:space="preserve"><value>Tap "Add". Dialed now appears on your Home Screen.</value></data>
+  <data name="Units_Title" xml:space="preserve"><value>Units</value></data>
+  <data name="Units_Metric" xml:space="preserve"><value>Metric (g, ml, °C)</value></data>
+  <data name="Units_Imperial" xml:space="preserve"><value>Imperial (oz, fl oz, °F)</value></data>
 </root>
