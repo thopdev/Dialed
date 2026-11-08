@@ -3,6 +3,10 @@
   <!-- ASP.NET Core API: Identity + passkeys, Datasync server, households, friends, AI, photos. -->
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Dialed.Domain\Dialed.Domain.csproj" />
     <ProjectReference Include="..\Dialed.AI\Dialed.AI.csproj" />
     <ProjectReference Include="..\Dialed.ServiceDefaults\Dialed.ServiceDefaults.csproj" />
