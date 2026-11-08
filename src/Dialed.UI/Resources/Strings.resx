@@ -418,4 +418,11 @@
   <data name="Onboarding_Next" xml:space="preserve"><value>Next</value></data>
   <data name="Onboarding_Finish" xml:space="preserve"><value>Finish</value></data>
   <data name="Onboarding_Skip" xml:space="preserve"><value>Skip setup</value></data>
+  <data name="Photo_Title" xml:space="preserve"><value>Photos</value></data>
+  <data name="Photo_Take" xml:space="preserve"><value>Take photo</value></data>
+  <data name="Photo_Choose" xml:space="preserve"><value>Choose photo</value></data>
+  <data name="Photo_Remove" xml:space="preserve"><value>Remove photo</value></data>
+  <data name="Photo_Missing" xml:space="preserve"><value>Photo not on this device</value></data>
+  <data name="Vendor_Logo" xml:space="preserve"><value>Logo</value></data>
+  <data name="Profile_Avatar" xml:space="preserve"><value>Avatar</value></data>
 </root>

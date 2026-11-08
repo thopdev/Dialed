@@ -1,6 +1,7 @@
 using Bunit;
 using Dialed.Client;
 using Dialed.Client.Data;
+using Dialed.Client.Platform;
 using Dialed.Client.Preferences;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -17,6 +18,9 @@ public abstract class UiTestContext : BunitContext
     /// <summary>Who is using the app; change <see cref="TestUser.UserId"/> to act as another household member.</summary>
     protected TestUser Context { get; } = new();
 
+    /// <summary>Stands in for the camera and photo library: set <see cref="TestPhotoCapture.Next"/> to what the user will "take".</summary>
+    protected TestPhotoCapture Camera { get; } = new();
+
     protected UiTestContext()
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
@@ -28,10 +32,26 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IUserPreferences, InMemoryUserPreferences>();
         Services.AddSingleton<UnitFormatter>();
         Services.AddSingleton<BrewTimerHandoff>();
+        Services.AddSingleton<ILocalFileStore, InMemoryLocalFileStore>();
+        Services.AddSingleton<PhotoService>();
+        Services.AddSingleton<IPhotoCapture>(Camera);
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddFluentUIComponents();
         Services.AddLocalization();
         Services.AddSingleton(new HttpClient(new FailingHandler()) { BaseAddress = new Uri("https://api.test/") });
+    }
+
+    protected sealed class TestPhotoCapture : IPhotoCapture
+    {
+        public CapturedPhoto? Next { get; set; }
+
+        public PhotoSource? LastSource { get; private set; }
+
+        public Task<CapturedPhoto?> CaptureAsync(PhotoSource source, int maxDimension = 2048, CancellationToken cancellationToken = default)
+        {
+            LastSource = source;
+            return Task.FromResult(Next);
+        }
     }
 
     protected sealed class TestUser : ICurrentContext

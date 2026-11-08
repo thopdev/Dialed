@@ -1,0 +1,80 @@
+@using Dialed.Client.Platform
+@inject IStringLocalizer<Strings> L
+@inject Dialed.Client.PhotoService Photos
+@inject IPhotoCapture Capture
+
+@* Photos of one item: thumbnails, and unless read-only, buttons to take or pick a photo and to remove one. *@
+<div class="dialed-photo-strip" data-photos="@PhotoIds.Count">
+    @foreach (var id in PhotoIds)
+    {
+        <figure class="dialed-photo" data-photo="@id">
+            @if (uris.TryGetValue(id, out var uri) && uri is not null)
+            {
+                <img src="@uri" alt="@Label" />
+            }
+            else
+            {
+                <span class="dialed-photo-missing">@L["Photo_Missing"]</span>
+            }
+            @if (!ReadOnly)
+            {
+                <button type="button" class="dialed-button dialed-photo-remove" aria-label="@L["Photo_Remove"]" @onclick="() => RemoveAsync(id)">@L["Photo_Remove"]</button>
+            }
+        </figure>
+    }
+    @if (!ReadOnly && (!Single || PhotoIds.Count == 0))
+    {
+        <div class="dialed-photo-actions">
+            <button type="button" class="dialed-button photo-camera" @onclick="() => AddAsync(PhotoSource.Camera)">@L["Photo_Take"]</button>
+            <button type="button" class="dialed-button photo-library" @onclick="() => AddAsync(PhotoSource.Library)">@L["Photo_Choose"]</button>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly Dictionary<string, string?> uris = [];
+
+    [Parameter]
+    public IReadOnlyList<string> PhotoIds { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<IReadOnlyList<string>> PhotoIdsChanged { get; set; }
+
+    /// <summary>Alt text of the images.</summary>
+    [Parameter]
+    public string Label { get; set; } = "";
+
+    /// <summary>At most one photo (logo, avatar): adding is hidden while there is one.</summary>
+    [Parameter]
+    public bool Single { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        foreach (var id in PhotoIds.Where(id => !uris.ContainsKey(id)).ToList())
+        {
+            uris[id] = await Photos.GetDataUriAsync(id);
+        }
+    }
+
+    private async Task AddAsync(PhotoSource source)
+    {
+        var captured = await Capture.CaptureAsync(source);
+        if (captured is null)
+        {
+            return;
+        }
+
+        var photo = await Photos.AddAsync(captured);
+        await PhotoIdsChanged.InvokeAsync([.. PhotoIds, photo.Id]);
+    }
+
+    private async Task RemoveAsync(string id)
+    {
+        await Photos.RemoveAsync(id);
+        uris.Remove(id);
+        await PhotoIdsChanged.InvokeAsync([.. PhotoIds.Where(p => p != id)]);
+    }
+}

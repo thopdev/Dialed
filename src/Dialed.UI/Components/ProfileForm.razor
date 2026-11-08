@@ -5,6 +5,10 @@
 @* Display name and the visibility new items start with. The avatar follows with photos (#67). *@
 <form class="dialed-form" id="profile-form" @onsubmit="SaveAsync" @onsubmit:preventDefault>
     <div class="dialed-field">
+        <label>@L["Profile_Avatar"]</label>
+        <PhotoStrip PhotoIds="@(avatarId is null ? [] : [avatarId])" PhotoIdsChanged="@(v => avatarId = v.FirstOrDefault())" Single="true" Label="@L["Profile_Avatar"].Value" />
+    </div>
+    <div class="dialed-field">
         <label for="profile-name">@L["Profile_Name"]</label>
         <input id="profile-name" type="text" maxlength="60" @bind="name" />
     </div>
@@ -30,16 +34,18 @@
     private string name = "";
     private Visibility visibility;
     private bool saved;
+    private string? avatarId;
 
     protected override void OnInitialized()
     {
         name = Preferences.Profile.DisplayName;
         visibility = Preferences.Profile.DefaultVisibility;
+        avatarId = Preferences.Profile.AvatarPhotoId;
     }
 
     private async Task SaveAsync()
     {
-        await Preferences.SetProfileAsync(Preferences.Profile with { DisplayName = name.Trim(), DefaultVisibility = visibility });
+        await Preferences.SetProfileAsync(Preferences.Profile with { DisplayName = name.Trim(), DefaultVisibility = visibility, AvatarPhotoId = avatarId });
         saved = true;
     }
 }

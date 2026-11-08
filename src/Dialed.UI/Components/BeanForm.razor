@@ -89,6 +89,11 @@
     </div>
 
     <div class="dialed-field">
+        <label>@L["Photo_Title"]</label>
+        <PhotoStrip PhotoIds="@photoIds" PhotoIdsChanged="@(v => photoIds = v)" Label="@L["Photo_Title"].Value" />
+    </div>
+
+    <div class="dialed-field">
         <label for="bean-notes">@L["Bean_Notes"]</label>
         <textarea id="bean-notes" rows="3" @bind="notes"></textarea>
     </div>
@@ -129,6 +134,7 @@
     private int rating;
     private string? notes;
     private Visibility visibility = Visibility.Household;
+    private IReadOnlyList<string> photoIds = [];
     private string? nameError;
     private Bean? loaded;
 
@@ -182,6 +188,7 @@
         rating = Bean?.Rating ?? 0;
         notes = Bean?.Notes;
         visibility = Bean?.Visibility ?? Preferences.Profile.DefaultVisibility;
+        photoIds = Bean?.PhotoIds ?? [];
     }
 
     private void OnProcessChanged(ChangeEventArgs e) => processChoice = e.Value?.ToString() ?? "";
@@ -218,6 +225,7 @@
             Rating = rating > 0 ? rating : null,
             Notes = Clean(notes),
             Visibility = visibility,
+            PhotoIds = photoIds,
         };
         await OnSubmit.InvokeAsync(bean);
     }
