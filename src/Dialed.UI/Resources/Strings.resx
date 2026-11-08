@@ -53,4 +53,42 @@
   <data name="Units_Title" xml:space="preserve"><value>Units</value></data>
   <data name="Units_Metric" xml:space="preserve"><value>Metric (g, ml, °C)</value></data>
   <data name="Units_Imperial" xml:space="preserve"><value>Imperial (oz, fl oz, °F)</value></data>
+  <data name="Vendors_Title" xml:space="preserve"><value>Roasters &amp; sellers</value></data>
+  <data name="Vendors_New" xml:space="preserve"><value>New</value></data>
+  <data name="Vendors_Empty" xml:space="preserve"><value>No roasters or sellers yet. Add the first one to link your beans and bags to it.</value></data>
+  <data name="Vendors_Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Vendors_Filter" xml:space="preserve"><value>Show</value></data>
+  <data name="Vendors_All" xml:space="preserve"><value>All</value></data>
+  <data name="Vendors_Roasters" xml:space="preserve"><value>Roasters</value></data>
+  <data name="Vendors_Sellers" xml:space="preserve"><value>Sellers</value></data>
+  <data name="Vendors_NoResults" xml:space="preserve"><value>Nothing matches.</value></data>
+  <data name="Vendors_SelectPrompt" xml:space="preserve"><value>Select a roaster or seller to see its details.</value></data>
+  <data name="Vendors_NotFound" xml:space="preserve"><value>This roaster or seller no longer exists.</value></data>
+  <data name="Vendor_Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Vendor_Kinds" xml:space="preserve"><value>Type</value></data>
+  <data name="Vendor_Roaster" xml:space="preserve"><value>Roaster</value></data>
+  <data name="Vendor_Seller" xml:space="preserve"><value>Seller</value></data>
+  <data name="Vendor_Country" xml:space="preserve"><value>Country</value></data>
+  <data name="Vendor_City" xml:space="preserve"><value>City</value></data>
+  <data name="Vendor_Website" xml:space="preserve"><value>Website</value></data>
+  <data name="Vendor_Notes" xml:space="preserve"><value>Notes</value></data>
+  <data name="Vendor_NameRequired" xml:space="preserve"><value>Enter a name.</value></data>
+  <data name="Vendor_KindRequired" xml:space="preserve"><value>Choose roaster, seller or both.</value></data>
+  <data name="Vendor_WebsiteInvalid" xml:space="preserve"><value>Enter a web address such as example.com.</value></data>
+  <data name="Vendor_BeansHeading" xml:space="preserve"><value>Beans roasted here</value></data>
+  <data name="Vendor_NoBeans" xml:space="preserve"><value>No beans yet.</value></data>
+  <data name="Vendor_BagsHeading" xml:space="preserve"><value>Bags bought here</value></data>
+  <data name="Vendor_NoBags" xml:space="preserve"><value>No bags yet.</value></data>
+  <data name="Vendor_DeleteTitle" xml:space="preserve"><value>Delete {0}?</value></data>
+  <data name="Vendor_DeleteUsed" xml:space="preserve"><value>It is used by {0} bean(s) and {1} bag(s). They stay, but lose their link to this roaster or seller.</value></data>
+  <data name="Vendor_DeleteUnused" xml:space="preserve"><value>Nothing refers to it.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Error_Conflict" xml:space="preserve"><value>This item was changed elsewhere. Open it again and redo your change.</value></data>
+  <data name="Picker_Placeholder" xml:space="preserve"><value>Search or add</value></data>
+  <data name="Picker_Clear" xml:space="preserve"><value>Remove selection</value></data>
+  <data name="Picker_Create" xml:space="preserve"><value>Create "{0}"</value></data>
+  <data name="More_Vendors" xml:space="preserve"><value>Roasters &amp; sellers</value></data>
 </root>

@@ -438,3 +438,172 @@ button.dialed-chip::after {
     gap: var(--dialed-space-2);
     min-height: 44px;
 }
+
+/* ---- Forms, buttons and lists (#50) --------------------------------------------------------- */
+
+.dialed-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-4);
+}
+
+.dialed-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-1);
+    margin: 0 0 var(--dialed-space-3);
+    padding: 0;
+    border: 0;
+}
+
+.dialed-field label,
+.dialed-field legend,
+.dialed-picker > label {
+    font-weight: 600;
+}
+
+.dialed-field input[type="text"],
+.dialed-field input[type="search"],
+.dialed-field textarea,
+.dialed-picker input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: var(--dialed-space-2) var(--dialed-space-3);
+    font: inherit;
+    color: inherit;
+    background: var(--colorNeutralBackground1);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-field input[aria-invalid="true"] {
+    border-color: var(--colorPaletteRedBorder2);
+}
+
+.dialed-field-error {
+    color: var(--colorPaletteRedForeground1);
+    font-size: 0.875rem;
+}
+
+.dialed-check {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    min-height: 44px;
+    font-weight: 400;
+}
+
+.dialed-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 var(--dialed-space-4);
+    font: inherit;
+    font-weight: 600;
+    color: var(--colorNeutralForeground1);
+    text-decoration: none;
+    background: var(--colorNeutralBackground1);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-m);
+    cursor: pointer;
+}
+
+.dialed-button-primary {
+    color: var(--colorNeutralForegroundOnBrand);
+    background: var(--colorBrandBackground);
+    border-color: transparent;
+}
+
+.dialed-button-danger {
+    color: var(--colorNeutralForegroundOnBrand);
+    background: var(--colorPaletteRedBackground3);
+    border-color: transparent;
+}
+
+.dialed-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.dialed-muted {
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-confirm {
+    margin-bottom: var(--dialed-space-4);
+    padding: var(--dialed-space-4);
+    background: var(--colorNeutralBackground3);
+    border: 1px solid var(--colorPaletteRedBorder2);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-vendor-notes {
+    white-space: pre-wrap;
+}
+
+/* ---- Picker ---------------------------------------------------------------------------------- */
+
+.dialed-picker {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-picker-selected {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-picker-clear {
+    width: 44px;
+    height: 44px;
+    font-size: 1.25rem;
+    color: inherit;
+    background: transparent;
+    border: 0;
+}
+
+.dialed-picker-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--colorNeutralBackground1);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-m);
+    overflow: hidden;
+}
+
+.dialed-picker-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    min-height: 44px;
+    padding: var(--dialed-space-2) var(--dialed-space-3);
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2);
+}
+
+.dialed-picker-create {
+    color: var(--colorBrandForeground1);
+    font-weight: 600;
+}
+
+.dialed-picker-detail {
+    color: var(--colorNeutralForeground3);
+    font-size: 0.875rem;
+}

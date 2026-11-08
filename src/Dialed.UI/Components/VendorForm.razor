@@ -1,0 +1,120 @@
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+
+@* Create/edit form for a roaster or seller. Offline-first: nothing here talks to a server, the parent saves the result. *@
+<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <div class="dialed-field">
+        <label for="vendor-name">@L["Vendor_Name"]</label>
+        <input id="vendor-name" type="text" @bind="name" @bind:event="oninput" autocomplete="off"
+               aria-invalid="@(nameError is not null ? "true" : null)" />
+        @if (nameError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@nameError</div>
+        }
+    </div>
+
+    <fieldset class="dialed-field">
+        <legend>@L["Vendor_Kinds"]</legend>
+        <label class="dialed-check"><input type="checkbox" @bind="isRoaster" /> @L["Vendor_Roaster"]</label>
+        <label class="dialed-check"><input type="checkbox" @bind="isSeller" /> @L["Vendor_Seller"]</label>
+        @if (kindsError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@kindsError</div>
+        }
+    </fieldset>
+
+    <div class="dialed-field">
+        <label for="vendor-country">@L["Vendor_Country"]</label>
+        <input id="vendor-country" type="text" @bind="country" autocomplete="country-name" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="vendor-city">@L["Vendor_City"]</label>
+        <input id="vendor-city" type="text" @bind="city" autocomplete="address-level2" />
+    </div>
+
+    <div class="dialed-field">
+        <label for="vendor-website">@L["Vendor_Website"]</label>
+        <input id="vendor-website" type="text" inputmode="url" @bind="website" autocomplete="url"
+               aria-invalid="@(websiteError is not null ? "true" : null)" />
+        @if (websiteError is not null)
+        {
+            <div class="dialed-field-error" role="alert">@websiteError</div>
+        }
+    </div>
+
+    <div class="dialed-field">
+        <label for="vendor-notes">@L["Vendor_Notes"]</label>
+        <textarea id="vendor-notes" rows="3" @bind="notes"></textarea>
+    </div>
+
+    <div class="dialed-form-actions">
+        <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
+        <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
+    </div>
+</form>
+
+@code {
+    private string name = "";
+    private bool isRoaster = true;
+    private bool isSeller;
+    private string? country;
+    private string? city;
+    private string? website;
+    private string? notes;
+    private string? nameError;
+    private string? kindsError;
+    private string? websiteError;
+    private Vendor? loaded;
+
+    /// <summary>The vendor being edited; <c>null</c> for a new one.</summary>
+    [Parameter]
+    public Vendor? Vendor { get; set; }
+
+    /// <summary>Raised with the vendor to save (the edited copy, or a new record).</summary>
+    [Parameter, EditorRequired]
+    public EventCallback<Vendor> OnSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(Vendor, loaded))
+        {
+            loaded = Vendor;
+            name = Vendor?.Name ?? "";
+            isRoaster = Vendor is null || (Vendor.Kinds & VendorKinds.Roaster) != 0;
+            isSeller = Vendor is not null && (Vendor.Kinds & VendorKinds.Seller) != 0;
+            country = Vendor?.Country;
+            city = Vendor?.City;
+            website = Vendor?.Website;
+            notes = Vendor?.Notes;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        nameError = string.IsNullOrWhiteSpace(name) ? L["Vendor_NameRequired"] : null;
+        kindsError = isRoaster || isSeller ? null : L["Vendor_KindRequired"];
+        websiteError = VendorRules.TryNormalizeWebsite(website, out var normalized) ? null : L["Vendor_WebsiteInvalid"];
+        if (nameError is not null || kindsError is not null || websiteError is not null)
+        {
+            return;
+        }
+
+        var kinds = (isRoaster ? VendorKinds.Roaster : VendorKinds.None) | (isSeller ? VendorKinds.Seller : VendorKinds.None);
+        var edited = (Vendor ?? new Vendor { Name = name }) with
+        {
+            Name = name.Trim(),
+            Kinds = kinds,
+            Country = Clean(country),
+            City = Clean(city),
+            Website = normalized,
+            Notes = Clean(notes),
+        };
+        await OnSubmit.InvokeAsync(edited);
+    }
+
+    private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+}
