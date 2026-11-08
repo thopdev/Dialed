@@ -368,6 +368,56 @@ button.dialed-chip::after {
     gap: var(--dialed-space-3);
 }
 
+.dialed-grind-input {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-grind-row {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-grind-row input {
+    width: 6rem;
+    min-height: 44px;
+    padding: 0 var(--dialed-space-3);
+    text-align: center;
+    font: inherit;
+    color: inherit;
+    background: var(--colorNeutralBackground1);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-grind-row input[aria-invalid="true"] {
+    border-color: var(--colorPaletteRedBorder2);
+}
+
+.dialed-grind-step {
+    width: 44px;
+    height: 44px;
+    font-size: 1.25rem;
+    color: inherit;
+    background: var(--colorNeutralBackground3);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-grind-step:disabled {
+    opacity: 0.4;
+}
+
+.dialed-grind-unit {
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-grind-error {
+    color: var(--colorPaletteRedForeground1);
+    font-size: 0.875rem;
+
 .dialed-units-setting {
     display: flex;
     flex-direction: column;
