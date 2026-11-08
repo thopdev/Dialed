@@ -1,0 +1,55 @@
+@using System.Globalization
+@using Dialed.Client.Sync
+@* Sync status for Settings: state, waiting changes, last result and a "Sync now" button. *@
+@implements IDisposable
+@inject SyncCoordinator Sync
+@inject ISyncState SyncState
+@inject IStringLocalizer<Strings> L
+
+<div id="sync-diagnostics">
+    <p id="sync-status">@L["Sync_Status", StatusText]</p>
+    <p id="sync-pending" class="dialed-muted">@L["Sync_Pending", Sync.PendingCount]</p>
+    @if (Sync.LastSyncedAt is { } at)
+    {
+        <p id="sync-last" class="dialed-muted">@L["Sync_LastSynced", at.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)]</p>
+    }
+    @if (Sync.LastResult is { } result && result.Outcome == SyncOutcome.Completed)
+    {
+        <p id="sync-last-result" class="dialed-muted">@L["Sync_LastResult", result.Pushed, result.Pulled, result.Failed]</p>
+    }
+    @if (conflicts > 0)
+    {
+        <p id="sync-conflicts" class="dialed-muted">@L["Sync_Conflicts", conflicts]</p>
+    }
+    <button id="sync-now" type="button" class="dialed-button" disabled="@(Sync.Status == SyncStatus.Syncing)" @onclick="SyncNow">@L["Sync_Now"]</button>
+</div>
+
+@code {
+    private int conflicts;
+
+    private string StatusText => Sync.Status switch
+    {
+        SyncStatus.Syncing => L["Sync_State_Syncing"],
+        SyncStatus.Offline => L["Sync_State_Offline"],
+        SyncStatus.NeedsSignIn => L["Sync_State_NeedsSignIn"],
+        _ => L["Sync_State_Idle"],
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        Sync.Changed += OnChanged;
+        await LoadConflicts();
+    }
+
+    private async Task SyncNow()
+    {
+        await Sync.SyncNowAsync();
+        await LoadConflicts();
+    }
+
+    private async Task LoadConflicts() => conflicts = (await SyncState.ConflictsAsync()).Count;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Sync.Changed -= OnChanged;
+}

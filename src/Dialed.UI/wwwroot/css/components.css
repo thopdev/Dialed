@@ -912,3 +912,12 @@ button.dialed-chip::after {
     flex-wrap: wrap;
     gap: 8px;
 }
+
+.dialed-sync-indicator {
+    margin-bottom: var(--dialed-space-3);
+    padding: var(--dialed-space-2) var(--dialed-space-4);
+    background: var(--colorNeutralBackground3);
+    border-radius: var(--dialed-radius-m);
+    color: var(--colorNeutralForeground2);
+    font-size: var(--fontSizeBase200);
+}

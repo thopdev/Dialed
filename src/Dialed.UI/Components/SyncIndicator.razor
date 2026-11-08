@@ -1,0 +1,20 @@
+@using Dialed.Client.Sync
+@* Small "not yet synced" note, shown only when changes are waiting and the user is signed in (otherwise everything is local by design). *@
+@implements IDisposable
+@inject SyncCoordinator Sync
+@inject IStringLocalizer<Strings> L
+
+@if (Sync.PendingCount > 0 && Sync.Status != SyncStatus.NeedsSignIn)
+{
+    <div id="sync-indicator" class="dialed-sync-indicator" role="status">
+        @(Sync.Status == SyncStatus.Offline ? L["Sync_Indicator_Offline", Sync.PendingCount] : L["Sync_Indicator_Pending", Sync.PendingCount])
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Sync.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Sync.Changed -= OnChanged;
+}

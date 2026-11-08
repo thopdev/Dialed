@@ -1,4 +1,5 @@
 using Dialed.Client;
+using Dialed.Client.Sync;
 using Dialed.Client.Preferences;
 using Dialed.UI;
 using Dialed.Web;
@@ -19,6 +20,8 @@ builder.Services.AddScoped(_ => new HttpClient { BaseAddress = apiBaseAddress })
 
 // UI: Fluent UI Blazor components and IStringLocalizer<Strings> (English resources in Dialed.UI).
 builder.Services.AddDialedData();
+builder.Services.AddSingleton<ISyncTransport>(sp => new HttpSyncTransport(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
+builder.Services.AddDialedSync();
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());
@@ -40,6 +43,16 @@ try
 }
 catch (JSException)
 {
+}
+
+// Sync must never stop the app from starting; problems show up in the sync diagnostics instead.
+try
+{
+    await host.Services.GetRequiredService<SyncCoordinator>().StartAsync();
+}
+catch (Exception exception)
+{
+    Console.Error.WriteLine($"Sync did not start: {exception.Message}");
 }
 
 await host.RunAsync();

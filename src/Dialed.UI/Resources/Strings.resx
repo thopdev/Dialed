@@ -395,7 +395,6 @@
   <data name="Settings_Setup" xml:space="preserve"><value>Setup</value></data>
   <data name="Settings_ReopenSetup" xml:space="preserve"><value>Run setup again</value></data>
   <data name="Settings_ComingWithAccounts" xml:space="preserve"><value>Available once accounts are in.</value></data>
-  <data name="Settings_SyncLater" xml:space="preserve"><value>Sync status appears here once sync is in.</value></data>
   <data name="Settings_Storage" xml:space="preserve"><value>Storage</value></data>
   <data name="Settings_StorageLater" xml:space="preserve"><value>Storage status appears here once data is kept on this device.</value></data>
   <data name="Settings_Privacy" xml:space="preserve"><value>Privacy policy</value></data>
@@ -425,4 +424,16 @@
   <data name="Photo_Missing" xml:space="preserve"><value>Photo not on this device</value></data>
   <data name="Vendor_Logo" xml:space="preserve"><value>Logo</value></data>
   <data name="Profile_Avatar" xml:space="preserve"><value>Avatar</value></data>
+  <data name="Sync_Status" xml:space="preserve"><value>Sync: {0}</value></data>
+  <data name="Sync_State_Idle" xml:space="preserve"><value>up to date</value></data>
+  <data name="Sync_State_Syncing" xml:space="preserve"><value>syncing...</value></data>
+  <data name="Sync_State_Offline" xml:space="preserve"><value>offline, changes wait on this device</value></data>
+  <data name="Sync_State_NeedsSignIn" xml:space="preserve"><value>not signed in, everything stays on this device</value></data>
+  <data name="Sync_Pending" xml:space="preserve"><value>Waiting to sync: {0}</value></data>
+  <data name="Sync_LastSynced" xml:space="preserve"><value>Last synced: {0}</value></data>
+  <data name="Sync_LastResult" xml:space="preserve"><value>Last sync: {0} sent, {1} received, {2} failed</value></data>
+  <data name="Sync_Conflicts" xml:space="preserve"><value>Changes on this device that replaced newer ones: {0}</value></data>
+  <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
+  <data name="Sync_Indicator_Pending" xml:space="preserve"><value>{0} not yet synced</value></data>
+  <data name="Sync_Indicator_Offline" xml:space="preserve"><value>Offline: {0} not yet synced</value></data>
 </root>
