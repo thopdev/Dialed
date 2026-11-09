@@ -17,6 +17,9 @@ public interface ISyncStore
 
     /// <summary>Creates or updates one row. <paramref name="ifMatch"/> is the version the edit started from (<c>null</c> for a new record).</summary>
     Task<StoreResult> PushAsync(string householdId, string userId, string table, string id, JsonObject entity, string? ifMatch, CancellationToken cancellationToken = default);
+
+    /// <summary>Hard-deletes rows that were soft-deleted before <paramref name="cutoff"/>. Safe to repeat. Returns how many went per table.</summary>
+    Task<IReadOnlyDictionary<string, int>> PurgeDeletedAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
@@ -43,6 +46,24 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
                 .ToList();
 
             return Task.FromResult<(IReadOnlyList<SyncRow>, bool)>((matching.Take(pageSize).ToList(), matching.Count > pageSize));
+        }
+    }
+
+    public Task<IReadOnlyDictionary<string, int>> PurgeDeletedAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            var doomed = rows
+                .Where(r => r.Value.UpdatedAt < cutoff && r.Value.Entity["deleted"] is JsonValue v && v.TryGetValue<bool>(out var deleted) && deleted)
+                .Select(r => r.Key)
+                .ToList();
+            foreach (var key in doomed)
+            {
+                rows.Remove(key);
+            }
+
+            IReadOnlyDictionary<string, int> counts = doomed.GroupBy(k => k.Table).ToDictionary(g => g.Key, g => g.Count());
+            return Task.FromResult(counts);
         }
     }
 
