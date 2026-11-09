@@ -41,7 +41,7 @@ public sealed class LabelScanTests(WebApplicationFactory<Program> factory) : ICl
     [Fact]
     public async Task A_photo_returns_a_draft_with_prompt_version_and_model()
     {
-        var client = await SignedIn(factory, "scan-user");
+        var client = await SignedIn(factory, "alice");
 
         using var response = await client.PostAsync("/ai/label-scans", Photo(), Ct);
 
@@ -56,7 +56,7 @@ public sealed class LabelScanTests(WebApplicationFactory<Program> factory) : ICl
     [Fact]
     public async Task Other_content_types_empty_and_oversized_photos_are_refused()
     {
-        var client = await SignedIn(factory, "scan-user-2");
+        var client = await SignedIn(factory, "bob");
 
         (await client.PostAsync("/ai/label-scans", Photo(type: "image/png"), Ct)).StatusCode.ShouldBe(HttpStatusCode.UnsupportedMediaType);
         (await client.PostAsync("/ai/label-scans", Photo(0), Ct)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
@@ -72,7 +72,7 @@ public sealed class LabelScanTests(WebApplicationFactory<Program> factory) : ICl
     public async Task When_the_model_fails_the_app_gets_a_friendly_503()
     {
         using var broken = factory.WithWebHostBuilder(b => b.ConfigureServices(s => s.AddSingleton<ILabelExtractor, BrokenExtractor>()));
-        var client = await SignedIn(broken, "scan-user-3");
+        var client = await SignedIn(broken, "carol");
 
         using var response = await client.PostAsync("/ai/label-scans", Photo(), Ct);
 
