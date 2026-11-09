@@ -1150,3 +1150,443 @@ button.dialed-chip::after {
     border-inline-start: 4px solid var(--colorPaletteYellowBorder2, #c19c00);
     padding-inline-start: var(--dialed-space-3);
 }
+
+/* ---- Shared helpers for the polish stories (#213-#216) -------------------------------------- */
+
+/* Hidden on screen, still read by screen readers. */
+.dialed-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* A text link in a section header ("See all"), with a full touch target. */
+.dialed-section-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+    padding: 0 var(--dialed-space-1);
+    color: var(--colorBrandForeground1, #6f4e37);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    text-decoration: none;
+}
+
+/* A button with a leading icon. */
+.dialed-button-icon {
+    gap: var(--dialed-space-2);
+}
+
+.dialed-button-glyph {
+    display: inline-flex;
+}
+
+/* Cards side by side when there is room (iPad, landscape), one column on iPhone. */
+.dialed-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: var(--dialed-space-3);
+}
+
+/* Stat tiles in a row that wraps. */
+.dialed-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    gap: var(--dialed-space-2);
+}
+
+.dialed-method-icon {
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorNeutralBackground3, #f5f5f5);
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+/* A rating at the end of a list row: one star and the number, so the title keeps its room. */
+.dialed-rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.dialed-rating-badge-star {
+    display: inline-flex;
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+}
+
+/* ---- Reused from #214: row extras, filter bar, icon buttons, notes and link cards ------------- */
+
+/* Extra line in a list row: a meter or small chips. */
+.dialed-row-below {
+    display: block;
+    margin-top: var(--dialed-space-1);
+}
+
+.dialed-row-below:empty {
+    display: none;
+}
+
+.dialed-row-below .dialed-meter {
+    max-width: 16rem;
+    height: 0.375rem;
+}
+
+.dialed-row-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-chip-small {
+    min-height: 1.375rem;
+    padding: 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-xs);
+    color: var(--colorNeutralForeground2, #424242);
+}
+
+.dialed-chip-positive {
+    border-color: var(--colorPaletteGreenBorder2, #107c10);
+    color: var(--colorPaletteGreenForeground1, #0e700e);
+}
+
+.dialed-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-2);
+}
+
+.dialed-button-pressed {
+    background: var(--colorNeutralBackground1Selected, #ebebeb);
+    border-color: var(--colorNeutralStroke1Selected, #bdbdbd);
+}
+
+.dialed-filters[hidden] {
+    display: none;
+}
+
+/* A square icon-only button (Edit, Delete) that keeps the title on one line. */
+.dialed-icon-button {
+    display: inline-grid;
+    place-items: center;
+    width: var(--dialed-touch-target);
+    height: var(--dialed-touch-target);
+    padding: 0;
+    color: var(--colorNeutralForeground2, #424242);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--dialed-radius-m);
+    cursor: pointer;
+}
+
+.dialed-icon-button:hover {
+    background: var(--colorNeutralBackground1Hover, #f5f5f5);
+}
+
+.dialed-icon-button:active {
+    background: var(--colorNeutralBackground1Pressed, #e0e0e0);
+}
+
+.dialed-notes-card {
+    margin: var(--dialed-space-3) 0;
+}
+
+.dialed-notes-card p {
+    margin: 0;
+}
+
+.dialed-best-recipe {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    margin: var(--dialed-space-3) 0;
+}
+
+/* ---- Recipes and History (#215) ------------------------------------------------------------ */
+
+.dialed-field-inline {
+    margin: 0;
+    flex: 1 1 12rem;
+}
+
+.dialed-filter-summary {
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-icon-button-on {
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+}
+
+.dialed-group-title {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-5) 0 var(--dialed-space-1);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--colorNeutralForeground3, #616161);
+}
+
+/* History grouped by day, with a header that stays while the day scrolls by. */
+.dialed-day-group + .dialed-day-group {
+    margin-top: var(--dialed-space-4);
+}
+
+.dialed-day-title {
+    position: sticky;
+    top: calc(-1 * var(--dialed-space-3));
+    z-index: 1;
+    margin: 0;
+    padding: var(--dialed-space-2) 0;
+    background: var(--colorNeutralBackground1, #fff);
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-row-person {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-xs);
+}
+
+/* Brew detail */
+.dialed-brew-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-brew-summary-top {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-brew-summary-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dialed-brew-summary-what {
+    font-size: var(--dialed-text-l);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-brew-summary .dialed-person {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    margin: 0;
+}
+
+/* Taste as four bars growing left or right from the middle. */
+.dialed-taste-chart {
+    display: grid;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-taste-chart-row {
+    display: grid;
+    grid-template-columns: 6rem 3.5rem 1fr 3.5rem;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-taste-chart-label {
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-taste-chart-end {
+    color: var(--colorNeutralForeground3, #616161);
+    font-size: var(--dialed-text-xs);
+}
+
+.dialed-taste-chart-end:last-child {
+    text-align: end;
+}
+
+.dialed-taste-chart-track {
+    position: relative;
+    height: 0.625rem;
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorNeutralBackground5, #ebebeb);
+}
+
+/* The "balanced" line in the middle. */
+.dialed-taste-chart-track::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -0.1875rem;
+    bottom: -0.1875rem;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--colorNeutralForeground3, #616161);
+}
+
+.dialed-taste-chart-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: var(--colorBrandBackground, #6f4e37);
+}
+
+.dialed-taste-chart-fill.low {
+    border-radius: var(--dialed-radius-pill) 0 0 var(--dialed-radius-pill);
+}
+
+.dialed-taste-chart-fill.high {
+    border-radius: 0 var(--dialed-radius-pill) var(--dialed-radius-pill) 0;
+}
+
+@media (max-width: 26rem) {
+    .dialed-taste-chart-row {
+        grid-template-columns: 3rem 1fr 3rem;
+    }
+
+    .dialed-taste-chart-label {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Recipe detail */
+.dialed-recipe-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    margin-bottom: var(--dialed-space-4);
+}
+
+.dialed-recipe-hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dialed-recipe-hero-method {
+    font-size: var(--dialed-text-l);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-recipe-parameters {
+    margin-bottom: var(--dialed-space-3);
+}
+
+/* Steps as a timeline: time on the left, a line joining the steps. */
+.dialed-step-timeline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-step-timeline li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+}
+
+.dialed-step-timeline li:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 1.6rem;
+    top: 2.25rem;
+    bottom: -0.5rem;
+    width: 2px;
+    background: var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-step-time {
+    display: inline-grid;
+    place-items: center;
+    height: 1.75rem;
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorBrandBackground2, #f4ece6);
+    color: var(--colorBrandForeground1, #6f4e37);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.dialed-step-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.dialed-step-kind {
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-step-detail {
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-s);
+}
+
+/* Versions, newest first */
+.dialed-versions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-versions > li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-2);
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-versions > li[aria-current] {
+    border-color: var(--colorBrandStroke1, #6f4e37);
+}
+
+.dialed-version-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-version-head a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+    font-weight: var(--dialed-weight-semibold);
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+.dialed-version-changes {
+    margin: 0;
+}
+
+/* The dial-in advice heading matches the other section headings on the brew detail. */
+.dialed-dialin h2 {
+    margin: var(--dialed-space-5) 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-l);
+}

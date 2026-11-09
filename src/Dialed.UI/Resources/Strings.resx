@@ -644,4 +644,18 @@
   <data name="Scan_Problem_QuotaUsed" xml:space="preserve"><value>You have used all label scans for today. Enter the bean by hand, or try again tomorrow.</value></data>
   <data name="Scan_Problem_Disabled" xml:space="preserve"><value>Scanning is switched off for now. Enter the bean by hand.</value></data>
   <data name="Scan_Problem_Unavailable" xml:space="preserve"><value>The label could not be read right now. Enter the bean by hand, or try again later.</value></data>
+  <data name="Day_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Day_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
+  <data name="Beans_Filters" xml:space="preserve"><value>Filters</value></data>
+  <data name="Beans_FiltersCount" xml:space="preserve"><value>Filters ({0})</value></data>
+  <data name="History_CountOne" xml:space="preserve"><value>{0} brew</value></data>
+  <data name="History_Count" xml:space="preserve"><value>{0} brews</value></data>
+  <data name="History_ParameterColumn" xml:space="preserve"><value>Parameter</value></data>
+  <data name="History_RecipeLabel" xml:space="preserve"><value>Recipe</value></data>
+  <data name="History_NotesAndPhotos" xml:space="preserve"><value>Notes and photos</value></data>
+  <data name="Recipes_AnyBean" xml:space="preserve"><value>All beans</value></data>
+  <data name="Recipe_TempShort" xml:space="preserve"><value>Temp</value></data>
+  <data name="Recipe_TimeShort" xml:space="preserve"><value>Time</value></data>
+  <data name="Step_For" xml:space="preserve"><value>for {0} s</value></data>
+  <data name="Version_Changes" xml:space="preserve"><value>Changes</value></data>
 </root>

@@ -1,0 +1,31 @@
+@using Dialed.Domain.BrewMethods
+
+@* A brew method as a small tile with an icon: espresso, pour-over, immersion, cold brew, stovetop. Decorative; the method name is always in the text next to it. *@
+<span class="dialed-thumb dialed-method-icon" style="--dialed-thumb-size: @(Size)px" aria-hidden="true">
+    <FluentIcon Value="@IconFor(Code)" Color="Color.Custom" CustomColor="currentColor" />
+</span>
+
+@code {
+    /// <summary>The method code, for example <c>espresso</c> or <c>v60</c>.</summary>
+    [Parameter, EditorRequired]
+    public string Code { get; set; } = "";
+
+    [Parameter]
+    public int Size { get; set; } = 40;
+
+    public static Icon IconFor(string? code)
+    {
+        if (code is "moka-pot" or "cezve")
+        {
+            return new Icons.Regular.Size24.Fire();
+        }
+
+        return BrewMethodCatalog.Default.Find(code ?? "")?.Category switch
+        {
+            BrewMethodCategory.PourOver => new Icons.Regular.Size24.Filter(),
+            BrewMethodCategory.Immersion => new Icons.Regular.Size24.Beaker(),
+            BrewMethodCategory.ColdBrew => new Icons.Regular.Size24.WeatherSnowflake(),
+            _ => new Icons.Regular.Size24.DrinkCoffee(),
+        };
+    }
+}

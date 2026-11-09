@@ -1,6 +1,8 @@
 @page "/history"
 @page "/history/{Id}"
+@using System.Globalization
 @using Dialed.Client.Data
+@using Dialed.Client.Households
 @using Dialed.Client.Preferences
 @using Dialed.Domain.BrewMethods
 @using Dialed.Domain.Model
@@ -13,6 +15,8 @@
 @inject IRepository<EquipmentItem> GearStore
 @inject ICurrentContext Context
 @inject UnitFormatter Units
+@inject HouseholdManager Households
+@inject TimeProvider Time
 @inject NavigationManager Navigation
 
 <ListDetailLayout HasSelection="@(Id is not null)">
@@ -25,11 +29,21 @@
         }
         else if (brews.Count == 0)
         {
-            <EmptyState Message="@L["History_Empty"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.History())" Message="@L["History_Empty"]">
+                <a class="dialed-button dialed-button-primary" href="brew">@L["Home_LogBrew"]</a>
+            </EmptyState>
         }
         else
         {
-            <div class="dialed-filters">
+            <div class="dialed-filter-bar">
+                <button type="button" id="history-filters-toggle" class="dialed-button dialed-button-icon @(showFilters ? "dialed-button-pressed" : "")"
+                        aria-expanded="@(showFilters ? "true" : "false")" aria-controls="history-filters" @onclick="@(() => showFilters = !showFilters)">
+                    <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size20.Filter())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                    @(ActiveFilterCount > 0 ? string.Format(L["Beans_FiltersCount"].Value, ActiveFilterCount) : L["Beans_Filters"].Value)
+                </button>
+                <span class="dialed-muted dialed-filter-summary" id="history-count">@string.Format(L[Visible.Count == 1 ? "History_CountOne" : "History_Count"].Value, Visible.Count)</span>
+            </div>
+            <div class="dialed-filters" id="history-filters" hidden="@(!showFilters)">
                 <div class="dialed-field">
                     <label for="history-bean">@L["Recipe_Bean"]</label>
                     <select id="history-bean" @bind="beanFilter">
@@ -74,25 +88,52 @@
 
             @if (Visible.Count == 0)
             {
-                <EmptyState Message="@L["Beans_NoResults"]" />
+                <EmptyState Icon="@(new Icons.Regular.Size24.Search())" Message="@L["Beans_NoResults"]" />
             }
             else
             {
-                <div class="dialed-list">
-                    @foreach (var brew in Visible)
-                    {
-                        <ListRow Title="@BeanOf(brew)" Subtitle="@Subtitle(brew)" Href="@($"history/{brew.Id}")">
-                            <Leading><span class="dialed-avatar" aria-hidden="true">@Initial(brew.CreatedBy)</span></Leading>
-                        </ListRow>
-                    }
-                </div>
+                @foreach (var day in Days)
+                {
+                    <section class="dialed-day-group" data-day="@day.Key.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" aria-labelledby="@($"day-{day.Key:yyyyMMdd}")">
+                        <h2 class="dialed-day-title" id="@($"day-{day.Key:yyyyMMdd}")">@DayTitle(day.Key)</h2>
+                        <div class="dialed-list">
+                            @foreach (var brew in day)
+                            {
+                                <ListRow Title="@BeanOf(brew)" Subtitle="@Subtitle(brew)" Href="@($"history/{brew.Id}")" data-brew="@brew.Id">
+                                    <Leading><MethodIcon Code="@brew.MethodCode" /></Leading>
+                                    <Below>
+                                        @if (ShowsPeople || !brew.Taste.IsBalanced)
+                                        {
+                                            <span class="dialed-row-chips">
+                                                @if (ShowsPeople)
+                                                {
+                                                    <span class="dialed-row-person"><Avatar Name="@PersonName(brew.CreatedBy)" Size="20" /> @PersonName(brew.CreatedBy)</span>
+                                                }
+                                                @foreach (var note in TasteNotes(brew.Taste))
+                                                {
+                                                    <span class="dialed-chip dialed-chip-small">@note</span>
+                                                }
+                                            </span>
+                                        }
+                                    </Below>
+                                    <Trailing>
+                                        @if (brew.Rating is { } rating)
+                                        {
+                                            <RatingBadge Value="rating" />
+                                        }
+                                    </Trailing>
+                                </ListRow>
+                            }
+                        </div>
+                    </section>
+                }
             }
         }
     </List>
     <Detail>
         @if (Id is null)
         {
-            <EmptyState Message="@L["History_SelectPrompt"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.History())" Message="@L["History_SelectPrompt"]" />
         }
         else if (current is null)
         {
@@ -110,8 +151,12 @@
                 <Actions>
                     @if (IsMine(current))
                     {
-                        <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
-                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                        <button type="button" id="history-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
+                            <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
+                        </button>
+                        <button type="button" id="history-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="@(() => confirmingDelete = true)">
+                            <FluentIcon Value="@(new Icons.Regular.Size24.Delete())" Color="Color.Custom" CustomColor="currentColor" />
+                        </button>
                     }
                 </Actions>
             </PageHeader>
@@ -133,19 +178,25 @@
                 </div>
             }
 
-            <Card>
-                <p class="dialed-person"><span class="dialed-avatar" aria-hidden="true">@Initial(current.CreatedBy)</span> <span id="history-person-name">@PersonName(current.CreatedBy)</span> · @current.BrewedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
-                <p>@L[$"DrinkType_{current.DrinkType}"] · @MethodName(current.MethodCode)@(MilkText(current))</p>
-                @if (current.Rating is { } stars)
-                {
-                    <StarRating Value="stars" ReadOnly="true" />
-                }
+            <Card class="dialed-card dialed-brew-summary" id="history-summary">
+                <div class="dialed-brew-summary-top">
+                    <MethodIcon Code="@current.MethodCode" Size="56" />
+                    <div class="dialed-brew-summary-text">
+                        <span class="dialed-brew-summary-what" id="history-what">@WhatText(current)</span>
+                        <span class="dialed-muted" id="history-when">@WhenText(current.BrewedAt)</span>
+                        @if (current.Rating is { } stars)
+                        {
+                            <StarRating Value="stars" ReadOnly="true" />
+                        }
+                    </div>
+                </div>
+                <p class="dialed-person"><Avatar Name="@PersonName(current.CreatedBy)" Size="28" /> <span id="history-person-name">@PersonName(current.CreatedBy)</span></p>
             </Card>
 
-            <h2>@L["History_Parameters"]</h2>
+            <SectionHeader Title="@L["History_Parameters"]" />
             <table class="dialed-compare">
                 <thead>
-                    <tr><th></th><th>@L["History_Planned"]</th><th>@L["History_Actual"]</th></tr>
+                    <tr><th><span class="dialed-visually-hidden">@L["History_ParameterColumn"]</span></th><th>@L["History_Planned"]</th><th>@L["History_Actual"]</th></tr>
                 </thead>
                 <tbody>
                     @foreach (var row in comparison)
@@ -160,26 +211,31 @@
             </table>
             @if (recipe is not null)
             {
-                <p><a href="@($"recipes/{recipe.Id}")">@string.Format(L["History_Recipe"].Value, recipe.Name)</a></p>
+                <a id="history-recipe" class="dialed-card dialed-card-link dialed-best-recipe" href="@($"recipes/{recipe.Id}")">
+                    <MethodIcon Code="@recipe.MethodCode" />
+                    <span class="dialed-row-text">
+                        <span class="dialed-row-subtitle">@L["History_RecipeLabel"]</span>
+                        <span class="dialed-row-title">@recipe.Name</span>
+                    </span>
+                </a>
             }
 
-            @if (!current.Taste.IsBalanced)
-            {
-                <h2>@L["Brew_Taste"]</h2>
-                <dl class="dialed-facts">
-                    @TasteFact("Taste_Acidity", "Taste_Sour", "Taste_Bitter", current.Taste.Acidity)
-                    @TasteFact("Taste_Strength", "Taste_Weak", "Taste_Strong", current.Taste.Strength)
-                    @TasteFact("Taste_Body", "Taste_Thin", "Taste_Heavy", current.Taste.Body)
-                    @TasteFact("Taste_Sweetness", "Taste_Flat", "Taste_Sweet", current.Taste.Sweetness)
-                </dl>
-            }
+            <SectionHeader Title="@L["Brew_Taste"]" />
+            <TasteChart Id="history-taste" Taste="current.Taste" />
 
             <DialInAdviceCard Brew="current" Scale="@gear.FirstOrDefault(g => g.Id == current.GrinderId)?.GrindScale" />
 
-            <PhotoStrip PhotoIds="@current.PhotoIds" ReadOnly="true" Label="@L["Photo_Title"].Value" />
-            @if (current.Notes is not null)
+            @if (current.PhotoIds.Count > 0 || current.Notes is not null)
             {
-                <p class="dialed-vendor-notes">@current.Notes</p>
+                <SectionHeader Title="@L["History_NotesAndPhotos"]" />
+                @if (current.PhotoIds.Count > 0)
+                {
+                    <PhotoStrip PhotoIds="@current.PhotoIds" ReadOnly="true" Label="@L["Photo_Title"].Value" />
+                }
+                @if (current.Notes is not null)
+                {
+                    <Card class="dialed-card dialed-notes-card" id="history-notes"><p class="dialed-vendor-notes">@current.Notes</p></Card>
+                }
             }
         }
     </Detail>
@@ -198,6 +254,8 @@
     private string personFilter = "";
     private int ratingFilter;
     private bool editing;
+    private bool showFilters;
+    private Dictionary<string, string> memberNames = [];
     private bool confirmingDelete;
     private string? error;
 
@@ -214,6 +272,22 @@
     {
         BrewStore.Changed += OnStoreChanged;
         await LoadAsync();
+        _ = LoadMemberNamesAsync();
+    }
+
+    /// <summary>Names of the household's members, so their brews show "Bob" instead of an id. Best effort: offline or signed out keeps the ids.</summary>
+    private async Task LoadMemberNamesAsync()
+    {
+        try
+        {
+            var household = await Households.GetAsync();
+            memberNames = household.Members.ToDictionary(m => m.UserId, m => m.DisplayName);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception exception) when (exception is Dialed.Client.Account.AccountApiException or Dialed.Client.Account.AccountRefusedException or HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            // Not signed in or offline: ids stay as they are.
+        }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -248,9 +322,51 @@
 
     private bool IsMine(Brew brew) => brew.CreatedBy == Context.UserId;
 
-    private string PersonName(string userId) => userId == Context.UserId ? L["History_You"].Value : userId;
+    private string PersonName(string userId) =>
+        userId == Context.UserId ? L["History_You"].Value : memberNames.GetValueOrDefault(userId) ?? userId;
 
-    private string Initial(string userId) => PersonName(userId) is { Length: > 0 } name ? name[..1].ToUpperInvariant() : "?";
+    /// <summary>Who brewed is only worth showing when more than one person brews here.</summary>
+    private bool ShowsPeople => (brews ?? []).Select(b => b.CreatedBy).Distinct().Skip(1).Any();
+
+    private int ActiveFilterCount =>
+        (beanFilter == "" ? 0 : 1) + (methodFilter == "" ? 0 : 1) + (personFilter == "" ? 0 : 1) + (ratingFilter == 0 ? 0 : 1);
+
+    private DateOnly Today => DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+
+    private static DateOnly DayOf(Brew brew) => DateOnly.FromDateTime(brew.BrewedAt.ToLocalTime().DateTime);
+
+    private IEnumerable<IGrouping<DateOnly, Brew>> Days => Visible.GroupBy(DayOf);
+
+    private string DayTitle(DateOnly day) =>
+        day == Today ? L["Day_Today"].Value
+        : day == Today.AddDays(-1) ? L["Day_Yesterday"].Value
+        : day.Year == Today.Year ? day.ToString("dddd d MMMM", CultureInfo.CurrentCulture)
+        : day.ToString("d MMMM yyyy", CultureInfo.CurrentCulture);
+
+    private string WhenText(DateTimeOffset at)
+    {
+        var local = at.ToLocalTime();
+        return $"{DayTitle(DateOnly.FromDateTime(local.DateTime))}, {local.ToString("t", CultureInfo.CurrentCulture)}";
+    }
+
+    /// <summary>"Flat white · Espresso", or just "Espresso" when the drink and the method say the same.</summary>
+    private string WhatText(Brew brew)
+    {
+        var drink = L[$"DrinkType_{brew.DrinkType}"].Value;
+        var method = MethodName(brew.MethodCode);
+        var what = string.Equals(drink, method, StringComparison.OrdinalIgnoreCase) || brew.DrinkType is DrinkType.Filter or DrinkType.Other
+            ? method
+            : $"{drink} · {method}";
+        return what + MilkText(brew);
+    }
+
+    /// <summary>Only the parts of the taste that were off, as short words ("Sour 1").</summary>
+    private IEnumerable<string> TasteNotes(Taste taste)
+    {
+        (int Value, string Low, string High)[] axes =
+            [(taste.Acidity, "Taste_Sour", "Taste_Bitter"), (taste.Strength, "Taste_Weak", "Taste_Strong"), (taste.Body, "Taste_Thin", "Taste_Heavy"), (taste.Sweetness, "Taste_Flat", "Taste_Sweet")];
+        return axes.Where(a => a.Value != 0).Select(a => $"{L[a.Value < 0 ? a.Low : a.High].Value} {Math.Abs(a.Value)}");
+    }
 
     private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
 
@@ -262,12 +378,8 @@
 
     private string Subtitle(Brew brew)
     {
-        var parts = new List<string> { brew.BrewedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm"), L[$"DrinkType_{brew.DrinkType}"].Value };
-        if (brew.Rating is { } rating)
-        {
-            parts.Add($"{rating} ★");
-        }
-
+        var parts = new List<string> { brew.BrewedAt.ToLocalTime().ToString("t", CultureInfo.CurrentCulture), WhatText(brew) };
+        parts.Add((brew.WaterG ?? brew.YieldG) is { } liquid ? $"{Units.Weight(brew.DoseG)} → {Units.Weight(liquid)}" : Units.Weight(brew.DoseG));
         return string.Join(" · ", parts);
     }
 

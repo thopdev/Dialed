@@ -216,7 +216,9 @@ public sealed class RecipeTests : UiTestContext
         var page = Render<Recipes>();
 
         page.Find(".dialed-row-title").TextContent.ShouldBe("Morning");
-        page.Markup.ShouldContain("Hario V60 · 1:16");
+        page.Find(".dialed-row-subtitle").TextContent.ShouldBe("Hario V60");
+        page.FindAll(".dialed-key-numbers .dialed-chip").Select(c => c.TextContent).ShouldBe(["15 g", "240 g", "1:16"]);
+        page.Find(".dialed-row .dialed-method-icon").ShouldNotBeNull();
     }
 
     [Fact]
@@ -248,7 +250,8 @@ public sealed class RecipeTests : UiTestContext
         page.Find("#recipe-favourite").Click();
         (await Recipes.GetAsync(recipe.Id, Ct))!.IsFavourite.ShouldBeTrue();
 
-        page.WaitForAssertion(() => page.Find("#recipe-favourite").TextContent.ShouldBe("Remove favourite"));
+        page.WaitForAssertion(() => page.Find("#recipe-favourite").GetAttribute("aria-pressed").ShouldBe("true"));
+        page.Find("#recipe-favourite").GetAttribute("title").ShouldBe("Remove favourite");
         page.Find("#recipe-favourite").Click();
         (await Recipes.GetAsync(recipe.Id, Ct))!.IsFavourite.ShouldBeFalse();
     }
@@ -293,7 +296,9 @@ public sealed class RecipeTests : UiTestContext
         page.Find(".dialed-detail-pane h1").TextContent.ShouldBe("Morning");
         page.Markup.ShouldContain("1:16");
         page.Markup.ShouldContain("94");
-        page.FindAll(".dialed-step-list li").Select(l => l.TextContent).ShouldBe(["0 s · Bloom · to 45 g · 30 s", "45 s · Pour · to 240 g · slow"]);
+        page.FindAll("#recipe-steps .dialed-step-time").Select(t => t.TextContent).ShouldBe(["0:00", "0:45"]);
+        page.FindAll("#recipe-steps .dialed-step-kind").Select(t => t.TextContent).ShouldBe(["Bloom", "Pour"]);
+        page.FindAll("#recipe-steps .dialed-step-detail").Select(t => t.TextContent).ShouldBe(["to 45 g · for 30 s", "to 240 g · slow"]);
     }
 
     [Fact]
@@ -329,7 +334,7 @@ public sealed class RecipeTests : UiTestContext
         var recipe = await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning" }, Ct);
         var page = Render<Recipes>(p => p.Add(x => x.Id, recipe.Id));
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Edit").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Edit").Click();
         page.Find("#recipe-name").Input("Evening");
         page.Find("form").Submit();
 
@@ -342,7 +347,7 @@ public sealed class RecipeTests : UiTestContext
         var recipe = await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning" }, Ct);
         var page = Render<Recipes>(p => p.Add(x => x.Id, recipe.Id));
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Delete").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Delete").Click();
         (await Recipes.GetAsync(recipe.Id, Ct)).ShouldNotBeNull();
         page.Find(".dialed-confirm .dialed-button-danger").Click();
 
