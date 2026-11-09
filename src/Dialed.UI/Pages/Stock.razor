@@ -19,7 +19,7 @@
 }
 else if (Groups.All(g => g.Items.Count == 0))
 {
-    <EmptyState Message="@L["Stock_Empty"]">
+    <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Stock_Empty"]">
         <a class="dialed-button dialed-button-primary" href="bags/new">@L["Bags_New"]</a>
     </EmptyState>
 }
@@ -28,11 +28,13 @@ else
     @foreach (var group in Groups.Where(g => g.Items.Count > 0))
     {
         <section data-group="@group.Status.ToString().ToLowerInvariant()">
-            <h2>@L[$"Stock_Group_{group.Status}"] (@group.Items.Count)</h2>
+            <SectionHeader Title="@L[$"Stock_Group_{group.Status}"]">
+                <Actions><span class="dialed-count" aria-label="@string.Format(L["Stock_Count"].Value, group.Items.Count)">@group.Items.Count</span></Actions>
+            </SectionHeader>
             <div class="dialed-list">
                 @foreach (var item in group.Items)
                 {
-                    <BagStockRow Stock="item" />
+                    <BagStockRow Stock="item" PhotoId="@Bean(item)?.PhotoIds.FirstOrDefault()" RoastLevel="@Bean(item)?.RoastLevel" />
                 }
             </div>
         </section>
@@ -41,6 +43,9 @@ else
 
 @code {
     private IReadOnlyList<BagStock>? stock;
+    private Dictionary<string, Bean> beansById = [];
+
+    private Bean? Bean(BagStock item) => beansById.GetValueOrDefault(item.Bag.BeanId);
 
     private IEnumerable<(BagStatus Status, IReadOnlyList<BagStock> Items)> Groups =>
         new[] { BagStatus.Open, BagStatus.Sealed, BagStatus.Frozen }.Select(status =>
@@ -58,7 +63,9 @@ else
     private async Task LoadAsync()
     {
         var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
-        stock = InventoryOverview.Build(await BagStore.ListAsync(), await BeanStore.ListAsync(), await BrewStore.ListAsync(), today, Preferences.Inventory);
+        var beans = await BeanStore.ListAsync();
+        beansById = beans.Where(b => !b.Deleted).ToDictionary(b => b.Id);
+        stock = InventoryOverview.Build(await BagStore.ListAsync(), beans, await BrewStore.ListAsync(), today, Preferences.Inventory);
     }
 
     private void OnChanged() => _ = InvokeAsync(async () =>
