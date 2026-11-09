@@ -17,3 +17,18 @@
 - Storing a `LabelScan` with prompt version and model id (comes with the app side, #83).
 - Per-user daily quota, cost estimate and global kill switch (#88).
 - Real model validation against Claude in Foundry (#79) and the golden test set (#84). Neither can be done without the Azure resource.
+
+## Quotas, cost and kill switch (#88)
+Configuration under `Ai` (reloadable, so the switch works without a deploy):
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `Ai:Enabled` | `true` | Global kill switch. `false`: every AI call answers `503` with `code: "ai-disabled"`; the app falls back to rules and manual entry. |
+| `Ai:LabelScansPerDay` | 20 | Per user and UTC day. Over the limit: `429`, `Retry-After` (seconds to UTC midnight), `code: "ai-quota"` and a friendly message. |
+| `Ai:SuggestionsPerDay` | 50 | Same, for dial-in suggestions (used when #86/#87 land). |
+| `Ai:InputUsdPerMillionTokens` / `Ai:OutputUsdPerMillionTokens` | 1 / 5 | Prices used to estimate cost per call (`dialed.ai.cost`). Set them to the real prices of the deployed model. |
+
+Calls that fail validation (wrong type, empty, too large) are never counted; a call that fails because of the model is refunded. Counters are in memory (reset on restart, like the recovery lockout, #197).
+
+Azure side, when the subscription exists (#25): alert rules on `dialed.ai.cost` (daily total) and `dialed.ai.tokens`, and a way to flip `Ai:Enabled` (App Configuration or an environment variable on the Container App).
+The app side (friendly message for 429/503 and the fallback) comes with the scan screen (#83).
