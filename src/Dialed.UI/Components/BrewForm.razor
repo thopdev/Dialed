@@ -120,6 +120,16 @@
         <textarea id="brew-notes" rows="3" @bind="notes"></textarea>
     </div>
 
+    <div class="dialed-field">
+        <label for="brew-visibility">@L["Bean_Visibility"]</label>
+        <select id="brew-visibility" @bind="visibility">
+            @foreach (var option in Enum.GetValues<Visibility>())
+            {
+                <option value="@option">@L[$"Visibility_{option}"]</option>
+            }
+        </select>
+    </div>
+
     <div class="dialed-form-actions">
         <button type="submit" class="dialed-button dialed-button-primary">@L["Brew_Save"]</button>
         <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
@@ -143,6 +153,7 @@
     private int sweetness;
     private int rating;
     private string? notes;
+    private Visibility visibility = Visibility.Household;
     private IReadOnlyList<string> photoIds = [];
     private string? doseError;
     private Brew? loaded;
@@ -197,6 +208,8 @@
         sweetness = Initial.Taste.Sweetness;
         rating = Initial.Rating ?? 0;
         notes = Initial.Notes;
+        // A new brew starts with the person's default; an existing one keeps its own.
+        visibility = Initial.Version == 0 ? Preferences.Profile.DefaultVisibility : Initial.Visibility;
         photoIds = Initial.PhotoIds;
     }
 
@@ -240,6 +253,7 @@
             Taste = new Taste(acidity, strength, body, sweetness),
             Rating = rating > 0 ? rating : null,
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
+            Visibility = visibility,
             PhotoIds = photoIds,
         };
         await OnSubmit.InvokeAsync(brew);
