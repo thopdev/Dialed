@@ -8,4 +8,7 @@ public interface IAppEnvironment
 {
     /// <summary>True for development builds (component gallery, diagnostics); false in production.</summary>
     bool IsDevelopment { get; }
+
+    /// <summary>Where beta feedback is sent; null or empty when this build has no feedback address.</summary>
+    string? FeedbackEmail { get; }
 }

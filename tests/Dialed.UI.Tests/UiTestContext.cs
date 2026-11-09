@@ -58,6 +58,7 @@ public abstract class UiTestContext : BunitContext
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
         Services.AddSingleton<IPwaState>(Pwa);
+        Services.AddSingleton<Dialed.Client.Platform.IDeviceInfo, TestDeviceInfo>();
         Services.AddSingleton(TimeProvider.System);
         Services.AddSingleton(Context);
         Services.AddSingleton<ICurrentContext>(Context);
@@ -407,6 +408,13 @@ public abstract class UiTestContext : BunitContext
     protected sealed class TestEnvironment : IAppEnvironment
     {
         public bool IsDevelopment { get; set; }
+
+        public string? FeedbackEmail { get; set; }
+    }
+
+    protected sealed class TestDeviceInfo : Dialed.Client.Platform.IDeviceInfo
+    {
+        public Task<string> DescribeAsync() => Task.FromResult("phone, iOS 18.1, installed app");
     }
 
     protected sealed class TestPwaState : IPwaState

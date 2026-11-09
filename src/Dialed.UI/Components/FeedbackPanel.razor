@@ -1,0 +1,38 @@
+@using System.Reflection
+@using Dialed.Client
+@using Dialed.Client.Platform
+@inject IAppEnvironment AppEnvironment
+@inject IDeviceInfo Device
+@inject IStringLocalizer<Strings> L
+
+@* Beta feedback (#98): opens the mail app with a message that already holds the app version and device, so testers only add what happened. *@
+<div id="feedback-panel">
+    @if (string.IsNullOrWhiteSpace(AppEnvironment.FeedbackEmail))
+    {
+        <p class="dialed-muted" id="feedback-unavailable">@L["Feedback_Unavailable"]</p>
+    }
+    else
+    {
+        <p><a id="feedback-link" class="dialed-button" href="@MailTo">@L["Feedback_Send"]</a></p>
+        <p class="dialed-muted">@L["Feedback_Hint"]</p>
+    }
+    <p><a id="known-issues-link" href="known-issues">@L["Feedback_KnownIssues"]</a></p>
+</div>
+
+@code {
+    private string device = "";
+
+    private static string Version =>
+        typeof(FeedbackPanel).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "dev";
+
+    private string MailTo
+    {
+        get
+        {
+            var body = $"{L["Feedback_Template"].Value}\n\n---\nDialed {Version}\nDevice: {device}\n";
+            return $"mailto:{AppEnvironment.FeedbackEmail}?subject={Uri.EscapeDataString("[Dialed beta] feedback")}&body={Uri.EscapeDataString(body)}";
+        }
+    }
+
+    protected override async Task OnInitializedAsync() => device = await Device.DescribeAsync();
+}

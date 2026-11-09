@@ -573,4 +573,16 @@
   <data name="Privacy_Title" xml:space="preserve"><value>Privacy</value></data>
   <data name="Privacy_Draft" xml:space="preserve"><value>Concept voor de besloten bèta</value></data>
   <data name="Photo_PrivacyHint" xml:space="preserve"><value>De camera wordt alleen gebruikt als je op Foto nemen tikt. Foto's blijven bij dit item. Hoe foto's worden bewaard: zie het privacybeleid.</value></data>
+  <data name="Feedback_Title" xml:space="preserve"><value>Feedback</value></data>
+  <data name="Feedback_Send" xml:space="preserve"><value>Feedback sturen</value></data>
+  <data name="Feedback_Hint" xml:space="preserve"><value>Opent je mail-app met de appversie en het apparaat al ingevuld. Vertel wat je probeerde en wat er gebeurde, of wat je graag zou willen.</value></data>
+  <data name="Feedback_Unavailable" xml:space="preserve"><value>Deze versie heeft nog geen feedbackadres.</value></data>
+  <data name="Feedback_KnownIssues" xml:space="preserve"><value>Bekende problemen</value></data>
+  <data name="Feedback_Template" xml:space="preserve"><value>Wat er gebeurde:&#10;&#10;Wat ik verwachtte:&#10;</value></data>
+  <data name="KnownIssues_Title" xml:space="preserve"><value>Bekende problemen</value></data>
+  <data name="KnownIssues_Intro" xml:space="preserve"><value>Deze zijn bekend tijdens de besloten bèta. Je hoeft ze niet nog eens te melden.</value></data>
+  <data name="KnownIssues_Storage" xml:space="preserve"><value>Op iPhone kan Safari de gegevens van sites wissen die niet op het beginscherm staan. Zet Dialed op je beginscherm en controleer Instellingen &gt; Opslag; maak een account om een kopie op de server te bewaren.</value></data>
+  <data name="KnownIssues_Recovery" xml:space="preserve"><value>Herstel per e-mail wordt nog niet verstuurd. Bewaar de herstelcodes die je bij het aanmaken van je account krijgt.</value></data>
+  <data name="KnownIssues_Timer" xml:space="preserve"><value>Het geluid van de brewtimer kan gedempt worden door de stille modus van de iPhone, en het scherm kan op sommige apparaten toch dimmen.</value></data>
+  <data name="KnownIssues_Offline" xml:space="preserve"><value>Voor het delen van foto's en AI-advies is een verbinding nodig; al het andere werkt offline.</value></data>
 </root>

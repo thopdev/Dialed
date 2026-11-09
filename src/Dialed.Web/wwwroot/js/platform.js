@@ -397,3 +397,12 @@ export function reportError(report) {
         console.debug('[dialed] error report (no sink configured)', report.type, properties);
     }
 }
+
+// A short, anonymous description for feedback messages: device kind, OS and whether this is the installed app.
+export function describeDevice() {
+    const ua = navigator.userAgent || '';
+    const os = /iPhone|iPad|iPod/.test(ua) ? 'iOS ' + ((ua.match(/OS (\d+[_\d]*)/) || [])[1] || '').replace(/_/g, '.')
+        : /Android/.test(ua) ? 'Android' : /Mac OS X/.test(ua) ? 'macOS' : /Windows/.test(ua) ? 'Windows' : 'other OS';
+    const installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+    return `${deviceType()}, ${os.trim()}, ${installed ? 'installed app' : 'browser tab'}`;
+}

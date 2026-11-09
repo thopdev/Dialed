@@ -1,0 +1,12 @@
+@page "/known-issues"
+@inject IStringLocalizer<Strings> L
+
+<PageHeader Title="@L["KnownIssues_Title"]" BackHref="settings" />
+<p class="dialed-muted">@L["KnownIssues_Intro"]</p>
+
+<ul id="known-issues">
+    <li>@L["KnownIssues_Storage"]</li>
+    <li>@L["KnownIssues_Recovery"]</li>
+    <li>@L["KnownIssues_Timer"]</li>
+    <li>@L["KnownIssues_Offline"]</li>
+</ul>
