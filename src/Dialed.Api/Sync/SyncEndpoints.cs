@@ -21,6 +21,8 @@ public static class SyncEndpoints
     public static IServiceCollection AddDialedSync(this IServiceCollection services)
     {
         services.AddSingleton<ISyncStore, InMemorySyncStore>();
+        services.AddSingleton<SyncPurgeWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<SyncPurgeWorker>());
         return services;
     }
 
