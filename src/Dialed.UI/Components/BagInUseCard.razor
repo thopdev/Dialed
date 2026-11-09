@@ -1,0 +1,52 @@
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Inventory
+@inject IStringLocalizer<Strings> L
+@inject UnitFormatter Units
+
+@* An open bag on Home: photo, bean, freshness, and how much is left as a bar. Tapping it starts a brew from this bag. *@
+<a class="dialed-card dialed-card-link dialed-bag-card" href="@($"brew/{Stock.Bag.Id}")" data-bag="@Stock.Bag.Id">
+    <span class="dialed-bag-card-top">
+        <Thumb PhotoId="@PhotoId" Size="56" />
+        <span class="dialed-bag-card-text">
+            <span class="dialed-bag-card-title">@Name</span>
+            <span class="dialed-bag-card-subtitle">@Subtitle</span>
+        </span>
+        <span class="dialed-bag-card-chips">
+            @if (Stock.IsLow)
+            {
+                <Chip Selected="true">@L["Stock_Low"]</Chip>
+            }
+            @if (Stock.Freshness != Freshness.Unknown)
+            {
+                <Chip>@L[$"Fresh_{Stock.Freshness}"]</Chip>
+            }
+        </span>
+    </span>
+    <Meter Label="@string.Format(L["Home_RemainingOf"].Value, Name)" Fraction="@Fraction" Tone="@Tone" ValueText="@LeftOf" />
+    <span class="dialed-bag-card-meta">
+        <span>@string.Format(L["Brew_Left"].Value, Units.Weight(Stock.RemainingG))</span>
+        @if (Stock.Cups is { } cups)
+        {
+            <span>@string.Format(L["Stock_Cups"].Value, cups)</span>
+        }
+    </span>
+</a>
+
+@code {
+    [Parameter, EditorRequired]
+    public BagStock Stock { get; set; } = null!;
+
+    /// <summary>The bean's first photo, if any.</summary>
+    [Parameter]
+    public string? PhotoId { get; set; }
+
+    private string Name => Stock.BeanName.Length > 0 ? Stock.BeanName : L["Bag_UnknownBean"].Value;
+
+    private string Subtitle => Stock.AgeDays is { } age ? string.Format(L["Stock_DaysSinceRoast"].Value, age) : L["Fresh_Unknown"].Value;
+
+    private double Fraction => Stock.Bag.WeightG > 0 ? (double)(Stock.RemainingG / Stock.Bag.WeightG) : 0;
+
+    private Meter.MeterTone Tone => Stock.IsLow ? Meter.MeterTone.Warning : Meter.MeterTone.Normal;
+
+    private string LeftOf => string.Format(L["Home_LeftOf"].Value, Units.Weight(Stock.RemainingG), Units.Weight(Stock.Bag.WeightG));
+}

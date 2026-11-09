@@ -52,7 +52,7 @@ public sealed class HomeInventoryTests : UiTestContext
 
         var page = Render<Home>();
 
-        var rows = page.FindAll("#home-open-bags .dialed-row");
+        var rows = page.FindAll("#home-open-bags .dialed-bag-card");
         rows.Count.ShouldBe(1);
         rows[0].TextContent.ShouldContain("Gesha");
         rows[0].TextContent.ShouldContain("250 g left");
