@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Storage.Opfs;
 using Dialed.Client;
@@ -35,6 +36,9 @@ builder.Services.AddBitBsqliteServices(sqlite => sqlite
         .Fallback(BsqliteIndexedDbStorageProvider.ProviderName))
     .AddDatabase("dialed.db"));
 builder.Services.AddBitBsqliteDbContext<LocalDbContext>();
+// Bit registers IDbContextFactory<LocalDbContext> as scoped, and our singletons (local store, photo service) use it. In the browser the
+// whole app is one scope, so that is safe at runtime, but the Development host validates scopes and refuses to start.
+builder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions { ValidateScopes = false, ValidateOnBuild = false }));
 builder.Services.AddSingleton<ILocalStore, BsqliteLocalStore>();
 builder.Services.AddDialedData();
 builder.Services.AddSingleton<ISyncTransport>(sp => new HttpSyncTransport(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
