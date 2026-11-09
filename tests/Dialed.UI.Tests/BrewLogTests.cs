@@ -52,6 +52,31 @@ public sealed class BrewLogTests : UiTestContext
     }
 
     [Fact]
+    public void A_new_brew_can_be_shared_with_friends_and_starts_with_the_default_visibility()
+    {
+        Brew? submitted = null;
+        var form = RenderForm(Blank("v60", 15m), b => submitted = b);
+        form.Find("#brew-visibility").GetAttribute("value").ShouldBe(nameof(Visibility.Household));
+
+        form.Find("#brew-visibility").Change(nameof(Visibility.Friends));
+        form.Find("form").Submit();
+
+        submitted!.Visibility.ShouldBe(Visibility.Friends);
+    }
+
+    [Fact]
+    public void An_existing_brew_keeps_its_own_visibility()
+    {
+        Brew? submitted = null;
+        var form = RenderForm(Blank("v60", 15m) with { Version = 2, Visibility = Visibility.Private }, b => submitted = b);
+
+        form.Find("#brew-visibility").GetAttribute("value").ShouldBe(nameof(Visibility.Private));
+        form.Find("form").Submit();
+
+        submitted!.Visibility.ShouldBe(Visibility.Private);
+    }
+
+    [Fact]
     public void Form_is_prefilled_and_saves_without_changes()
     {
         Brew? submitted = null;
