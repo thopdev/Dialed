@@ -611,4 +611,17 @@
   <data name="Import_Field_Price" xml:space="preserve"><value>Prijs</value></data>
   <data name="Import_Field_PurchasedOn" xml:space="preserve"><value>Aankoopdatum</value></data>
   <data name="Import_Field_RoastDate" xml:space="preserve"><value>Brandingsdatum</value></data>
+  <data name="Stats_Title" xml:space="preserve"><value>Statistieken</value></data>
+  <data name="Stats_Empty" xml:space="preserve"><value>Zet wat koffie en je statistieken verschijnen hier.</value></data>
+  <data name="Stats_Weekly" xml:space="preserve"><value>Koffie per week</value></data>
+  <data name="Stats_WeeklyHint" xml:space="preserve"><value>Gebrouwen gram, afgelopen {0} weken.</value></data>
+  <data name="Stats_Spend" xml:space="preserve"><value>Uitgaven per maand</value></data>
+  <data name="Stats_SpendEmpty" xml:space="preserve"><value>Voeg een prijs en aankoopdatum toe aan je zakken om te zien wat je uitgeeft.</value></data>
+  <data name="Stats_Origins" xml:space="preserve"><value>Favoriete herkomsten</value></data>
+  <data name="Stats_Roasters" xml:space="preserve"><value>Favoriete branders</value></data>
+  <data name="Stats_Processes" xml:space="preserve"><value>Processen, op aantal en beoordeling</value></data>
+  <data name="Stats_Grind" xml:space="preserve"><value>Maalstand per molen</value></data>
+  <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log bereidingen met een molen en maalstand om trends te zien.</value></data>
+  <data name="Stats_NothingYet" xml:space="preserve"><value>Nog niets.</value></data>
+  <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} bereidingen</value></data>
 </root>

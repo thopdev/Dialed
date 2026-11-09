@@ -1,0 +1,20 @@
+name: Story
+description: A user-facing piece of work
+labels: [story]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      description: "As a **<who>**, I want **<what>**, so that **<why>**."
+    validations: { required: true }
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      value: "- [ ] "
+    validations: { required: true }
+  - type: textarea
+    id: notes
+    attributes:
+      label: Technical notes and dependencies
