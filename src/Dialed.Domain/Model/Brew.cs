@@ -79,6 +79,9 @@ public sealed record Brew : SyncEntity
     public string? Notes { get; init; }
 
     public IReadOnlyList<string> PhotoIds { get; init; } = [];
+
+    /// <summary>Who can see this brew (#75). Defaults to the household; the sync server hides private brews from other members.</summary>
+    public Visibility Visibility { get; init; } = Visibility.Household;
 }
 
 public static class DrinkTypes

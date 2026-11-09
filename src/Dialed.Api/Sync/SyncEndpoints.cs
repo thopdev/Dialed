@@ -39,7 +39,8 @@ public static class SyncEndpoints
                 return Results.NotFound();
             }
 
-            var (rows, hasMore) = await store.PullAsync(household, table, afterUpdatedAt, afterId, pageSize ?? 100, ct);
+            var viewer = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
+            var (rows, hasMore) = await store.PullAsync(household, viewer, table, afterUpdatedAt, afterId, pageSize ?? 100, ct);
             return Results.Ok(new SyncPageDto([.. rows.Select(ToDto)], hasMore));
         });
 
