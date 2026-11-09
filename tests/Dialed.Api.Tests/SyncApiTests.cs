@@ -186,6 +186,18 @@ public sealed class SyncApiTests(WebApplicationFactory<Program> factory) : IClas
     }
 
     [Fact]
+    public async Task Method_defaults_sync_like_other_tables()
+    {
+        using var alice = await ClientFor("alice");
+        var entity = new JsonObject { ["id"] = Id(), ["methodCode"] = "v60", ["grinderId"] = "g1", ["deleted"] = false };
+
+        using var pushed = await Push(alice, "methoddefaults", entity);
+
+        pushed.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await alice.GetAsync("/sync/methoddefaults", Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task Unknown_tables_are_not_found()
     {
         using var alice = await ClientFor("alice");
