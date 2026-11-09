@@ -24,6 +24,9 @@ public interface ISyncStore
     /// <summary>What <paramref name="authorId"/> made in the household that a reader with this relationship may read, newest first, deleted ones left out.</summary>
     Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(string householdId, string authorId, string table, Relationship reader, int skip, int take, CancellationToken cancellationToken = default);
 
+    /// <summary>Everything <paramref name="authorId"/> made in the household, whatever its visibility (for the person's own export). Deleted rows are left out.</summary>
+    Task<IReadOnlyList<SyncRow>> ListAuthoredAsync(string householdId, string authorId, string table, CancellationToken cancellationToken = default);
+
     /// <summary>Hard-deletes rows that were soft-deleted before <paramref name="cutoff"/>. Safe to repeat. Returns how many went per table.</summary>
     Task<IReadOnlyDictionary<string, int>> PurgeDeletedAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default);
 }
@@ -71,6 +74,20 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
                 .ToList();
 
             return Task.FromResult<(IReadOnlyList<SyncRow>, int)>(([.. all.Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, 100))], all.Count));
+        }
+    }
+
+    public Task<IReadOnlyList<SyncRow>> ListAuthoredAsync(string householdId, string authorId, string table, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<SyncRow>>([.. rows
+                .Where(r => r.Key.Household == householdId && r.Key.Table == table)
+                .Select(r => r.Value)
+                .Where(r => r.Entity["createdBy"]?.GetValue<string>() == authorId
+                    && !(r.Entity["deleted"] is JsonValue d && d.TryGetValue<bool>(out var gone) && gone))
+                .OrderBy(r => r.UpdatedAt)
+                .ThenBy(r => r.Id, StringComparer.Ordinal)]);
         }
     }
 
