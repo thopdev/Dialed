@@ -53,7 +53,8 @@ builder.Services.AddDialedScan(sp => new Dialed.Client.Scan.LabelScanner(new Htt
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());
-builder.Services.AddSingleton<IUserPreferences, InMemoryUserPreferences>();
+builder.Services.AddSingleton<StoredUserPreferences>();
+builder.Services.AddSingleton<IUserPreferences>(sp => sp.GetRequiredService<StoredUserPreferences>());
 builder.Services.AddSingleton<UnitFormatter>();
 builder.Services.AddSingleton<BrewTimerHandoff>();
 builder.Services.AddSingleton<PhotoService>();
@@ -74,6 +75,9 @@ catch (Exception exception)
 {
     Console.Error.WriteLine($"Local data was not loaded: {exception.Message}");
 }
+
+// Preferences and whether setup is done (#226); the store swallows its own errors.
+await host.Services.GetRequiredService<StoredUserPreferences>().LoadAsync();
 
 // Offline support and install state (#115); a failure here must never stop the app from starting.
 try
