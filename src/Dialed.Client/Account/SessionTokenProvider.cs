@@ -9,6 +9,8 @@ public sealed class SessionTokenProvider(AuthSession session, AccountApi api, Ti
 
     private readonly SemaphoreSlim gate = new(1, 1);
 
+    public string? HouseholdId => session.Tokens?.HouseholdId;
+
     public Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default) => GetAsync(refusedToken: null, cancellationToken);
 
     /// <summary>The server refused this token (it expired during a long sync, or the clock is off): renew now, unless someone already did.</summary>

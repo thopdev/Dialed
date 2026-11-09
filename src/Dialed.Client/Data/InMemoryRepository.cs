@@ -163,6 +163,36 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
         return stored;
     }
 
+    public async Task<int> PurgeForeignAsync(CancellationToken cancellationToken = default)
+    {
+        List<string> removed;
+        lock (gate)
+        {
+            removed = [.. records.Values
+                .Where(r => r.HouseholdId != context.HouseholdId && r.CreatedBy != context.UserId && r.CreatedBy != LocalContext.LocalUserId)
+                .Select(r => r.Id)];
+            foreach (var id in removed)
+            {
+                records.Remove(id);
+            }
+        }
+
+        if (removed.Count > 0)
+        {
+            if (store is not null)
+            {
+                foreach (var id in removed)
+                {
+                    await store.RemoveAsync(Collection, id, cancellationToken);
+                }
+            }
+
+            Changed?.Invoke();
+        }
+
+        return removed.Count;
+    }
+
     public async Task<int> AdoptAsync(CancellationToken cancellationToken = default)
     {
         List<T> adopted = [];

@@ -35,6 +35,11 @@ public interface ISyncState
     /// <summary>Forgets server versions and pull positions (not the outbox). After the household changes everything is pulled afresh.</summary>
     Task ResetServerStateAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>The household this device's data was last synced for, or <c>null</c> before the first sync.</summary>
+    Task<string?> GetHouseholdAsync(CancellationToken cancellationToken = default);
+
+    Task SetHouseholdAsync(string householdId, CancellationToken cancellationToken = default);
+
     Task AddConflictAsync(ConflictLogEntry entry, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ConflictLogEntry>> ConflictsAsync(CancellationToken cancellationToken = default);

@@ -15,6 +15,9 @@ public interface IAccessTokenProvider
     /// Gets a fresh token after the server refused <paramref name="refusedToken"/> (for example because it expired during a long sync).
     /// <c>null</c> when signed out. Providers that cannot renew simply return the current token.
     /// </summary>
+    /// <summary>The household the current token is for, or <c>null</c> when unknown or signed out.</summary>
+    string? HouseholdId => null;
+
     Task<string?> RenewAccessTokenAsync(string? refusedToken, CancellationToken cancellationToken = default) => GetAccessTokenAsync(cancellationToken);
 }
 

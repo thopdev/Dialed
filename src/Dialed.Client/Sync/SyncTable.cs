@@ -16,6 +16,9 @@ public interface ISyncTable
 
     /// <summary>Hands records made before sign-in to the current household and queues them for pushing.</summary>
     Task<int> AdoptLocalRecordsAsync(CancellationToken cancellationToken);
+
+    /// <summary>Removes what belonged to a household the person is no longer in (see <see cref="ISyncRepository{T}.PurgeForeignAsync"/>).</summary>
+    Task<int> PurgeForeignRecordsAsync(CancellationToken cancellationToken);
 }
 
 public enum PushStep
@@ -96,6 +99,8 @@ public sealed class SyncTable<T>(string name, ISyncRepository<T> repository, ISy
     }
 
     public Task<int> AdoptLocalRecordsAsync(CancellationToken cancellationToken) => repository.AdoptAsync(cancellationToken);
+
+    public Task<int> PurgeForeignRecordsAsync(CancellationToken cancellationToken) => repository.PurgeForeignAsync(cancellationToken);
 
     public async Task<int> PullAsync(int pageSize, CancellationToken cancellationToken)
     {

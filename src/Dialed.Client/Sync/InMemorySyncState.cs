@@ -14,6 +14,8 @@ public sealed class InMemorySyncState(ILocalStore? store = null) : ISyncState, I
     private const string VersionsCollection = "_sync_versions";
     private const string WatermarksCollection = "_sync_watermarks";
     private const string ConflictsCollection = "_sync_conflicts";
+    private const string MetaCollection = "_sync_meta";
+    private const string HouseholdKey = "household";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     private readonly Lock gate = new();
@@ -22,6 +24,7 @@ public sealed class InMemorySyncState(ILocalStore? store = null) : ISyncState, I
     private readonly Dictionary<string, SyncWatermark> watermarks = [];
     private readonly List<ConflictLogEntry> conflicts = [];
     private long nextSequence = 1;
+    private string? household;
 
     public event Action? OutboxChanged;
 
@@ -36,12 +39,14 @@ public sealed class InMemorySyncState(ILocalStore? store = null) : ISyncState, I
         var storedVersions = await store.ReadAllAsync(VersionsCollection, cancellationToken);
         var storedWatermarks = await store.ReadAllAsync(WatermarksCollection, cancellationToken);
         var storedConflicts = await store.ReadAllAsync(ConflictsCollection, cancellationToken);
+        var storedMeta = await store.ReadAllAsync(MetaCollection, cancellationToken);
         lock (gate)
         {
             outbox.Clear();
             versions.Clear();
             watermarks.Clear();
             conflicts.Clear();
+            household = storedMeta.GetValueOrDefault(HouseholdKey);
             outbox.AddRange(storedOutbox.Values.Select(json => JsonSerializer.Deserialize<OutboxEntry>(json, Json)!).OrderBy(e => e.Sequence));
             nextSequence = outbox.Count == 0 ? 1 : outbox.Max(e => e.Sequence) + 1;
             foreach (var (key, version) in storedVersions)
@@ -196,6 +201,24 @@ public sealed class InMemorySyncState(ILocalStore? store = null) : ISyncState, I
             await store.ClearCollectionAsync(VersionsCollection, cancellationToken);
             await store.ClearCollectionAsync(WatermarksCollection, cancellationToken);
         }
+    }
+
+    public Task<string?> GetHouseholdAsync(CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult(household);
+        }
+    }
+
+    public Task SetHouseholdAsync(string householdId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            household = householdId;
+        }
+
+        return store is null ? Task.CompletedTask : store.PutAsync(MetaCollection, HouseholdKey, householdId, cancellationToken);
     }
 
     public Task AddConflictAsync(ConflictLogEntry entry, CancellationToken cancellationToken = default)
