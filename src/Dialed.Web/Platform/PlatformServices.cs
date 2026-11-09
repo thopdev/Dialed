@@ -22,6 +22,7 @@ internal static class PlatformServices
         services.AddSingleton<ILoggerProvider>(sp => new ErrorReportingLoggerProvider(sp));
         services.AddSingleton<IPasskeyClient, BrowserPasskeyClient>();
         services.AddSingleton<IStoragePersistence, BrowserStoragePersistence>();
+        services.AddSingleton<IDeviceInfo, BrowserDeviceInfo>();
         services.AddSingleton<IWakeLock, BrowserWakeLock>();
         services.AddSingleton<ISoundCue, BrowserSoundCue>();
         services.AddSingleton<BrowserAppLifecycle>();
