@@ -25,6 +25,7 @@ builder.Services.AddDialedPasskeys(builder.Configuration);
 builder.Services.AddDialedSync();
 builder.Services.AddDialedHouseholds(builder.Environment);
 builder.Services.AddDialedFriends();
+builder.Services.AddDialedBetaInvites(builder.Configuration);
 builder.Services.AddDevelopmentSeeding(builder.Configuration);
 
 var app = builder.Build();
@@ -42,5 +43,6 @@ app.MapDialedPasskeys();
 app.MapDialedSync();
 app.MapDialedHouseholds();
 app.MapDialedFriends();
+app.MapDialedBetaInvites();
 
 app.Run();
