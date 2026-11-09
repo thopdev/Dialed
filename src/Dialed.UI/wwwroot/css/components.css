@@ -417,6 +417,7 @@ button.dialed-chip::after {
 .dialed-grind-error {
     color: var(--colorPaletteRedForeground1);
     font-size: 0.875rem;
+}
 
 .dialed-units-setting {
     display: flex;
@@ -1053,11 +1054,12 @@ button.dialed-chip::after {
     background: var(--colorBrandBackground, #6f4e37);
 }
 
-.dialed-avatar-1 { background: var(--colorPaletteGreenBackground3, #107c10); }
-.dialed-avatar-2 { background: var(--colorPaletteBlueBackground2, #0f6cbd); }
-.dialed-avatar-3 { background: var(--colorPalettePurpleBackground2, #8764b8); }
-.dialed-avatar-4 { background: var(--colorPaletteDarkOrangeBackground3, #bc4b09); }
-.dialed-avatar-5 { background: var(--colorPaletteTealBackground2, #038387); }
+/* Tint plus deep text from the same palette: Fluent swaps the pair in dark mode, both stay above 4.5:1. */
+.dialed-avatar-1 { background: var(--colorPaletteGreenBackground2, #9fd89f); color: var(--colorPaletteGreenForeground2, #094509); }
+.dialed-avatar-2 { background: var(--colorPaletteBlueBackground2, #a9d3f2); color: var(--colorPaletteBlueForeground2, #004377); }
+.dialed-avatar-3 { background: var(--colorPalettePurpleBackground2, #c6b1de); color: var(--colorPalettePurpleForeground2, #341a51); }
+.dialed-avatar-4 { background: var(--colorPaletteDarkOrangeBackground2, #f4bfab); color: var(--colorPaletteDarkOrangeForeground2, #7a2101); }
+.dialed-avatar-5 { background: var(--colorPaletteTealBackground2, #9bd9db); color: var(--colorPaletteTealForeground2, #02494c); }
 
 .dialed-thumb {
     --dialed-thumb-size: 56px;
@@ -1142,6 +1144,7 @@ button.dialed-chip::after {
 .dialed-section-actions {
     display: flex;
     gap: var(--dialed-space-2);
+}
 
 /* ---- Label scan (#83) ----------------------------------------------------------------------- */
 
