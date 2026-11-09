@@ -3,6 +3,8 @@
 @implements IDisposable
 @inject HouseholdManager Households
 @inject AuthSession Session
+@inject Dialed.Client.Platform.IShareService Share
+@inject NavigationManager Navigation
 @inject IStringLocalizer<Strings> L
 
 @* Who is in the household, invite codes, joining, leaving and removing. Needs an account. *@
@@ -51,12 +53,44 @@
 
         @if (household.YouAreOwner)
         {
+            <div class="dialed-field">
+                <label for="household-invite-uses">@L["Household_InviteUses"]</label>
+                <select id="household-invite-uses" @bind="maxUses">
+                    @foreach (var option in UseOptions)
+                    {
+                        <option value="@option">@(option == 1 ? L["Household_InviteUsesOne"].Value : string.Format(L["Household_InviteUsesMany"].Value, option))</option>
+                    }
+                </select>
+            </div>
             <div class="dialed-form-actions">
                 <button id="household-invite" type="button" class="dialed-button" disabled="@busy" @onclick="InviteAsync">@L["Household_CreateInvite"]</button>
+                @if (invite is not null && canShare)
+                {
+                    <button id="household-invite-share" type="button" class="dialed-button dialed-button-primary" @onclick="() => ShareAsync(invite.Code)">@L["Household_ShareInvite"]</button>
+                }
             </div>
             @if (invite is not null)
             {
-                <p id="household-invite-code">@L["Household_InviteCode", invite.Code, invite.ExpiresAt.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture)]</p>
+                <p id="household-invite-code">@(invite.MaxUses > 1
+                    ? string.Format(L["Household_InviteCodeMany"].Value, invite.Code, invite.ExpiresAt.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture), invite.MaxUses)
+                    : L["Household_InviteCode", invite.Code, invite.ExpiresAt.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture)])</p>
+            }
+
+            @if (openInvites.Count > 0)
+            {
+                <h4 id="household-open-invites-title">@L["Household_OpenInvites"]</h4>
+                <ul id="household-open-invites" class="dialed-list">
+                    @foreach (var open in openInvites)
+                    {
+                        <li class="household-open-invite" data-code="@open.Code">
+                            <span class="household-invite-info">
+                                <strong class="dialed-code">@open.Code</strong>
+                                <span class="dialed-muted">@string.Format(L["Household_InviteProgress"].Value, open.Uses, open.MaxUses) · @string.Format(L["Household_InviteExpires"].Value, open.ExpiresAt.ToLocalTime().ToString("d MMM", System.Globalization.CultureInfo.CurrentCulture))</span>
+                            </span>
+                            <button type="button" class="dialed-button household-invite-revoke" disabled="@busy" aria-label="@string.Format(L["Household_RevokeNamed"].Value, open.Code)" @onclick="() => RevokeAsync(open.Code)">@L["Household_Revoke"]</button>
+                        </li>
+                    }
+                </ul>
             }
         }
 
@@ -96,6 +130,10 @@
 @code {
     private HouseholdInfo? household;
     private InviteInfo? invite;
+    private IReadOnlyList<InviteInfo> openInvites = [];
+    private int maxUses = 1;
+    private bool canShare;
+    private static readonly int[] UseOptions = [1, 2, 3, 5, 10];
     private string code = "";
     private string? message;
     private string? removing;
@@ -108,6 +146,7 @@
     {
         Session.Changed += OnSessionChanged;
         Households.Changed += OnHouseholdsChanged;
+        canShare = await Share.IsSupportedAsync();
         if (Session.IsSignedIn)
         {
             await LoadAsync();
@@ -150,6 +189,7 @@
         try
         {
             household = await Households.GetAsync();
+            await LoadInvitesAsync();
         }
         catch (Exception exception) when (exception is AccountApiException or AccountRefusedException)
         {
@@ -157,13 +197,52 @@
         }
     }
 
-    private Task InviteAsync() => RunAsync(async () => invite = await Households.CreateInviteAsync());
+    /// <summary>The owner's open invites; others have none to see, and a failure here only hides the list.</summary>
+    private async Task LoadInvitesAsync()
+    {
+        openInvites = [];
+        if (household?.YouAreOwner != true)
+        {
+            return;
+        }
+
+        try
+        {
+            openInvites = await Households.ListInvitesAsync();
+        }
+        catch (Exception exception) when (exception is AccountApiException or AccountRefusedException)
+        {
+            // Not fatal: the household itself is shown.
+        }
+    }
+
+    private Task InviteAsync() => RunAsync(async () =>
+    {
+        invite = await Households.CreateInviteAsync(maxUses);
+        await LoadInvitesAsync();
+    });
+
+    private Task RevokeAsync(string inviteCode) => RunAsync(async () =>
+    {
+        await Households.RevokeInviteAsync(inviteCode);
+        if (invite?.Code == inviteCode)
+        {
+            invite = null;
+        }
+
+        await LoadInvitesAsync();
+        message = string.Format(L["Household_InviteRevoked"].Value, inviteCode);
+    });
+
+    private async Task ShareAsync(string inviteCode) =>
+        await Share.ShareAsync(new Dialed.Client.Platform.ShareRequest(L["Household_ShareTitle"].Value, string.Format(L["Household_ShareText"].Value, inviteCode), Navigation.BaseUri));
 
     private Task JoinAsync() => RunAsync(async () =>
     {
         household = await Households.JoinAsync(code.Trim());
         code = "";
         invite = null;
+        await LoadInvitesAsync();
     });
 
     private Task LeaveAsync() => RunAsync(async () =>

@@ -331,6 +331,9 @@ public abstract class UiTestContext : BunitContext
 
         public bool YouAreOwner { get; set; } = true;
 
+        /// <summary>The open invites the server knows about: code, how many may join, how many did.</summary>
+        public List<(string Code, int MaxUses, int Uses)> Invites { get; } = [];
+
         /// <summary>The households the person belongs to (id, name); the one named by <see cref="ActiveId"/> is active.</summary>
         public List<(string Id, string Name)> Households { get; set; } = [("h1", "Home")];
 
@@ -362,7 +365,22 @@ public abstract class UiTestContext : BunitContext
 
             if (call == "POST households/mine/invites")
             {
-                return Task.FromResult(Json("{\"code\":\"ABCD2345\",\"expiresAt\":\"2099-01-01T00:00:00+00:00\"}"));
+                var body = request.Content is null ? "" : request.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+                var maxUses = body.Length > 0 && System.Text.Json.JsonDocument.Parse(body).RootElement.TryGetProperty("maxUses", out var uses) ? uses.GetInt32() : 1;
+                var code = Invites.Count == 0 ? "ABCD2345" : $"ABCD234{Invites.Count + 5}";
+                Invites.Add((code, maxUses, 0));
+                return Task.FromResult(Json($"{{\"code\":\"{code}\",\"expiresAt\":\"2099-01-01T00:00:00+00:00\",\"maxUses\":{maxUses},\"uses\":0}}"));
+            }
+
+            if (call == "GET households/mine/invites")
+            {
+                return Task.FromResult(Json("[" + string.Join(",", Invites.Select(i => $"{{\"code\":\"{i.Code}\",\"expiresAt\":\"2099-01-01T00:00:00+00:00\",\"maxUses\":{i.MaxUses},\"uses\":{i.Uses}}}")) + "]"));
+            }
+
+            if (call.StartsWith("DELETE households/mine/invites/", StringComparison.Ordinal))
+            {
+                Invites.RemoveAll(i => i.Code == call["DELETE households/mine/invites/".Length..]);
+                return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.NoContent));
             }
 
             if (call.StartsWith("DELETE households/mine/members/", StringComparison.Ordinal))

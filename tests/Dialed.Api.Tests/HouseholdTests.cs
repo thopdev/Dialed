@@ -356,4 +356,124 @@ public sealed class HouseholdTests(WebApplicationFactory<Program> factory) : ICl
 
         public override DateTimeOffset GetUtcNow() => Now;
     }
+
+    // ---- Invites: several uses, listing and revoking (#71) -------------------------------------------
+
+    private static async Task<InviteDto> CreateInvite(Person owner, int? maxUses = null, int? days = null)
+    {
+        using var response = await owner.Client.PostAsJsonAsync("/households/mine/invites", new HouseholdInviteRequest(maxUses, days), Ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        return await Body<InviteDto>(response);
+    }
+
+    private static async Task<IReadOnlyList<InviteDto>> OpenInvites(Person owner) =>
+        (await owner.Client.GetFromJsonAsync<List<InviteDto>>("/households/mine/invites", Ct))!;
+
+    [Fact]
+    public async Task An_invite_can_allow_several_people_and_then_runs_out()
+    {
+        var owner = await NewPerson("Owner");
+        var invite = await CreateInvite(owner, maxUses: 2);
+
+        invite.MaxUses.ShouldBe(2);
+        invite.Uses.ShouldBe(0);
+        (await Join(await NewPerson("First"), invite.Code)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await OpenInvites(owner)).Single().Uses.ShouldBe(1);
+        (await Join(await NewPerson("Second"), invite.Code)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await OpenInvites(owner)).ShouldBeEmpty();
+        (await Join(await NewPerson("Third"), invite.Code)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Without_settings_an_invite_is_single_use_for_a_week()
+    {
+        var owner = await NewPerson("Owner");
+
+        var invite = await CreateInvite(owner);
+
+        invite.MaxUses.ShouldBe(1);
+        (invite.ExpiresAt - DateTimeOffset.UtcNow).ShouldBeInRange(TimeSpan.FromDays(6.9), TimeSpan.FromDays(7.1));
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(-3, 1)]
+    [InlineData(500, 10)]
+    public async Task The_number_of_uses_is_kept_within_bounds(int asked, int expected)
+    {
+        var owner = await NewPerson("Owner");
+
+        (await CreateInvite(owner, maxUses: asked)).MaxUses.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task The_validity_can_be_chosen_up_to_thirty_days()
+    {
+        var owner = await NewPerson("Owner");
+
+        (await CreateInvite(owner, days: 2)).ExpiresAt.ShouldBeInRange(DateTimeOffset.UtcNow.AddDays(1.9), DateTimeOffset.UtcNow.AddDays(2.1));
+        (await CreateInvite(owner, days: 400)).ExpiresAt.ShouldBeInRange(DateTimeOffset.UtcNow.AddDays(29.9), DateTimeOffset.UtcNow.AddDays(30.1));
+    }
+
+    [Fact]
+    public async Task The_owner_lists_open_invites_soonest_to_expire_first()
+    {
+        var owner = await NewPerson("Owner");
+        var later = await CreateInvite(owner, days: 10);
+        var sooner = await CreateInvite(owner, days: 2);
+
+        (await OpenInvites(owner)).Select(i => i.Code).ShouldBe([sooner.Code, later.Code]);
+    }
+
+    [Fact]
+    public async Task A_revoked_invite_no_longer_works_and_only_the_owner_can_revoke_or_list()
+    {
+        var owner = await NewPerson("Owner");
+        var member = await NewPerson("Member");
+        (await Join(member, await Invite(owner))).StatusCode.ShouldBe(HttpStatusCode.OK);
+        var memberClient = Authorized(factory, (await Refreshed(member)).AccessToken);
+        var invite = await CreateInvite(owner);
+
+        (await memberClient.GetAsync("/households/mine/invites", Ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await memberClient.DeleteAsync($"/households/mine/invites/{invite.Code}", Ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await owner.Client.DeleteAsync($"/households/mine/invites/{invite.Code}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        (await OpenInvites(owner)).ShouldBeEmpty();
+        (await Join(await NewPerson("Late"), invite.Code)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await owner.Client.DeleteAsync($"/households/mine/invites/{invite.Code}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Another_owner_cannot_revoke_my_invite()
+    {
+        var owner = await NewPerson("Owner");
+        var other = await NewPerson("Other");
+        var invite = await CreateInvite(owner);
+
+        (await other.Client.DeleteAsync($"/households/mine/invites/{invite.Code}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+
+        (await OpenInvites(owner)).Single().Code.ShouldBe(invite.Code);
+    }
+
+    [Fact]
+    public async Task A_refused_join_does_not_use_up_the_invite()
+    {
+        var owner = await NewPerson("Owner");
+        var invite = await CreateInvite(owner, maxUses: 3);
+
+        // The owner is already in their own household, so joining it is refused.
+        (await Join(owner, invite.Code)).StatusCode.ShouldBe(HttpStatusCode.Conflict);
+
+        (await OpenInvites(owner)).Single().Uses.ShouldBe(0);
+        (await Join(await NewPerson("Guest"), invite.Code)).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Revoking_works_whatever_the_case_of_the_code()
+    {
+        var owner = await NewPerson("Owner");
+        var invite = await CreateInvite(owner);
+
+        (await owner.Client.DeleteAsync($"/households/mine/invites/{invite.Code.ToLowerInvariant()}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
 }
