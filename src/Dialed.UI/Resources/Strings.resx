@@ -527,4 +527,24 @@
   <data name="People_Tab_brews" xml:space="preserve"><value>Brews</value></data>
   <data name="People_NothingShared" xml:space="preserve"><value>Nothing is shared here yet.</value></data>
   <data name="People_LoadMore" xml:space="preserve"><value>Load more</value></data>
+  <data name="Passkeys_Name" xml:space="preserve"><value>Passkey name</value></data>
+  <data name="Passkeys_Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="Passkeys_Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Passkeys_RemoveConfirm" xml:space="preserve"><value>Yes, remove it</value></data>
+  <data name="Passkeys_Add" xml:space="preserve"><value>Add another passkey</value></data>
+  <data name="Passkeys_NewName" xml:space="preserve"><value>Another passkey</value></data>
+  <data name="Passkeys_Synced" xml:space="preserve"><value>synced</value></data>
+  <data name="Passkeys_SecondHint" xml:space="preserve"><value>You have one passkey that is only on this device. Add a second one (another device or a security key) so you cannot get locked out.</value></data>
+  <data name="Recovery_CodesTitle" xml:space="preserve"><value>Save your recovery codes</value></data>
+  <data name="Recovery_CodesBody" xml:space="preserve"><value>Each code works once if you lose your passkeys. They are shown only now: write them down or keep them in a password manager.</value></data>
+  <data name="Recovery_CodesSaved" xml:space="preserve"><value>I have saved them</value></data>
+  <data name="Recovery_Regenerate" xml:space="preserve"><value>New recovery codes</value></data>
+  <data name="Recovery_CodesLeft" xml:space="preserve"><value>Recovery codes left: {0}</value></data>
+  <data name="Recovery_Lost" xml:space="preserve"><value>Lost your passkey?</value></data>
+  <data name="Recovery_Hint" xml:space="preserve"><value>Enter your email and a recovery code, or ask for a code by email. You will then make a new passkey on this device.</value></data>
+  <data name="Recovery_Code" xml:space="preserve"><value>Recovery code</value></data>
+  <data name="Recovery_SendEmail" xml:space="preserve"><value>Email me a code</value></data>
+  <data name="Recovery_Submit" xml:space="preserve"><value>Recover account</value></data>
+  <data name="Recovery_EmailSent" xml:space="preserve"><value>If that address has an account, a code is on its way.</value></data>
+  <data name="Recovery_Missing" xml:space="preserve"><value>Enter your email and a code.</value></data>
 </root>

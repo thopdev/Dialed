@@ -26,6 +26,19 @@ public sealed class AccountApi(HttpClient http)
     public Task<SessionTokens> SignInAsync(string state, string credentialJson, CancellationToken cancellationToken = default) =>
         CompleteAsync("auth/signin", state, credentialJson, cancellationToken);
 
+    /// <summary>Asks the server to email a one-time code. The answer never says whether the address has an account.</summary>
+    public async Task RecoverEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync("auth/recover/email", new { email }, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+    }
+
+    public Task<Ceremony> RecoverOptionsAsync(string email, string code, CancellationToken cancellationToken = default) =>
+        StartAsync("auth/recover/options", new { email, code }, cancellationToken);
+
+    public Task<SessionTokens> RecoverAsync(string state, string credentialJson, CancellationToken cancellationToken = default) =>
+        CompleteAsync("auth/recover", state, credentialJson, cancellationToken);
+
     /// <summary>A new pair for the refresh token, or <c>null</c> when the token is no longer valid (the person must sign in again).</summary>
     public async Task<SessionTokens?> RefreshAsync(string refreshToken, CancellationToken cancellationToken = default)
     {

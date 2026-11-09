@@ -79,6 +79,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IFileExport>(ExportedFiles);
         Services.AddSingleton(new AccountDataApi(new HttpClient(DataServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<AccountDataService>();
+        Services.AddSingleton<PasskeyManager>();
         Services.AddSingleton(new FriendsApi(new HttpClient(FriendsServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton(new HouseholdApi(new HttpClient(HouseholdServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<HouseholdManager>();
@@ -233,14 +234,20 @@ public abstract class UiTestContext : BunitContext
     {
         public List<string> Paths { get; } = [];
 
+        /// <summary>The passkeys the account lists.</summary>
+        public string PasskeyList { get; set; } = "[{\"id\":\"p1\",\"name\":\"First passkey\",\"createdAt\":\"2026-01-01T00:00:00+00:00\",\"lastUsedAt\":null,\"backedUp\":false}]";
+
+        public string RecoveryJson { get; set; } = "{\"recoveryCodesLeft\":8,\"hasBackedUpPasskey\":false,\"passkeys\":1}";
+
         /// <summary>Overrides the answer for a path; return <c>null</c> for the default answer.</summary>
         public Func<string, HttpResponseMessage?>? Respond { get; set; }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var path = request.RequestUri!.AbsolutePath.TrimStart('/');
-            Paths.Add(path);
-            if (Respond?.Invoke(path) is { } custom)
+            var key = request.Method == HttpMethod.Put || request.Method == HttpMethod.Delete ? $"{request.Method} {path}" : path;
+            Paths.Add(key);
+            if (Respond?.Invoke(key) is { } custom)
             {
                 return Task.FromResult(custom);
             }
@@ -248,6 +255,10 @@ public abstract class UiTestContext : BunitContext
             return Task.FromResult(path switch
             {
                 "account/export" => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"formatVersion\":1}", System.Text.Encoding.UTF8, "application/json") },
+                "account/passkeys" when request.Method == HttpMethod.Get => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(PasskeyList, System.Text.Encoding.UTF8, "application/json") },
+                "account/recovery" => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(RecoveryJson, System.Text.Encoding.UTF8, "application/json") },
+                "account/recovery/codes" => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"codes\":[\"NEW1-AAAA\",\"NEW2-BBBB\"]}", System.Text.Encoding.UTF8, "application/json") },
+                "account/passkeys/options" => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"options\":{\"challenge\":\"c\"},\"state\":\"s\"}", System.Text.Encoding.UTF8, "application/json") },
                 "account/delete/options" => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"options\":{\"challenge\":\"c\"},\"state\":\"s\"}", System.Text.Encoding.UTF8, "application/json") },
                 _ => new HttpResponseMessage(System.Net.HttpStatusCode.NoContent),
             });

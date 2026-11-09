@@ -129,6 +129,14 @@ public static class ClientServices
                 sp.GetService<ILocalStore>()));
         }
 
+        if (accountData is not null)
+        {
+            services.TryAddSingleton(sp => new PasskeyManager(
+                sp.GetRequiredService<AccountDataApi>(),
+                sp.GetRequiredService<IPasskeyClient>(),
+                sp.GetRequiredService<AccountService>()));
+        }
+
         if (friends is not null)
         {
             services.TryAddSingleton(friends);

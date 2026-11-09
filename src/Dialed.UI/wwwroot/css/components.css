@@ -943,3 +943,23 @@ button.dialed-chip::after {
     color: var(--colorNeutralForeground2);
     font-size: var(--fontSizeBase200);
 }
+
+.dialed-code-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.25rem 1rem;
+    padding: 0;
+    list-style: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.passkey-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.passkey-name {
+    font-weight: 600;
+}
