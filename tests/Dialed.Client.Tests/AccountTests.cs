@@ -93,7 +93,7 @@ public sealed class AccountTests
     {
         var api = new AccountApi(new HttpClient(new Stub(_ => Json(HttpStatusCode.Conflict, """{"detail":"Already registered."}"""))) { BaseAddress = new Uri("https://api.test/") });
 
-        var error = await Should.ThrowAsync<AccountRefusedException>(() => api.SignUpOptionsAsync("a@b.c", "A", Ct));
+        var error = await Should.ThrowAsync<AccountRefusedException>(() => api.SignUpOptionsAsync("a@b.c", "A", cancellationToken: Ct));
 
         error.Message.ShouldBe("Already registered.");
         error.Status.ShouldBe(409);
@@ -230,7 +230,7 @@ public sealed class AccountTests
         var vendor = await f.Vendors.SaveAsync(new Vendor { Name = "Made before signing in" }, Ct);
         vendor.HouseholdId.ShouldBe("local-household");
 
-        var result = await f.Service.SignUpAsync("a@b.c", "Thomas", Ct);
+        var result = await f.Service.SignUpAsync("a@b.c", "Thomas", cancellationToken: Ct);
 
         result.Succeeded.ShouldBeTrue();
         f.Session.IsSignedIn.ShouldBeTrue();
@@ -256,7 +256,7 @@ public sealed class AccountTests
     {
         var f = new Fixture(new PasskeyOutcome(status));
 
-        var result = await f.Service.SignUpAsync("a@b.c", "T", Ct);
+        var result = await f.Service.SignUpAsync("a@b.c", "T", cancellationToken: Ct);
 
         result.Outcome.ShouldBe(expected);
         f.Session.IsSignedIn.ShouldBeFalse();

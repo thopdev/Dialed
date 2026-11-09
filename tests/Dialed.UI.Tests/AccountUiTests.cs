@@ -48,6 +48,17 @@ public sealed class AccountUiTests : UiTestContext
     }
 
     [Fact]
+    public void The_invite_code_is_sent_with_the_sign_up()
+    {
+        var panel = Panel();
+        panel.Find("#account-invite").Input(" friends2026 ");
+
+        FillAndSignUp(panel);
+
+        panel.WaitForAssertion(() => Accounts.Bodies[Accounts.Paths.IndexOf("auth/signup/options")].ShouldContain("\"inviteCode\":\"friends2026\""));
+    }
+
+    [Fact]
     public void An_invalid_email_is_caught_before_asking_the_server()
     {
         var panel = Panel();

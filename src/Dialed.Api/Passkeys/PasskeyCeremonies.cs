@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Dialed.Api.Passkeys;
 
-public sealed record SignUpOptionsRequest(string Email, string DisplayName);
+public sealed record SignUpOptionsRequest(string Email, string DisplayName, string? InviteCode = null);
 
 public sealed record CeremonyCompleteRequest(string State, JsonElement Credential);
 
@@ -27,6 +27,8 @@ public sealed class PasskeyCeremonies(
     RefreshTokenService sessions,
     IDataProtectionProvider dataProtection,
     IOptions<PasskeyOptions> options,
+    IBetaInviteStore invites,
+    IOptions<BetaOptions> beta,
     TimeProvider time)
 {
     private const string SignUp = "signup";
@@ -39,6 +41,12 @@ public sealed class PasskeyCeremonies(
         if (!origins.TryResolve(Origin(http), out var rpId))
         {
             return Problem(StatusCodes.Status400BadRequest, "Origin not allowed.");
+        }
+
+        var inviteCode = request.InviteCode?.Trim();
+        if (beta.Value.InviteRequired && (string.IsNullOrEmpty(inviteCode) || !await invites.IsValidAsync(inviteCode, time.GetUtcNow(), http.RequestAborted)))
+        {
+            return Problem(StatusCodes.Status403Forbidden, "Sign-up is by invitation. Ask for an invite code.");
         }
 
         var email = request.Email?.Trim() ?? "";
@@ -64,7 +72,7 @@ public sealed class PasskeyCeremonies(
         var result = await handler.MakeCreationOptionsAsync(
             new PasskeyUserEntity { Id = userId, Name = email, DisplayName = displayName }, http);
 
-        var state = Protect(new CeremonyState(SignUp, Origin(http)!, rpId, result.AttestationState, userId, email, displayName));
+        var state = Protect(new CeremonyState(SignUp, Origin(http)!, rpId, result.AttestationState, userId, email, displayName) { InviteCode = beta.Value.InviteRequired ? inviteCode : null });
         return Results.Ok(new CeremonyOptionsResponse(JsonNode.Parse(result.CreationOptionsJson)!, state));
     }
 
@@ -87,6 +95,12 @@ public sealed class PasskeyCeremonies(
         if (!result.Succeeded || result.UserEntity?.Id != state.UserId)
         {
             return Problem(StatusCodes.Status400BadRequest, result.Failure?.Message ?? "Passkey registration failed.");
+        }
+
+        // The last use of a code can only go to one sign-up: take it before the account exists.
+        if (state.InviteCode is not null && !await invites.TryUseAsync(state.InviteCode, time.GetUtcNow(), http.RequestAborted))
+        {
+            return Problem(StatusCodes.Status403Forbidden, "That invite code is no longer valid.");
         }
 
         result.Passkey!.Name = "First passkey";
@@ -230,6 +244,8 @@ public sealed class PasskeyCeremonies(
         string? DisplayName)
     {
         public string Nonce { get; init; } = "";
+
+        public string? InviteCode { get; init; }
 
         public DateTimeOffset ExpiresAt { get; init; }
     }

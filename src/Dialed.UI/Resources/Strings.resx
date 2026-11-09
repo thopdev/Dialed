@@ -487,4 +487,6 @@
   <data name="DialIn_Reason_ShotTooFast" xml:space="preserve"><value>The shot ran fast.</value></data>
   <data name="DialIn_Reason_ShotTooSlow" xml:space="preserve"><value>The shot ran slow.</value></data>
   <data name="DialIn_Reason_Balanced" xml:space="preserve"><value>The cup was balanced. Change one thing at a time if you want to explore.</value></data>
+  <data name="Account_InviteCode" xml:space="preserve"><value>Invite code</value></data>
+  <data name="Account_InviteHint" xml:space="preserve"><value>Dialed is in a private beta: creating an account needs an invite code.</value></data>
 </root>
