@@ -15,6 +15,12 @@ public sealed record FriendProfileInfo(string UserId, string DisplayName, int Be
 /// <summary>One page of what a friend shares: the records as the server sent them, so any field can be shown.</summary>
 public sealed record SharedPage(IReadOnlyList<JsonElement> Items, int Total, bool HasMore);
 
+/// <summary>One line of the friends feed: a brew or a new bean someone I follow shares with me (#78).</summary>
+/// <param name="Kind"><c>brew</c> or <c>bean</c>.</param>
+public sealed record FeedEntry(string Kind, string OwnerId, string OwnerName, DateTimeOffset At, JsonElement Item, string? BeanName);
+
+public sealed record FeedPage(IReadOnlyList<FeedEntry> Entries, bool HasMore);
+
 /// <summary>
 /// The API's friend endpoints (see Dialed.Api): friend code, follow requests, followers and a friend's shared items.
 /// Online only; the last profile and first pages are remembered in memory so a friend's page still opens when the network is gone.
@@ -25,6 +31,7 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
 
     private readonly ConcurrentDictionary<string, FriendProfileInfo> profiles = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, SharedPage> firstPages = new(StringComparer.Ordinal);
+    private FeedPage? firstFeedPage;
 
     private sealed record CodeDto(string Code);
 
@@ -99,6 +106,21 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
             return null;
         }
     }
+
+    /// <summary>What the people I follow share with me, newest first (#78). The first page is remembered for when the network is gone.</summary>
+    public async Task<FeedPage> FeedAsync(int skip, int pageSize = 20, CancellationToken cancellationToken = default)
+    {
+        var page = await SendAsync<FeedPage>(HttpMethod.Get, $"friends/feed?skip={skip}&pageSize={pageSize}", null, cancellationToken);
+        if (skip == 0)
+        {
+            firstFeedPage = page;
+        }
+
+        return page;
+    }
+
+    /// <summary>The feed as last seen, if any.</summary>
+    public FeedPage? CachedFeed => firstFeedPage;
 
     /// <summary>What was last seen of this friend, for when the network is gone.</summary>
     public FriendProfileInfo? CachedProfile(string userId) => profiles.GetValueOrDefault(userId);

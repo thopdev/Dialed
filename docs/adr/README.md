@@ -15,3 +15,5 @@ Short records of the decisions that shape Dialed. Format: Context → Decision �
 | [0009](0009-blazor-pwa-maui-ready.md) | Blazor WebAssembly PWA, structured to allow a MAUI app later | Accepted |
 | [0010](0010-passkeys.md) | Passkeys with ASP.NET Core Identity, API-issued tokens | Accepted — validate in spike |
 | [0011](0011-browser-offline-storage-and-sync.md) | SQLite in the browser + own sync engine on the Datasync server protocol | Accepted — validate in spike |
+| [0012](0012-error-reporting.md) | Error reporting from the PWA with the Application Insights JavaScript SDK | Accepted |
+| [0013](0013-friends-feed-at-read-time.md) | The friends feed is built when it is opened | Accepted |

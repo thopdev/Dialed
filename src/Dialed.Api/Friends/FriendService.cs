@@ -17,6 +17,13 @@ public sealed record FollowRequest(string Code);
 
 public sealed record FriendProfileDto(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
 
+/// <summary>One line of the friends feed (#78): a brew or a new bean someone I follow shares with me.</summary>
+/// <param name="Kind"><c>brew</c> or <c>bean</c>.</param>
+/// <param name="BeanName">For a brew, the name of the bean it was made with (looked up in the friend's household), when known.</param>
+public sealed record FeedEntryDto(string Kind, string OwnerId, string OwnerName, DateTimeOffset At, System.Text.Json.Nodes.JsonObject Item, string? BeanName);
+
+public sealed record FeedPageDto(IReadOnlyList<FeedEntryDto> Entries, bool HasMore);
+
 public sealed record SharedPageDto(IReadOnlyList<System.Text.Json.Nodes.JsonObject> Items, int Total, bool HasMore);
 
 public enum FriendOutcome { Ok, NotFound, Conflict }
@@ -386,6 +393,57 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         pageSize = Math.Clamp(pageSize, 1, 50);
         var (rows, total) = await sync.ListSharedAsync(scopes, ownerId, table, skip, pageSize, ct);
         return new SharedPageDto([.. rows.Select(r => r.Entity)], total, skip + rows.Count < total);
+    }
+
+    /// <summary>Most rows read per person and table: the feed shows the latest activity, not all of history.</summary>
+    private const int FeedDepth = 100;
+
+    /// <summary>
+    /// What the people I follow share with me, newest first: their brews and the beans they added (#78). Built when it is asked for
+    /// (ADR-0013): the latest rows of each accepted friend are merged and cut to the page. Blocked or removed friends drop out because
+    /// the same relationship rules as everywhere else decide what is readable.
+    /// </summary>
+    public async Task<FeedPageDto> FeedAsync(string viewerId, int skip, int pageSize, CancellationToken ct = default)
+    {
+        skip = Math.Clamp(skip, 0, FeedDepth - 1);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+        var wanted = Math.Min(skip + pageSize + 1, FeedDepth);
+
+        List<FeedEntryDto> entries = [];
+        foreach (var follow in (await store.FollowsAsync(viewerId, asFollowee: false, ct)).Where(f => f.Status == FollowStatus.Accepted))
+        {
+            var (owner, scopes) = await ReaderAsync(viewerId, follow.FolloweeId, ct);
+            if (owner is null || !MayBrowse(scopes))
+            {
+                continue;
+            }
+
+            foreach (var (table, kind) in new[] { ("brews", "brew"), ("beans", "bean") })
+            {
+                var (rows, _) = await sync.ListSharedAsync(scopes, owner.Id, table, 0, wanted, ct);
+                foreach (var row in rows)
+                {
+                    var at = row.Entity[kind == "brew" ? "brewedAt" : "createdAt"]?.GetValue<DateTimeOffset>() ?? row.UpdatedAt;
+                    entries.Add(new FeedEntryDto(kind, owner.Id, owner.DisplayName, at, (System.Text.Json.Nodes.JsonObject)row.Entity.DeepClone(), kind == "brew" ? await BeanNameOfBrewAsync(row, ct) : null));
+                }
+            }
+        }
+
+        var ordered = entries.OrderByDescending(e => e.At).ThenBy(e => e.Item["id"]?.GetValue<string>(), StringComparer.Ordinal).ToList();
+        return new FeedPageDto([.. ordered.Skip(skip).Take(pageSize)], ordered.Count > skip + pageSize);
+    }
+
+    /// <summary>The bean a brew was made with: brew to bag to bean, in the household that holds them.</summary>
+    private async Task<string?> BeanNameOfBrewAsync(SyncRow brew, CancellationToken ct)
+    {
+        if (brew.Entity["bagId"]?.GetValue<string>() is not { Length: > 0 } bagId
+            || await sync.GetAsync(brew.HouseholdId, "bags", bagId, ct) is not { } bag
+            || bag.Entity["beanId"]?.GetValue<string>() is not { Length: > 0 } beanId)
+        {
+            return null;
+        }
+
+        return (await sync.GetAsync(brew.HouseholdId, "beans", beanId, ct))?.Entity["name"]?.GetValue<string>();
     }
 
     /// <summary>How <paramref name="viewerId"/> relates to <paramref name="ownerId"/>, for <see cref="VisibilityRules"/>.</summary>

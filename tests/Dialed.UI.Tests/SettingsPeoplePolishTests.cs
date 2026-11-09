@@ -61,7 +61,7 @@ public sealed class SettingsPeoplePolishTests : UiTestContext
 
         page.FindAll(".dialed-more-group h2").Select(h => h.TextContent).ShouldBe(["Your coffee", "Insights", "Friends", "App"]);
         var rows = page.FindAll(".dialed-more-group .dialed-row");
-        rows.Select(r => r.GetAttribute("href")).ShouldBe(["bags", "inventory", "vendors", "equipment", "history", "statistics", "people", "import", "settings"]);
+        rows.Select(r => r.GetAttribute("href")).ShouldBe(["bags", "inventory", "vendors", "equipment", "history", "statistics", "people", "feed", "import", "settings"]);
         rows.ShouldAllBe(r => r.QuerySelector(".dialed-more-icon[aria-hidden=true] svg") != null);
     }
 
