@@ -1,4 +1,5 @@
 using System.Globalization;
+using Dialed.Domain.Inventory;
 using Dialed.Domain.Model;
 
 namespace Dialed.Domain.Import;
