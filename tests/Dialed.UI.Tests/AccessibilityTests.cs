@@ -18,7 +18,7 @@ public sealed class AccessibilityTests : UiTestContext
 
     private static string Describe(IElement element) => element.OuterHtml.Length > 140 ? element.OuterHtml[..140] : element.OuterHtml;
 
-    private static IEnumerable<string> Problems(IRenderedFragment screen)
+    private static IEnumerable<string> Problems(IRenderedComponent<IComponent> screen)
     {
         var document = screen.Nodes.First().Owner!;
 
