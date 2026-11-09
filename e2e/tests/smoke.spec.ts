@@ -69,9 +69,11 @@ test('records are still there after reloading the app', async ({ page }) => {
   await skipSetup(page);
   await addBeanAndBag(page, 'Gesha Village');
 
+  // The app opens on the same page again (the bag), which only works when the bag was loaded from the local database.
   await page.reload();
-  await expect(page).toHaveURL(/\/welcome$/, { timeout: 90_000 });
-  await page.locator('#onboarding-skip').click();
+  await expect(page.getByRole('link', { name: 'Beans', exact: true })).toBeVisible({ timeout: 90_000 });
+  await expect(page).toHaveURL(/\/bags\/[0-9a-f-]{36}$/);
+  await expect(page.getByText('This bag no longer exists.')).toHaveCount(0);
   await page.getByRole('link', { name: 'Beans', exact: true }).click();
 
   await expect(page.getByText('Gesha Village')).toBeVisible();
