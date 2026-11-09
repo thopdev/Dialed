@@ -552,4 +552,25 @@
   <data name="Household_SwitchPending" xml:space="preserve"><value>Sommige wijzigingen zijn nog niet verstuurd. Wacht tot alles gesynchroniseerd is en wissel dan.</value></data>
   <data name="ErrorReporting_Label" xml:space="preserve"><value>Anonieme foutmeldingen versturen</value></data>
   <data name="ErrorReporting_Hint" xml:space="preserve"><value>Als de app crasht of synchroniseren blijft mislukken, ziet de ontwikkelaar welk soort fout het was en welke appversie je gebruikt. Nooit je naam, e-mail, recepten of notities. Je kunt dit altijd uitzetten.</value></data>
+  <data name="Privacy_Intro" xml:space="preserve"><value>Dialed bewaart je koffienotities voor jou en deelt ze, als je dat wilt, met mensen die je kiest. Dit is het concept van het beleid voor de besloten bèta; het wordt gecontroleerd voordat de app breder beschikbaar komt.</value></data>
+  <data name="Privacy_Stored_Title" xml:space="preserve"><value>Wat wordt opgeslagen</value></data>
+  <data name="Privacy_Stored" xml:space="preserve"><value>Je bonen, zakken, recepten, bereidingen en beoordelingen, je apparatuur en je instellingen. Ze staan eerst op dit apparaat. Als je een account maakt, staan ze ook op onze server, zodat ze synchroniseren tussen je apparaten en je huishouden. Zonder account verlaat niets je apparaat.</value></data>
+  <data name="Privacy_Account_Title" xml:space="preserve"><value>Account en passkeys</value></data>
+  <data name="Privacy_Account" xml:space="preserve"><value>Je account bevat je naam, e-mailadres en je passkeys (alleen het openbare deel; het geheim verlaat je apparaat nooit). Herstelcodes worden als hash bewaard. Er is geen wachtwoord.</value></data>
+  <data name="Privacy_Photos_Title" xml:space="preserve"><value>Foto's en camera</value></data>
+  <data name="Privacy_Photos" xml:space="preserve"><value>Foto's worden alleen genomen of gekozen als je op een fotoknop drukt. Ze worden bewaard bij de boon of bereiding waar ze bij horen, op je apparaat verkleind en, met een account, net als je andere gegevens gesynchroniseerd. De camera wordt nergens anders voor gebruikt.</value></data>
+  <data name="Privacy_Sharing_Title" xml:space="preserve"><value>Delen</value></data>
+  <data name="Privacy_Sharing" xml:space="preserve"><value>Per onderdeel bepaal je wie het ziet: alleen jij, je huishouden of volgers. Huisgenoten zien en wijzigen wat het huishouden deelt. Je kunt altijd een huishouden verlaten of iemand blokkeren.</value></data>
+  <data name="Privacy_AI_Title" xml:space="preserve"><value>AI-suggesties</value></data>
+  <data name="Privacy_AI" xml:space="preserve"><value>Als je om dial-in advies vraagt, worden de gegevens die daarvoor nodig zijn (bijvoorbeeld de boon, de methode, je maalstand en smaaknotities) verstuurd naar een Claude-model dat draait op Microsoft Foundry in Azure. Ze worden gebruikt om je te antwoorden en niet om modellen te trainen. Er wordt niets verstuurd tenzij je erom vraagt.</value></data>
+  <data name="Privacy_Errors_Title" xml:space="preserve"><value>Foutrapporten</value></data>
+  <data name="Privacy_Errors" xml:space="preserve"><value>Als je het aan laat staan in de instellingen, stuurt de app anonieme foutrapporten: het soort fout, de appversie en het type apparaat. Nooit je naam, e-mail, recepten of notities.</value></data>
+  <data name="Privacy_Control_Title" xml:space="preserve"><value>Exporteren en verwijderen</value></data>
+  <data name="Privacy_Control" xml:space="preserve"><value>In de instellingen kun je al je gegevens als bestand exporteren en je account verwijderen. Verwijderen haalt je account en je gegevens van de server. Kopieën die anderen via delen hebben ontvangen blijven bij hen. Een verwijderd account kun je niet herstellen.</value></data>
+  <data name="Privacy_Contact_Title" xml:space="preserve"><value>Vragen</value></data>
+  <data name="Privacy_Contact" xml:space="preserve"><value>Vragen over je gegevens? Gebruik Feedback sturen in de instellingen of neem direct contact op met de maker van de bèta.</value></data>
+  <data name="Settings_PrivacyLink" xml:space="preserve"><value>Lees het privacybeleid</value></data>
+  <data name="Privacy_Title" xml:space="preserve"><value>Privacy</value></data>
+  <data name="Privacy_Draft" xml:space="preserve"><value>Concept voor de besloten bèta</value></data>
+  <data name="Photo_PrivacyHint" xml:space="preserve"><value>De camera wordt alleen gebruikt als je op Foto nemen tikt. Foto's blijven bij dit item. Hoe foto's worden bewaard: zie het privacybeleid.</value></data>
 </root>

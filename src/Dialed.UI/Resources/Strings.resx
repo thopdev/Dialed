@@ -553,4 +553,25 @@
   <data name="Household_SwitchPending" xml:space="preserve"><value>Some changes have not been sent yet. Wait until they are synced, then switch.</value></data>
   <data name="ErrorReporting_Label" xml:space="preserve"><value>Send anonymous error reports</value></data>
   <data name="ErrorReporting_Hint" xml:space="preserve"><value>When the app breaks or syncing keeps failing, it tells the developer what kind of error it was and which app version you use. Never your name, email, recipes or notes. You can turn this off any time.</value></data>
+  <data name="Privacy_Intro" xml:space="preserve"><value>Dialed keeps your coffee notes for you and, if you want, shares them with people you choose. This is the draft policy for the private beta; it will be reviewed before the app is opened up further.</value></data>
+  <data name="Privacy_Stored_Title" xml:space="preserve"><value>What is stored</value></data>
+  <data name="Privacy_Stored" xml:space="preserve"><value>Your beans, bags, recipes, brews and ratings, your equipment and your settings. They live on this device first. If you create an account they are also stored on our server, so they sync between your devices and your household. Without an account nothing leaves your device.</value></data>
+  <data name="Privacy_Account_Title" xml:space="preserve"><value>Account and passkeys</value></data>
+  <data name="Privacy_Account" xml:space="preserve"><value>Your account holds your name, email address and your passkeys (only the public part; the secret never leaves your device). Recovery codes are stored as hashes. There is no password.</value></data>
+  <data name="Privacy_Photos_Title" xml:space="preserve"><value>Photos and camera</value></data>
+  <data name="Privacy_Photos" xml:space="preserve"><value>Photos are only taken or chosen when you press a photo button. They are stored with the bean or brew they belong to, resized on your device, and synced like your other data when you have an account. The camera is not used for anything else.</value></data>
+  <data name="Privacy_Sharing_Title" xml:space="preserve"><value>Sharing</value></data>
+  <data name="Privacy_Sharing" xml:space="preserve"><value>You decide per item who sees it: only you, your household or people who follow you. Household members can see and change what the household shares. You can leave a household or block someone at any time.</value></data>
+  <data name="Privacy_AI_Title" xml:space="preserve"><value>AI suggestions</value></data>
+  <data name="Privacy_AI" xml:space="preserve"><value>When you ask for dial-in advice, the data needed for that question (for example the bean, the method, your grind setting and taste notes) is sent to a Claude model hosted on Microsoft Foundry in Azure. It is used to answer you and is not used to train models. Nothing is sent unless you ask.</value></data>
+  <data name="Privacy_Errors_Title" xml:space="preserve"><value>Error reports</value></data>
+  <data name="Privacy_Errors" xml:space="preserve"><value>If you leave it on in Settings, the app sends anonymous error reports: the kind of error, the app version and the device type. Never your name, email, recipes or notes.</value></data>
+  <data name="Privacy_Control_Title" xml:space="preserve"><value>Export and deletion</value></data>
+  <data name="Privacy_Control" xml:space="preserve"><value>In Settings you can export all your data as a file and delete your account. Deleting removes your account and your data from the server. Copies that other people received through sharing stay with them. A deleted account cannot be restored.</value></data>
+  <data name="Privacy_Contact_Title" xml:space="preserve"><value>Questions</value></data>
+  <data name="Privacy_Contact" xml:space="preserve"><value>Questions about your data? Use Send feedback in Settings or contact the developer of the beta directly.</value></data>
+  <data name="Settings_PrivacyLink" xml:space="preserve"><value>Read the privacy policy</value></data>
+  <data name="Privacy_Title" xml:space="preserve"><value>Privacy</value></data>
+  <data name="Privacy_Draft" xml:space="preserve"><value>Draft for the private beta</value></data>
+  <data name="Photo_PrivacyHint" xml:space="preserve"><value>The camera is only used when you tap Take photo. Photos stay with this item. How photos are stored: see the privacy policy.</value></data>
 </root>
