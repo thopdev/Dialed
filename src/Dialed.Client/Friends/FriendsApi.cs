@@ -10,7 +10,7 @@ namespace Dialed.Client.Friends;
 
 public sealed record Person(string UserId, string DisplayName);
 
-public sealed record FriendProfile(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
+public sealed record FriendProfileInfo(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
 
 /// <summary>One page of what a friend shares: the records as the server sent them, so any field can be shown.</summary>
 public sealed record SharedPage(IReadOnlyList<JsonElement> Items, int Total, bool HasMore);
@@ -23,7 +23,7 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
-    private readonly ConcurrentDictionary<string, FriendProfile> profiles = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, FriendProfileInfo> profiles = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, SharedPage> firstPages = new(StringComparer.Ordinal);
 
     private sealed record CodeDto(string Code);
@@ -66,11 +66,11 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
         SendNoContentAsync(HttpMethod.Delete, $"friends/blocks/{Uri.EscapeDataString(userId)}", cancellationToken);
 
     /// <summary>The friend's profile header, or <c>null</c> when you may not see it (not a friend, removed or blocked).</summary>
-    public async Task<FriendProfile?> ProfileAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<FriendProfileInfo?> ProfileAsync(string userId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profile = await SendAsync<FriendProfile>(HttpMethod.Get, $"friends/{Uri.EscapeDataString(userId)}/profile", null, cancellationToken);
+            var profile = await SendAsync<FriendProfileInfo>(HttpMethod.Get, $"friends/{Uri.EscapeDataString(userId)}/profile", null, cancellationToken);
             profiles[userId] = profile;
             return profile;
         }
@@ -101,7 +101,7 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
     }
 
     /// <summary>What was last seen of this friend, for when the network is gone.</summary>
-    public FriendProfile? CachedProfile(string userId) => profiles.GetValueOrDefault(userId);
+    public FriendProfileInfo? CachedProfile(string userId) => profiles.GetValueOrDefault(userId);
 
     public SharedPage? CachedFirstPage(string userId, string table) => firstPages.GetValueOrDefault($"{userId}/{table}");
 

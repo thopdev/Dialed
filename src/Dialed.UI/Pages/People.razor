@@ -80,7 +80,7 @@ else
                         <button type="button" class="dialed-button people-unfollow" disabled="@busy" @onclick="() => UnfollowAsync(person)">@L["People_Unfollow"]</button>
                     </li>
                 }
-                @foreach (var person in pending)
+                @foreach (var person in pending!)
                 {
                     <li class="people-pending" data-user="@person.UserId">
                         <span>@person.DisplayName · @L["People_Waiting"]</span>
