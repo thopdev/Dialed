@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Dialed.AI.Labels;
 using Dialed.Telemetry;
 
@@ -13,6 +16,9 @@ public static class AiEndpoints
     {
         var options = configuration.GetSection("Ai").Get<ClaudeOptions>() ?? new ClaudeOptions();
         services.AddSingleton(options);
+        services.Configure<AiLimits>(configuration.GetSection("Ai"));
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<AiGate>();
 
         if (options.IsConfigured)
         {
@@ -34,7 +40,7 @@ public static class AiEndpoints
     {
         var group = endpoints.MapGroup("/ai").RequireAuthorization();
 
-        group.MapPost("/label-scans", async (HttpRequest request, ILabelExtractor extractor, ILoggerFactory logs, CancellationToken ct) =>
+        group.MapPost("/label-scans", async (HttpRequest request, ClaimsPrincipal user, AiGate gate, ILabelExtractor extractor, ILoggerFactory logs, CancellationToken ct) =>
         {
             if (!string.Equals(request.ContentType, "image/jpeg", StringComparison.OrdinalIgnoreCase))
             {
@@ -48,6 +54,19 @@ public static class AiEndpoints
                 return Results.Problem(buffer.Length == 0 ? "The photo is empty." : "The photo is too large.", statusCode: buffer.Length == 0 ? StatusCodes.Status400BadRequest : StatusCodes.Status413PayloadTooLarge);
             }
 
+            var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
+            var entry = gate.TryEnter(userId, AiOperations.Label);
+            if (entry.Status == AiGateStatus.Disabled)
+            {
+                return Results.Problem("AI is switched off for now. Enter the bean by hand.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
+            }
+
+            if (entry.Status == AiGateStatus.QuotaExceeded)
+            {
+                request.HttpContext.Response.Headers.RetryAfter = ((int)Math.Ceiling(entry.RetryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return Results.Problem($"You have used all {entry.Limit} label scans for today. Enter the bean by hand, or try again tomorrow.", statusCode: StatusCodes.Status429TooManyRequests, extensions: new Dictionary<string, object?> { ["code"] = "ai-quota" });
+            }
+
             var started = Stopwatch.GetTimestamp();
             try
             {
@@ -56,10 +75,12 @@ public static class AiEndpoints
                 DialedTelemetry.AiTokens.Add(extraction.InputTokens, new KeyValuePair<string, object?>("operation", "label"), new KeyValuePair<string, object?>("direction", "input"));
                 DialedTelemetry.AiTokens.Add(extraction.OutputTokens, new KeyValuePair<string, object?>("operation", "label"), new KeyValuePair<string, object?>("direction", "output"));
                 DialedTelemetry.AiLatency.Record(elapsed, new KeyValuePair<string, object?>("operation", "label"));
+                DialedTelemetry.AiEstimatedCost.Add((double)gate.EstimateCostUsd(extraction.InputTokens, extraction.OutputTokens), new KeyValuePair<string, object?>("operation", "label"));
                 return Results.Ok(new LabelScanResponse(extraction.Draft, extraction.PromptVersion, extraction.ModelId));
             }
             catch (LabelExtractionException exception)
             {
+                gate.Refund(userId, AiOperations.Label);
                 logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Label extraction failed");
                 return Results.Problem("The label could not be read right now. Enter the bean by hand, or try again later.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }

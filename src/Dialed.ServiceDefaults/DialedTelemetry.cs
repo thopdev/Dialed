@@ -26,4 +26,7 @@ public static class DialedTelemetry
 
     /// <summary>How long AI requests take.</summary>
     public static readonly Histogram<double> AiLatency = Meter.CreateHistogram<double>("dialed.ai.latency", unit: "ms", description: "AI request latency.");
+
+    /// <summary>Estimated cost of AI requests in USD (tokens times the configured prices), for the dashboards and the daily spend alert.</summary>
+    public static readonly Counter<double> AiEstimatedCost = Meter.CreateCounter<double>("dialed.ai.cost", unit: "USD", description: "Estimated AI spend.");
 }
