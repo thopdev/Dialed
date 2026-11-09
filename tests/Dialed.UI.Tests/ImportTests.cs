@@ -14,7 +14,7 @@ public sealed class ImportTests : UiTestContext
     private IRenderedComponent<Import> Upload(string csv)
     {
         var page = Render<Import>();
-        page.FindComponent<InputFile>().UploadFiles(InputFileContent.FromString(csv, "beans.csv"));
+        page.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText(csv, "beans.csv"));
         return page;
     }
 
