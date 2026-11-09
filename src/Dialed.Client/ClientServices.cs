@@ -5,6 +5,7 @@ using Dialed.Client.Households;
 using Dialed.Client.Platform;
 using Dialed.Client.Storage;
 using Dialed.Client.Sync;
+using Dialed.Client.Telemetry;
 using Dialed.Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -70,6 +71,13 @@ public static class ClientServices
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<IAccessTokenProvider, NotSignedIn>();
+        services.TryAddSingleton<IErrorSink, NullErrorSink>();
+        services.TryAddSingleton<IErrorReportingSettings, InMemoryErrorReportingSettings>();
+        services.TryAddSingleton(sp => new ErrorReporter(
+            sp.GetRequiredService<IErrorSink>(),
+            sp.GetRequiredService<IErrorReportingSettings>(),
+            sp.GetService<TimeProvider>() ?? TimeProvider.System,
+            sp.GetService<SyncCoordinator>()));
         services.TryAddSingleton(sp => new InMemorySyncState(sp.GetService<ILocalStore>()));
         services.TryAddSingleton<ISyncState>(sp => sp.GetRequiredService<InMemorySyncState>());
         services.TryAddSingleton(sp => new SyncEngine(

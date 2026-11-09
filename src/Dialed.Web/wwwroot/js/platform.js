@@ -356,3 +356,44 @@ export async function playCue(cue) {
         oscillator.stop(now + offset + length + 0.02);
     }
 }
+
+
+// ---- Error reports (#91, ADR-0012) -------------------------------------------------------------------
+const errorReportingKey = 'dialed.errorReporting.v1';
+
+export function errorReportingLoad() {
+    try {
+        return localStorage.getItem(errorReportingKey);
+    } catch {
+        return null;
+    }
+}
+
+export function errorReportingSave(value) {
+    try {
+        localStorage.setItem(errorReportingKey, value);
+    } catch {
+        // blocked: the choice applies until the app closes
+    }
+}
+
+function deviceType() {
+    const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    const width = Math.min(window.screen?.width ?? 0, window.screen?.height ?? 0) || window.innerWidth;
+    if (coarse && width < 600) return 'phone';
+    if (coarse) return 'tablet';
+    return 'desktop';
+}
+
+// Sends a report (already scrubbed by the app) to Application Insights when its SDK is on the page; otherwise it stays in the console.
+export function reportError(report) {
+    const properties = { kind: report.kind, appVersion: report.appVersion, device: deviceType(), message: report.message ?? '' };
+    const insights = window.appInsights;
+    if (insights && typeof insights.trackException === 'function') {
+        const error = new Error(report.type);
+        error.stack = report.stack ?? '';
+        insights.trackException({ exception: error, properties });
+    } else {
+        console.debug('[dialed] error report (no sink configured)', report.type, properties);
+    }
+}

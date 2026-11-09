@@ -45,6 +45,9 @@ public abstract class UiTestContext : BunitContext
 
     protected TestFiles ExportedFiles { get; } = new();
 
+    /// <summary>Collects the error reports the app would send.</summary>
+    protected TestErrorSink ErrorSink { get; } = new();
+
     /// <summary>The friend endpoints; set <see cref="TestFriendsServer.Respond"/> to script answers per "METHOD path".</summary>
     protected TestFriendsServer FriendsServer { get; } = new();
 
@@ -70,6 +73,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<ISyncTransport>(Transport);
         Services.AddSingleton<IConnectivity>(Network);
         Services.AddSingleton<IAppLifecycle, TestLifecycle>();
+        Services.AddSingleton<IErrorSink>(ErrorSink);
         Services.AddDialedSync();
         Services.AddSingleton<IPasskeyClient>(Passkeys);
         Services.AddSingleton<ISessionStore, InMemorySessionStore>();
@@ -180,6 +184,17 @@ public abstract class UiTestContext : BunitContext
         public Task<PasskeyOutcome> GetAsync(string optionsJson, bool autofill = false) => Task.FromResult(Next);
 
         public Task CancelPendingAsync() => Task.CompletedTask;
+    }
+
+    protected sealed class TestErrorSink : IErrorSink
+    {
+        public List<Dialed.Client.Telemetry.ErrorReport> Reports { get; } = [];
+
+        public Task SendAsync(Dialed.Client.Telemetry.ErrorReport report)
+        {
+            Reports.Add(report);
+            return Task.CompletedTask;
+        }
     }
 
     protected sealed class TestFiles : IFileExport

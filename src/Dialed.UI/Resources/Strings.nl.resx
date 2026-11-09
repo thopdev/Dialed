@@ -550,4 +550,6 @@
   <data name="Recovery_Missing" xml:space="preserve"><value>Vul je e-mailadres en een code in.</value></data>
   <data name="Household_Active" xml:space="preserve"><value>Huishouden</value></data>
   <data name="Household_SwitchPending" xml:space="preserve"><value>Sommige wijzigingen zijn nog niet verstuurd. Wacht tot alles gesynchroniseerd is en wissel dan.</value></data>
+  <data name="ErrorReporting_Label" xml:space="preserve"><value>Anonieme foutmeldingen versturen</value></data>
+  <data name="ErrorReporting_Hint" xml:space="preserve"><value>Als de app crasht of synchroniseren blijft mislukken, ziet de ontwikkelaar welk soort fout het was en welke appversie je gebruikt. Nooit je naam, e-mail, recepten of notities. Je kunt dit altijd uitzetten.</value></data>
 </root>
