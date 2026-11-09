@@ -1,6 +1,7 @@
 using Dialed.Client.Account;
 using Dialed.Client.Data;
 using Dialed.Client.Households;
+using Dialed.Client.Platform;
 using Dialed.Client.Storage;
 using Dialed.Client.Sync;
 using Dialed.Domain.Model;
