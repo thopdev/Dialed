@@ -39,8 +39,8 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
 
     /// <summary>
     /// Makes this device hold only the data of <paramref name="householdId"/>. When it differs from the household last synced for,
-    /// what other people shared in the old one is removed, positions and versions are forgotten (the new household is pulled in
-    /// full) and the person's own records move over. Returns <c>true</c> when the household had changed.
+    /// the old household's records are removed from this device (they stay on the server), positions and versions are forgotten
+    /// and the new household is pulled in full. Returns <c>true</c> when the household had changed.
     /// </summary>
     public async Task<bool> ReconcileHouseholdAsync(string householdId, CancellationToken cancellationToken = default)
     {
@@ -61,7 +61,7 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
         return true;
     }
 
-    /// <summary>The person joined, left or was removed: forget the old household's positions, remove what others shared there, move their own records over.</summary>
+    /// <summary>The person joined, left, was removed or switched: forget the old household's positions and records, pull the new household, and hand records made before sign-in to it.</summary>
     public async Task SwitchHouseholdAsync(string householdId, CancellationToken cancellationToken = default)
     {
         await state.SetHouseholdAsync(householdId, cancellationToken);

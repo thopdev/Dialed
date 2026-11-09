@@ -9,7 +9,30 @@ namespace Dialed.Client.Households;
 /// </summary>
 public sealed class HouseholdManager(HouseholdApi api, AccountService account, SyncEngine engine, SyncCoordinator sync)
 {
+    /// <summary>Raised when the active household or its membership changed through this manager, so every view of it can reload.</summary>
+    public event Action? Changed;
+
     public Task<HouseholdInfo> GetAsync(CancellationToken cancellationToken = default) => api.GetMineAsync(cancellationToken);
+
+    /// <summary>Every household the person belongs to, the active one marked.</summary>
+    public Task<IReadOnlyList<HouseholdSummary>> ListAsync(CancellationToken cancellationToken = default) => api.ListAsync(cancellationToken);
+
+    /// <summary>
+    /// Makes another household the active one: what is waiting is sent first (this device only holds one household at a time),
+    /// then the session is renewed for the new household and its data is pulled in.
+    /// </summary>
+    public async Task<HouseholdInfo> SwitchAsync(string householdId, CancellationToken cancellationToken = default)
+    {
+        await sync.SyncNowAsync(cancellationToken);
+        if (await engine.PendingCountAsync(cancellationToken) > 0)
+        {
+            throw new AccountApiException("Some changes have not been sent yet. Wait until they are synced, then switch.");
+        }
+
+        var household = await api.SwitchAsync(householdId, cancellationToken);
+        await SwitchedAsync(household.Id, cancellationToken);
+        return household;
+    }
 
     public Task<InviteInfo> CreateInviteAsync(CancellationToken cancellationToken = default) => api.CreateInviteAsync(cancellationToken);
 
@@ -32,8 +55,12 @@ public sealed class HouseholdManager(HouseholdApi api, AccountService account, S
         api.RemoveMemberAsync(userId, cancellationToken);
 
     /// <summary>The owner hands the household to another member; nothing changes for this device's data.</summary>
-    public Task<HouseholdInfo> TransferOwnershipAsync(string userId, CancellationToken cancellationToken = default) =>
-        api.TransferOwnershipAsync(userId, cancellationToken);
+    public async Task<HouseholdInfo> TransferOwnershipAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var household = await api.TransferOwnershipAsync(userId, cancellationToken);
+        Changed?.Invoke();
+        return household;
+    }
 
     private async Task SwitchedAsync(string householdId, CancellationToken cancellationToken)
     {
@@ -43,5 +70,6 @@ public sealed class HouseholdManager(HouseholdApi api, AccountService account, S
         // Versions and pull positions belong to the old household, what others shared there goes, and the new one is pulled in full.
         await engine.SwitchHouseholdAsync(householdId, cancellationToken);
         sync.RequestSync();
+        Changed?.Invoke();
     }
 }

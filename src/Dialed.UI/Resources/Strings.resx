@@ -549,4 +549,6 @@
   <data name="Recovery_Submit" xml:space="preserve"><value>Recover account</value></data>
   <data name="Recovery_EmailSent" xml:space="preserve"><value>If that address has an account, a code is on its way.</value></data>
   <data name="Recovery_Missing" xml:space="preserve"><value>Enter your email and a code.</value></data>
+  <data name="Household_Active" xml:space="preserve"><value>Household</value></data>
+  <data name="Household_SwitchPending" xml:space="preserve"><value>Some changes have not been sent yet. Wait until they are synced, then switch.</value></data>
 </root>

@@ -11,6 +11,9 @@ public sealed record HouseholdMember(string UserId, string DisplayName, bool IsO
 
 public sealed record HouseholdInfo(string Id, string Name, IReadOnlyList<HouseholdMember> Members, bool YouAreOwner);
 
+/// <summary>A household the person belongs to, for the picker.</summary>
+public sealed record HouseholdSummary(string Id, string Name, bool IsPersonal, bool IsActive, bool IsOwner, int MemberCount);
+
 public sealed record InviteInfo(string Code, DateTimeOffset ExpiresAt);
 
 /// <summary>The API's household endpoints (see Dialed.Api): view, invite, join, leave and remove.</summary>
@@ -20,6 +23,12 @@ public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
 
     public Task<HouseholdInfo> GetMineAsync(CancellationToken cancellationToken = default) =>
         SendAsync<HouseholdInfo>(HttpMethod.Get, "households/mine", null, cancellationToken);
+
+    public Task<IReadOnlyList<HouseholdSummary>> ListAsync(CancellationToken cancellationToken = default) =>
+        SendAsync<IReadOnlyList<HouseholdSummary>>(HttpMethod.Get, "households", null, cancellationToken);
+
+    public Task<HouseholdInfo> SwitchAsync(string householdId, CancellationToken cancellationToken = default) =>
+        SendAsync<HouseholdInfo>(HttpMethod.Post, "households/mine/switch", new { householdId }, cancellationToken);
 
     public Task<InviteInfo> CreateInviteAsync(CancellationToken cancellationToken = default) =>
         SendAsync<InviteInfo>(HttpMethod.Post, "households/mine/invites", null, cancellationToken);

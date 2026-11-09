@@ -17,14 +17,14 @@ public interface ISyncRepository<T> : IRepository<T>
     Task<T> ApplyRemoteAsync(T remote, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Re-stamps every record that belongs to another household or person than the current context (data made before sign-in)
+    /// Re-stamps every record made before sign-in (the local household) for the current household
     /// and raises <see cref="LocalChanged"/> for each, so it is pushed. Returns how many records changed.
     /// </summary>
     Task<int> AdoptAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Removes records of other households that this person did not make (what was shared with them while they were a member).
-    /// Their own records, and those made before sign-in, stay. Returns how many were removed.
+    /// Removes the records of every household other than the current one (a device holds one household at a time; the others
+    /// stay on the server and come back when the person switches to them). Records made before sign-in stay. Returns how many were removed.
     /// </summary>
     Task<int> PurgeForeignAsync(CancellationToken cancellationToken = default);
 }

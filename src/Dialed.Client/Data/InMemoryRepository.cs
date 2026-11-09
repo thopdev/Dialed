@@ -169,7 +169,7 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
         lock (gate)
         {
             removed = [.. records.Values
-                .Where(r => r.HouseholdId != context.HouseholdId && r.CreatedBy != context.UserId && r.CreatedBy != LocalContext.LocalUserId)
+                .Where(r => r.HouseholdId != context.HouseholdId && r.HouseholdId != LocalContext.LocalHouseholdId && r.CreatedBy != LocalContext.LocalUserId)
                 .Select(r => r.Id)];
             foreach (var id in removed)
             {
@@ -199,7 +199,7 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
         lock (gate)
         {
             var now = time.GetUtcNow();
-            foreach (var record in records.Values.Where(r => r.HouseholdId != context.HouseholdId).ToList())
+            foreach (var record in records.Values.Where(r => r.HouseholdId == LocalContext.LocalHouseholdId && r.HouseholdId != context.HouseholdId).ToList())
             {
                 var stamped = record with
                 {
