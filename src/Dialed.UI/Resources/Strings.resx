@@ -457,4 +457,7 @@
   <data name="Household_Join" xml:space="preserve"><value>Join household</value></data>
   <data name="Household_Leave" xml:space="preserve"><value>Leave household</value></data>
   <data name="Household_ConfirmLeave" xml:space="preserve"><value>Really leave</value></data>
+  <data name="Storage_Persisted" xml:space="preserve"><value>Your data is saved on this device and the browser will not clear it to free up space.</value></data>
+  <data name="Storage_Unprotected" xml:space="preserve"><value>Your data is saved on this device, but the browser may clear it when space runs low. Sign in to keep a copy online.</value></data>
+  <data name="Storage_Memory" xml:space="preserve"><value>Your data is only kept while the app is open. Sign in to keep a copy online.</value></data>
 </root>

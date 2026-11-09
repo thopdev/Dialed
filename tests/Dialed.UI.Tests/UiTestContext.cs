@@ -5,6 +5,7 @@ using Dialed.Client.Households;
 using Dialed.Client.Data;
 using Dialed.Client.Platform;
 using Dialed.Client.Preferences;
+using Dialed.Client.Storage;
 using Dialed.Client.Sync;
 using Dialed.Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,6 +51,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<ICurrentContext>(Context);
         Services.AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
         Services.AddSingleton<IUserPreferences, InMemoryUserPreferences>();
+        Services.AddSingleton<StorageStatus>();
         Services.AddSingleton<UnitFormatter>();
         Services.AddSingleton<BrewTimerHandoff>();
         Services.AddSingleton<ILocalFileStore, InMemoryLocalFileStore>();

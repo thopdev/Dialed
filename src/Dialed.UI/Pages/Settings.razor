@@ -1,7 +1,9 @@
 @page "/settings"
 @using System.Reflection
 @using Dialed.Client
+@using Dialed.Client.Storage
 @inject IStringLocalizer<Strings> L
+@inject StorageStatus Storage
 
 <PageHeader Title="@L["Settings_Title"]" BackHref="more" />
 
@@ -47,7 +49,7 @@
 
 <section id="settings-storage">
     <h2>@L["Settings_Storage"]</h2>
-    <p class="dialed-muted">@L["Settings_StorageLater"]</p>
+    <p id="storage-status" class="dialed-muted">@L[Storage.Durable ? (Storage.Persisted ? "Storage_Persisted" : "Storage_Unprotected") : "Storage_Memory"]</p>
 </section>
 
 <section id="settings-privacy">
