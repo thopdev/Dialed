@@ -15,9 +15,9 @@
                 <p><strong>@L["Recovery_CodesTitle"]</strong></p>
                 <p>@L["Recovery_CodesBody"]</p>
                 <ul class="dialed-code-list">
-                    @foreach (var code in codes)
+                    @foreach (var recoveryCode in codes)
                     {
-                        <li><code>@code</code></li>
+                        <li><code>@recoveryCode</code></li>
                     }
                 </ul>
                 <div class="dialed-form-actions">
