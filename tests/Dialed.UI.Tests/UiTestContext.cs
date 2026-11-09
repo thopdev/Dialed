@@ -290,11 +290,11 @@ public abstract class UiTestContext : BunitContext
 
             var json = path switch
             {
-                "auth/signup/options" or "auth/signin/options" => "{\"options\":{\"challenge\":\"c\"},\"state\":\"s\"}",
-                "auth/signup" or "auth/signin" => TokensJson,
+                "auth/signup/options" or "auth/signin/options" or "auth/recover/options" => "{\"options\":{\"challenge\":\"c\"},\"state\":\"s\"}",
+                "auth/signup" or "auth/signin" or "auth/recover" => TokensJson,
                 _ => "{}",
             };
-            return new HttpResponseMessage(path == "auth/signout" ? System.Net.HttpStatusCode.NoContent : System.Net.HttpStatusCode.OK)
+            return new HttpResponseMessage(path is "auth/signout" or "auth/recover/email" ? System.Net.HttpStatusCode.NoContent : System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
             };
