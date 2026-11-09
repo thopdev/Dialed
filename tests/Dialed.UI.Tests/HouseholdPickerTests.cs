@@ -63,6 +63,7 @@ public sealed class HouseholdPickerTests : UiTestContext
         await SignIn();
         HouseholdServer.Households = [("h1", "Home"), ("h2", "Office")];
         Transport.Offline = true;
+        _ = Services.GetRequiredService<Dialed.Client.Sync.SyncCoordinator>(); // builds the engine, which starts watching the repositories for changes
         var recipes = Services.GetRequiredService<Dialed.Client.Data.IRepository<Dialed.Domain.Model.Recipe>>();
         await recipes.SaveAsync(new Dialed.Domain.Model.Recipe { MethodCode = "v60", Name = "Unsynced" }, Xunit.TestContext.Current.CancellationToken);
         var picker = Render<HouseholdPicker>();
