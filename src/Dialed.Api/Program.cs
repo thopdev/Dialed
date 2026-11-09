@@ -2,6 +2,7 @@ using Dialed.Api.Auth;
 using Dialed.Api.Configuration;
 using Dialed.Api.Households;
 using Dialed.Api.Passkeys;
+using Dialed.Api.Protection;
 using Dialed.Api.Seeding;
 using Dialed.Api.Sync;
 
@@ -17,6 +18,7 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .AllowAnyHeader()
     .AllowAnyMethod()));
 
+builder.Services.AddDialedProtection(builder.Configuration);
 builder.Services.AddDialedAuth(builder.Configuration, builder.Environment);
 builder.Services.AddDialedPasskeys(builder.Configuration);
 builder.Services.AddDialedSync();
@@ -26,7 +28,9 @@ builder.Services.AddDevelopmentSeeding(builder.Configuration);
 var app = builder.Build();
 
 app.UseCors();
+app.UseRequestSizeLimit();
 app.UseAuthentication();
+app.UseRateLimiter(); // after authentication: limits are per signed-in user
 app.UseAuthorization();
 
 app.MapDefaultEndpoints();

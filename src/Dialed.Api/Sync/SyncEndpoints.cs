@@ -50,6 +50,11 @@ public static class SyncEndpoints
                 return Results.NotFound();
             }
 
+            if (SyncPayloadValidator.Validate(id, entity) is { Count: > 0 } problems)
+            {
+                return Results.ValidationProblem(problems);
+            }
+
             var ifMatch = request.Headers.IfMatch.ToString().Trim('"');
             var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
             var result = await store.PushAsync(household, userId, table, id, entity, string.IsNullOrEmpty(ifMatch) ? null : ifMatch, ct);
