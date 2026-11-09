@@ -59,8 +59,8 @@ public sealed class MultiHouseholdTests(WebApplicationFactory<Program> factory) 
     {
         var friends = Service<FriendService>();
         var code = (await friends.GetCodeAsync(followee.Id, Ct)).Code;
-        (await friends.FollowAsync(follower.Id, code, Ct)).Succeeded.ShouldBeTrue();
-        (await friends.AcceptAsync(followee.Id, follower.Id, Ct)).Succeeded.ShouldBeTrue();
+        (await friends.FollowAsync(follower.Id, code, Ct)).Outcome.ShouldBe(FriendOutcome.Ok);
+        (await friends.AcceptAsync(followee.Id, follower.Id, Ct)).Outcome.ShouldBe(FriendOutcome.Ok);
     }
 
     private async Task<string[]> SharedBeans(AppUser viewer, AppUser owner) =>
