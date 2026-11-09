@@ -52,6 +52,42 @@ public sealed class SyncUiTests : UiTestContext
     }
 
     [Fact]
+    public async Task A_change_the_server_refuses_is_listed_and_can_be_retried()
+    {
+        Tokens.Value = "tkn";
+        Transport.Reject = true;
+        await AddVendor();
+        await Sync.SyncNowAsync(Xunit.TestContext.Current.CancellationToken);
+        var diagnostics = Render<SyncDiagnostics>();
+        diagnostics.Find("#sync-failed li").TextContent.ShouldContain("403 no access");
+
+        Transport.Reject = false;
+        diagnostics.Find(".sync-retry").Click();
+
+        diagnostics.WaitForAssertion(() =>
+        {
+            diagnostics.FindAll("#sync-failed").ShouldBeEmpty();
+            diagnostics.Find("#sync-pending").TextContent.ShouldContain("0");
+        });
+        Transport.Pushes.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task A_refused_change_can_be_discarded()
+    {
+        Tokens.Value = "tkn";
+        Transport.Reject = true;
+        await AddVendor();
+        await Sync.SyncNowAsync(Xunit.TestContext.Current.CancellationToken);
+        var diagnostics = Render<SyncDiagnostics>();
+
+        diagnostics.Find(".sync-discard").Click();
+
+        diagnostics.WaitForAssertion(() => diagnostics.FindAll("#sync-failed").ShouldBeEmpty());
+        (await Services.GetRequiredService<ISyncState>().PendingAsync(Xunit.TestContext.Current.CancellationToken)).ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task The_indicator_stays_quiet_when_not_signed_in()
     {
         await AddVendor();

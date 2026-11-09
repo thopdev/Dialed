@@ -4,6 +4,7 @@
 @implements IDisposable
 @inject SyncCoordinator Sync
 @inject ISyncState SyncState
+@inject SyncEngine Engine
 @inject IStringLocalizer<Strings> L
 
 <div id="sync-diagnostics">
@@ -21,11 +22,32 @@
     {
         <p id="sync-conflicts" class="dialed-muted">@L["Sync_Conflicts", conflicts]</p>
     }
+    @if (Sync.NextRetryAt is { } retryAt && Sync.Status == SyncStatus.Offline)
+    {
+        <p id="sync-next-retry" class="dialed-muted">@L["Sync_NextRetry", retryAt.ToLocalTime().ToString("T", CultureInfo.CurrentCulture)]</p>
+    }
+    @if (failed.Count > 0)
+    {
+        <div id="sync-failed">
+            <h3>@L["Sync_Failed_Title"]</h3>
+            <ul class="dialed-sync-failed">
+                @foreach (var entry in failed)
+                {
+                    <li data-sequence="@entry.Sequence">
+                        <span>@L["Sync_Failed_Item", entry.Table, entry.LastError ?? ""]</span>
+                        <button type="button" class="dialed-button sync-retry" @onclick="@(() => RetryAsync(entry.Sequence))">@L["Sync_Retry"]</button>
+                        <button type="button" class="dialed-button sync-discard" @onclick="@(() => DiscardAsync(entry.Sequence))">@L["Sync_Discard"]</button>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
     <button id="sync-now" type="button" class="dialed-button" disabled="@(Sync.Status == SyncStatus.Syncing)" @onclick="SyncNow">@L["Sync_Now"]</button>
 </div>
 
 @code {
     private int conflicts;
+    private IReadOnlyList<OutboxEntry> failed = [];
 
     private string StatusText => Sync.Status switch
     {
@@ -47,7 +69,23 @@
         await LoadConflicts();
     }
 
-    private async Task LoadConflicts() => conflicts = (await SyncState.ConflictsAsync()).Count;
+    private async Task RetryAsync(long sequence)
+    {
+        await Engine.RetryAsync(sequence);
+        await SyncNow();
+    }
+
+    private async Task DiscardAsync(long sequence)
+    {
+        await Engine.DiscardAsync(sequence);
+        await LoadConflicts();
+    }
+
+    private async Task LoadConflicts()
+    {
+        conflicts = (await SyncState.ConflictsAsync()).Count;
+        failed = await Engine.FailedAsync();
+    }
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 

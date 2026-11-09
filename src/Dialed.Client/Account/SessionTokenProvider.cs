@@ -9,14 +9,19 @@ public sealed class SessionTokenProvider(AuthSession session, AccountApi api, Ti
 
     private readonly SemaphoreSlim gate = new(1, 1);
 
-    public async Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+    public Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default) => GetAsync(refusedToken: null, cancellationToken);
+
+    /// <summary>The server refused this token (it expired during a long sync, or the clock is off): renew now, unless someone already did.</summary>
+    public Task<string?> RenewAccessTokenAsync(string? refusedToken, CancellationToken cancellationToken = default) => GetAsync(refusedToken, cancellationToken);
+
+    private async Task<string?> GetAsync(string? refusedToken, CancellationToken cancellationToken)
     {
         if (session.Tokens is not { } tokens)
         {
             return null;
         }
 
-        if (tokens.AccessTokenExpiresAt - RenewBefore > time.GetUtcNow())
+        if (IsUsable(tokens, refusedToken))
         {
             return tokens.AccessToken;
         }
@@ -31,7 +36,7 @@ public sealed class SessionTokenProvider(AuthSession session, AccountApi api, Ti
                 return null;
             }
 
-            if (tokens.AccessTokenExpiresAt - RenewBefore > time.GetUtcNow())
+            if (IsUsable(tokens, refusedToken))
             {
                 return tokens.AccessToken;
             }
@@ -60,4 +65,8 @@ public sealed class SessionTokenProvider(AuthSession session, AccountApi api, Ti
             gate.Release();
         }
     }
+
+    // Fresh enough, and not the token the server just refused.
+    private bool IsUsable(SessionTokens tokens, string? refusedToken) =>
+        tokens.AccessToken != refusedToken && tokens.AccessTokenExpiresAt - RenewBefore > time.GetUtcNow();
 }

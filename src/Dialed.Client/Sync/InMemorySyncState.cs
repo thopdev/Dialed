@@ -128,6 +128,25 @@ public sealed class InMemorySyncState(ILocalStore? store = null) : ISyncState, I
         }
     }
 
+    public async Task ResetFailureAsync(long sequence, CancellationToken cancellationToken = default)
+    {
+        OutboxEntry? updated = null;
+        lock (gate)
+        {
+            var index = outbox.FindIndex(e => e.Sequence == sequence);
+            if (index >= 0)
+            {
+                updated = outbox[index] with { Attempts = 0, LastError = null };
+                outbox[index] = updated;
+            }
+        }
+
+        if (updated is not null)
+        {
+            await PutAsync(OutboxCollection, sequence.ToString(CultureInfo.InvariantCulture), updated, cancellationToken);
+        }
+    }
+
     public Task<string?> GetServerVersionAsync(string table, string entityId, CancellationToken cancellationToken = default)
     {
         lock (gate)

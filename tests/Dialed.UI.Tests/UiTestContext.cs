@@ -117,6 +117,9 @@ public abstract class UiTestContext : BunitContext
     {
         public bool Offline { get; set; }
 
+        /// <summary>Refuse every push for good, like a missing permission.</summary>
+        public bool Reject { get; set; }
+
         public int Pushes { get; private set; }
 
         public Task<PushResult<T>> PushAsync<T>(string table, T entity, string? ifMatchVersion, CancellationToken cancellationToken = default)
@@ -125,6 +128,11 @@ public abstract class UiTestContext : BunitContext
             if (Offline)
             {
                 throw new SyncTransportException("offline");
+            }
+
+            if (Reject)
+            {
+                return Task.FromResult(new PushResult<T>(PushOutcome.Rejected, Message: "403 no access"));
             }
 
             Pushes++;
