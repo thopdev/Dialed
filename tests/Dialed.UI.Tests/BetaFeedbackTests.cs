@@ -4,7 +4,7 @@ using Dialed.UI.Pages;
 
 namespace Dialed.UI.Tests;
 
-public sealed class FeedbackTests : UiTestContext
+public sealed class BetaFeedbackTests : UiTestContext
 {
     [Fact]
     public void Without_a_feedback_address_the_panel_says_so_and_still_offers_known_issues()
