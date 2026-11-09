@@ -41,6 +41,7 @@ public static class ClientServices
                 Table<EquipmentItem>(sp, "equipment"),
                 Table<Vendor>(sp, "vendors"),
                 Table<Photo>(sp, "photos"),
+                Table<MethodDefault>(sp, "methoddefaults"),
             ],
             sp.GetRequiredService<ISyncState>()));
         services.TryAddSingleton<SyncCoordinator>();
