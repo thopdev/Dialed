@@ -15,6 +15,10 @@ public sealed record FriendCodeDto(string Code);
 
 public sealed record FollowRequest(string Code);
 
+public sealed record FriendProfileDto(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
+
+public sealed record SharedPageDto(IReadOnlyList<System.Text.Json.Nodes.JsonObject> Items, int Total, bool HasMore);
+
 public enum FriendOutcome { Ok, NotFound, Conflict }
 
 public sealed record FriendResult<T>(FriendOutcome Outcome, T? Value = default, string? Message = null);
@@ -169,7 +173,7 @@ public sealed class InMemoryFriendStore : IFriendStore
 /// Following with approval. There is no search for people: you follow someone by their friend code, they accept or decline, and
 /// either side can end it. A blocked person cannot ask again and never learns that they are blocked.
 /// </summary>
-public sealed class FriendService(IUserDirectory users, IFriendStore store, TimeProvider time)
+public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyncStore sync, TimeProvider time)
 {
     private const string CodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -296,6 +300,69 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, Time
         }
 
         return people;
+    }
+
+    /// <summary>The tables a friend can browse.</summary>
+    public static readonly string[] SharedTables = ["beans", "recipes", "brews"];
+
+    /// <summary>
+    /// How the viewer stands to the owner for reading: author, same household, accepted follower, blocked or stranger.
+    /// </summary>
+    private async Task<(AppUser? Owner, Relationship Relationship)> ReaderAsync(string viewerId, string ownerId, CancellationToken ct)
+    {
+        if (await users.FindByIdAsync(ownerId, ct) is not { } owner || await users.FindByIdAsync(viewerId, ct) is not { } viewer)
+        {
+            return (null, Relationship.Stranger);
+        }
+
+        var relationship = await RelationshipAsync(viewerId, ownerId, ct);
+        if (relationship == Relationship.Stranger && viewer.HouseholdId == owner.HouseholdId)
+        {
+            relationship = Relationship.HouseholdMember;
+        }
+
+        return (owner, relationship);
+    }
+
+    private static bool MayBrowse(Relationship relationship) => relationship is Relationship.Author or Relationship.HouseholdMember or Relationship.AcceptedFollower;
+
+    /// <summary>Header of a friend's profile with counts of what is shared with the viewer. Strangers and blocked people get nothing, not even a hint the person exists.</summary>
+    public async Task<FriendProfileDto?> ProfileAsync(string viewerId, string ownerId, CancellationToken ct = default)
+    {
+        var (owner, relationship) = await ReaderAsync(viewerId, ownerId, ct);
+        if (owner is null || !MayBrowse(relationship))
+        {
+            return null;
+        }
+
+        var counts = new Dictionary<string, int>();
+        foreach (var table in SharedTables)
+        {
+            counts[table] = (await sync.ListSharedAsync(owner.HouseholdId, ownerId, table, relationship, 0, 1, ct)).Total;
+        }
+
+        var followers = (await store.FollowsAsync(ownerId, asFollowee: true, ct)).Count(f => f.Status == FollowStatus.Accepted);
+        return new FriendProfileDto(owner.Id, owner.DisplayName, counts["beans"], counts["recipes"], counts["brews"], followers);
+    }
+
+    /// <summary>One page of what the owner shares with the viewer, newest first. <c>null</c> when the viewer may not browse or the table is not shareable.</summary>
+    public async Task<SharedPageDto?> SharedAsync(string viewerId, string ownerId, string table, int skip, int pageSize, CancellationToken ct = default)
+    {
+        if (!SharedTables.Contains(table, StringComparer.Ordinal))
+        {
+            return null;
+        }
+
+        var (owner, relationship) = await ReaderAsync(viewerId, ownerId, ct);
+        if (owner is null || !MayBrowse(relationship))
+        {
+            return null;
+        }
+
+        skip = Math.Max(0, skip);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+        var (rows, total) = await sync.ListSharedAsync(owner.HouseholdId, ownerId, table, relationship, skip, pageSize, ct);
+        return new SharedPageDto([.. rows.Select(r => r.Entity)], total, skip + rows.Count < total);
     }
 
     /// <summary>How <paramref name="viewerId"/> relates to <paramref name="ownerId"/>, for <see cref="VisibilityRules"/>.</summary>

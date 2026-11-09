@@ -43,6 +43,11 @@ public static class FriendEndpoints
         group.MapDelete("/blocks/{otherId}", async (string otherId, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
             Done(await service.UnblockAsync(UserId(user), otherId, ct)));
 
+        group.MapGet("/{ownerId}/profile", async (string ownerId, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
+            await service.ProfileAsync(UserId(user), ownerId, ct) is { } profile ? Results.Ok(profile) : Results.NotFound());
+        group.MapGet("/{ownerId}/shared/{table}", async (string ownerId, string table, int? skip, int? pageSize, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
+            await service.SharedAsync(UserId(user), ownerId, table, skip ?? 0, pageSize ?? 20, ct) is { } page ? Results.Ok(page) : Results.NotFound());
+
         return endpoints;
     }
 
