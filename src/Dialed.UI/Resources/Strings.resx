@@ -527,6 +527,8 @@
   <data name="People_Tab_brews" xml:space="preserve"><value>Brews</value></data>
   <data name="People_NothingShared" xml:space="preserve"><value>Nothing is shared here yet.</value></data>
   <data name="People_LoadMore" xml:space="preserve"><value>Load more</value></data>
+  <data name="Household_Transfer" xml:space="preserve"><value>Make owner</value></data>
+  <data name="Household_ConfirmTransfer" xml:space="preserve"><value>Yes, hand over ownership</value></data>
   <data name="Passkeys_Name" xml:space="preserve"><value>Passkey name</value></data>
   <data name="Passkeys_Rename" xml:space="preserve"><value>Rename</value></data>
   <data name="Passkeys_Remove" xml:space="preserve"><value>Remove</value></data>

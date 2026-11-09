@@ -68,6 +68,40 @@ public sealed class HouseholdTests(WebApplicationFactory<Program> factory) : ICl
     }
 
     [Fact]
+    public async Task The_owner_can_transfer_ownership_and_then_leave()
+    {
+        var owner = await NewPerson("Owner");
+        var member = await NewPerson("Member");
+        (await Join(member, await Invite(owner))).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        using var transferred = await owner.Client.PostAsJsonAsync("/households/mine/transfer", new TransferRequest(member.User.Id), Ct);
+
+        transferred.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await Body<HouseholdDto>(transferred)).YouAreOwner.ShouldBeFalse();
+        var asMember = await Body<HouseholdDto>(await member.Client.GetAsync("/households/mine", Ct));
+        asMember.YouAreOwner.ShouldBeTrue();
+        asMember.Members.Single(m => m.IsOwner).UserId.ShouldBe(member.User.Id);
+
+        // The former owner is an ordinary member now: no owner actions, but they can leave.
+        (await owner.Client.PostAsync("/households/mine/invites", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await owner.Client.PostAsync("/households/mine/leave", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Transferring_needs_the_owner_and_a_member_of_the_household()
+    {
+        var owner = await NewPerson("Owner");
+        var member = await NewPerson("Member");
+        var outsider = await NewPerson("Outsider");
+        (await Join(member, await Invite(owner))).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        (await member.Client.PostAsJsonAsync("/households/mine/transfer", new TransferRequest(member.User.Id), Ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await owner.Client.PostAsJsonAsync("/households/mine/transfer", new TransferRequest(outsider.User.Id), Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await owner.Client.PostAsJsonAsync("/households/mine/transfer", new TransferRequest(owner.User.Id), Ct)).StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        (await Body<HouseholdDto>(await owner.Client.GetAsync("/households/mine", Ct))).YouAreOwner.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Requires_a_signed_in_user()
     {
         using var anonymous = factory.CreateClient();

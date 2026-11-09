@@ -331,6 +331,10 @@ public abstract class UiTestContext : BunitContext
             {
                 Members.RemoveAll(m => m.Id == call["DELETE households/mine/members/".Length..]);
             }
+            else if (call == "POST households/mine/transfer")
+            {
+                YouAreOwner = false;
+            }
             else if (call == "POST households/mine/join")
             {
                 Members = [("Owner", "owner"), ("You", "u1")];

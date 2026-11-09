@@ -526,6 +526,8 @@
   <data name="People_Tab_brews" xml:space="preserve"><value>Brews</value></data>
   <data name="People_NothingShared" xml:space="preserve"><value>Hier wordt nog niets gedeeld.</value></data>
   <data name="People_LoadMore" xml:space="preserve"><value>Meer laden</value></data>
+  <data name="Household_Transfer" xml:space="preserve"><value>Eigenaar maken</value></data>
+  <data name="Household_ConfirmTransfer" xml:space="preserve"><value>Ja, eigenaarschap overdragen</value></data>
   <data name="Passkeys_Name" xml:space="preserve"><value>Naam van passkey</value></data>
   <data name="Passkeys_Rename" xml:space="preserve"><value>Hernoemen</value></data>
   <data name="Passkeys_Remove" xml:space="preserve"><value>Verwijderen</value></data>

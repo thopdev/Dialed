@@ -123,6 +123,23 @@ public sealed class HouseholdUiTests : UiTestContext
     }
 
     [Fact]
+    public async Task The_owner_hands_over_ownership_after_confirming()
+    {
+        await SignIn();
+        HouseholdServer.Members = [("You", "u1"), ("Bob", "bob")];
+        var panel = Panel();
+        panel.WaitForElement(".household-transfer");
+
+        panel.Find(".household-transfer").Click();
+        HouseholdServer.Calls.ShouldNotContain("POST households/mine/transfer");
+        panel.Find(".household-transfer-confirm").Click();
+
+        panel.WaitForAssertion(() => panel.FindAll(".household-transfer").ShouldBeEmpty());
+        HouseholdServer.Calls.ShouldContain("POST households/mine/transfer");
+        panel.FindAll("#household-invite").ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task An_unreachable_server_offers_a_retry()
     {
         await SignIn();
