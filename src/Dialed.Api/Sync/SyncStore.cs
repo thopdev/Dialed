@@ -21,6 +21,9 @@ public interface ISyncStore
     /// <summary>Creates or updates one row. <paramref name="ifMatch"/> is the version the edit started from (<c>null</c> for a new record).</summary>
     Task<StoreResult> PushAsync(string householdId, string userId, string table, string id, JsonObject entity, string? ifMatch, CancellationToken cancellationToken = default);
 
+    /// <summary>What <paramref name="authorId"/> made in the household that a reader with this relationship may read, newest first, deleted ones left out.</summary>
+    Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(string householdId, string authorId, string table, Relationship reader, int skip, int take, CancellationToken cancellationToken = default);
+
     /// <summary>Hard-deletes rows that were soft-deleted before <paramref name="cutoff"/>. Safe to repeat. Returns how many went per table.</summary>
     Task<IReadOnlyDictionary<string, int>> PurgeDeletedAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default);
 }
@@ -50,6 +53,24 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
                 .ToList();
 
             return Task.FromResult<(IReadOnlyList<SyncRow>, bool)>((matching.Take(pageSize).ToList(), matching.Count > pageSize));
+        }
+    }
+
+    public Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(string householdId, string authorId, string table, Relationship reader, int skip, int take, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            var all = rows
+                .Where(r => r.Key.Household == householdId && r.Key.Table == table)
+                .Select(r => r.Value)
+                .Where(r => r.Entity["createdBy"]?.GetValue<string>() == authorId
+                    && !(r.Entity["deleted"] is JsonValue d && d.TryGetValue<bool>(out var gone) && gone)
+                    && VisibilityRules.CanRead(VisibilityRules.Of(r.Entity), reader))
+                .OrderByDescending(r => r.UpdatedAt)
+                .ThenBy(r => r.Id, StringComparer.Ordinal)
+                .ToList();
+
+            return Task.FromResult<(IReadOnlyList<SyncRow>, int)>(([.. all.Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, 100))], all.Count));
         }
     }
 

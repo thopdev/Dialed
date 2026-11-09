@@ -153,6 +153,83 @@ public sealed class FriendTests(WebApplicationFactory<Program> factory) : IClass
         (await bob.PostAsync("/friends/blocks/nobody", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
+    private static async Task PushBean(HttpClient client, string name, int visibility)
+    {
+        var id = Guid.CreateVersion7().ToString();
+        using var response = await client.PutAsJsonAsync($"/sync/beans/{id}", new System.Text.Json.Nodes.JsonObject { ["id"] = id, ["name"] = name, ["deleted"] = false, ["visibility"] = visibility }, Ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    private static async Task<string[]> SharedNames(HttpClient client, string prefix) =>
+        [.. (await client.GetFromJsonAsync<SharedPageDto>("/friends/dev-alice/shared/beans?pageSize=50", Ct))!.Items
+            .Select(i => i["name"]!.GetValue<string>()).Where(n => n.StartsWith(prefix, StringComparison.Ordinal))];
+
+    [Fact]
+    public async Task An_accepted_follower_browses_only_what_is_shared_with_friends()
+    {
+        using var alice = await ClientFor("alice");
+        using var bob = await ClientFor("bob");
+        using var carol = await ClientFor("carol");
+        await PushBean(alice, "T1 Private bean", VisibilityRules.Private);
+        await PushBean(alice, "T1 Household bean", VisibilityRules.Household);
+        await PushBean(alice, "T1 Friends bean", VisibilityRules.Friends);
+        await PushBean(bob, "T1 Bobs friends bean", VisibilityRules.Friends);
+
+        // Before the request is accepted a stranger sees nothing, not even that alice exists.
+        (await carol.GetAsync("/friends/dev-alice/profile", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        await carol.PostAsJsonAsync("/friends/follow", new FollowRequest(await CodeOf(alice)), Ct);
+        (await carol.GetAsync("/friends/dev-alice/shared/beans", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        await alice.PostAsync("/friends/requests/dev-carol/accept", null, Ct);
+
+        var profile = (await carol.GetFromJsonAsync<FriendProfileDto>("/friends/dev-alice/profile", Ct))!;
+
+        profile.DisplayName.ShouldBe("Alice");
+        profile.Beans.ShouldBeGreaterThanOrEqualTo(1);
+        profile.Followers.ShouldBeGreaterThanOrEqualTo(1);
+        (await SharedNames(carol, "T1")).ShouldBe(["T1 Friends bean"]);
+
+        // Bob is in alice's household: he also sees the household bean, but never the private one.
+        (await SharedNames(bob, "T1")).Order().ShouldBe(["T1 Friends bean", "T1 Household bean"]);
+
+        (await carol.GetAsync("/friends/dev-alice/shared/secrets", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await alice.DeleteAsync("/friends/followers/dev-carol", Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await carol.GetAsync("/friends/dev-alice/profile", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task A_blocked_follower_loses_access_and_pages_are_cut_at_the_page_size()
+    {
+        using var alice = await ClientFor("alice");
+        using var carol = await ClientFor("carol");
+        for (var i = 0; i < 3; i++)
+        {
+            await PushBean(alice, $"T2 Shared {i}", VisibilityRules.Friends);
+        }
+
+        await carol.PostAsJsonAsync("/friends/follow", new FollowRequest(await CodeOf(alice)), Ct);
+        await alice.PostAsync("/friends/requests/dev-carol/accept", null, Ct);
+
+        var ids = new List<string>();
+        SharedPageDto page;
+        var skip = 0;
+        do
+        {
+            page = (await carol.GetFromJsonAsync<SharedPageDto>($"/friends/dev-alice/shared/beans?pageSize=2&skip={skip}", Ct))!;
+            page.Items.Count.ShouldBeLessThanOrEqualTo(2);
+            ids.AddRange(page.Items.Select(i => i["id"]!.GetValue<string>()));
+            skip += 2;
+        }
+        while (page.HasMore);
+
+        ids.Count.ShouldBe(page.Total);
+        ids.Distinct().Count().ShouldBe(ids.Count);
+        ids.Count.ShouldBeGreaterThanOrEqualTo(3);
+
+        await alice.PostAsync("/friends/blocks/dev-carol", null, Ct);
+        (await carol.GetAsync("/friends/dev-alice/shared/beans", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        await alice.DeleteAsync("/friends/blocks/dev-carol", Ct);
+    }
+
     [Fact]
     public async Task The_endpoints_need_a_signed_in_user()
     {
