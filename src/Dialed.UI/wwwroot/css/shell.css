@@ -188,6 +188,12 @@ html, body {
     min-height: 100%;
 }
 
+/* Grid items default to min-width: auto, so one long unwrapped line would push the pane past the screen. */
+.dialed-list-detail > .dialed-list-pane,
+.dialed-list-detail > .dialed-detail-pane {
+    min-width: 0;
+}
+
 .dialed-list-detail .dialed-detail-pane,
 .dialed-list-detail.has-selection .dialed-list-pane {
     display: none;

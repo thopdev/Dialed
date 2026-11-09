@@ -25,6 +25,10 @@ else
     [Parameter]
     public RenderFragment? Trailing { get; set; }
 
+    /// <summary>Extra content under the subtitle, for example a meter.</summary>
+    [Parameter]
+    public RenderFragment? Below { get; set; }
+
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -39,6 +43,10 @@ else
             @if (Subtitle is not null)
             {
                 <span class="dialed-row-subtitle">@Subtitle</span>
+            }
+            @if (Below is not null)
+            {
+                <span class="dialed-row-below">@Below</span>
             }
         </span>
         @if (Trailing is not null)

@@ -1,0 +1,53 @@
+@using Dialed.Domain.Inventory
+@inject IStringLocalizer<Strings> L
+
+@*
+    A bag's life after roasting as one bar: resting, at its peak, past its peak, with a marker for today.
+    Read as one sentence ("12 days since roast: at its peak. Ready from day 10, fades after day 30.").
+*@
+<div class="dialed-freshness" role="img" aria-label="@Description" id="@Id">
+    <div class="dialed-freshness-bar" aria-hidden="true">
+        <span class="dialed-freshness-rest" style="width: @Percent(Rest)%"></span>
+        <span class="dialed-freshness-peak" style="width: @Percent(PeakEnd - Rest)%"></span>
+        <span class="dialed-freshness-past"></span>
+        <span class="dialed-freshness-today" style="left: @Percent(Math.Min(AgeDays, Span))%"></span>
+    </div>
+    <div class="dialed-freshness-scale" aria-hidden="true">
+        <span>@L["Fresh_Resting"]</span>
+        <span>@L["Fresh_Peak"]</span>
+        <span>@L["Fresh_Past"]</span>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter, EditorRequired]
+    public int AgeDays { get; set; }
+
+    [Parameter, EditorRequired]
+    public RestWindow Window { get; set; } = RestWindows.Default.Medium;
+
+    /// <summary>The bag's own rest days, when set.</summary>
+    [Parameter]
+    public int? RestDaysOverride { get; set; }
+
+    private int Rest => RestDaysOverride ?? Window.RestDays;
+
+    private int PeakEnd => Math.Max(Rest, Window.PeakEndDays);
+
+    /// <summary>The bar shows a third more than the peak window, so "past" has room and today stays on the bar.</summary>
+    private int Span => Math.Max((int)Math.Ceiling(PeakEnd * 4 / 3.0), AgeDays + 1);
+
+    private string Percent(int days) => (100.0 * days / Span).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    private string Description
+    {
+        get
+        {
+            var state = FreshnessRules.Classify(AgeDays, Window, RestDaysOverride);
+            return string.Format(L["Freshness_Timeline"].Value, AgeDays, L[$"Freshness_State_{state}"].Value, Rest, PeakEnd);
+        }
+    }
+}

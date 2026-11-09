@@ -4,7 +4,12 @@
 @inject UnitFormatter Units
 
 @* A bag with what is left, how many cups that is and how fresh it is. *@
-<ListRow Title="@(Stock.BeanName.Length > 0 ? Stock.BeanName : L["Bag_UnknownBean"].Value)" Subtitle="@Subtitle" Href="@($"brew/{Stock.Bag.Id}")" data-bag="@Stock.Bag.Id">
+<ListRow Title="@Name" Subtitle="@Subtitle" Href="@($"brew/{Stock.Bag.Id}")" data-bag="@Stock.Bag.Id">
+    <Leading><RoastThumb PhotoId="@PhotoId" Level="@RoastLevel" /></Leading>
+    <Below>
+        <Meter Label="@string.Format(L["Stock_LeftIn"].Value, Name)" Fraction="@Fraction" Tone="@(Stock.IsLow ? Meter.MeterTone.Warning : Meter.MeterTone.Normal)"
+               ValueText="@string.Format(L["Stock_LeftOf"].Value, Units.Weight(Stock.RemainingG), Units.Weight(Stock.Bag.WeightG))" />
+    </Below>
     <Trailing>
         @if (Stock.IsLow)
         {
@@ -20,6 +25,18 @@
 @code {
     [Parameter, EditorRequired]
     public BagStock Stock { get; set; } = null!;
+
+    /// <summary>The bean's first photo, if any.</summary>
+    [Parameter]
+    public string? PhotoId { get; set; }
+
+    /// <summary>Tints the placeholder when there is no photo.</summary>
+    [Parameter]
+    public Dialed.Domain.Model.RoastLevel? RoastLevel { get; set; }
+
+    private string Name => Stock.BeanName.Length > 0 ? Stock.BeanName : L["Bag_UnknownBean"].Value;
+
+    private double Fraction => Stock.Bag.WeightG > 0 ? (double)(Stock.RemainingG / Stock.Bag.WeightG) : 0;
 
     private string Subtitle
     {

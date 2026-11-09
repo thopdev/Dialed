@@ -3,37 +3,60 @@
 @inject Dialed.Client.Preferences.IUserPreferences Preferences
 
 @* Create/edit form for a bean. Offline-first: the parent saves the result. *@
-<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+<form class="dialed-form dialed-sectioned-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <section class="dialed-form-section" aria-labelledby="bean-section-bean">
+    <h2 id="bean-section-bean" class="dialed-form-section-title">@L["BeanForm_SectionBean"]</h2>
     <div class="dialed-field">
         <label for="bean-name">@L["Bean_Name"]</label>
-        <input id="bean-name" type="text" @bind="name" @bind:event="oninput" autocomplete="off"
-               aria-invalid="@(nameError is not null ? "true" : null)" />
+        <input id="bean-name" type="text" @bind="name" @bind:event="oninput" @onblur="ValidateName" autocomplete="off" autocapitalize="words" enterkeyhint="next"
+               aria-required="true" aria-invalid="@(nameError is not null ? "true" : null)" aria-describedby="@(nameError is not null ? "bean-name-error" : null)" />
         @if (nameError is not null)
         {
-            <div class="dialed-field-error" role="alert">@nameError</div>
+            <div id="bean-name-error" class="dialed-field-error" role="alert">@nameError</div>
         }
     </div>
 
     <VendorPicker Label="@L["Bean_Roaster"]" @bind-SelectedId="roasterId" Kind="VendorKinds.Roaster" />
+    </section>
 
-    <div class="dialed-field">
-        <label for="bean-country">@L["Bean_Country"]</label>
-        <input id="bean-country" type="text" @bind="country" autocomplete="off" />
+    <section class="dialed-form-section" aria-labelledby="bean-section-origin">
+    <h2 id="bean-section-origin" class="dialed-form-section-title">@L["BeanForm_SectionOrigin"]</h2>
+    <div class="dialed-field-row">
+        <div class="dialed-field">
+            <label for="bean-country">@L["Bean_Country"]</label>
+            <input id="bean-country" type="text" @bind="country" autocomplete="off" autocapitalize="words" />
+        </div>
+        <div class="dialed-field">
+            <label for="bean-region">@L["Bean_Region"]</label>
+            <input id="bean-region" type="text" @bind="region" autocomplete="off" autocapitalize="words" />
+        </div>
     </div>
-    <div class="dialed-field">
-        <label for="bean-region">@L["Bean_Region"]</label>
-        <input id="bean-region" type="text" @bind="region" autocomplete="off" />
-    </div>
-    <div class="dialed-field">
-        <label for="bean-farm">@L["Bean_Farm"]</label>
-        <input id="bean-farm" type="text" @bind="farm" autocomplete="off" />
-    </div>
-    <div class="dialed-field">
-        <label for="bean-producer">@L["Bean_Producer"]</label>
-        <input id="bean-producer" type="text" @bind="producer" autocomplete="off" />
+    <div class="dialed-field-row">
+        <div class="dialed-field">
+            <label for="bean-farm">@L["Bean_Farm"]</label>
+            <input id="bean-farm" type="text" @bind="farm" autocomplete="off" autocapitalize="words" />
+        </div>
+        <div class="dialed-field">
+            <label for="bean-producer">@L["Bean_Producer"]</label>
+            <input id="bean-producer" type="text" @bind="producer" autocomplete="off" autocapitalize="words" />
+        </div>
     </div>
 
     <ChipInput Label="@L["Bean_Varieties"]" @bind-Values="varieties" />
+
+    <div class="dialed-field">
+        <label for="bean-altitude">@L["Bean_Altitude"]</label>
+        <input id="bean-altitude" type="number" inputmode="numeric" min="0" max="5000" step="1" @bind="altitude" @bind:event="onchange" @onblur="ValidateAltitude"
+               aria-invalid="@(altitudeError is not null ? "true" : null)" aria-describedby="@(altitudeError is not null ? "bean-altitude-error" : null)" />
+        @if (altitudeError is not null)
+        {
+            <div id="bean-altitude-error" class="dialed-field-error" role="alert">@altitudeError</div>
+        }
+    </div>
+    </section>
+
+    <section class="dialed-form-section" aria-labelledby="bean-section-roast">
+    <h2 id="bean-section-roast" class="dialed-form-section-title">@L["BeanForm_SectionRoast"]</h2>
 
     <div class="dialed-field">
         <label for="bean-process">@L["Bean_Process"]</label>
@@ -52,11 +75,7 @@
         }
     </div>
 
-    <div class="dialed-field">
-        <label for="bean-altitude">@L["Bean_Altitude"]</label>
-        <input id="bean-altitude" type="number" inputmode="numeric" min="0" max="5000" @bind="altitude" />
-    </div>
-
+    <div class="dialed-field-row">
     <div class="dialed-field">
         <label for="bean-roast-level">@L["Bean_RoastLevel"]</label>
         <select id="bean-roast-level" @bind="roastLevel">
@@ -79,8 +98,13 @@
         </select>
     </div>
 
-    <label class="dialed-check"><input id="bean-decaf" type="checkbox" @bind="isDecaf" /> @L["Bean_Decaf"]</label>
+    </div>
 
+    <label class="dialed-check"><input id="bean-decaf" type="checkbox" @bind="isDecaf" /> @L["Bean_Decaf"]</label>
+    </section>
+
+    <section class="dialed-form-section" aria-labelledby="bean-section-tasting">
+    <h2 id="bean-section-tasting" class="dialed-form-section-title">@L["BeanForm_SectionTasting"]</h2>
     <ChipInput Label="@L["Bean_TastingNotes"]" @bind-Values="tastingNotes" />
 
     <div class="dialed-field">
@@ -98,6 +122,10 @@
         <textarea id="bean-notes" rows="3" @bind="notes"></textarea>
     </div>
 
+    </section>
+
+    <section class="dialed-form-section" aria-labelledby="bean-section-sharing">
+    <h2 id="bean-section-sharing" class="dialed-form-section-title">@L["BeanForm_SectionSharing"]</h2>
     <div class="dialed-field">
         <label for="bean-visibility">@L["Bean_Visibility"]</label>
         <select id="bean-visibility" @bind="visibility">
@@ -108,7 +136,9 @@
         </select>
     </div>
 
-    <div class="dialed-form-actions">
+    </section>
+
+    <div class="dialed-form-actions dialed-sticky-actions">
         <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>
         <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
     </div>
@@ -136,6 +166,7 @@
     private Visibility visibility = Visibility.Household;
     private IReadOnlyList<string> photoIds = [];
     private string? nameError;
+    private string? altitudeError;
     private Bean? loaded;
 
     /// <summary>The bean being edited; <c>null</c> for a new one.</summary>
@@ -195,10 +226,15 @@
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    private void ValidateName() => nameError = string.IsNullOrWhiteSpace(name) ? L["Bean_NameRequired"].Value : null;
+
+    private void ValidateAltitude() => altitudeError = altitude is < 0 or > 5000 ? L["Bean_AltitudeRange"].Value : null;
+
     private async Task SubmitAsync()
     {
-        nameError = string.IsNullOrWhiteSpace(name) ? L["Bean_NameRequired"].Value : null;
-        if (nameError is not null)
+        ValidateName();
+        ValidateAltitude();
+        if (nameError is not null || altitudeError is not null)
         {
             return;
         }

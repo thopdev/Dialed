@@ -225,7 +225,7 @@ public sealed class BrewLogTests : UiTestContext
         Services.GetRequiredService<NavigationManager>().Uri.ShouldEndWith($"brew/{bag.Id}");
 
         var bagPage = Render<Bags>(p => p.Add(x => x.Id, bag.Id));
-        bagPage.Markup.ShouldContain("235 g / 250 g");
+        bagPage.Markup.ShouldContain("235 g of 250 g left");
     }
 
     [Fact]

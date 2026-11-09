@@ -1,0 +1,17 @@
+@using Dialed.Domain.Model
+
+@* A bean or bag thumbnail: the photo when there is one, otherwise a placeholder tinted by roast level (light to dark). Decorative. *@
+<span class="dialed-roast dialed-roast-@(Level?.ToString().ToLowerInvariant() ?? "unknown")">
+    <Thumb PhotoId="@PhotoId" Size="@Size" />
+</span>
+
+@code {
+    [Parameter]
+    public string? PhotoId { get; set; }
+
+    [Parameter]
+    public RoastLevel? Level { get; set; }
+
+    [Parameter]
+    public int Size { get; set; } = 48;
+}
