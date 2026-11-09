@@ -47,6 +47,9 @@ public interface IFriendStore
     Task<IReadOnlyList<string>> BlockedByAsync(string blockerId, CancellationToken cancellationToken = default);
 
     Task<bool> IsBlockedAsync(string blockerId, string blockedId, CancellationToken cancellationToken = default);
+
+    /// <summary>Forgets everything about the person: friend code, follows in both directions and blocks in both directions.</summary>
+    Task RemoveUserAsync(string userId, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryFriendStore : IFriendStore
@@ -158,6 +161,26 @@ public sealed class InMemoryFriendStore : IFriendStore
         {
             return Task.FromResult<IReadOnlyList<string>>([.. blocks.Where(b => b.Blocker == blockerId).Select(b => b.Blocked)]);
         }
+    }
+
+    public Task RemoveUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            if (codeByUser.Remove(userId, out var code))
+            {
+                userByCode.Remove(code);
+            }
+
+            foreach (var key in follows.Keys.Where(k => k.Follower == userId || k.Followee == userId).ToList())
+            {
+                follows.Remove(key);
+            }
+
+            blocks.RemoveWhere(b => b.Blocker == userId || b.Blocked == userId);
+        }
+
+        return Task.CompletedTask;
     }
 
     public Task<bool> IsBlockedAsync(string blockerId, string blockedId, CancellationToken cancellationToken = default)

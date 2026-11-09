@@ -45,6 +45,9 @@ public interface IHouseholdStore
 
     Task SaveAsync(Household household, CancellationToken cancellationToken = default);
 
+    /// <summary>Deletes the household and its open invites.</summary>
+    Task DeleteAsync(string id, CancellationToken cancellationToken = default);
+
     Task AddInviteAsync(Invite invite, CancellationToken cancellationToken = default);
 
     /// <summary>Takes the invite: it can be used once. <c>null</c> when unknown, used or expired.</summary>
@@ -84,6 +87,20 @@ public sealed class InMemoryHouseholdStore(IEnumerable<Household>? initial = nul
         lock (gate)
         {
             households[household.Id] = household;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            households.Remove(id);
+            foreach (var code in invites.Where(i => i.Value.HouseholdId == id).Select(i => i.Key).ToList())
+            {
+                invites.Remove(code);
+            }
         }
 
         return Task.CompletedTask;

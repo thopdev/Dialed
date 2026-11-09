@@ -27,6 +27,12 @@ public interface ISyncStore
     /// <summary>Everything <paramref name="authorId"/> made in the household, whatever its visibility (for the person's own export). Deleted rows are left out.</summary>
     Task<IReadOnlyList<SyncRow>> ListAuthoredAsync(string householdId, string authorId, string table, CancellationToken cancellationToken = default);
 
+    /// <summary>Removes the whole household's data (it was the last member's).</summary>
+    Task DeleteHouseholdAsync(string householdId, CancellationToken cancellationToken = default);
+
+    /// <summary>Replaces the person's id in <c>createdBy</c> and <c>updatedBy</c> of the household's rows, so the items stay but no longer point to them.</summary>
+    Task AnonymiseAuthorAsync(string householdId, string authorId, string replacement, CancellationToken cancellationToken = default);
+
     /// <summary>Hard-deletes rows that were soft-deleted before <paramref name="cutoff"/>. Safe to repeat. Returns how many went per table.</summary>
     Task<IReadOnlyDictionary<string, int>> PurgeDeletedAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default);
 }
@@ -89,6 +95,46 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
                 .OrderBy(r => r.UpdatedAt)
                 .ThenBy(r => r.Id, StringComparer.Ordinal)]);
         }
+    }
+
+    public Task DeleteHouseholdAsync(string householdId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            foreach (var key in rows.Keys.Where(k => k.Household == householdId).ToList())
+            {
+                rows.Remove(key);
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task AnonymiseAuthorAsync(string householdId, string authorId, string replacement, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            foreach (var (key, row) in rows.Where(r => r.Key.Household == householdId).ToList())
+            {
+                var entity = (JsonObject)row.Entity.DeepClone();
+                var changed = false;
+                foreach (var field in new[] { "createdBy", "updatedBy" })
+                {
+                    if (entity[field]?.GetValue<string>() == authorId)
+                    {
+                        entity[field] = replacement;
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    rows[key] = row with { Entity = entity };
+                }
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     public Task<IReadOnlyDictionary<string, int>> PurgeDeletedAsync(DateTimeOffset cutoff, CancellationToken cancellationToken = default)
