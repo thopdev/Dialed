@@ -1,0 +1,13 @@
+@inject IStringLocalizer<Strings> L
+
+@* A rating in little space, for the end of a list row: one star and the number. Read as "4 of 5 stars". *@
+<span class="dialed-rating-badge" role="img" aria-label="@L["Rating_Value", Value, 5]">
+    <span class="dialed-rating-badge-star" aria-hidden="true"><FluentIcon Value="@(new Icons.Filled.Size16.Star())" Color="Color.Custom" CustomColor="currentColor" /></span>
+    <span aria-hidden="true">@Value</span>
+</span>
+
+@code {
+    /// <summary>1 to 5.</summary>
+    [Parameter, EditorRequired]
+    public int Value { get; set; }
+}
