@@ -1,5 +1,6 @@
 using Dialed.Api.Auth;
 using Dialed.Api.Configuration;
+using Dialed.Api.Friends;
 using Dialed.Api.Households;
 using Dialed.Api.Passkeys;
 using Dialed.Api.Protection;
