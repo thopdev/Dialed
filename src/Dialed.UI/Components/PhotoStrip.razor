@@ -24,6 +24,7 @@
     }
     @if (!ReadOnly && (!Single || PhotoIds.Count == 0))
     {
+        <p class="dialed-muted photo-privacy-hint">@L["Photo_PrivacyHint"] <a href="privacy">@L["Settings_PrivacyLink"]</a></p>
         <div class="dialed-photo-actions">
             <button type="button" class="dialed-button photo-camera" @onclick="() => AddAsync(PhotoSource.Camera)">@L["Photo_Take"]</button>
             <button type="button" class="dialed-button photo-library" @onclick="() => AddAsync(PhotoSource.Library)">@L["Photo_Choose"]</button>

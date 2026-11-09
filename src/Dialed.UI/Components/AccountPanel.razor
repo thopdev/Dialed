@@ -30,6 +30,7 @@
                 <input id="account-invite" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" @bind="inviteCode" @bind:event="oninput" />
                 <p class="dialed-muted">@L["Account_InviteHint"]</p>
             </div>
+            <p class="dialed-muted"><a id="account-privacy-link" href="privacy">@L["Settings_PrivacyLink"]</a></p>
             <div class="dialed-form-actions">
                 <button id="account-signup" type="submit" class="dialed-button dialed-button-primary" disabled="@busy">@L["Account_SignUp"]</button>
                 <button id="account-signin" type="button" class="dialed-button" disabled="@busy" @onclick="SignInAsync">@L["Account_SignIn"]</button>
