@@ -7,7 +7,14 @@ public sealed record SessionTokens(
     string RefreshToken,
     string UserId,
     string DisplayName,
-    string HouseholdId);
+    string HouseholdId,
+    IReadOnlyList<string>? RecoveryCodes = null);
+
+/// <summary>One passkey of the account, as the server lists it.</summary>
+public sealed record PasskeyInfo(string Id, string Name, DateTimeOffset CreatedAt, DateTimeOffset? LastUsedAt, bool BackedUp);
+
+/// <summary>How well the account is protected against losing its passkeys.</summary>
+public sealed record RecoveryStatus(int RecoveryCodesLeft, bool HasBackedUpPasskey, int Passkeys);
 
 public enum AccountOutcome
 {
