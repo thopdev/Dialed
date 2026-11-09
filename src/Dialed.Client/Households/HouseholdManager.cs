@@ -31,6 +31,10 @@ public sealed class HouseholdManager(HouseholdApi api, AccountService account, S
     public Task<HouseholdInfo> RemoveMemberAsync(string userId, CancellationToken cancellationToken = default) =>
         api.RemoveMemberAsync(userId, cancellationToken);
 
+    /// <summary>The owner hands the household to another member; nothing changes for this device's data.</summary>
+    public Task<HouseholdInfo> TransferOwnershipAsync(string userId, CancellationToken cancellationToken = default) =>
+        api.TransferOwnershipAsync(userId, cancellationToken);
+
     private async Task SwitchedAsync(string householdId, CancellationToken cancellationToken)
     {
         // The token carries the household: get one for the new household first.

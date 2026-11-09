@@ -29,13 +29,19 @@
                     <span>@member.DisplayName@(member.IsOwner ? " · " + L["Household_Owner"].Value : "")</span>
                     @if (household.YouAreOwner && !member.IsOwner)
                     {
-                        @if (removing == member.UserId)
+                        @if (transferring == member.UserId)
+                        {
+                            <button type="button" class="dialed-button household-transfer-confirm" disabled="@busy" @onclick="() => TransferAsync(member.UserId)">@L["Household_ConfirmTransfer"]</button>
+                            <button type="button" class="dialed-button" @onclick="() => transferring = null">@L["Cancel"]</button>
+                        }
+                        else if (removing == member.UserId)
                         {
                             <button type="button" class="dialed-button household-remove-confirm" disabled="@busy" @onclick="() => RemoveAsync(member.UserId)">@L["Household_ConfirmRemove"]</button>
                         }
                         else
                         {
-                            <button type="button" class="dialed-button household-remove" @onclick="() => removing = member.UserId">@L["Household_Remove"]</button>
+                            <button type="button" class="dialed-button household-transfer" @onclick="() => { transferring = member.UserId; removing = null; }">@L["Household_Transfer"]</button>
+                            <button type="button" class="dialed-button household-remove" @onclick="() => { removing = member.UserId; transferring = null; }">@L["Household_Remove"]</button>
                         }
                     }
                 </li>
@@ -92,6 +98,7 @@
     private string code = "";
     private string? message;
     private string? removing;
+    private string? transferring;
     private bool confirmingLeave;
     private bool busy;
     private bool failed;
@@ -156,6 +163,12 @@
     {
         household = await Households.RemoveMemberAsync(userId);
         removing = null;
+    });
+
+    private Task TransferAsync(string userId) => RunAsync(async () =>
+    {
+        household = await Households.TransferOwnershipAsync(userId);
+        transferring = null;
     });
 
     private async Task RunAsync(Func<Task> action)

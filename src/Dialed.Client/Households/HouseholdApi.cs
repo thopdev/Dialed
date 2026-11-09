@@ -30,6 +30,9 @@ public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
     public Task<HouseholdInfo> LeaveAsync(CancellationToken cancellationToken = default) =>
         SendAsync<HouseholdInfo>(HttpMethod.Post, "households/mine/leave", null, cancellationToken);
 
+    public Task<HouseholdInfo> TransferOwnershipAsync(string userId, CancellationToken cancellationToken = default) =>
+        SendAsync<HouseholdInfo>(HttpMethod.Post, "households/mine/transfer", new { userId }, cancellationToken);
+
     public Task<HouseholdInfo> RemoveMemberAsync(string userId, CancellationToken cancellationToken = default) =>
         SendAsync<HouseholdInfo>(HttpMethod.Delete, $"households/mine/members/{Uri.EscapeDataString(userId)}", null, cancellationToken);
 

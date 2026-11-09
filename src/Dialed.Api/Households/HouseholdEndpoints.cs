@@ -38,6 +38,9 @@ public static class HouseholdEndpoints
         group.MapPost("/leave", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.LeaveAsync(UserId(user), ct)));
 
+        group.MapPost("/transfer", async (TransferRequest request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.TransferOwnershipAsync(UserId(user), request.UserId, ct)));
+
         group.MapDelete("/members/{memberId}", async (string memberId, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.RemoveMemberAsync(UserId(user), memberId, ct)));
 

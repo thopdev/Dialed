@@ -15,6 +15,8 @@ public sealed record InviteDto(string Code, DateTimeOffset ExpiresAt);
 
 public sealed record JoinRequest(string Code);
 
+public sealed record TransferRequest(string UserId);
+
 public enum HouseholdOutcome
 {
     Ok,
@@ -254,6 +256,35 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
 
         await MoveToPersonalAsync(member, ct);
         return new(HouseholdOutcome.Ok, await ToDtoAsync(household, ownerId, ct));
+    }
+
+    /// <summary>The owner hands the household to another member, who becomes its owner. The previous owner stays a member (and can leave).</summary>
+    public async Task<HouseholdResult<HouseholdDto>> TransferOwnershipAsync(string ownerId, string newOwnerId, CancellationToken ct = default)
+    {
+        if (await users.FindByIdAsync(ownerId, ct) is not { } owner)
+        {
+            return new(HouseholdOutcome.NotFound);
+        }
+
+        var household = await EnsureAsync(owner, ct);
+        if (household.OwnerId != ownerId)
+        {
+            return new(HouseholdOutcome.NotOwner);
+        }
+
+        if (newOwnerId == ownerId)
+        {
+            return new(HouseholdOutcome.Conflict, Message: "You already own this household.");
+        }
+
+        if (await users.FindByIdAsync(newOwnerId, ct) is not { } member || member.HouseholdId != household.Id)
+        {
+            return new(HouseholdOutcome.NotFound);
+        }
+
+        var transferred = household with { OwnerId = newOwnerId };
+        await store.SaveAsync(transferred, ct);
+        return new(HouseholdOutcome.Ok, await ToDtoAsync(transferred, ownerId, ct));
     }
 
     private async Task<HouseholdDto> MoveToPersonalAsync(AppUser user, CancellationToken ct)
