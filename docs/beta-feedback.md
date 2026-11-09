@@ -13,4 +13,4 @@ Settings > Feedback > **Known issues** lists what is already known (strings `Kno
 3. Triage: bug (fix next wave), idea (backlog with the `beta-feedback` label), known issue (add to the list above), question (answer the tester).
 4. Reply to the tester when it is fixed or decided.
 
-The label exists as `beta-feedback` (created with this change).
+The label exists as `beta-feedback`.
