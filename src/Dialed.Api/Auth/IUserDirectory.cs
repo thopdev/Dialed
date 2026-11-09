@@ -7,14 +7,17 @@ public interface IUserDirectory
 
     Task AddAsync(AppUser user, CancellationToken cancellationToken = default);
 
-    /// <summary>Everyone currently in the household.</summary>
+    /// <summary>Everyone who belongs to the household, whichever household they are looking at right now.</summary>
     Task<IReadOnlyList<AppUser>> ListByHouseholdAsync(string householdId, CancellationToken cancellationToken = default);
 
     /// <summary>Removes the person. <c>false</c> when unknown.</summary>
     Task<bool> RemoveAsync(string userId, CancellationToken cancellationToken = default);
 
-    /// <summary>Moves the person to another household (joining, leaving or being removed). Returns the updated user, or <c>null</c> when unknown.</summary>
+    /// <summary>Makes the household the person's active one (joining or switching), remembering them as a member. Returns the updated user, or <c>null</c> when unknown.</summary>
     Task<AppUser?> SetHouseholdAsync(string userId, string householdId, CancellationToken cancellationToken = default);
+
+    /// <summary>Ends the person's membership (leaving or being removed). When it was their active household another one of theirs becomes active; the only household cannot be left.</summary>
+    Task<AppUser?> RemoveMembershipAsync(string userId, string householdId, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryUserDirectory : IUserDirectory
@@ -60,7 +63,7 @@ public sealed class InMemoryUserDirectory : IUserDirectory
     {
         lock (gate)
         {
-            return Task.FromResult<IReadOnlyList<AppUser>>([.. users.Values.Where(u => u.HouseholdId == householdId).OrderBy(u => u.DisplayName, StringComparer.OrdinalIgnoreCase)]);
+            return Task.FromResult<IReadOnlyList<AppUser>>([.. users.Values.Where(u => u.IsMemberOf(householdId)).OrderBy(u => u.DisplayName, StringComparer.OrdinalIgnoreCase)]);
         }
     }
 
@@ -73,9 +76,28 @@ public sealed class InMemoryUserDirectory : IUserDirectory
                 return Task.FromResult<AppUser?>(null);
             }
 
-            var moved = user with { HouseholdId = householdId };
+            var others = user.HouseholdIds.Append(user.HouseholdId).Where(h => h != householdId).Distinct(StringComparer.Ordinal).ToList();
+            var moved = user with { HouseholdId = householdId, HouseholdIds = others };
             users[userId] = moved;
             return Task.FromResult<AppUser?>(moved);
+        }
+    }
+
+    public Task<AppUser?> RemoveMembershipAsync(string userId, string householdId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            if (!users.TryGetValue(userId, out var user))
+            {
+                return Task.FromResult<AppUser?>(null);
+            }
+
+            // Leaving the active household makes the first other one active; leaving the only one is not possible.
+            var left = user.HouseholdId == householdId
+                ? user.HouseholdIds.Count == 0 ? user : user with { HouseholdId = user.HouseholdIds[0], HouseholdIds = [.. user.HouseholdIds.Skip(1)] }
+                : user with { HouseholdIds = [.. user.HouseholdIds.Where(h => h != householdId)] };
+            users[userId] = left;
+            return Task.FromResult<AppUser?>(left);
         }
     }
 }

@@ -35,7 +35,13 @@ public sealed class AccountExporter(IUserDirectory users, ISyncStore sync, Frien
         var items = new Dictionary<string, IReadOnlyList<JsonObject>>(StringComparer.Ordinal);
         foreach (var table in SyncEndpoints.Tables.Order(StringComparer.Ordinal))
         {
-            items[table] = [.. (await sync.ListAuthoredAsync(user.HouseholdId, userId, table, ct)).Select(r => r.Entity)];
+            var authored = new List<JsonObject>();
+            foreach (var household in user.AllHouseholdIds)
+            {
+                authored.AddRange((await sync.ListAuthoredAsync(household, userId, table, ct)).Select(r => r.Entity));
+            }
+
+            items[table] = authored;
         }
 
         return new AccountExport(
@@ -69,19 +75,23 @@ public sealed class AccountDeleter(
             return false;
         }
 
-        var members = await directory.ListByHouseholdAsync(user.HouseholdId, ct);
-        var others = members.Where(m => m.Id != userId).ToList();
-        if (others.Count == 0)
+        // Every household the person belongs to: the ones they were alone in go with their data, the shared ones keep their items.
+        foreach (var householdId in user.AllHouseholdIds)
         {
-            await sync.DeleteHouseholdAsync(user.HouseholdId, ct);
-            await households.DeleteAsync(user.HouseholdId, ct);
-        }
-        else
-        {
-            await sync.AnonymiseAuthorAsync(user.HouseholdId, userId, DeletedUser, ct);
-            if (await households.FindAsync(user.HouseholdId, ct) is { } household && household.OwnerId == userId)
+            var members = await directory.ListByHouseholdAsync(householdId, ct);
+            var others = members.Where(m => m.Id != userId).ToList();
+            if (others.Count == 0)
             {
-                await households.SaveAsync(household with { OwnerId = await LongestStandingAsync(others, ct) }, ct);
+                await sync.DeleteHouseholdAsync(householdId, ct);
+                await households.DeleteAsync(householdId, ct);
+            }
+            else
+            {
+                await sync.AnonymiseAuthorAsync(householdId, userId, DeletedUser, ct);
+                if (await households.FindAsync(householdId, ct) is { } household && household.OwnerId == userId)
+                {
+                    await households.SaveAsync(household with { OwnerId = await LongestStandingAsync(others, ct) }, ct);
+                }
             }
         }
 

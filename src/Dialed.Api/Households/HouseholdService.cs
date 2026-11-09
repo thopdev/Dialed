@@ -13,6 +13,11 @@ public sealed record HouseholdDto(string Id, string Name, IReadOnlyList<MemberDt
 
 public sealed record InviteDto(string Code, DateTimeOffset ExpiresAt);
 
+/// <summary>One household the person belongs to, for the picker.</summary>
+public sealed record HouseholdSummaryDto(string Id, string Name, bool IsPersonal, bool IsActive, bool IsOwner, int MemberCount);
+
+public sealed record SwitchRequest(string HouseholdId);
+
 public sealed record JoinRequest(string Code);
 
 public sealed record TransferRequest(string UserId);
@@ -178,7 +183,7 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
         return new(HouseholdOutcome.Ok, new InviteDto(invite.Code, invite.ExpiresAt));
     }
 
-    /// <summary>Joins the household the code belongs to. Only someone who is alone in their own household can join; leave first otherwise.</summary>
+    /// <summary>Joins the household the code belongs to and makes it the active one. Earlier households stay (switch back any time).</summary>
     public async Task<HouseholdResult<HouseholdDto>> JoinAsync(string userId, string code, CancellationToken ct = default)
     {
         if (await users.FindByIdAsync(userId, ct) is not { } user)
@@ -186,16 +191,15 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
             return new(HouseholdOutcome.NotFound);
         }
 
-        var current = await EnsureAsync(user, ct);
-        if ((await users.ListByHouseholdAsync(current.Id, ct)).Count > 1)
-        {
-            return new(HouseholdOutcome.Conflict, Message: "Leave your current household first.");
-        }
-
         var invite = await store.TakeInviteAsync(Normalize(code), time.GetUtcNow(), ct);
         if (invite is null || await store.FindAsync(invite.HouseholdId, ct) is not { } target)
         {
             return new(HouseholdOutcome.InvalidInvite);
+        }
+
+        if (user.IsMemberOf(target.Id))
+        {
+            return new(HouseholdOutcome.Conflict, Message: "You are already in that household.");
         }
 
         if ((await users.ListByHouseholdAsync(target.Id, ct)).Count >= MaxMembers)
@@ -207,7 +211,7 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
         return new(HouseholdOutcome.Ok, await ToDtoAsync(target, userId, ct));
     }
 
-    /// <summary>Leaves the household for a personal one. The owner cannot leave while others are in it.</summary>
+    /// <summary>Leaves the active household and goes back to the personal one. The personal household cannot be left, and the owner cannot leave while others are in it.</summary>
     public async Task<HouseholdResult<HouseholdDto>> LeaveAsync(string userId, CancellationToken ct = default)
     {
         if (await users.FindByIdAsync(userId, ct) is not { } user)
@@ -216,10 +220,15 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
         }
 
         var household = await EnsureAsync(user, ct);
+        if (user.AllHouseholdIds.Count <= 1)
+        {
+            return new(HouseholdOutcome.Conflict, Message: "This is your only household; you cannot leave it.");
+        }
+
         var members = await users.ListByHouseholdAsync(household.Id, ct);
         if (members.Count <= 1)
         {
-            return new(HouseholdOutcome.Conflict, Message: "You are already alone in your household.");
+            return new(HouseholdOutcome.Conflict, Message: "You are alone in this household; you cannot leave it.");
         }
 
         if (household.OwnerId == userId)
@@ -227,7 +236,7 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
             return new(HouseholdOutcome.Conflict, Message: "The owner cannot leave while others are in the household. Remove them first.");
         }
 
-        return new(HouseholdOutcome.Ok, await MoveToPersonalAsync(user, ct));
+        return new(HouseholdOutcome.Ok, await EndMembershipAsync(user, household.Id, ct));
     }
 
     /// <summary>The owner removes a member, who gets a personal household again.</summary>
@@ -249,12 +258,17 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
             return new(HouseholdOutcome.Conflict, Message: "The owner cannot remove themselves.");
         }
 
-        if (await users.FindByIdAsync(memberId, ct) is not { } member || member.HouseholdId != household.Id)
+        if (await users.FindByIdAsync(memberId, ct) is not { } member || !member.IsMemberOf(household.Id))
         {
             return new(HouseholdOutcome.NotFound);
         }
 
-        await MoveToPersonalAsync(member, ct);
+        if (member.AllHouseholdIds.Count <= 1)
+        {
+            return new(HouseholdOutcome.Conflict, Message: "This is their only household; they cannot be removed from it.");
+        }
+
+        await EndMembershipAsync(member, household.Id, ct);
         return new(HouseholdOutcome.Ok, await ToDtoAsync(household, ownerId, ct));
     }
 
@@ -277,7 +291,7 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
             return new(HouseholdOutcome.Conflict, Message: "You already own this household.");
         }
 
-        if (await users.FindByIdAsync(newOwnerId, ct) is not { } member || member.HouseholdId != household.Id)
+        if (await users.FindByIdAsync(newOwnerId, ct) is not { } member || !member.IsMemberOf(household.Id))
         {
             return new(HouseholdOutcome.NotFound);
         }
@@ -287,11 +301,72 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
         return new(HouseholdOutcome.Ok, await ToDtoAsync(transferred, ownerId, ct));
     }
 
-    private async Task<HouseholdDto> MoveToPersonalAsync(AppUser user, CancellationToken ct)
+    /// <summary>Every household the person belongs to, the active one marked.</summary>
+    public async Task<HouseholdResult<IReadOnlyList<HouseholdSummaryDto>>> ListMineAsync(string userId, CancellationToken ct = default)
     {
-        var personal = await store.EnsureAsync(PersonalHouseholdId(user.Id), DefaultName(user), user.Id, ct);
-        await users.SetHouseholdAsync(user.Id, personal.Id, ct);
-        return await ToDtoAsync(personal, user.Id, ct);
+        if (await users.FindByIdAsync(userId, ct) is not { } user)
+        {
+            return new(HouseholdOutcome.NotFound);
+        }
+
+        // A personal household exists from first use on.
+        await EnsureAsync(user, ct);
+        if (user.IsMemberOf(user.PersonalHouseholdId))
+        {
+            await store.EnsureAsync(user.PersonalHouseholdId, DefaultName(user), user.Id, ct);
+        }
+
+        var list = new List<HouseholdSummaryDto>();
+        foreach (var id in user.AllHouseholdIds)
+        {
+            if (await store.FindAsync(id, ct) is not { } household)
+            {
+                continue;
+            }
+
+            list.Add(new HouseholdSummaryDto(
+                household.Id,
+                household.Name,
+                household.Id == user.PersonalHouseholdId,
+                household.Id == user.HouseholdId,
+                household.OwnerId == userId,
+                (await users.ListByHouseholdAsync(household.Id, ct)).Count));
+        }
+
+        return new(HouseholdOutcome.Ok, list);
+    }
+
+    /// <summary>Makes another household of the person the active one (the next token carries it).</summary>
+    public async Task<HouseholdResult<HouseholdDto>> SwitchAsync(string userId, string householdId, CancellationToken ct = default)
+    {
+        if (await users.FindByIdAsync(userId, ct) is not { } user)
+        {
+            return new(HouseholdOutcome.NotFound);
+        }
+
+        if (!user.IsMemberOf(householdId))
+        {
+            return new(HouseholdOutcome.NotFound);
+        }
+
+        var target = householdId == user.PersonalHouseholdId
+            ? await store.EnsureAsync(householdId, DefaultName(user), user.Id, ct)
+            : await store.FindAsync(householdId, ct);
+        if (target is null)
+        {
+            return new(HouseholdOutcome.NotFound);
+        }
+
+        await users.SetHouseholdAsync(userId, target.Id, ct);
+        return new(HouseholdOutcome.Ok, await ToDtoAsync(target, userId, ct));
+    }
+
+    /// <summary>The person leaves (or is removed from) the household. When it was their active one another household of theirs becomes active; that one is returned.</summary>
+    private async Task<HouseholdDto> EndMembershipAsync(AppUser user, string householdId, CancellationToken ct)
+    {
+        var left = await users.RemoveMembershipAsync(user.Id, householdId, ct) ?? user;
+        var active = await store.EnsureAsync(left.HouseholdId, DefaultName(user), user.Id, ct);
+        return await ToDtoAsync(active, user.Id, ct);
     }
 
     private Task<Household> EnsureAsync(AppUser user, CancellationToken ct) =>

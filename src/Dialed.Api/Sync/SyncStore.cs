@@ -3,6 +3,9 @@ using System.Text.Json.Nodes;
 namespace Dialed.Api.Sync;
 
 /// <summary>A synced record as the server holds it: the JSON the app sent plus the server's own bookkeeping.</summary>
+/// <summary>One household to look into and how the reader stands to the author there.</summary>
+public sealed record SharedScope(string HouseholdId, Relationship Reader);
+
 public sealed record SyncRow(string Id, string HouseholdId, DateTimeOffset UpdatedAt, int Version, JsonObject Entity);
 
 public enum StoreOutcome { Stored, VersionMismatch, Forbidden, Invalid }
@@ -23,6 +26,9 @@ public interface ISyncStore
 
     /// <summary>What <paramref name="authorId"/> made in the household that a reader with this relationship may read, newest first, deleted ones left out.</summary>
     Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(string householdId, string authorId, string table, Relationship reader, int skip, int take, CancellationToken cancellationToken = default);
+
+    /// <summary>What the author shares, looked up in several households at once (people can belong to several), newest first.</summary>
+    Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(IReadOnlyList<SharedScope> scopes, string authorId, string table, int skip, int take, CancellationToken cancellationToken = default);
 
     /// <summary>Everything <paramref name="authorId"/> made in the household, whatever its visibility (for the person's own export). Deleted rows are left out.</summary>
     Task<IReadOnlyList<SyncRow>> ListAuthoredAsync(string householdId, string authorId, string table, CancellationToken cancellationToken = default);
@@ -65,16 +71,21 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
         }
     }
 
-    public Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(string householdId, string authorId, string table, Relationship reader, int skip, int take, CancellationToken cancellationToken = default)
+    public Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(string householdId, string authorId, string table, Relationship reader, int skip, int take, CancellationToken cancellationToken = default) =>
+        ListSharedAsync([new SharedScope(householdId, reader)], authorId, table, skip, take, cancellationToken);
+
+    public Task<(IReadOnlyList<SyncRow> Rows, int Total)> ListSharedAsync(IReadOnlyList<SharedScope> scopes, string authorId, string table, int skip, int take, CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
             var all = rows
-                .Where(r => r.Key.Household == householdId && r.Key.Table == table)
-                .Select(r => r.Value)
-                .Where(r => r.Entity["createdBy"]?.GetValue<string>() == authorId
-                    && !(r.Entity["deleted"] is JsonValue d && d.TryGetValue<bool>(out var gone) && gone)
-                    && VisibilityRules.CanRead(VisibilityRules.Of(r.Entity), reader))
+                .Where(r => r.Key.Table == table)
+                .Select(r => (Row: r.Value, Scope: scopes.FirstOrDefault(s => s.HouseholdId == r.Key.Household)))
+                .Where(r => r.Scope is not null)
+                .Where(r => r.Row.Entity["createdBy"]?.GetValue<string>() == authorId
+                    && !(r.Row.Entity["deleted"] is JsonValue d && d.TryGetValue<bool>(out var gone) && gone)
+                    && VisibilityRules.CanRead(VisibilityRules.Of(r.Row.Entity), r.Scope!.Reader))
+                .Select(r => r.Row)
                 .OrderByDescending(r => r.UpdatedAt)
                 .ThenBy(r => r.Id, StringComparer.Ordinal)
                 .ToList();

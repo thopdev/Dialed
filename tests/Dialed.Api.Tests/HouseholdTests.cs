@@ -82,8 +82,12 @@ public sealed class HouseholdTests(WebApplicationFactory<Program> factory) : ICl
         asMember.YouAreOwner.ShouldBeTrue();
         asMember.Members.Single(m => m.IsOwner).UserId.ShouldBe(member.User.Id);
 
-        // The former owner is an ordinary member now: no owner actions, but they can leave.
+        // The former owner is an ordinary member now: no owner actions. It is their only household, so leaving it needs another one first.
         (await owner.Client.PostAsync("/households/mine/invites", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await owner.Client.PostAsync("/households/mine/leave", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        var elsewhere = await NewPerson("Elsewhere");
+        (await Join(owner, await Invite(elsewhere))).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await owner.Client.PostAsJsonAsync("/households/mine/switch", new SwitchRequest(owner.User.HouseholdId), Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
         (await owner.Client.PostAsync("/households/mine/leave", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
@@ -177,17 +181,104 @@ public sealed class HouseholdTests(WebApplicationFactory<Program> factory) : ICl
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
-    public async Task Someone_in_a_shared_household_must_leave_before_joining_another()
+    private static async Task<IReadOnlyList<HouseholdSummaryDto>> Households(Person person) =>
+        (await person.Client.GetFromJsonAsync<List<HouseholdSummaryDto>>("/households", Ct))!;
+
+    /// <summary>A client with a fresh token for the household the person is in right now (the app gets it by refreshing; a new sign-in is the same for a test).</summary>
+    private async Task<HttpClient> ClientFor(Person person) => Authorized(factory, (await NowSignedIn(person)).AccessToken);
+
+    private async Task<TokenResponse> NowSignedIn(Person person)
     {
-        var first = await NewPerson("First owner");
-        var member = await NewPerson("Member");
-        (await Join(member, await Invite(first))).StatusCode.ShouldBe(HttpStatusCode.OK);
-        var other = await NewPerson("Other owner");
+        var user = (await factory.Services.GetRequiredService<IUserDirectory>().FindByIdAsync(person.User.Id, Ct))!;
+        return await factory.Services.GetRequiredService<RefreshTokenService>().SignInAsync(user, Ct);
+    }
 
-        using var response = await Join(member, await Invite(other));
+    private static async Task PutBean(HttpClient client, string name)
+    {
+        var bean = new JsonObject { ["id"] = Guid.NewGuid().ToString(), ["name"] = name, ["deleted"] = false };
+        (await client.PutAsJsonAsync($"/sync/beans/{bean["id"]}", bean, Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
 
-        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    private static async Task<List<string>> BeanNames(HttpClient client) =>
+        (await client.GetFromJsonAsync<SyncPageDto>("/sync/beans?pageSize=100", Ct))!.Records.Select(r => r.Entity["name"]!.GetValue<string>()).ToList();
+
+    [Fact]
+    public async Task Joining_another_household_keeps_the_first_and_switching_changes_what_the_token_sees()
+    {
+        var home = await NewPerson("Home owner");
+        var office = await NewPerson("Office owner");
+        var me = await NewPerson("Me");
+        (await Join(me, await Invite(home))).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await Join(me, await Invite(office))).StatusCode.ShouldBe(HttpStatusCode.OK);
+        await PutBean(await ClientFor(office), "Office beans");
+
+        (await Households(me)).Count.ShouldBe(3); // my own, home and office
+        (await Households(me)).Single(h => h.IsActive).Id.ShouldBe(office.User.HouseholdId);
+        (await BeanNames(await ClientFor(me))).ShouldBe(["Office beans"]);
+
+        using var switched = await me.Client.PostAsJsonAsync("/households/mine/switch", new SwitchRequest(home.User.HouseholdId), Ct);
+        switched.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await Body<HouseholdDto>(switched)).Id.ShouldBe(home.User.HouseholdId);
+        (await NowSignedIn(me)).HouseholdId.ShouldBe(home.User.HouseholdId);
+        (await BeanNames(await ClientFor(me))).ShouldBeEmpty(); // the office's data does not leak into home
+    }
+
+    [Fact]
+    public async Task Switching_to_a_household_you_are_not_in_is_refused()
+    {
+        var me = await NewPerson("Me");
+        var stranger = await NewPerson("Stranger");
+
+        (await me.Client.PostAsJsonAsync("/households/mine/switch", new SwitchRequest(stranger.User.HouseholdId), Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await me.Client.PostAsJsonAsync("/households/mine/switch", new SwitchRequest("nope"), Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await Households(me)).Single().IsActive.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task The_list_marks_the_active_personal_and_owned_households()
+    {
+        var owner = await NewPerson("Owner");
+        var me = await NewPerson("Me");
+        (await Join(me, await Invite(owner))).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var list = await Households(me);
+
+        list.Count.ShouldBe(2);
+        var own = list.Single(h => h.Id == me.User.HouseholdId);
+        own.IsPersonal.ShouldBeTrue();
+        own.IsOwner.ShouldBeTrue();
+        own.IsActive.ShouldBeFalse();
+        var joined = list.Single(h => h.Id == owner.User.HouseholdId);
+        joined.IsActive.ShouldBeTrue();
+        joined.IsOwner.ShouldBeFalse();
+        joined.IsPersonal.ShouldBeFalse();
+        joined.MemberCount.ShouldBe(2);
+        (await Households(await NewPerson("Alone"))).Single().MemberCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Leaving_one_household_goes_back_to_another_of_mine_and_the_only_one_cannot_be_left()
+    {
+        var owner = await NewPerson("Owner");
+        var me = await NewPerson("Me");
+        (await Join(me, await Invite(owner))).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        using var left = await me.Client.PostAsync("/households/mine/leave", null, Ct);
+
+        left.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await Body<HouseholdDto>(left)).Id.ShouldBe(me.User.HouseholdId);
+        (await Households(me)).Select(h => h.Id).ShouldBe([me.User.HouseholdId]);
+        (await me.Client.PostAsync("/households/mine/leave", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Joining_a_household_you_are_already_in_is_refused()
+    {
+        var owner = await NewPerson("Owner");
+        var me = await NewPerson("Me");
+        (await Join(me, await Invite(owner))).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        (await Join(me, await Invite(owner))).StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
     [Fact]

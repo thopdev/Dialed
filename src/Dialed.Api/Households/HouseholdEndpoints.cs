@@ -24,7 +24,13 @@ public static class HouseholdEndpoints
     /// </summary>
     public static IEndpointRouteBuilder MapDialedHouseholds(this IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapGet("/households", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.ListMineAsync(UserId(user), ct))).RequireAuthorization();
+
         var group = endpoints.MapGroup("/households/mine").RequireAuthorization();
+
+        group.MapPost("/switch", async (SwitchRequest request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.SwitchAsync(UserId(user), request.HouseholdId, ct)));
 
         group.MapGet("", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.GetMineAsync(UserId(user), ct)));

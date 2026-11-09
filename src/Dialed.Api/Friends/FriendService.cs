@@ -329,31 +329,31 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
     public static readonly string[] SharedTables = ["beans", "recipes", "brews"];
 
     /// <summary>
-    /// How the viewer stands to the owner for reading: author, same household, accepted follower, blocked or stranger.
+    /// How the viewer stands to the owner for reading, per household of the owner: author, same household, accepted follower, blocked or stranger.
     /// </summary>
-    private async Task<(AppUser? Owner, Relationship Relationship)> ReaderAsync(string viewerId, string ownerId, CancellationToken ct)
+    private async Task<(AppUser? Owner, IReadOnlyList<SharedScope> Scopes)> ReaderAsync(string viewerId, string ownerId, CancellationToken ct)
     {
         if (await users.FindByIdAsync(ownerId, ct) is not { } owner || await users.FindByIdAsync(viewerId, ct) is not { } viewer)
         {
-            return (null, Relationship.Stranger);
+            return (null, []);
         }
 
         var relationship = await RelationshipAsync(viewerId, ownerId, ct);
-        if (relationship == Relationship.Stranger && viewer.HouseholdId == owner.HouseholdId)
-        {
-            relationship = Relationship.HouseholdMember;
-        }
-
-        return (owner, relationship);
+        var scopes = owner.AllHouseholdIds
+            .Select(h => new SharedScope(h, relationship == Relationship.Stranger && viewer.IsMemberOf(h) ? Relationship.HouseholdMember : relationship))
+            .ToList();
+        return (owner, scopes);
     }
 
     private static bool MayBrowse(Relationship relationship) => relationship is Relationship.Author or Relationship.HouseholdMember or Relationship.AcceptedFollower;
 
+    private static bool MayBrowse(IReadOnlyList<SharedScope> scopes) => scopes.Any(s => MayBrowse(s.Reader));
+
     /// <summary>Header of a friend's profile with counts of what is shared with the viewer. Strangers and blocked people get nothing, not even a hint the person exists.</summary>
     public async Task<FriendProfileDto?> ProfileAsync(string viewerId, string ownerId, CancellationToken ct = default)
     {
-        var (owner, relationship) = await ReaderAsync(viewerId, ownerId, ct);
-        if (owner is null || !MayBrowse(relationship))
+        var (owner, scopes) = await ReaderAsync(viewerId, ownerId, ct);
+        if (owner is null || !MayBrowse(scopes))
         {
             return null;
         }
@@ -361,7 +361,7 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         var counts = new Dictionary<string, int>();
         foreach (var table in SharedTables)
         {
-            counts[table] = (await sync.ListSharedAsync(owner.HouseholdId, ownerId, table, relationship, 0, 1, ct)).Total;
+            counts[table] = (await sync.ListSharedAsync(scopes, ownerId, table, 0, 1, ct)).Total;
         }
 
         var followers = (await store.FollowsAsync(ownerId, asFollowee: true, ct)).Count(f => f.Status == FollowStatus.Accepted);
@@ -376,15 +376,15 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
             return null;
         }
 
-        var (owner, relationship) = await ReaderAsync(viewerId, ownerId, ct);
-        if (owner is null || !MayBrowse(relationship))
+        var (owner, scopes) = await ReaderAsync(viewerId, ownerId, ct);
+        if (owner is null || !MayBrowse(scopes))
         {
             return null;
         }
 
         skip = Math.Max(0, skip);
         pageSize = Math.Clamp(pageSize, 1, 50);
-        var (rows, total) = await sync.ListSharedAsync(owner.HouseholdId, ownerId, table, relationship, skip, pageSize, ct);
+        var (rows, total) = await sync.ListSharedAsync(scopes, ownerId, table, skip, pageSize, ct);
         return new SharedPageDto([.. rows.Select(r => r.Entity)], total, skip + rows.Count < total);
     }
 
