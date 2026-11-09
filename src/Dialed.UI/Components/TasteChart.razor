@@ -1,0 +1,49 @@
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+
+@*
+    How a brew tasted, as four small bars that grow left or right from "balanced" in the middle.
+    Read as one sentence ("Acidity: sour 1. Strength: balanced. ..."), so the bars themselves are hidden from screen readers.
+*@
+<div class="dialed-taste-chart" role="img" aria-label="@Description" id="@Id">
+    @foreach (var axis in Axes)
+    {
+        <div class="dialed-taste-chart-row" aria-hidden="true" data-axis="@axis.Key">
+            <span class="dialed-taste-chart-label">@L[axis.LabelKey]</span>
+            <span class="dialed-taste-chart-end">@L[axis.LowKey]</span>
+            <span class="dialed-taste-chart-track">
+                <span class="dialed-taste-chart-fill @(axis.Value < 0 ? "low" : "high")" style="@FillStyle(axis.Value)"></span>
+            </span>
+            <span class="dialed-taste-chart-end">@L[axis.HighKey]</span>
+        </div>
+    }
+</div>
+
+@code {
+    private sealed record Axis(string Key, string LabelKey, string LowKey, string HighKey, int Value);
+
+    [Parameter, EditorRequired]
+    public Taste Taste { get; set; } = new();
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private IEnumerable<Axis> Axes =>
+    [
+        new("acidity", "Taste_Acidity", "Taste_Sour", "Taste_Bitter", Taste.Acidity),
+        new("strength", "Taste_Strength", "Taste_Weak", "Taste_Strong", Taste.Strength),
+        new("body", "Taste_Body", "Taste_Thin", "Taste_Heavy", Taste.Body),
+        new("sweetness", "Taste_Sweetness", "Taste_Flat", "Taste_Sweet", Taste.Sweetness),
+    ];
+
+    /// <summary>Half the track is the most a value can reach (2 of 2).</summary>
+    private static string FillStyle(int value)
+    {
+        var width = 50.0 * Math.Min(Math.Abs(value), Taste.Max) / Taste.Max;
+        var start = value < 0 ? 50 - width : 50;
+        return FormattableString.Invariant($"left: {start:0.##}%; width: {width:0.##}%");
+    }
+
+    private string Description => string.Join(" ", Axes.Select(a =>
+        $"{L[a.LabelKey].Value}: {(a.Value == 0 ? L["History_Balanced"].Value.ToLowerInvariant() : $"{L[a.Value < 0 ? a.LowKey : a.HighKey].Value.ToLowerInvariant()} {Math.Abs(a.Value)}")}."));
+}
