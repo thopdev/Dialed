@@ -65,7 +65,7 @@ public sealed class HouseholdScopeTests
     }
 
     [Fact]
-    public async Task Leaving_or_being_removed_purges_what_others_shared_forgets_positions_and_keeps_own_records()
+    public async Task Leaving_or_being_removed_purges_the_old_household_forgets_positions_and_keeps_nothing_of_it()
     {
         var (alices, bobs) = await BothHaveOneAndShare();
         (await bobState.GetWatermarkAsync("recipes", Ct)).ShouldNotBeNull();
@@ -76,9 +76,7 @@ public sealed class HouseholdScopeTests
         changed.ShouldBeTrue();
         (await bobRecipes.GetAsync(alices.Id, Ct)).ShouldBeNull();
         (await bobRecipes.GetIncludingDeletedAsync(alices.Id, Ct)).ShouldBeNull();
-        var own = await bobRecipes.GetAsync(bobs.Id, Ct);
-        own.ShouldNotBeNull();
-        own.HouseholdId.ShouldBe("h-bob");
+        (await bobRecipes.GetIncludingDeletedAsync(bobs.Id, Ct)).ShouldBeNull(); // his own stays on the server in the old household
         (await bobState.GetWatermarkAsync("recipes", Ct)).ShouldBeNull();
         (await bobState.GetHouseholdAsync(Ct)).ShouldBe("h-bob");
     }
@@ -92,10 +90,41 @@ public sealed class HouseholdScopeTests
         await bob.SwitchHouseholdAsync("h2", Ct);
 
         (await bobRecipes.GetAsync(alices.Id, Ct)).ShouldBeNull();
-        (await bobRecipes.GetAsync(bobs.Id, Ct))!.HouseholdId.ShouldBe("h2");
+        (await bobRecipes.GetIncludingDeletedAsync(bobs.Id, Ct)).ShouldBeNull();
         (await bobState.GetWatermarkAsync("recipes", Ct)).ShouldBeNull();
         (await bobState.GetServerVersionAsync("recipes", alices.Id, Ct)).ShouldBeNull();
-        (await bobState.PendingAsync(Ct)).ShouldContain(e => e.EntityId == bobs.Id);
+    }
+
+    [Fact]
+    public async Task Switching_back_pulls_the_first_household_again_and_never_mixes_them()
+    {
+        var (alices, bobs) = await BothHaveOneAndShare();
+        await bob.SyncAsync(Ct); // Bob's own recipe goes up to h1
+        bobContext.HouseholdId = "h2";
+        await bob.SwitchHouseholdAsync("h2", Ct);
+        await bobRecipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Office" }, Ct);
+        (await bobRecipes.GetAsync(alices.Id, Ct)).ShouldBeNull(); // the first household is not mixed into the second
+        (await bobRecipes.GetAsync(bobs.Id, Ct)).ShouldBeNull();
+
+        bobContext.HouseholdId = "h1";
+        await bob.SwitchHouseholdAsync("h1", Ct);
+        await bob.SyncAsync(Ct);
+
+        (await bobRecipes.GetAsync(alices.Id, Ct)).ShouldNotBeNull();
+        (await bobRecipes.GetAsync(bobs.Id, Ct)).ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Records_made_before_signing_in_move_into_the_household_you_switch_to()
+    {
+        bobContext.HouseholdId = LocalContext.LocalHouseholdId;
+        var local = await bobRecipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Made offline" }, Ct);
+        bobContext.HouseholdId = "h2";
+
+        await bob.SwitchHouseholdAsync("h2", Ct);
+
+        (await bobRecipes.GetAsync(local.Id, Ct))!.HouseholdId.ShouldBe("h2");
+        (await bobState.PendingAsync(Ct)).ShouldContain(e => e.EntityId == local.Id);
     }
 
     [Fact]

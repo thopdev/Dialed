@@ -7,6 +7,7 @@
 
 @* Who is in the household, invite codes, joining, leaving and removing. Needs an account. *@
 <div id="household-panel">
+    <HouseholdPicker Id="household-picker-settings" />
     @if (!Session.IsSignedIn)
     {
         <p id="household-signin-hint" class="dialed-muted">@L["Household_SignInFirst"]</p>
@@ -106,11 +107,23 @@
     protected override async Task OnInitializedAsync()
     {
         Session.Changed += OnSessionChanged;
+        Households.Changed += OnHouseholdsChanged;
         if (Session.IsSignedIn)
         {
             await LoadAsync();
         }
     }
+
+    // The household was switched or changed from elsewhere (the header picker): show the new one.
+    private void OnHouseholdsChanged() => _ = InvokeAsync(async () =>
+    {
+        if (Session.IsSignedIn && !busy)
+        {
+            invite = null;
+            await LoadAsync();
+            StateHasChanged();
+        }
+    });
 
     private void OnSessionChanged()
     {
@@ -193,5 +206,9 @@
         }
     }
 
-    public void Dispose() => Session.Changed -= OnSessionChanged;
+    public void Dispose()
+    {
+        Session.Changed -= OnSessionChanged;
+        Households.Changed -= OnHouseholdsChanged;
+    }
 }

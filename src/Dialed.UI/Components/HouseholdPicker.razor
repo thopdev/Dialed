@@ -1,0 +1,101 @@
+@using Dialed.Client.Account
+@using Dialed.Client.Households
+@implements IDisposable
+@inject HouseholdManager Households
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+
+@* Which household am I looking at? Only shown for people who belong to more than one. *@
+@if (Session.IsSignedIn && list.Count > 1)
+{
+    <div class="dialed-household-picker" id="@Id">
+        <label for="@(Id)-select">@L["Household_Active"]</label>
+        <select id="@(Id)-select" disabled="@busy" @onchange="OnChanged">
+            @foreach (var household in list)
+            {
+                <option value="@household.Id" selected="@household.IsActive">@household.Name</option>
+            }
+        </select>
+        @if (message is not null)
+        {
+            <p class="household-picker-message" role="status">@message</p>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = "household-picker";
+
+    private IReadOnlyList<HouseholdSummary> list = [];
+    private bool busy;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnSessionChanged;
+        Households.Changed += OnHouseholdsChanged;
+        await LoadAsync();
+    }
+
+    private void OnSessionChanged() => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    private void OnHouseholdsChanged() => OnSessionChanged();
+
+    private async Task LoadAsync()
+    {
+        if (!Session.IsSignedIn)
+        {
+            list = [];
+            return;
+        }
+
+        try
+        {
+            list = await Households.ListAsync();
+        }
+        catch (Exception exception) when (exception is AccountApiException or AccountRefusedException)
+        {
+            // Offline: keep what we had. The picker is a convenience, the app still works in the household it is in.
+        }
+    }
+
+    private async Task OnChanged(ChangeEventArgs args)
+    {
+        var id = args.Value?.ToString();
+        if (string.IsNullOrEmpty(id) || list.FirstOrDefault(h => h.IsActive)?.Id == id)
+        {
+            return;
+        }
+
+        busy = true;
+        message = null;
+        try
+        {
+            await Households.SwitchAsync(id);
+        }
+        catch (AccountRefusedException exception)
+        {
+            message = exception.Message;
+        }
+        catch (AccountApiException exception)
+        {
+            message = exception.Message.StartsWith("Some changes", StringComparison.Ordinal) ? L["Household_SwitchPending"] : L["Account_Unavailable"];
+        }
+        finally
+        {
+            busy = false;
+            await LoadAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        Session.Changed -= OnSessionChanged;
+        Households.Changed -= OnHouseholdsChanged;
+    }
+}

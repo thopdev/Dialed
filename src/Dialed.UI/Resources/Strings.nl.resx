@@ -548,4 +548,6 @@
   <data name="Recovery_Submit" xml:space="preserve"><value>Account herstellen</value></data>
   <data name="Recovery_EmailSent" xml:space="preserve"><value>Als dit adres een account heeft, is er een code onderweg.</value></data>
   <data name="Recovery_Missing" xml:space="preserve"><value>Vul je e-mailadres en een code in.</value></data>
+  <data name="Household_Active" xml:space="preserve"><value>Huishouden</value></data>
+  <data name="Household_SwitchPending" xml:space="preserve"><value>Sommige wijzigingen zijn nog niet verstuurd. Wacht tot alles gesynchroniseerd is en wissel dan.</value></data>
 </root>

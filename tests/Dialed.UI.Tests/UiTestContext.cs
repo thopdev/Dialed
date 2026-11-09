@@ -308,6 +308,11 @@ public abstract class UiTestContext : BunitContext
 
         public bool YouAreOwner { get; set; } = true;
 
+        /// <summary>The households the person belongs to (id, name); the one named by <see cref="ActiveId"/> is active.</summary>
+        public List<(string Id, string Name)> Households { get; set; } = [("h1", "Home")];
+
+        public string ActiveId { get; set; } = "h1";
+
         public List<string> Calls { get; } = [];
 
         /// <summary>Overrides the answer for "METHOD path"; return <c>null</c> for the default answer.</summary>
@@ -320,6 +325,16 @@ public abstract class UiTestContext : BunitContext
             if (Respond?.Invoke(call) is { } custom)
             {
                 return Task.FromResult(custom);
+            }
+
+            if (call == "GET households")
+            {
+                return Task.FromResult(Json("[" + string.Join(",", Households.Select(h => $"{{\"id\":\"{h.Id}\",\"name\":\"{h.Name}\",\"isPersonal\":false,\"isActive\":{(h.Id == ActiveId ? "true" : "false")},\"isOwner\":true,\"memberCount\":1}}")) + "]"));
+            }
+
+            if (call == "POST households/mine/switch")
+            {
+                ActiveId = System.Text.Json.JsonDocument.Parse(request.Content!.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult()).RootElement.GetProperty("householdId").GetString()!;
             }
 
             if (call == "POST households/mine/invites")
