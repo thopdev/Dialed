@@ -21,7 +21,7 @@ public sealed partial class InstallMetadataTests
 
     private static string Index => File.ReadAllText(Path.Combine(Web, "index.html"));
 
-    [GeneratedRegex("""rel="apple-touch-startup-image" href="([^"]+)" media="([^"]+)\"""")]
+    [GeneratedRegex("rel=\"apple-touch-startup-image\" href=\"([^\"]+)\" media=\"([^\"]+)\"")]
     private static partial Regex Splash();
 
     [Fact]
