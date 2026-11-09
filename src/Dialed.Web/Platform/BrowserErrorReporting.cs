@@ -1,6 +1,7 @@
 using Dialed.Client.Platform;
 using Dialed.Client.Telemetry;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Dialed.Web.Platform;
 

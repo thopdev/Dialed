@@ -29,7 +29,7 @@ public sealed class ErrorReportingUiTests : UiTestContext
         report.Kind.ShouldBe("unhandled");
         report.Type.ShouldBe("System.InvalidOperationException");
         report.Message.ShouldBeNull();
-        report.Stack.ShouldNotContain("Ethiopia");
+        report.Stack?.ShouldNotContain("Ethiopia");
         report.AppVersion.ShouldNotBeNullOrWhiteSpace();
         screen.Markup.ShouldContain("broken");
     }
