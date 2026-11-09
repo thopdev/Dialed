@@ -15,7 +15,8 @@ public static class ProtectionExtensions
     {
         var options = configuration.GetSection(ProtectionOptions.Section).Get<ProtectionOptions>() ?? new ProtectionOptions();
         services.AddSingleton(options);
-        services.AddProblemDetails();
+        services.AddProblemDetails(problem => problem.CustomizeProblemDetails = context =>
+            context.ProblemDetails.Extensions["correlationId"] = Correlation.Of(context.HttpContext));
         services.AddRateLimiter(limiter =>
         {
             limiter.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -28,9 +29,9 @@ public static class ProtectionExtensions
                 }
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                await context.HttpContext.Response.WriteAsJsonAsync(
-                    new ProblemDetails { Status = StatusCodes.Status429TooManyRequests, Title = "Too many requests", Detail = "Slow down and try again in a moment." },
-                    cancellationToken);
+                var problem = new ProblemDetails { Status = StatusCodes.Status429TooManyRequests, Title = "Too many requests", Detail = "Slow down and try again in a moment." };
+                problem.Extensions["correlationId"] = Correlation.Of(context.HttpContext);
+                await context.HttpContext.Response.WriteAsJsonAsync(problem, cancellationToken);
             };
         });
         return services;

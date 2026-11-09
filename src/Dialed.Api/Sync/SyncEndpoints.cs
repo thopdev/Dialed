@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Dialed.Api.Auth;
+using Dialed.Telemetry;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Dialed.Api.Sync;
@@ -43,6 +44,7 @@ public static class SyncEndpoints
 
             var viewer = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
             var (rows, hasMore) = await store.PullAsync(household, viewer, table, afterUpdatedAt, afterId, pageSize ?? 100, ct);
+            DialedTelemetry.SyncPulls.Add(1, new KeyValuePair<string, object?>("table", table));
             return Results.Ok(new SyncPageDto([.. rows.Select(ToDto)], hasMore));
         });
 
@@ -55,12 +57,26 @@ public static class SyncEndpoints
 
             if (SyncPayloadValidator.Validate(id, entity) is { Count: > 0 } problems)
             {
+                DialedTelemetry.SyncPushes.Add(1, new KeyValuePair<string, object?>("table", table), new KeyValuePair<string, object?>("outcome", "invalid"));
                 return Results.ValidationProblem(problems);
             }
 
             var ifMatch = request.Headers.IfMatch.ToString().Trim('"');
             var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
             var result = await store.PushAsync(household, userId, table, id, entity, string.IsNullOrEmpty(ifMatch) ? null : ifMatch, ct);
+
+            var outcome = result.Outcome switch
+            {
+                StoreOutcome.Stored => "stored",
+                StoreOutcome.VersionMismatch => "conflict",
+                StoreOutcome.Forbidden => "forbidden",
+                _ => "invalid",
+            };
+            DialedTelemetry.SyncPushes.Add(1, new KeyValuePair<string, object?>("table", table), new KeyValuePair<string, object?>("outcome", outcome));
+            if (result.Outcome == StoreOutcome.VersionMismatch)
+            {
+                DialedTelemetry.SyncConflicts.Add(1, new KeyValuePair<string, object?>("table", table));
+            }
 
             return result.Outcome switch
             {

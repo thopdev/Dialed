@@ -32,6 +32,8 @@ builder.Services.AddDevelopmentSeeding(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseCorrelationId();
+app.UseExceptionHandler(); // unexpected errors become a ProblemDetails with the correlation id, never a stack trace
 app.UseCors();
 app.UseRequestSizeLimit();
 app.UseAuthentication();
