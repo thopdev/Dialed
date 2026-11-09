@@ -676,4 +676,28 @@
   <data name="Settings_GroupHousehold" xml:space="preserve"><value>Huishouden</value></data>
   <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="People_State_Waiting" xml:space="preserve"><value>Wacht op antwoord</value></data>
+  <data name="Home_GoodMorning" xml:space="preserve"><value>Goedemorgen</value></data>
+  <data name="Home_GoodAfternoon" xml:space="preserve"><value>Goedemiddag</value></data>
+  <data name="Home_GoodEvening" xml:space="preserve"><value>Goedenavond</value></data>
+  <data name="Home_GoodMorningName" xml:space="preserve"><value>Goedemorgen, {0}</value></data>
+  <data name="Home_GoodAfternoonName" xml:space="preserve"><value>Goedemiddag, {0}</value></data>
+  <data name="Home_GoodEveningName" xml:space="preserve"><value>Goedenavond, {0}</value></data>
+  <data name="Home_NoBrewsToday" xml:space="preserve"><value>Vandaag nog niets gezet.</value></data>
+  <data name="Home_BrewsTodayOne" xml:space="preserve"><value>{0} keer gezet vandaag, laatst om {1}.</value></data>
+  <data name="Home_BrewsToday" xml:space="preserve"><value>{0} keer gezet vandaag, laatst om {1}.</value></data>
+  <data name="Home_Recent" xml:space="preserve"><value>Recent gezet</value></data>
+  <data name="Home_SeeAll" xml:space="preserve"><value>Alles bekijken</value></data>
+  <data name="Home_RemainingOf" xml:space="preserve"><value>Koffie over in {0}</value></data>
+  <data name="Home_LeftOf" xml:space="preserve"><value>{0} van {1} over</value></data>
+  <data name="Day_Today" xml:space="preserve"><value>Vandaag</value></data>
+  <data name="Day_Yesterday" xml:space="preserve"><value>Gisteren</value></data>
+  <data name="Brew_OfWeight" xml:space="preserve"><value>van {0}</value></data>
+  <data name="Brew_Days" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Brew_SinceRoast" xml:space="preserve"><value>Sinds branden</value></data>
+  <data name="Brew_SectionWhat" xml:space="preserve"><value>Methode en drankje</value></data>
+  <data name="Brew_SectionNumbers" xml:space="preserve"><value>Waarden</value></data>
+  <data name="Brew_SectionNotes" xml:space="preserve"><value>Foto's en notities</value></data>
+  <data name="Brew_Ratio" xml:space="preserve"><value>Verhouding</value></data>
+  <data name="Timer_Progress" xml:space="preserve"><value>Voortgang</value></data>
+  <data name="Timer_ProgressValue" xml:space="preserve"><value>{0} van {1}</value></data>
 </root>

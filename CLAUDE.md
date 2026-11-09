@@ -4,7 +4,7 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 
 ## Build, test, run
 - `dotnet build Dialed.slnx` and `dotnet test --solution Dialed.slnx` (xUnit v3 + Shouldly on Microsoft.Testing.Platform; bUnit for screens). Warnings are errors, so a clean build matters.
-- Run the app: `dotnet run --project src/Dialed.AppHost` (Aspire) or the Web and Api projects separately. Development host validates DI scopes. `/auth/dev` logs in as alice, bob or carol in Development.
+- Run the app: `dotnet run --project src/Dialed.AppHost` (Aspire) or the Web and Api projects separately. Development host validates DI scopes. `/auth/dev` logs in as alice, bob or carol in Development. With `Seed__Enabled=true` (set by the AppHost) the API fills alice and bob's household with demo beans, bags, recipes and brews (`DemoDataSeeder`).
 - `/dev/gallery` shows every component in light/dark. Check UI work at iPhone width (about 390 px) and iPad, in light and dark mode.
 
 ## Architecture rules (enforced by `tests/Dialed.ArchitectureTests`)

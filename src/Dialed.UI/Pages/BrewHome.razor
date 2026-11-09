@@ -12,6 +12,8 @@
 @inject IRepository<Recipe> RecipeStore
 @inject IRepository<Brew> BrewStore
 @inject UnitFormatter Units
+@inject IUserPreferences Preferences
+@inject TimeProvider Time
 
 <ListDetailLayout HasSelection="@(BagId is not null)">
     <List>
@@ -23,16 +25,29 @@
         }
         else if (Active.Count == 0)
         {
-            <EmptyState Message="@L["Brew_NoBags"]" />
-            <a class="dialed-button dialed-button-primary" href="bags/new">@L["Bags_New"]</a>
+            <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Brew_NoBags"]">
+                <a class="dialed-button dialed-button-primary" href="bags/new">@L["Bags_New"]</a>
+            </EmptyState>
         }
         else
         {
             <p class="dialed-muted">@L["Brew_PickBag"]</p>
-            <div class="dialed-list">
-                @foreach (var bag in Active)
+            <div class="dialed-list" id="brew-bags">
+                @foreach (var item in Active)
                 {
-                    <ListRow Title="@BeanName(bag.BeanId)" Subtitle="@LeftText(bag)" Href="@($"brew/{bag.Id}")" />
+                    <ListRow Title="@Name(item)" Subtitle="@PickSubtitle(item)" Href="@($"brew/{item.Bag.Id}")" data-bag="@item.Bag.Id">
+                        <Leading><Thumb PhotoId="@PhotoOf(item.Bag.BeanId)" Size="48" /></Leading>
+                        <Trailing>
+                            @if (item.Bag.Status == BagStatus.Sealed)
+                            {
+                                <Chip>@L["BagStatus_Sealed"]</Chip>
+                            }
+                            else if (item.Freshness != Freshness.Unknown)
+                            {
+                                <Chip>@L[$"Fresh_{item.Freshness}"]</Chip>
+                            }
+                        </Trailing>
+                    </ListRow>
                 }
             </div>
         }
@@ -40,7 +55,7 @@
     <Detail>
         @if (BagId is null)
         {
-            <EmptyState Message="@L["Brew_SelectPrompt"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.DrinkCoffee())" Message="@L["Brew_SelectPrompt"]" />
         }
         else if (current is null)
         {
@@ -50,14 +65,39 @@
         else
         {
             <PageHeader Title="@BeanName(current.BeanId)" BackHref="brew" />
-            <p class="dialed-muted">@LeftText(current)</p>
+
+            @if (currentStock is not null)
+            {
+                <Card class="dialed-card dialed-brew-bag" id="brew-bag-summary">
+                    <div class="dialed-brew-bag-top">
+                        <Thumb PhotoId="@PhotoOf(current.BeanId)" Size="72" />
+                        <div class="dialed-stat-grid">
+                            <StatTile Value="@Units.Weight(currentStock.RemainingG)" Label="@L["Bag_Remaining"]" Hint="@string.Format(L["Brew_OfWeight"].Value, Units.Weight(current.WeightG))" />
+                            @if (currentStock.AgeDays is { } age)
+                            {
+                                <StatTile Value="@string.Format(L["Brew_Days"].Value, age)" Label="@L["Brew_SinceRoast"]" Hint="@(currentStock.Freshness == Freshness.Unknown ? null : L[$"Fresh_{currentStock.Freshness}"].Value)" />
+                            }
+                        </div>
+                    </div>
+                    <Meter Label="@L["Bag_Remaining"]" Fraction="@(current.WeightG > 0 ? (double)(currentStock.RemainingG / current.WeightG) : 0)"
+                           Tone="@(currentStock.IsLow ? Meter.MeterTone.Warning : Meter.MeterTone.Normal)"
+                           ValueText="@string.Format(L["Home_LeftOf"].Value, Units.Weight(currentStock.RemainingG), Units.Weight(current.WeightG))" />
+                </Card>
+            }
 
             @if (last is not null)
             {
-                <a id="brew-again" class="dialed-button dialed-button-primary" href="@($"brew/{current.Id}/log/again/{last.Id}")">@L["Brew_Again"] · @Describe(last)</a>
+                <a id="brew-again" class="dialed-card dialed-card-link dialed-brew-again" href="@($"brew/{current.Id}/log/again/{last.Id}")">
+                    <MethodIcon Code="@last.MethodCode" />
+                    <span class="dialed-row-text">
+                        <span class="dialed-row-title">@L["Brew_Again"]</span>
+                        <span class="dialed-row-subtitle">@Describe(last)</span>
+                    </span>
+                    <span class="dialed-row-chevron" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.ChevronRight())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                </a>
             }
 
-            <h2>@L["Brew_WithRecipe"]</h2>
+            <SectionHeader Title="@L["Brew_WithRecipe"]" />
             @if (recipesForBag.Count == 0)
             {
                 <p class="dialed-muted">@L["Brew_NoRecipes"]</p>
@@ -68,8 +108,13 @@
                     @foreach (var recipe in recipesForBag)
                     {
                         <div class="dialed-recipe-choice">
-                            <ListRow Title="@recipe.Name" Subtitle="@MethodName(recipe.MethodCode)" Href="@($"brew/{current.Id}/log/recipe/{recipe.Id}")" />
-                            <a class="dialed-button" href="@($"brew/{current.Id}/timer/{recipe.Id}")" aria-label="@string.Format(L["Timer_StartFor"].Value, recipe.Name)">@L["Timer_Start"]</a>
+                            <ListRow Title="@recipe.Name" Subtitle="@RecipeSummary(recipe)" Href="@($"brew/{current.Id}/log/recipe/{recipe.Id}")">
+                                <Leading><MethodIcon Code="@recipe.MethodCode" /></Leading>
+                            </ListRow>
+                            <a class="dialed-button dialed-button-icon" href="@($"brew/{current.Id}/timer/{recipe.Id}")" aria-label="@string.Format(L["Timer_StartFor"].Value, recipe.Name)">
+                                <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.Timer())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                                @L["Timer_Start"]
+                            </a>
                         </div>
                     }
                 </div>
@@ -84,6 +129,8 @@
 
 @code {
     private IReadOnlyList<Bag>? bags;
+    private IReadOnlyList<BagStock> stock = [];
+    private BagStock? currentStock;
     private IReadOnlyList<Bean> beans = [];
     private IReadOnlyList<Brew> brews = [];
     private IReadOnlyList<Recipe> recipes = [];
@@ -94,8 +141,11 @@
     [Parameter]
     public string? BagId { get; set; }
 
-    private IReadOnlyList<Bag> Active =>
-        [.. (bags ?? []).Where(b => b.Status != BagStatus.Finished && b.Status != BagStatus.Frozen).OrderBy(b => BeanName(b.BeanId), StringComparer.OrdinalIgnoreCase)];
+    /// <summary>Open bags first (what you are brewing from), then sealed ones; frozen and finished bags are not offered.</summary>
+    private IReadOnlyList<BagStock> Active =>
+        [.. stock.Where(s => s.Bag.Status is BagStatus.Open or BagStatus.Sealed)
+            .OrderBy(s => s.Bag.Status == BagStatus.Open ? 0 : 1)
+            .ThenBy(s => Name(s), StringComparer.OrdinalIgnoreCase)];
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,7 +164,9 @@
         beans = await BeanStore.ListAsync();
         brews = await BrewStore.ListAsync();
         recipes = await RecipeStore.ListAsync();
+        stock = InventoryOverview.Build(bags, beans, brews, DateOnly.FromDateTime(Time.GetLocalNow().DateTime), Preferences.Inventory);
         current = BagId is null ? null : bags.FirstOrDefault(b => b.Id == BagId);
+        currentStock = current is null ? null : stock.FirstOrDefault(s => s.Bag.Id == current.Id);
         last = current is null ? null : BrewPrefill.Last(current.Id, brews);
         recipesForBag = current is null
             ? []
@@ -133,22 +185,36 @@
 
     private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
 
-    private string LeftText(Bag bag)
+    private string Name(BagStock item) => item.BeanName.Length > 0 ? item.BeanName : L["Bag_UnknownBean"].Value;
+
+    private string? PhotoOf(string beanId) => beans.FirstOrDefault(b => b.Id == beanId)?.PhotoIds.FirstOrDefault();
+
+    private string PickSubtitle(BagStock item)
     {
-        var remaining = BagInventory.Remaining(bag.WeightG, brews.Where(b => b.BagId == bag.Id && !b.Deleted).Select(b => b.DoseG), []);
-        return string.Format(L["Brew_Left"].Value, Units.Weight(BagInventory.Display(remaining)));
+        var parts = new List<string> { string.Format(L["Brew_Left"].Value, Units.Weight(item.RemainingG)) };
+        if (item.AgeDays is { } age)
+        {
+            parts.Add(string.Format(L["Stock_DaysSinceRoast"].Value, age));
+        }
+
+        return string.Join(" · ", parts);
+    }
+
+    private string RecipeSummary(Recipe recipe)
+    {
+        var parts = new List<string> { MethodName(recipe.MethodCode) };
+        if (recipe.DoseG is { } dose)
+        {
+            parts.Add((recipe.WaterG ?? recipe.YieldG) is { } liquid ? $"{Units.Weight(dose)} → {Units.Weight(liquid)}" : Units.Weight(dose));
+        }
+
+        return string.Join(" · ", parts);
     }
 
     private string Describe(Brew brew)
     {
-        var parts = new List<string> { Units.Weight(brew.DoseG) };
-        if ((brew.WaterG ?? brew.YieldG) is { } liquid)
-        {
-            parts.Add(Units.Weight(liquid));
-        }
-
-        parts.Add(MethodName(brew.MethodCode));
-        return string.Join(" · ", parts);
+        var amounts = (brew.WaterG ?? brew.YieldG) is { } liquid ? $"{Units.Weight(brew.DoseG)} → {Units.Weight(liquid)}" : Units.Weight(brew.DoseG);
+        return $"{amounts} · {MethodName(brew.MethodCode)}";
     }
 
     public void Dispose()

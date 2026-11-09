@@ -1,4 +1,6 @@
 @page "/"
+@using System.Globalization
+@using Dialed.Client.Account
 @using Dialed.Client.Data
 @using Dialed.Client.Preferences
 @using Dialed.Domain.BrewMethods
@@ -10,11 +12,12 @@
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Brew> BrewStore
 @inject IUserPreferences Preferences
+@inject AuthSession Session
 @inject UnitFormatter Units
 @inject TimeProvider Time
 @inject NavigationManager Navigation
 
-<PageHeader Title="@L["Nav_Home"]" />
+<PageHeader Title="@Greeting" />
 
 @if (stock is null)
 {
@@ -22,55 +25,110 @@
 }
 else if (beanCount == 0)
 {
-    <EmptyState Title="@L["Home_WelcomeTitle"]" Message="@L["Home_Welcome"]">
+    <EmptyState Icon="@(new Icons.Regular.Size24.DrinkCoffee())" Title="@L["Home_WelcomeTitle"]" Message="@L["Home_Welcome"]">
         <a id="home-first-bean" class="dialed-button dialed-button-primary" href="beans/new">@L["Home_AddFirstBean"]</a>
     </EmptyState>
 }
 else
 {
-    <div class="dialed-form-actions dialed-home-actions">
-        <a id="home-log-brew" class="dialed-button dialed-button-primary" href="brew">@L["Home_LogBrew"]</a>
-        <a id="home-scan-bag" class="dialed-button" href="scan">@L["Home_ScanBag"]</a>
-    </div>
-    <p class="dialed-muted">@L["Home_ScanHint"]</p>
+    <p id="home-status" class="dialed-home-status">@Status</p>
 
-    <h2>@L["Home_OpenBags"]</h2>
+    <div class="dialed-home-actions">
+        <a id="home-log-brew" class="dialed-button dialed-button-primary dialed-button-icon" href="brew">
+            <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.DrinkCoffee())" Color="Color.Custom" CustomColor="currentColor" /></span>
+            @L["Home_LogBrew"]
+        </a>
+        <a id="home-scan-bag" class="dialed-button dialed-button-icon" href="scan" aria-describedby="home-scan-hint">
+            <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.ScanCamera())" Color="Color.Custom" CustomColor="currentColor" /></span>
+            @L["Home_ScanBag"]
+        </a>
+    </div>
+    <p id="home-scan-hint" class="dialed-home-hint">@L["Home_ScanHint"]</p>
+
+    <SectionHeader Title="@L["Home_OpenBags"]">
+        <Actions><a id="home-inventory" class="dialed-section-link" href="inventory">@L["Stock_Title"]</a></Actions>
+    </SectionHeader>
     @if (OpenBags.Count == 0)
     {
-        <p class="dialed-muted">@L["Home_NoOpenBags"]</p>
-        <a href="bags/new">@L["Bags_New"]</a>
+        <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Home_NoOpenBags"]">
+            <a id="home-new-bag" class="dialed-button" href="bags/new">@L["Bags_New"]</a>
+        </EmptyState>
     }
     else
     {
-        <div class="dialed-list" id="home-open-bags">
+        <div class="dialed-card-grid" id="home-open-bags">
             @foreach (var item in OpenBags)
             {
-                <BagStockRow Stock="item" />
+                <BagInUseCard Stock="item" PhotoId="@PhotoOf(item.Bag.BeanId)" />
             }
         </div>
     }
 
     @if (again.Count > 0)
     {
-        <h2>@L["Home_BrewAgain"]</h2>
+        <SectionHeader Title="@L["Home_BrewAgain"]" />
         <div class="dialed-list" id="home-brew-again">
             @foreach (var brew in again)
             {
-                <ListRow Title="@BeanName(brew)" Subtitle="@Describe(brew)" Href="@($"brew/{brew.BagId}/log/again/{brew.Id}")" data-brew="@brew.Id" />
+                <ListRow Title="@BeanName(brew)" Subtitle="@Describe(brew)" Href="@($"brew/{brew.BagId}/log/again/{brew.Id}")" data-brew="@brew.Id">
+                    <Leading><MethodIcon Code="@brew.MethodCode" /></Leading>
+                    <Trailing><RatingBadge Value="@(brew.Rating ?? 0)" /></Trailing>
+                </ListRow>
             }
         </div>
     }
 
-    <p><a href="inventory">@L["Stock_Title"]</a></p>
+    @if (recent.Count > 0)
+    {
+        <SectionHeader Title="@L["Home_Recent"]">
+            <Actions><a id="home-history" class="dialed-section-link" href="history">@L["Home_SeeAll"]</a></Actions>
+        </SectionHeader>
+        <div class="dialed-list" id="home-recent">
+            @foreach (var brew in recent)
+            {
+                <ListRow Title="@BeanName(brew)" Subtitle="@When(brew)" Href="@($"history/{brew.Id}")" data-brew="@brew.Id">
+                    <Leading><MethodIcon Code="@brew.MethodCode" /></Leading>
+                    <Trailing>
+                        @if (brew.Rating is { } rating)
+                        {
+                            <RatingBadge Value="rating" />
+                        }
+                    </Trailing>
+                </ListRow>
+            }
+        </div>
+    }
 }
 
 @code {
     private IReadOnlyList<BagStock>? stock;
     private IReadOnlyList<Brew> again = [];
+    private IReadOnlyList<Brew> recent = [];
+    private int brewsToday;
+    private Brew? lastToday;
     private int beanCount;
+    private Dictionary<string, Bean> beansById = [];
+    private Dictionary<string, string> bagBeans = [];
 
     private IReadOnlyList<BagStock> OpenBags =>
         [.. (stock ?? []).Where(s => s.Bag.Status == BagStatus.Open).OrderBy(s => s.BeanName, StringComparer.OrdinalIgnoreCase)];
+
+    private DateTimeOffset Now => Time.GetLocalNow();
+
+    private string Greeting
+    {
+        get
+        {
+            var hour = Now.Hour;
+            var key = hour is >= 5 and <= 11 ? "Home_GoodMorning" : hour is >= 12 and <= 17 ? "Home_GoodAfternoon" : "Home_GoodEvening";
+            var name = FirstName(Preferences.Profile.DisplayName) ?? FirstName(Session.DisplayName);
+            return name is null ? L[key].Value : string.Format(L[$"{key}Name"].Value, name);
+        }
+    }
+
+    private string Status => lastToday is null
+        ? L["Home_NoBrewsToday"].Value
+        : string.Format(L[brewsToday == 1 ? "Home_BrewsTodayOne" : "Home_BrewsToday"].Value, brewsToday, Clock(lastToday.BrewedAt));
 
     protected override async Task OnInitializedAsync()
     {
@@ -84,6 +142,7 @@ else
         BeanStore.Changed += OnChanged;
         BrewStore.Changed += OnChanged;
         Preferences.Changed += OnChanged;
+        Session.Changed += OnChanged;
         await LoadAsync();
     }
 
@@ -92,22 +151,19 @@ else
         var bags = await BagStore.ListAsync();
         var beans = await BeanStore.ListAsync();
         var brews = await BrewStore.ListAsync();
-        var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        var today = DateOnly.FromDateTime(Now.DateTime);
         beanCount = beans.Count(b => !b.Deleted);
         stock = InventoryOverview.Build(bags, beans, brews, today, Preferences.Inventory);
-        beanNames = beans.ToDictionary(b => b.Id, b => b.Name);
+        beansById = beans.Where(b => !b.Deleted).ToDictionary(b => b.Id);
         bagBeans = bags.ToDictionary(b => b.Id, b => b.BeanId);
+        var live = brews.Where(b => !b.Deleted).OrderByDescending(b => b.BrewedAt).ToList();
         var usable = stock.Where(s => s.Bag.Status != BagStatus.Finished).Select(s => s.Bag.Id).ToHashSet();
-        again =
-        [
-            .. brews.Where(b => !b.Deleted && b.Rating >= 4 && usable.Contains(b.BagId))
-                .OrderByDescending(b => b.BrewedAt)
-                .Take(3),
-        ];
+        again = [.. live.Where(b => b.Rating >= 4 && usable.Contains(b.BagId)).Take(3)];
+        recent = [.. live.Take(3)];
+        var todays = live.Where(b => DateOnly.FromDateTime(b.BrewedAt.ToLocalTime().DateTime) == today).ToList();
+        brewsToday = todays.Count;
+        lastToday = todays.FirstOrDefault();
     }
-
-    private Dictionary<string, string> beanNames = [];
-    private Dictionary<string, string> bagBeans = [];
 
     private void OnChanged() => _ = InvokeAsync(async () =>
     {
@@ -115,20 +171,34 @@ else
         StateHasChanged();
     });
 
+    private static string? FirstName(string? name) =>
+        string.IsNullOrWhiteSpace(name) ? null : name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
+
+    private static string Clock(DateTimeOffset at) => at.ToLocalTime().ToString("t", CultureInfo.CurrentCulture);
+
+    private string? PhotoOf(string beanId) => beansById.TryGetValue(beanId, out var bean) ? bean.PhotoIds.FirstOrDefault() : null;
+
     private string BeanName(Brew brew) =>
-        bagBeans.TryGetValue(brew.BagId, out var beanId) && beanNames.TryGetValue(beanId, out var name) ? name : L["Bag_UnknownBean"].Value;
+        bagBeans.TryGetValue(brew.BagId, out var beanId) && beansById.TryGetValue(beanId, out var bean) ? bean.Name : L["Bag_UnknownBean"].Value;
+
+    private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
 
     private string Describe(Brew brew)
     {
-        var parts = new List<string> { Units.Weight(brew.DoseG) };
-        if ((brew.WaterG ?? brew.YieldG) is { } liquid)
-        {
-            parts.Add(Units.Weight(liquid));
-        }
+        var amounts = (brew.WaterG ?? brew.YieldG) is { } liquid
+            ? $"{Units.Weight(brew.DoseG)} → {Units.Weight(liquid)}"
+            : Units.Weight(brew.DoseG);
+        return $"{amounts} · {MethodName(brew.MethodCode)}";
+    }
 
-        parts.Add(BrewMethodCatalog.Default.Find(brew.MethodCode)?.Name ?? brew.MethodCode);
-        parts.Add($"{brew.Rating}/5");
-        return string.Join(" · ", parts);
+    private string When(Brew brew)
+    {
+        var day = DateOnly.FromDateTime(brew.BrewedAt.ToLocalTime().DateTime);
+        var today = DateOnly.FromDateTime(Now.DateTime);
+        var dayText = day == today ? L["Day_Today"].Value
+            : day == today.AddDays(-1) ? L["Day_Yesterday"].Value
+            : day.ToString("ddd d MMM", CultureInfo.CurrentCulture);
+        return $"{dayText} {Clock(brew.BrewedAt)} · {L[$"DrinkType_{brew.DrinkType}"].Value}";
     }
 
     public void Dispose()
@@ -137,5 +207,6 @@ else
         BeanStore.Changed -= OnChanged;
         BrewStore.Changed -= OnChanged;
         Preferences.Changed -= OnChanged;
+        Session.Changed -= OnChanged;
     }
 }

@@ -417,6 +417,7 @@ button.dialed-chip::after {
 .dialed-grind-error {
     color: var(--colorPaletteRedForeground1);
     font-size: 0.875rem;
+}
 
 .dialed-units-setting {
     display: flex;
@@ -1053,11 +1054,12 @@ button.dialed-chip::after {
     background: var(--colorBrandBackground, #6f4e37);
 }
 
-.dialed-avatar-1 { background: var(--colorPaletteGreenBackground3, #107c10); }
-.dialed-avatar-2 { background: var(--colorPaletteBlueBackground2, #0f6cbd); }
-.dialed-avatar-3 { background: var(--colorPalettePurpleBackground2, #8764b8); }
-.dialed-avatar-4 { background: var(--colorPaletteDarkOrangeBackground3, #bc4b09); }
-.dialed-avatar-5 { background: var(--colorPaletteTealBackground2, #038387); }
+/* Tint plus deep text from the same palette: Fluent swaps the pair in dark mode, both stay above 4.5:1. */
+.dialed-avatar-1 { background: var(--colorPaletteGreenBackground2, #9fd89f); color: var(--colorPaletteGreenForeground2, #094509); }
+.dialed-avatar-2 { background: var(--colorPaletteBlueBackground2, #a9d3f2); color: var(--colorPaletteBlueForeground2, #004377); }
+.dialed-avatar-3 { background: var(--colorPalettePurpleBackground2, #c6b1de); color: var(--colorPalettePurpleForeground2, #341a51); }
+.dialed-avatar-4 { background: var(--colorPaletteDarkOrangeBackground2, #f4bfab); color: var(--colorPaletteDarkOrangeForeground2, #7a2101); }
+.dialed-avatar-5 { background: var(--colorPaletteTealBackground2, #9bd9db); color: var(--colorPaletteTealForeground2, #02494c); }
 
 .dialed-thumb {
     --dialed-thumb-size: 56px;
@@ -1142,6 +1144,7 @@ button.dialed-chip::after {
 .dialed-section-actions {
     display: flex;
     gap: var(--dialed-space-2);
+}
 
 /* ---- Label scan (#83) ----------------------------------------------------------------------- */
 
@@ -1205,6 +1208,110 @@ button.dialed-chip::after {
     border-radius: var(--dialed-radius-pill);
     background: var(--colorNeutralBackground3, #f5f5f5);
     color: var(--colorBrandForeground1, #6f4e37);
+}
+
+/* ---- Home and Brew (#213) ------------------------------------------------------------------- */
+
+.dialed-home-status {
+    margin: calc(-1 * var(--dialed-space-2)) 0 var(--dialed-space-4);
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-m);
+}
+
+.dialed-home-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--dialed-space-2);
+    max-width: 28rem;
+}
+
+.dialed-home-actions .dialed-button {
+    min-height: 3.25rem;
+}
+
+.dialed-home-hint {
+    margin: var(--dialed-space-2) 0 0;
+    color: var(--colorNeutralForeground3, #616161);
+    font-size: var(--dialed-text-xs);
+}
+
+.dialed-bag-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-bag-card-top {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-bag-card-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dialed-bag-card-title {
+    font-size: var(--dialed-text-l);
+    font-weight: var(--dialed-weight-semibold);
+    overflow-wrap: anywhere;
+}
+
+.dialed-bag-card-subtitle,
+.dialed-bag-card-meta {
+    color: var(--colorNeutralForeground3, #616161);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-bag-card-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-bag-card-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--dialed-space-2);
+    margin-top: calc(-1 * var(--dialed-space-1));
+}
+
+.dialed-brew-bag {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-3);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-brew-bag-top {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-brew-bag-top .dialed-stat-grid {
+    flex: 1;
+}
+
+.dialed-brew-again {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    border-color: var(--colorBrandStroke2, #d9c4b4);
+    background: var(--colorBrandBackground2, #f4ece6);
+}
+
+.dialed-brew-again .dialed-row-title {
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+.dialed-recipe-choice .dialed-row {
+    flex: 1;
+    min-width: 0;
 }
 
 /* Brew log form: sections with a heading, dose and liquid side by side, and a save bar that stays in view. */
@@ -1597,4 +1704,70 @@ a.people-row-name {
 
 .dialed-onboarding-actions #onboarding-next {
     flex: 1;
+}
+
+/* Timer: header back at the start, progress under the clock, the recipe's steps as a list. */
+.dialed-timer .dialed-page-header {
+    align-self: stretch;
+    text-align: start;
+}
+
+.dialed-timer > .dialed-meter {
+    width: min(100%, 32rem);
+    height: 0.75rem;
+}
+
+.dialed-timer-steps {
+    width: min(100%, 32rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: start;
+}
+
+.dialed-timer-step-item {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr auto;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    padding: 0 var(--dialed-space-3);
+    border-radius: var(--dialed-radius-m);
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-m);
+}
+
+.dialed-timer-step-item.current {
+    background: var(--colorBrandBackground2, #f4ece6);
+    color: var(--colorNeutralForeground1, #242424);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-timer-step-item.done {
+    color: var(--colorNeutralForeground3, #616161);
+    text-decoration: line-through;
+}
+
+.dialed-timer-step-at {
+    font-variant-numeric: tabular-nums;
+}
+
+.dialed-timer-step-water {
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+/* A rating at the end of a list row: one star and the number, so the title keeps its room. */
+.dialed-rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.dialed-rating-badge-star {
+    display: inline-flex;
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
 }
