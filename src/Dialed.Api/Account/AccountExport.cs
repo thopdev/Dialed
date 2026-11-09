@@ -2,6 +2,9 @@ using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Dialed.Api.Auth;
 using Dialed.Api.Friends;
+using Dialed.Api.Households;
+using Dialed.Api.Passkeys;
+using Microsoft.AspNetCore.Identity;
 using Dialed.Api.Sync;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -45,11 +48,75 @@ public sealed class AccountExporter(IUserDirectory users, ISyncStore sync, Frien
     }
 }
 
+/// <summary>
+/// Deletes a person (#35): the account and passkeys, sessions, friend codes, follows and blocks. A household they were alone in goes with all its data;
+/// a shared one keeps its items (no longer pointing to the person) and passes to its longest-standing member when they owned it.
+/// </summary>
+public sealed class AccountDeleter(
+    IUserDirectory directory,
+    UserManager<AccountUser> accounts,
+    IHouseholdStore households,
+    IFriendStore friends,
+    IRefreshTokenStore sessions,
+    ISyncStore sync)
+{
+    public const string DeletedUser = "deleted-user";
+
+    public async Task<bool> DeleteAsync(string userId, CancellationToken ct = default)
+    {
+        if (await directory.FindByIdAsync(userId, ct) is not { } user)
+        {
+            return false;
+        }
+
+        var members = await directory.ListByHouseholdAsync(user.HouseholdId, ct);
+        var others = members.Where(m => m.Id != userId).ToList();
+        if (others.Count == 0)
+        {
+            await sync.DeleteHouseholdAsync(user.HouseholdId, ct);
+            await households.DeleteAsync(user.HouseholdId, ct);
+        }
+        else
+        {
+            await sync.AnonymiseAuthorAsync(user.HouseholdId, userId, DeletedUser, ct);
+            if (await households.FindAsync(user.HouseholdId, ct) is { } household && household.OwnerId == userId)
+            {
+                await households.SaveAsync(household with { OwnerId = await LongestStandingAsync(others, ct) }, ct);
+            }
+        }
+
+        await friends.RemoveUserAsync(userId, ct);
+        await sessions.RevokeUserAsync(userId, ct);
+        if (await accounts.FindByIdAsync(userId) is { } account)
+        {
+            await accounts.DeleteAsync(account);
+        }
+
+        await directory.RemoveAsync(userId, ct);
+        return true;
+    }
+
+    private async Task<string> LongestStandingAsync(IReadOnlyList<AppUser> members, CancellationToken ct)
+    {
+        // The oldest account first; people without a stored account (development users) come last, by name.
+        var dated = new List<(AppUser Member, DateTimeOffset Created)>();
+        foreach (var member in members)
+        {
+            var account = await accounts.FindByIdAsync(member.Id);
+            dated.Add((member, account?.CreatedAt ?? DateTimeOffset.MaxValue));
+        }
+
+        _ = ct;
+        return dated.OrderBy(d => d.Created).ThenBy(d => d.Member.DisplayName, StringComparer.OrdinalIgnoreCase).First().Member.Id;
+    }
+}
+
 public static class AccountEndpoints
 {
     public static IServiceCollection AddDialedAccount(this IServiceCollection services)
     {
         services.AddSingleton<AccountExporter>();
+        services.AddScoped<AccountDeleter>();
         return services;
     }
 
@@ -65,6 +132,19 @@ public static class AccountEndpoints
                     "application/json",
                     "dialed-export.json")
                 : Results.NotFound());
+
+        // Deleting needs a fresh passkey check, so a stolen access token alone cannot erase the account.
+        group.MapPost("/delete/options", (HttpContext http, PasskeyCeremonies ceremonies) => ceremonies.ReauthOptionsAsync(http));
+        group.MapPost("/delete", async (HttpContext http, CeremonyCompleteRequest request, ClaimsPrincipal user, PasskeyCeremonies ceremonies, AccountDeleter deleter) =>
+        {
+            var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
+            if (await ceremonies.VerifyReauthAsync(http, request, userId) is { } refused)
+            {
+                return refused;
+            }
+
+            return await deleter.DeleteAsync(userId, http.RequestAborted) ? Results.NoContent() : Results.NotFound();
+        });
 
         return endpoints;
     }

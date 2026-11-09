@@ -33,6 +33,7 @@ public sealed class PasskeyCeremonies(
 {
     private const string SignUp = "signup";
     private const string SignIn = "signin";
+    private const string Reauth = "reauth";
 
     private readonly IDataProtector protector = dataProtection.CreateProtector("Dialed.Passkeys.Ceremony.v1");
 
@@ -166,6 +167,46 @@ public sealed class PasskeyCeremonies(
         // Persist the new sign count / backup state.
         await users.AddOrUpdatePasskeyAsync(result.User, result.Passkey!);
         return Results.Ok(await sessions.SignInAsync(person, http.RequestAborted));
+    }
+
+    /// <summary>Starts proving it is really the signed-in person (before something irreversible such as deleting the account).</summary>
+    public async Task<IResult> ReauthOptionsAsync(HttpContext http)
+    {
+        if (!origins.TryResolve(Origin(http), out var rpId))
+        {
+            return Problem(StatusCodes.Status400BadRequest, "Origin not allowed.");
+        }
+
+        var handler = CreateHandler(rpId, Origin(http)!);
+        var result = await handler.MakeRequestOptionsAsync(null, http);
+        var state = Protect(new CeremonyState(Reauth, Origin(http)!, rpId, result.AssertionState, null, null, null));
+        return Results.Ok(new CeremonyOptionsResponse(JsonNode.Parse(result.RequestOptionsJson)!, state));
+    }
+
+    /// <summary>Checks the passkey belongs to <paramref name="expectedUserId"/>. Returns <c>null</c> when it does, otherwise the error to send back. Signs nobody in.</summary>
+    public async Task<IResult?> VerifyReauthAsync(HttpContext http, CeremonyCompleteRequest request, string expectedUserId)
+    {
+        var (state, error) = await OpenAsync(http, request.State, Reauth);
+        if (state is null)
+        {
+            return error!;
+        }
+
+        var handler = CreateHandler(state.RpId, state.Origin);
+        var result = await handler.PerformAssertionAsync(new PasskeyAssertionContext
+        {
+            HttpContext = http,
+            CredentialJson = request.Credential.GetRawText(),
+            AssertionState = state.HandlerState,
+        });
+
+        if (!result.Succeeded || result.User?.Id != expectedUserId)
+        {
+            return Problem(StatusCodes.Status401Unauthorized, "That passkey does not belong to this account.");
+        }
+
+        await users.AddOrUpdatePasskeyAsync(result.User, result.Passkey!);
+        return null;
     }
 
     /// <summary>

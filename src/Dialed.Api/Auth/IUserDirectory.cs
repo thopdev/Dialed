@@ -10,6 +10,9 @@ public interface IUserDirectory
     /// <summary>Everyone currently in the household.</summary>
     Task<IReadOnlyList<AppUser>> ListByHouseholdAsync(string householdId, CancellationToken cancellationToken = default);
 
+    /// <summary>Removes the person. <c>false</c> when unknown.</summary>
+    Task<bool> RemoveAsync(string userId, CancellationToken cancellationToken = default);
+
     /// <summary>Moves the person to another household (joining, leaving or being removed). Returns the updated user, or <c>null</c> when unknown.</summary>
     Task<AppUser?> SetHouseholdAsync(string userId, string householdId, CancellationToken cancellationToken = default);
 }
@@ -43,6 +46,14 @@ public sealed class InMemoryUserDirectory : IUserDirectory
         }
 
         return Task.CompletedTask;
+    }
+
+    public Task<bool> RemoveAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult(users.Remove(userId));
+        }
     }
 
     public Task<IReadOnlyList<AppUser>> ListByHouseholdAsync(string householdId, CancellationToken cancellationToken = default)

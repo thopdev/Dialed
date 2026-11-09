@@ -18,6 +18,9 @@ public interface IRefreshTokenStore
 
     /// <summary>Revokes every token of the sign-in (the token family).</summary>
     Task RevokeFamilyAsync(string familyId, CancellationToken cancellationToken = default);
+
+    /// <summary>Revokes every token of the person, on every device (account deletion).</summary>
+    Task RevokeUserAsync(string userId, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryRefreshTokenStore : IRefreshTokenStore
@@ -67,6 +70,19 @@ public sealed class InMemoryRefreshTokenStore : IRefreshTokenStore
             records[tokenHash] = record with { Used = true };
             return Task.FromResult(true);
         }
+    }
+
+    public Task RevokeUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            foreach (var (hash, record) in records.Where(r => r.Value.UserId == userId).ToList())
+            {
+                records[hash] = record with { Revoked = true };
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     public Task RevokeFamilyAsync(string familyId, CancellationToken cancellationToken = default)
