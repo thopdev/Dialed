@@ -61,6 +61,9 @@ public sealed record Recipe : SyncEntity
 
     public bool IsFavourite { get; init; }
 
+    /// <summary>Set when this was copied from a friend (#77).</summary>
+    public CopiedFrom? CopiedFrom { get; init; }
+
     public Visibility Visibility { get; init; } = Visibility.Household;
 
     /// <summary>Water per gram of coffee (16 means 1:16), or <c>null</c> when dose or liquid is missing.</summary>

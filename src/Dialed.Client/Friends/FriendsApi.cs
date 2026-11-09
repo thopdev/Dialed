@@ -15,6 +15,9 @@ public sealed record FriendProfileInfo(string UserId, string DisplayName, int Be
 /// <summary>One page of what a friend shares: the records as the server sent them, so any field can be shown.</summary>
 public sealed record SharedPage(IReadOnlyList<JsonElement> Items, int Total, bool HasMore);
 
+/// <summary>One shared bean or recipe as the server sent it, with the names that live in the friend's household (#77).</summary>
+public sealed record SharedItem(JsonElement Item, string OwnerName, string? RoasterName, string? BeanName);
+
 /// <summary>
 /// The API's friend endpoints (see Dialed.Api): friend code, follow requests, followers and a friend's shared items.
 /// Online only; the last profile and first pages are remembered in memory so a friend's page still opens when the network is gone.
@@ -93,6 +96,19 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
             }
 
             return page;
+        }
+        catch (AccountRefusedException e) when (e.Status == 404)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>One shared <c>beans</c> or <c>recipes</c> item to copy it; <c>null</c> when it is gone or not shared with you.</summary>
+    public async Task<SharedItem?> SharedItemAsync(string userId, string table, string itemId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await SendAsync<SharedItem>(HttpMethod.Get, $"friends/{Uri.EscapeDataString(userId)}/shared/{table}/{Uri.EscapeDataString(itemId)}", null, cancellationToken);
         }
         catch (AccountRefusedException e) when (e.Status == 404)
         {
