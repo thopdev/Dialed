@@ -191,7 +191,7 @@ public sealed class BeanTests : UiTestContext
         page.Find(".dialed-detail-pane h1").TextContent.ShouldBe("Gesha");
         page.Find($"a[href='vendors/{roaster.Id}']").TextContent.ShouldBe("Friedhats");
         page.Markup.ShouldContain("Ethiopia, Bench Maji");
-        page.Markup.ShouldContain("Jasmine, Peach");
+        page.FindAll("#bean-notes .dialed-chip").Select(c => c.TextContent).ShouldBe(["Jasmine", "Peach"]);
         page.Markup.ShouldContain("Light");
         page.Markup.ShouldContain("250 g");
         page.Markup.ShouldContain("Open");
@@ -222,7 +222,7 @@ public sealed class BeanTests : UiTestContext
         var bean = await Beans.SaveAsync(new Bean { Name = "Gesha" }, Ct);
         var page = Render<Beans>(p => p.Add(x => x.Id, bean.Id));
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Edit").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Edit").Click();
         page.Find("#bean-name").Input("Gesha Village");
         page.Find("form").Submit();
 
@@ -235,7 +235,7 @@ public sealed class BeanTests : UiTestContext
     {
         var bean = await Beans.SaveAsync(new Bean { Name = "Gesha" }, Ct);
         var page = Render<Beans>(p => p.Add(x => x.Id, bean.Id));
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Edit").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Edit").Click();
 
         await Beans.SaveAsync(bean with { Name = "Changed elsewhere" }, Ct);
         page.Find("#bean-name").Input("My edit");
@@ -251,7 +251,7 @@ public sealed class BeanTests : UiTestContext
         var bag = await Bags.SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m }, Ct);
         var page = Render<Beans>(p => p.Add(x => x.Id, bean.Id));
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Delete").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Delete").Click();
         page.Find(".dialed-confirm").TextContent.ShouldContain("also removes its 1 bag(s)");
         page.Find(".dialed-confirm .dialed-button-danger").Click();
 

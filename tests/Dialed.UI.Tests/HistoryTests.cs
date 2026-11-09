@@ -131,7 +131,7 @@ public sealed class HistoryTests : UiTestContext
         page.Find(".dialed-confirm .dialed-button-danger").Click();
 
         (await Brews.GetAsync(brew.Id, Ct)).ShouldBeNull();
-        Render<Bags>(p => p.Add(x => x.Id, bag.Id)).Markup.ShouldContain("250 g / 250 g");
+        Render<Bags>(p => p.Add(x => x.Id, bag.Id)).Markup.ShouldContain("250 g of 250 g left");
     }
 
     [Fact]

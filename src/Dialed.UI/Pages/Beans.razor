@@ -1,7 +1,10 @@
 @page "/beans"
 @page "/beans/{Id}"
 @using Dialed.Client.Data
+@using System.Globalization
 @using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Inventory
 @using Dialed.Domain.Model
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
@@ -9,6 +12,9 @@
 @inject IRepository<Bag> BagStore
 @inject IRepository<Vendor> VendorStore
 @inject IRepository<Recipe> RecipeStore
+@inject IRepository<Brew> BrewStore
+@inject IUserPreferences Preferences
+@inject TimeProvider Time
 @inject UnitFormatter Units
 @inject NavigationManager Navigation
 
@@ -27,15 +33,28 @@
         }
         else if (beans.Count == 0)
         {
-            <EmptyState Message="@L["Beans_Empty"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Beans_Empty"]">
+                <a class="dialed-button dialed-button-primary" href="beans/new">@L["Beans_New"]</a>
+            </EmptyState>
         }
         else
         {
-            <div class="dialed-field">
-                <label for="bean-search">@L["Beans_Search"]</label>
-                <input id="bean-search" type="search" autocomplete="off" @bind="search" @bind:event="oninput" />
+            <div class="dialed-field dialed-search">
+                <label for="bean-search" class="dialed-visually-hidden">@L["Beans_Search"]</label>
+                <input id="bean-search" type="search" autocomplete="off" placeholder="@L["Beans_Search"]" enterkeyhint="search" @bind="search" @bind:event="oninput" />
             </div>
-            <div class="dialed-filters">
+            <div class="dialed-filter-bar">
+                <button type="button" id="bean-filters-toggle" class="dialed-button dialed-button-icon @(showFilters ? "dialed-button-pressed" : "")"
+                        aria-expanded="@(showFilters ? "true" : "false")" aria-controls="bean-filters" @onclick="@(() => showFilters = !showFilters)">
+                    <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size20.Filter())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                    @(ActiveFilterCount > 0 ? string.Format(L["Beans_FiltersCount"].Value, ActiveFilterCount) : L["Beans_Filters"].Value)
+                </button>
+                <ChipGroup Label="@L["Beans_Stock"]">
+                    <Chip Selected="@(stockFilter is null)" OnClick="@(() => stockFilter = null)">@L["Beans_All"]</Chip>
+                    <Chip Selected="@(stockFilter == true)" OnClick="@(() => stockFilter = true)">@L["Beans_InStock"]</Chip>
+                </ChipGroup>
+            </div>
+            <div class="dialed-filters" id="bean-filters" hidden="@(!showFilters)">
                 <div class="dialed-field">
                     <label for="bean-filter-roaster">@L["Bean_Roaster"]</label>
                     <select id="bean-filter-roaster" @bind="roasterFilter">
@@ -76,21 +95,41 @@
                     </select>
                 </div>
             </div>
-            <ChipGroup Label="@L["Beans_Stock"]">
-                <Chip Selected="@(stockFilter is null)" OnClick="@(() => stockFilter = null)">@L["Beans_All"]</Chip>
-                <Chip Selected="@(stockFilter == true)" OnClick="@(() => stockFilter = true)">@L["Beans_InStock"]</Chip>
-            </ChipGroup>
 
             @if (Visible.Count == 0)
             {
-                <EmptyState Message="@L["Beans_NoResults"]" />
+                <EmptyState Icon="@(new Icons.Regular.Size24.Search())" Message="@L["Beans_NoResults"]" />
             }
             else
             {
                 <div class="dialed-list">
                     @foreach (var bean in Visible)
                     {
-                        <ListRow Title="@bean.Name" Subtitle="@Subtitle(bean)" Href="@($"beans/{bean.Id}")" />
+                        <ListRow Title="@bean.Name" Subtitle="@Subtitle(bean)" Href="@($"beans/{bean.Id}")" data-bean="@bean.Id">
+                            <Leading><RoastThumb PhotoId="@bean.PhotoIds.FirstOrDefault()" Level="@bean.RoastLevel" /></Leading>
+                            <Below>
+                                <span class="dialed-row-chips">
+                                    @if (bean.RoastLevel is { } level)
+                                    {
+                                        <span class="dialed-chip dialed-chip-small">@L[$"RoastLevel_{level}"]</span>
+                                    }
+                                    @if (bean.IsDecaf)
+                                    {
+                                        <span class="dialed-chip dialed-chip-small">@L["Bean_Decaf"]</span>
+                                    }
+                                    @if (ActiveBags(bean) is > 0 and var count)
+                                    {
+                                        <span class="dialed-chip dialed-chip-small dialed-chip-positive">@string.Format(L[count == 1 ? "Beans_BagsInStockOne" : "Beans_BagsInStock"].Value, count)</span>
+                                    }
+                                </span>
+                            </Below>
+                            <Trailing>
+                                @if (bean.Rating is { } stars)
+                                {
+                                    <RatingBadge Value="stars" />
+                                }
+                            </Trailing>
+                        </ListRow>
                     }
                 </div>
             }
@@ -99,7 +138,7 @@
     <Detail>
         @if (Id is null)
         {
-            <EmptyState Message="@L["Beans_SelectPrompt"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Beans_SelectPrompt"]" />
         }
         else if (Id == "new")
         {
@@ -120,8 +159,12 @@
         {
             <PageHeader Title="@current.Name" BackHref="beans">
                 <Actions>
-                    <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
-                    <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                    <button type="button" id="bean-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
+                        <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
+                    </button>
+                    <button type="button" id="bean-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="@(() => confirmingDelete = true)">
+                        <FluentIcon Value="@(new Icons.Regular.Size24.Delete())" Color="Color.Custom" CustomColor="currentColor" />
+                    </button>
                 </Actions>
             </PageHeader>
 
@@ -151,55 +194,122 @@
                 </div>
             }
 
-            <Card>
-                @if (RoasterName(current) is { } roaster)
-                {
-                    <p><a href="@($"vendors/{current.RoasterId}")">@roaster</a></p>
-                }
-                @if (OriginText(current) is { } origin)
-                {
-                    <p class="dialed-vendor-place">@origin</p>
-                }
-                @if (current.Rating is { } stars)
-                {
-                    <StarRating Value="stars" ReadOnly="true" />
-                }
-                <dl class="dialed-facts">
-                    @Fact("Bean_Process", current.Process)
-                    @Fact("Bean_Altitude", current.AltitudeM is { } m ? $"{m} m" : null)
-                    @Fact("Bean_RoastLevel", current.RoastLevel is { } level ? L[$"RoastLevel_{level}"].Value : null)
-                    @Fact("Bean_RoastStyle", current.RoastStyle is { } style ? L[$"RoastStyle_{style}"].Value : null)
-                    @Fact("Bean_Varieties", current.Varieties.Count > 0 ? string.Join(", ", current.Varieties) : null)
-                    @Fact("Bean_TastingNotes", current.TastingNotes.Count > 0 ? string.Join(", ", current.TastingNotes) : null)
-                    @Fact("Bean_Decaf", current.IsDecaf ? L["Yes"].Value : null)
-                    @Fact("Bean_Visibility", L[$"Visibility_{current.Visibility}"].Value)
-                </dl>
+            <div class="dialed-bean-hero" id="bean-hero">
+                <RoastThumb PhotoId="@current.PhotoIds.FirstOrDefault()" Level="@current.RoastLevel" Size="96" />
+                <div class="dialed-bean-hero-text">
+                    @if (RoasterName(current) is { } roaster)
+                    {
+                        <a class="dialed-bean-roaster" href="@($"vendors/{current.RoasterId}")">@roaster</a>
+                    }
+                    @if (OriginText(current) is { } origin)
+                    {
+                        <span class="dialed-bean-origin">@origin</span>
+                    }
+                    @if (current.Rating is { } stars)
+                    {
+                        <StarRating Value="stars" ReadOnly="true" />
+                    }
+                </div>
+            </div>
+
+            @if (KeyFacts(current) is { Count: > 0 } facts)
+            {
+                <div class="dialed-stat-grid" id="bean-facts">
+                    @foreach (var (label, value) in facts)
+                    {
+                        <StatTile Value="@value" Label="@label" />
+                    }
+                </div>
+            }
+
+            @if (current.TastingNotes.Count > 0 || current.IsDecaf)
+            {
+                <SectionHeader Title="@L["Bean_TastingNotes"]" />
+                <ul class="dialed-chip-list" id="bean-notes">
+                    @foreach (var note in current.TastingNotes)
+                    {
+                        <li><span class="dialed-chip">@note</span></li>
+                    }
+                    @if (current.IsDecaf)
+                    {
+                        <li><span class="dialed-chip">@L["Bean_Decaf"]</span></li>
+                    }
+                </ul>
+            }
+
+            @if (current.Varieties.Count > 0)
+            {
+                <p class="dialed-bean-line"><span class="dialed-muted">@L["Bean_Varieties"]</span> @string.Join(", ", current.Varieties)</p>
+            }
+
+            @if (current.PhotoIds.Count > 0)
+            {
                 <PhotoStrip PhotoIds="@current.PhotoIds" ReadOnly="true" Label="@L["Photo_Title"].Value" />
-                @if (current.Notes is not null)
-                {
-                    <p class="dialed-vendor-notes">@current.Notes</p>
-                }
-            </Card>
+            }
+            @if (current.Notes is not null)
+            {
+                <Card class="dialed-card dialed-notes-card"><p class="dialed-vendor-notes">@current.Notes</p></Card>
+            }
+            <p class="dialed-bean-line dialed-muted">@L["Bean_Visibility"]: @L[$"Visibility_{current.Visibility}"]</p>
 
             @if (bestRecipe is not null)
             {
-                <p><a id="bean-best-recipe" class="dialed-button" href="@($"recipes/{bestRecipe.Id}")">@string.Format(L["Bean_BestRecipe"].Value, bestRecipe.Name)</a></p>
+                <a id="bean-best-recipe" class="dialed-card dialed-card-link dialed-best-recipe" href="@($"recipes/{bestRecipe.Id}")">
+                    <MethodIcon Code="@bestRecipe.MethodCode" />
+                    <span class="dialed-row-text">
+                        <span class="dialed-row-subtitle">@L["Bean_BestRecipeLabel"]</span>
+                        <span class="dialed-row-title">@bestRecipe.Name</span>
+                    </span>
+                </a>
             }
 
-            <h2>@L["Bean_BagsHeading"]</h2>
-            <div class="dialed-form-actions">
-                <a class="dialed-button" href="@($"bags/new?beanId={current.Id}")">@L["Bean_AddBag"]</a>
-            </div>
-            @if (currentBags.Count == 0)
+            <SectionHeader Title="@L["Bean_BagsHeading"]">
+                <Actions><a id="bean-add-bag" class="dialed-section-link" href="@($"bags/new?beanId={current.Id}")">@L["Bean_AddBag"]</a></Actions>
+            </SectionHeader>
+            @if (currentStock.Count == 0)
             {
                 <p class="dialed-muted">@L["Bean_NoBags"]</p>
             }
             else
             {
-                <div class="dialed-list">
-                    @foreach (var bag in currentBags)
+                <div class="dialed-list" id="bean-bags">
+                    @foreach (var item in currentStock)
                     {
-                        <ListRow Title="@Units.Weight(bag.WeightG)" Subtitle="@L[$"BagStatus_{bag.Status}"].Value" Href="@($"bags/{bag.Id}")" />
+                        <ListRow Title="@BagTitle(item.Bag)" Subtitle="@BagSubtitle(item)" Href="@($"bags/{item.Bag.Id}")" data-bag="@item.Bag.Id">
+                            <Below>
+                                @if (item.Bag.Status != BagStatus.Finished)
+                                {
+                                    <Meter Label="@string.Format(L["Stock_LeftIn"].Value, BagTitle(item.Bag))" Fraction="@(item.Bag.WeightG > 0 ? (double)(item.RemainingG / item.Bag.WeightG) : 0)"
+                                           Tone="@(item.IsLow ? Meter.MeterTone.Warning : Meter.MeterTone.Normal)"
+                                           ValueText="@string.Format(L["Stock_LeftOf"].Value, Units.Weight(item.RemainingG), Units.Weight(item.Bag.WeightG))" />
+                                }
+                            </Below>
+                            <Trailing>
+                                @if (item.Bag.Status != BagStatus.Finished && item.Freshness != Freshness.Unknown)
+                                {
+                                    <span class="dialed-chip">@L[$"Fresh_{item.Freshness}"]</span>
+                                }
+                            </Trailing>
+                        </ListRow>
+                    }
+                </div>
+            }
+
+            @if (currentBrews.Count > 0)
+            {
+                <SectionHeader Title="@L["Bean_RecentBrews"]" />
+                <div class="dialed-list" id="bean-brews">
+                    @foreach (var brew in currentBrews)
+                    {
+                        <ListRow Title="@BrewTitle(brew)" Subtitle="@BrewSubtitle(brew)" Href="@($"history/{brew.Id}")">
+                            <Leading><MethodIcon Code="@brew.MethodCode" /></Leading>
+                            <Trailing>
+                                @if (brew.Rating is { } rating)
+                                {
+                                    <RatingBadge Value="rating" />
+                                }
+                            </Trailing>
+                        </ListRow>
                     }
                 </div>
             }
@@ -214,6 +324,9 @@
     private IReadOnlyList<Vendor> roasters = [];
     private Bean? current;
     private IReadOnlyList<Bag> currentBags = [];
+    private IReadOnlyList<BagStock> currentStock = [];
+    private IReadOnlyList<Brew> currentBrews = [];
+    private bool showFilters;
     private Recipe? bestRecipe;
     private string search = "";
     private string roasterFilter = "";
@@ -273,6 +386,24 @@
         roasters = [.. vendors.Where(v => (v.Kinds & VendorKinds.Roaster) != 0).OrderBy(v => v.Name)];
         current = Id is null or "new" ? null : beans.FirstOrDefault(bean => bean.Id == Id);
         currentBags = current is null ? [] : [.. bags.Where(bag => bag.BeanId == current.Id)];
+        if (current is not null)
+        {
+            var brews = await BrewStore.ListAsync();
+            var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+            currentStock =
+            [
+                .. InventoryOverview.Build(currentBags, [current], brews, today, Preferences.Inventory)
+                    .OrderBy(s => s.Bag.Status == BagStatus.Finished)
+                    .ThenByDescending(s => s.Bag.RoastDate ?? s.Bag.PurchasedOn ?? DateOnly.MinValue),
+            ];
+            var bagIds = currentBags.Select(b => b.Id).ToHashSet();
+            currentBrews = [.. brews.Where(b => !b.Deleted && bagIds.Contains(b.BagId)).OrderByDescending(b => b.BrewedAt).Take(5)];
+        }
+        else
+        {
+            currentStock = [];
+            currentBrews = [];
+        }
         bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, await RecipeStore.ListAsync());
     }
 
@@ -286,6 +417,57 @@
         await LoadAsync();
         StateHasChanged();
     });
+
+    private int ActiveFilterCount =>
+        (roasterFilter == "" ? 0 : 1) + (processFilter == "" ? 0 : 1) + (roastFilter == "" ? 0 : 1) + (sort == BeanSort.Name ? 0 : 1);
+
+    private int ActiveBags(Bean bean) => bags.Count(b => !b.Deleted && b.BeanId == bean.Id && b.Status != BagStatus.Finished);
+
+    /// <summary>The facts worth a tile; the rest is in chips or a line of text.</summary>
+    private List<(string Label, string Value)> KeyFacts(Bean bean)
+    {
+        var facts = new List<(string, string)>();
+        if (bean.Process is { } process)
+        {
+            facts.Add((L["Bean_Process"].Value, process));
+        }
+
+        if (bean.RoastLevel is { } level)
+        {
+            facts.Add((L["Bean_RoastLevel"].Value, L[$"RoastLevel_{level}"].Value));
+        }
+
+        if (bean.RoastStyle is { } style)
+        {
+            facts.Add((L["Bean_RoastStyle"].Value, L[$"RoastStyle_{style}"].Value));
+        }
+
+        if (bean.AltitudeM is { } altitude)
+        {
+            facts.Add((L["Bean_AltitudeShort"].Value, $"{altitude} m"));
+        }
+
+        return facts;
+    }
+
+    private static string Date(DateOnly date) => date.ToString("d MMM yyyy", CultureInfo.CurrentCulture);
+
+    private string BagTitle(Bag bag) =>
+        bag.RoastDate is { } roasted ? string.Format(L["Bag_RoastedOn"].Value, Date(roasted)) : Units.Weight(bag.WeightG);
+
+    private string BagSubtitle(BagStock item)
+    {
+        var status = L[$"BagStatus_{item.Bag.Status}"].Value;
+        return item.Bag.Status == BagStatus.Finished
+            ? $"{Units.Weight(item.Bag.WeightG)} · {status}"
+            : $"{string.Format(L["Stock_LeftOf"].Value, Units.Weight(item.RemainingG), Units.Weight(item.Bag.WeightG))} · {status}";
+    }
+
+    private string BrewTitle(Brew brew) =>
+        (brew.WaterG ?? brew.YieldG) is { } liquid ? $"{Units.Weight(brew.DoseG)} → {Units.Weight(liquid)}" : Units.Weight(brew.DoseG);
+
+    private string BrewSubtitle(Brew brew) =>
+        $"{brew.BrewedAt.ToLocalTime().ToString("d MMM", CultureInfo.CurrentCulture)} · {BrewMethodCatalog.Default.Find(brew.MethodCode)?.Name ?? brew.MethodCode}";
 
     private string? RoasterName(Bean bean) => vendors.FirstOrDefault(v => v.Id == bean.RoasterId)?.Name;
 

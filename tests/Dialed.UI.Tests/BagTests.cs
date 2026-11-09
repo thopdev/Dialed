@@ -130,7 +130,7 @@ public sealed class BagTests : UiTestContext
         page.Markup.ShouldContain("Bean Shop");
         page.Markup.ShouldContain("14.50 EUR");
         page.Markup.ShouldContain("5 days");
-        page.Markup.ShouldContain("250 g / 250 g");
+        page.Markup.ShouldContain("250 g of 250 g left");
         page.FindAll("#bag-offer-finish").ShouldBeEmpty();
     }
 
@@ -142,7 +142,7 @@ public sealed class BagTests : UiTestContext
     }
 
     private static void Press(IRenderedComponent<Bags> page, string label) =>
-        page.FindAll(".dialed-form-actions button").First(b => b.TextContent == label).Click();
+        page.FindAll(".dialed-form-actions button").First(b => b.TextContent.Trim() == label).Click();
 
     [Fact]
     public async Task Open_freeze_thaw_and_finish_follow_the_lifecycle()
@@ -213,7 +213,7 @@ public sealed class BagTests : UiTestContext
     {
         var (page, bag) = await OpenDetail();
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Edit").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Edit").Click();
         page.Find("#bag-weight").Change("500");
         page.Find("form").Submit();
 
@@ -225,7 +225,7 @@ public sealed class BagTests : UiTestContext
     {
         var (page, bag) = await OpenDetail();
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Delete").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Delete").Click();
         (await Bags.GetAsync(bag.Id, Ct)).ShouldNotBeNull();
         page.Find(".dialed-confirm .dialed-button-danger").Click();
 

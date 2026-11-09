@@ -658,6 +658,37 @@
   <data name="Recipe_TimeShort" xml:space="preserve"><value>Time</value></data>
   <data name="Step_For" xml:space="preserve"><value>for {0} s</value></data>
   <data name="Version_Changes" xml:space="preserve"><value>Changes</value></data>
+  <data name="Beans_BagsInStockOne" xml:space="preserve"><value>{0} bag</value></data>
+  <data name="Beans_BagsInStock" xml:space="preserve"><value>{0} bags</value></data>
+  <data name="Bean_AltitudeShort" xml:space="preserve"><value>Altitude</value></data>
+  <data name="Bean_AltitudeRange" xml:space="preserve"><value>Enter an altitude between 0 and 5000 m.</value></data>
+  <data name="Bean_BestRecipeLabel" xml:space="preserve"><value>Best recipe</value></data>
+  <data name="Bean_RecentBrews" xml:space="preserve"><value>Recent brews</value></data>
+  <data name="Bag_RoastedOn" xml:space="preserve"><value>Roasted {0}</value></data>
+  <data name="Bag_OfWeight" xml:space="preserve"><value>of {0}</value></data>
+  <data name="Bag_DaysShort" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Bag_AgeShort" xml:space="preserve"><value>{0} days old</value></data>
+  <data name="Bag_AgeFrozenHint" xml:space="preserve"><value>not counting frozen time</value></data>
+  <data name="Bag_Freshness" xml:space="preserve"><value>Freshness</value></data>
+  <data name="Bag_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Bag_NextStep" xml:space="preserve"><value>Next step</value></data>
+  <data name="Stock_LeftIn" xml:space="preserve"><value>Coffee left in {0}</value></data>
+  <data name="Stock_LeftOf" xml:space="preserve"><value>{0} of {1} left</value></data>
+  <data name="Stock_Count" xml:space="preserve"><value>{0} bags</value></data>
+  <data name="Freshness_Timeline" xml:space="preserve"><value>{0} days since roast: {1}. Ready from day {2}, fades after day {3}.</value></data>
+  <data name="Freshness_State_Resting" xml:space="preserve"><value>still resting</value></data>
+  <data name="Freshness_State_Peak" xml:space="preserve"><value>at its peak</value></data>
+  <data name="Freshness_State_Past" xml:space="preserve"><value>past its peak</value></data>
+  <data name="Freshness_State_Unknown" xml:space="preserve"><value>unknown</value></data>
+  <data name="BeanForm_SectionBean" xml:space="preserve"><value>Bean</value></data>
+  <data name="BeanForm_SectionOrigin" xml:space="preserve"><value>Origin</value></data>
+  <data name="BeanForm_SectionRoast" xml:space="preserve"><value>Roast</value></data>
+  <data name="BeanForm_SectionTasting" xml:space="preserve"><value>Tasting</value></data>
+  <data name="BeanForm_SectionSharing" xml:space="preserve"><value>Sharing</value></data>
+  <data name="BagForm_SectionBag" xml:space="preserve"><value>Bag</value></data>
+  <data name="BagForm_SectionPurchase" xml:space="preserve"><value>Purchase</value></data>
+  <data name="BagForm_SectionStorage" xml:space="preserve"><value>Storage</value></data>
+  <data name="Bag_PriceShort" xml:space="preserve"><value>Price</value></data>
   <data name="Home_GoodMorning" xml:space="preserve"><value>Good morning</value></data>
   <data name="Home_GoodAfternoon" xml:space="preserve"><value>Good afternoon</value></data>
   <data name="Home_GoodEvening" xml:space="preserve"><value>Good evening</value></data>
