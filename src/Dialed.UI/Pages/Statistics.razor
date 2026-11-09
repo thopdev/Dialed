@@ -1,0 +1,124 @@
+@page "/statistics"
+@using System.Globalization
+@using Dialed.Client.Data
+@using Dialed.Domain.Model
+@using Dialed.Domain.Statistics
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Brew> BrewStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Vendor> VendorStore
+@inject IRepository<EquipmentItem> EquipmentStore
+@inject TimeProvider Time
+
+<PageHeader Title="@L["Stats_Title"]" BackHref="more" />
+
+@if (stats is null)
+{
+    <Loading IsLoading="true" />
+}
+else if (stats.IsEmpty)
+{
+    <EmptyState Message="@L["Stats_Empty"]" />
+}
+else
+{
+    <section id="stats-weekly">
+        <h2>@L["Stats_Weekly"]</h2>
+        <p class="dialed-muted">@L["Stats_WeeklyHint", CoffeeStatistics.Weeks]</p>
+        <ul class="dialed-bars">
+            @foreach (var week in stats.Weekly)
+            {
+                <li>
+                    <span class="dialed-bar-label">@week.WeekStart.ToString("d MMM", CultureInfo.CurrentCulture)</span>
+                    <span class="dialed-bar" style="width: @BarWidth(week.Grams)%" aria-hidden="true"></span>
+                    <span class="dialed-bar-value">@week.Grams.ToString("0.#", CultureInfo.CurrentCulture) g</span>
+                </li>
+            }
+        </ul>
+    </section>
+
+    <section id="stats-spend">
+        <h2>@L["Stats_Spend"]</h2>
+        @if (stats.Spend.Count == 0)
+        {
+            <p class="dialed-muted">@L["Stats_SpendEmpty"]</p>
+        }
+        else
+        {
+            <ul class="dialed-list">
+                @foreach (var month in stats.Spend)
+                {
+                    <li class="dialed-stat-row">
+                        <span>@(new DateTime(month.Year, month.Month, 1).ToString("MMMM yyyy", CultureInfo.CurrentCulture))</span>
+                        <span>@((month.Cents / 100m).ToString("N2", CultureInfo.CurrentCulture)) @month.Currency</span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
+    <Favourites Id="stats-origins" Title="@L["Stats_Origins"]" Items="stats.Origins" />
+    <Favourites Id="stats-roasters" Title="@L["Stats_Roasters"]" Items="stats.Roasters" />
+    <Favourites Id="stats-processes" Title="@L["Stats_Processes"]" Items="stats.Processes" />
+
+    <section id="stats-grind">
+        <h2>@L["Stats_Grind"]</h2>
+        @if (stats.GrindTrends.Count == 0)
+        {
+            <p class="dialed-muted">@L["Stats_GrindEmpty"]</p>
+        }
+        @foreach (var grinder in stats.GrindTrends)
+        {
+            <h3>@grinder.GrinderName</h3>
+            <ul class="dialed-list">
+                @foreach (var point in grinder.Points)
+                {
+                    <li class="dialed-stat-row">
+                        <span>@(new DateTime(point.Year, point.Month, 1).ToString("MMM yyyy", CultureInfo.CurrentCulture))</span>
+                        <span>@point.AverageSetting.ToString("0.#", CultureInfo.CurrentCulture) <span class="dialed-muted">(@point.Brews)</span></span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+}
+
+@code {
+    private CoffeeStatistics? stats;
+
+    private decimal BarWidth(decimal grams)
+    {
+        var max = stats!.Weekly.Max(w => w.Grams);
+        return max == 0 ? 0 : Math.Round(grams / max * 100m, 0);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        BrewStore.Changed += OnChanged;
+        BagStore.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync() =>
+        stats = CoffeeStatistics.Calculate(
+            await BrewStore.ListAsync(),
+            await BagStore.ListAsync(),
+            await BeanStore.ListAsync(),
+            await VendorStore.ListAsync(),
+            await EquipmentStore.ListAsync(),
+            DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        BrewStore.Changed -= OnChanged;
+        BagStore.Changed -= OnChanged;
+    }
+}

@@ -586,4 +586,17 @@
   <data name="KnownIssues_Recovery" xml:space="preserve"><value>Recovery by email is not delivered yet. Keep the recovery codes you receive when you sign up.</value></data>
   <data name="KnownIssues_Timer" xml:space="preserve"><value>The brew timer sound may be muted by the iPhone silent switch, and the screen may still dim on some devices.</value></data>
   <data name="KnownIssues_Offline" xml:space="preserve"><value>Photos and AI advice need a connection to be shared or answered; everything else works offline.</value></data>
+  <data name="Stats_Title" xml:space="preserve"><value>Statistics</value></data>
+  <data name="Stats_Empty" xml:space="preserve"><value>Brew some coffee and your statistics will show up here.</value></data>
+  <data name="Stats_Weekly" xml:space="preserve"><value>Coffee per week</value></data>
+  <data name="Stats_WeeklyHint" xml:space="preserve"><value>Grams brewed, last {0} weeks.</value></data>
+  <data name="Stats_Spend" xml:space="preserve"><value>Spend per month</value></data>
+  <data name="Stats_SpendEmpty" xml:space="preserve"><value>Add a price and purchase date to your bags to see what you spend.</value></data>
+  <data name="Stats_Origins" xml:space="preserve"><value>Favourite origins</value></data>
+  <data name="Stats_Roasters" xml:space="preserve"><value>Favourite roasters</value></data>
+  <data name="Stats_Processes" xml:space="preserve"><value>Processes, by brews and rating</value></data>
+  <data name="Stats_Grind" xml:space="preserve"><value>Grind setting per grinder</value></data>
+  <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log brews with a grinder and grind setting to see trends.</value></data>
+  <data name="Stats_NothingYet" xml:space="preserve"><value>Nothing yet.</value></data>
+  <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} brews</value></data>
 </root>

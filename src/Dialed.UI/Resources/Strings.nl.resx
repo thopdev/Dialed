@@ -585,4 +585,17 @@
   <data name="KnownIssues_Recovery" xml:space="preserve"><value>Herstel per e-mail wordt nog niet verstuurd. Bewaar de herstelcodes die je bij het aanmaken van je account krijgt.</value></data>
   <data name="KnownIssues_Timer" xml:space="preserve"><value>Het geluid van de brewtimer kan gedempt worden door de stille modus van de iPhone, en het scherm kan op sommige apparaten toch dimmen.</value></data>
   <data name="KnownIssues_Offline" xml:space="preserve"><value>Voor het delen van foto's en AI-advies is een verbinding nodig; al het andere werkt offline.</value></data>
+  <data name="Stats_Title" xml:space="preserve"><value>Statistieken</value></data>
+  <data name="Stats_Empty" xml:space="preserve"><value>Zet wat koffie en je statistieken verschijnen hier.</value></data>
+  <data name="Stats_Weekly" xml:space="preserve"><value>Koffie per week</value></data>
+  <data name="Stats_WeeklyHint" xml:space="preserve"><value>Gebrouwen gram, afgelopen {0} weken.</value></data>
+  <data name="Stats_Spend" xml:space="preserve"><value>Uitgaven per maand</value></data>
+  <data name="Stats_SpendEmpty" xml:space="preserve"><value>Voeg een prijs en aankoopdatum toe aan je zakken om te zien wat je uitgeeft.</value></data>
+  <data name="Stats_Origins" xml:space="preserve"><value>Favoriete herkomsten</value></data>
+  <data name="Stats_Roasters" xml:space="preserve"><value>Favoriete branders</value></data>
+  <data name="Stats_Processes" xml:space="preserve"><value>Processen, op aantal en beoordeling</value></data>
+  <data name="Stats_Grind" xml:space="preserve"><value>Maalstand per molen</value></data>
+  <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log bereidingen met een molen en maalstand om trends te zien.</value></data>
+  <data name="Stats_NothingYet" xml:space="preserve"><value>Nog niets.</value></data>
+  <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} bereidingen</value></data>
 </root>
