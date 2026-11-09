@@ -42,7 +42,7 @@ public abstract class UiTestContext : BunitContext
     /// <summary>The export and delete endpoints, and the file the person receives.</summary>
     protected TestAccountDataServer DataServer { get; } = new();
 
-    protected TestFiles Files { get; } = new();
+    protected TestFiles ExportedFiles { get; } = new();
 
     /// <summary>The API's household endpoints: a household of one by default.</summary>
     protected TestHouseholdServer HouseholdServer { get; } = new();
@@ -72,7 +72,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<AuthSession>();
         Services.AddSingleton(new AccountApi(new HttpClient(Accounts) { BaseAddress = new Uri("https://api.test/") }));
         Services.AddSingleton<AccountService>();
-        Services.AddSingleton<IFileExport>(Files);
+        Services.AddSingleton<IFileExport>(ExportedFiles);
         Services.AddSingleton(new AccountDataApi(new HttpClient(DataServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<AccountDataService>();
         Services.AddSingleton(new HouseholdApi(new HttpClient(HouseholdServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));

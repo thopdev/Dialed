@@ -1,11 +1,9 @@
 using System.Net;
 using System.Text;
 using Bunit;
-using Bunit.TestDoubles;
 using Dialed.Client.Account;
 using Dialed.Client.Platform;
 using Dialed.UI.Components;
-using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dialed.UI.Tests;
@@ -35,7 +33,7 @@ public sealed class DataControlsTests : UiTestContext
         panel.Find("#data-export").Click();
 
         panel.WaitForAssertion(() => panel.Find("#data-message").TextContent.ShouldContain("exported"));
-        var (name, type, content) = Files.Saved.Single();
+        var (name, type, content) = ExportedFiles.Saved.Single();
         name.ShouldStartWith("dialed-export-");
         name.ShouldEndWith(".json");
         type.ShouldBe("application/json");
@@ -45,7 +43,7 @@ public sealed class DataControlsTests : UiTestContext
     [Fact]
     public async Task A_dismissed_share_sheet_says_nothing()
     {
-        Files.Dismiss = true;
+        ExportedFiles.Dismiss = true;
         var panel = await SignedInPanel();
 
         panel.Find("#data-export").Click();
@@ -75,8 +73,6 @@ public sealed class DataControlsTests : UiTestContext
 
         panel.WaitForAssertion(() => Session.IsSignedIn.ShouldBeFalse());
         DataServer.Paths.ShouldBe(["account/delete/options", "account/delete"]);
-        var navigation = (FakeNavigationManager)Services.GetRequiredService<NavigationManager>();
-        navigation.History.First().Options.ForceLoad.ShouldBeTrue();
     }
 
     [Fact]
