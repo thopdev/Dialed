@@ -1,20 +1,55 @@
 @using Dialed.Client.Sync
-@* Small "not yet synced" note, shown only when changes are waiting and the user is signed in (otherwise everything is local by design). *@
+@* Small sync notes (#114): loading your data from your account, changes waiting, and a warning when changes have waited too long. Only for a signed-in user (otherwise everything is local by design). *@
 @implements IDisposable
 @inject SyncCoordinator Sync
+@inject TimeProvider Time
 @inject IStringLocalizer<Strings> L
 
-@if (Sync.PendingCount > 0 && Sync.Status != SyncStatus.NeedsSignIn)
+@if (Sync.RestoringCount > 0 && Sync.Status != SyncStatus.NeedsSignIn)
 {
-    <div id="sync-indicator" class="dialed-sync-indicator" role="status">
-        @(Sync.Status == SyncStatus.Offline ? L["Sync_Indicator_Offline", Sync.PendingCount] : L["Sync_Indicator_Pending", Sync.PendingCount])
+    <div id="sync-restoring" class="dialed-sync-indicator" role="status">
+        <FluentSpinner />
+        <span>@string.Format(L["Sync_Restoring"].Value, Sync.RestoringCount)</span>
     </div>
+}
+else if (Sync.PendingCount > 0 && Sync.Status != SyncStatus.NeedsSignIn)
+{
+    @if (Sync.HasStuckChanges)
+    {
+        <div id="sync-indicator" class="dialed-sync-indicator dialed-sync-stuck" role="alert">
+            @string.Format(L["Sync_Indicator_Stuck"].Value, Sync.PendingCount, (int)SyncCoordinator.StuckAfter.TotalMinutes)
+        </div>
+    }
+    else
+    {
+        <div id="sync-indicator" class="dialed-sync-indicator" role="status">
+            @(Sync.Status == SyncStatus.Offline ? L["Sync_Indicator_Offline", Sync.PendingCount] : L["Sync_Indicator_Pending", Sync.PendingCount])
+        </div>
+    }
 }
 
 @code {
-    protected override void OnInitialized() => Sync.Changed += OnChanged;
+    private ITimer? recheck;
+
+    protected override void OnInitialized()
+    {
+        Sync.Changed += OnChanged;
+
+        // Time passing alone can turn "waiting" into "waiting too long", so look again now and then while something waits.
+        recheck = Time.CreateTimer(_ =>
+        {
+            if (Sync.PendingCount > 0)
+            {
+                OnChanged();
+            }
+        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
 
     private void OnChanged() => _ = InvokeAsync(StateHasChanged);
 
-    public void Dispose() => Sync.Changed -= OnChanged;
+    public void Dispose()
+    {
+        Sync.Changed -= OnChanged;
+        recheck?.Dispose();
+    }
 }

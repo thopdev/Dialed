@@ -52,6 +52,7 @@ public sealed class SyncCoordinator : IDisposable
         this.lifecycle = lifecycle;
         this.time = time;
         this.debounce = debounce ?? TimeSpan.FromSeconds(3);
+        engine.PullProgressed += OnPullProgressed;
     }
 
     public SyncStatus Status { get; private set; } = SyncStatus.Idle;
@@ -62,6 +63,21 @@ public sealed class SyncCoordinator : IDisposable
 
     /// <summary>Local changes not yet on the server (the "not yet synced" indicator).</summary>
     public int PendingCount { get; private set; }
+
+    /// <summary>
+    /// While a first pull is running (new device, or the browser cleared the local database): how many records came in so far.
+    /// 0 otherwise. The app shows "Loading your data from your account".
+    /// </summary>
+    public int RestoringCount { get; private set; }
+
+    /// <summary>When the oldest change still waiting to be sent was made (since this launch); <c>null</c> when nothing waits.</summary>
+    public DateTimeOffset? PendingSince { get; private set; }
+
+    /// <summary>Changes waiting this long make the app warn that they are not safe on the server yet.</summary>
+    public static readonly TimeSpan StuckAfter = TimeSpan.FromMinutes(5);
+
+    /// <summary>Changes have been waiting to be sent for more than <see cref="StuckAfter"/> while signed in.</summary>
+    public bool HasStuckChanges => PendingCount > 0 && Status != SyncStatus.NeedsSignIn && PendingSince is { } since && time.GetUtcNow() - since >= StuckAfter;
 
     /// <summary>When the next automatic retry runs after the server could not be reached; <c>null</c> when none is planned.</summary>
     public DateTimeOffset? NextRetryAt { get; private set; }
@@ -166,6 +182,7 @@ public sealed class SyncCoordinator : IDisposable
             ScheduleRetry();
         }
 
+        RestoringCount = 0;
         await RefreshPendingAsync();
         Update(result.Outcome == SyncOutcome.Offline ? SyncStatus.Offline : SyncStatus.Idle);
         return result;
@@ -207,6 +224,7 @@ public sealed class SyncCoordinator : IDisposable
         }
 
         state.OutboxChanged -= OnOutboxChanged;
+        engine.PullProgressed -= OnPullProgressed;
         connectivity.Changed -= OnConnectivityChanged;
         lifecycle.Resumed -= OnResumed;
     }
@@ -297,7 +315,19 @@ public sealed class SyncCoordinator : IDisposable
     private async Task RefreshPendingAsync()
     {
         PendingCount = await engine.PendingCountAsync();
+
+        // The clock for "waiting too long" starts when something starts waiting, and stops when nothing waits.
+        PendingSince = PendingCount == 0 ? null : PendingSince ?? time.GetUtcNow();
         Changed?.Invoke();
+    }
+
+    private void OnPullProgressed(PullProgress progress)
+    {
+        if (progress.FirstPull && progress.Applied > 0)
+        {
+            RestoringCount = progress.Applied;
+            Changed?.Invoke();
+        }
     }
 
     private void Update(SyncStatus status)

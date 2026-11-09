@@ -744,4 +744,8 @@
   <data name="Brew_Ratio" xml:space="preserve"><value>Ratio</value></data>
   <data name="Timer_Progress" xml:space="preserve"><value>Brew progress</value></data>
   <data name="Timer_ProgressValue" xml:space="preserve"><value>{0} of {1}</value></data>
+  <data name="Sync_Restoring" xml:space="preserve"><value>Loading your data from your account… {0} items so far.</value></data>
+  <data name="Sync_Indicator_Stuck" xml:space="preserve"><value>{0} changes have not reached your account for more than {1} minutes. They are safe on this device; check your connection.</value></data>
+  <data name="Storage_WriteFailed" xml:space="preserve"><value>This device could not save your last change (storage may be full). It is kept until you close the app. Free up space on your device.</value></data>
+  <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>This device could not save your last change (storage may be full). It is kept while the app is open and sent to your account. Free up space on your device.</value></data>
 </root>

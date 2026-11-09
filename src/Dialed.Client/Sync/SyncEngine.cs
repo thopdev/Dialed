@@ -74,6 +74,22 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
         await AdoptLocalRecordsAsync(cancellationToken);
     }
 
+    /// <summary>Raised after each page pulled from the server, with the running total of records applied in this sync.</summary>
+    public event Action<PullProgress>? PullProgressed;
+
+    private async Task<bool> IsFirstPullAsync(CancellationToken cancellationToken)
+    {
+        foreach (var name in byName.Keys)
+        {
+            if (await state.GetWatermarkAsync(name, cancellationToken) is not null)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public async Task<SyncResult> SyncAsync(CancellationToken cancellationToken = default)
     {
         if (!await gate.WaitAsync(0, cancellationToken))
@@ -84,6 +100,8 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
         int pushed = 0, conflicts = 0, failed = 0, pulled = 0;
         try
         {
+            // Nothing pulled yet for any table: a new device, or the browser cleared the local database (#114).
+            var firstPull = await IsFirstPullAsync(cancellationToken);
             foreach (var entry in await state.PendingAsync(cancellationToken))
             {
                 if (!byName.TryGetValue(entry.Table, out var table))
@@ -108,7 +126,8 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
 
             foreach (var table in byName.Values)
             {
-                pulled += await table.PullAsync(pageSize, cancellationToken);
+                var before = pulled;
+                pulled += await table.PullAsync(pageSize, cancellationToken, applied => PullProgressed?.Invoke(new PullProgress(firstPull, before + applied)));
             }
 
             return new SyncResult(SyncOutcome.Completed, pushed, pulled, conflicts, failed);

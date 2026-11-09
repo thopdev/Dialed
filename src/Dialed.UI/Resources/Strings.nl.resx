@@ -743,4 +743,8 @@
   <data name="Brew_Ratio" xml:space="preserve"><value>Verhouding</value></data>
   <data name="Timer_Progress" xml:space="preserve"><value>Voortgang</value></data>
   <data name="Timer_ProgressValue" xml:space="preserve"><value>{0} van {1}</value></data>
+  <data name="Sync_Restoring" xml:space="preserve"><value>Je gegevens worden uit je account geladen… al {0} items.</value></data>
+  <data name="Sync_Indicator_Stuck" xml:space="preserve"><value>{0} wijzigingen zijn al meer dan {1} minuten niet in je account aangekomen. Ze staan veilig op dit apparaat; controleer je verbinding.</value></data>
+  <data name="Storage_WriteFailed" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard tot je de app sluit. Maak ruimte vrij op je apparaat.</value></data>
+  <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard zolang de app open is en wordt naar je account gestuurd. Maak ruimte vrij op je apparaat.</value></data>
 </root>

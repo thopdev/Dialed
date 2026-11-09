@@ -2271,3 +2271,21 @@ a.people-row-name {
     flex: 1;
 }
 
+
+/* ---- Storage and sync notes (#114) ------------------------------------------------------------ */
+
+.dialed-sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-sync-stuck {
+    background: var(--colorPaletteMarigoldBackground1, #fff9f5);
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+    border: 1px solid var(--colorPaletteMarigoldBorder1, #f9d3b4);
+}
+
+#storage-warning {
+    margin-bottom: var(--dialed-space-3);
+}
