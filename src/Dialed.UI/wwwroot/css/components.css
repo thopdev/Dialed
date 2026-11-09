@@ -1036,3 +1036,11 @@ button.dialed-chip::after {
     text-align: end;
     font-size: var(--dialed-text-s);
 }
+
+/* ---- Label scan (#83) ----------------------------------------------------------------------- */
+
+/* A field the model was not sure about: a coloured edge and a note, not colour alone. */
+.dialed-uncertain {
+    border-inline-start: 4px solid var(--colorPaletteYellowBorder2, #c19c00);
+    padding-inline-start: var(--dialed-space-3);
+}

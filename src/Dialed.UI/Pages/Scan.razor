@@ -1,0 +1,237 @@
+@page "/scan"
+@using Dialed.Client
+@using Dialed.Client.Account
+@using Dialed.Client.Data
+@using Dialed.Client.Platform
+@using Dialed.Client.Scan
+@using Dialed.Domain.Import
+@using Dialed.Domain.Model
+@using Dialed.Domain.Text
+@inject IStringLocalizer<Strings> L
+@inject IPhotoCapture Capture
+@inject ILabelScanner Scanner
+@inject PhotoService Photos
+@inject AuthSession Session
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Vendor> VendorStore
+@inject NavigationManager Navigation
+
+<PageHeader Title="@L["Scan_Title"]" BackHref="beans" />
+
+@if (!Session.IsSignedIn)
+{
+    <EmptyState Message="@L["Scan_SignedOut"]">
+        <a class="dialed-button" href="settings">@L["Settings_Title"]</a>
+        <a class="dialed-button" href="beans/new">@L["Beans_New"]</a>
+    </EmptyState>
+}
+else if (label is null)
+{
+    <p class="dialed-muted" id="scan-hint">@L["Scan_Hint"]</p>
+    @if (problem is not null)
+    {
+        <p id="scan-problem" role="alert">@L[$"Scan_Problem_{problem}"]</p>
+        <p><a href="beans/new">@L["Beans_New"]</a></p>
+    }
+
+    <div class="dialed-form-actions">
+        <button id="scan-camera" type="button" class="dialed-button dialed-button-primary" disabled="@busy" @onclick="() => ScanAsync(PhotoSource.Camera)">@L["Photo_Take"]</button>
+        <button id="scan-library" type="button" class="dialed-button" disabled="@busy" @onclick="() => ScanAsync(PhotoSource.Library)">@L["Photo_Choose"]</button>
+    </div>
+    @if (busy)
+    {
+        <p id="scan-busy" role="status">@L["Scan_Reading"]</p>
+    }
+}
+else
+{
+    <form id="scan-review" class="dialed-form" @onsubmit="SaveAsync" @onsubmit:preventDefault>
+        <p class="dialed-muted">@L["Scan_Review"]</p>
+
+        <div class="@Field(label.Name)">
+            <label for="scan-name">@L["Bean_Name"]</label>
+            <input id="scan-name" type="text" @bind="name" autocomplete="off" />
+            @Uncertain(label.Name)
+        </div>
+
+        <div class="@Field(label.Roaster)">
+            <label for="scan-roaster">@L["Bean_Roaster"]</label>
+            <input id="scan-roaster" type="text" @bind="roaster" @bind:after="Rematch" autocomplete="off" />
+            @Uncertain(label.Roaster)
+            @if (match?.BestRoaster is { } likelyRoaster)
+            {
+                <fieldset id="scan-roaster-match">
+                    <legend>@L["Scan_RoasterMatch", likelyRoaster.Item.Name]</legend>
+                    <label><input type="radio" name="roaster-choice" checked="@(linkRoaster)" @onchange="() => linkRoaster = true" /> @L["Scan_LinkExisting"]</label>
+                    <label><input type="radio" name="roaster-choice" checked="@(!linkRoaster)" @onchange="() => linkRoaster = false" /> @L["Scan_CreateNew"]</label>
+                </fieldset>
+            }
+        </div>
+
+        @if (match?.BestBean is { } likelyBean)
+        {
+            <fieldset id="scan-bean-match">
+                <legend>@L["Scan_BeanMatch", likelyBean.Item.Name]</legend>
+                <label><input type="radio" name="bean-choice" checked="@(linkBean)" @onchange="() => linkBean = true" /> @L["Scan_UseExistingBean"]</label>
+                <label><input type="radio" name="bean-choice" checked="@(!linkBean)" @onchange="() => linkBean = false" /> @L["Scan_CreateNew"]</label>
+            </fieldset>
+        }
+
+        <div class="@Field(label.Country)">
+            <label for="scan-country">@L["Bean_Country"]</label>
+            <input id="scan-country" type="text" @bind="country" autocomplete="off" />
+            @Uncertain(label.Country)
+        </div>
+        <div class="@Field(label.Region)">
+            <label for="scan-region">@L["Bean_Region"]</label>
+            <input id="scan-region" type="text" @bind="region" autocomplete="off" />
+            @Uncertain(label.Region)
+        </div>
+        <div class="@Field(label.Process)">
+            <label for="scan-process">@L["Bean_Process"]</label>
+            <input id="scan-process" type="text" @bind="process" autocomplete="off" />
+            @Uncertain(label.Process)
+        </div>
+        <div class="@Field(label.Varieties)">
+            <label for="scan-varieties">@L["Bean_Varieties"]</label>
+            <input id="scan-varieties" type="text" @bind="varieties" autocomplete="off" />
+            @Uncertain(label.Varieties)
+        </div>
+        <div class="@Field(label.RoastLevel)">
+            <label for="scan-roast">@L["Bean_RoastLevel"]</label>
+            <input id="scan-roast" type="text" @bind="roastLevel" autocomplete="off" />
+            @Uncertain(label.RoastLevel)
+        </div>
+        <div class="@Field(label.TastingNotes)">
+            <label for="scan-notes">@L["Bean_Notes"]</label>
+            <input id="scan-notes" type="text" @bind="notes" autocomplete="off" />
+            @Uncertain(label.TastingNotes)
+        </div>
+
+        <h2>@L["Scan_BagHeading"]</h2>
+        <div class="@Field(label.WeightG)">
+            <label for="scan-weight">@L["Import_Field_WeightG"] (g)</label>
+            <input id="scan-weight" type="text" inputmode="decimal" @bind="weight" autocomplete="off" />
+            @Uncertain(label.WeightG)
+        </div>
+        <div class="@Field(label.RoastDate)">
+            <label for="scan-roastdate">@L["Import_Field_RoastDate"]</label>
+            <input id="scan-roastdate" type="date" value="@roastDate" @onchange="e => roastDate = e.Value?.ToString() ?? string.Empty" />
+            @Uncertain(label.RoastDate)
+        </div>
+
+        @if (nameMissing)
+        {
+            <p id="scan-name-missing" role="alert">@L["Bean_NameRequired"]</p>
+        }
+
+        <div class="dialed-form-actions">
+            <button id="scan-save" type="submit" class="dialed-button dialed-button-primary" disabled="@busy">@L["Scan_Save"]</button>
+            <button id="scan-again" type="button" class="dialed-button" disabled="@busy" @onclick="Reset">@L["Scan_Again"]</button>
+        </div>
+    </form>
+}
+
+@code {
+    private ScannedLabel? label;
+    private CapturedPhoto? photo;
+    private LabelMatch? match;
+    private ScanProblem? problem;
+    private bool busy;
+    private bool nameMissing;
+    private bool linkRoaster = true;
+    private bool linkBean = true;
+    private string name = "", roaster = "", country = "", region = "", process = "", varieties = "", roastLevel = "", notes = "", weight = "", roastDate = "";
+
+    private static string Field(ScannedField field) => field.IsUncertain ? "dialed-field dialed-uncertain" : "dialed-field";
+
+    private RenderFragment Uncertain(ScannedField field) => builder =>
+    {
+        if (field.IsUncertain)
+        {
+            builder.OpenElement(0, "p");
+            builder.AddAttribute(1, "class", "dialed-muted scan-uncertain");
+            builder.AddContent(2, L["Scan_Uncertain"].Value);
+            builder.CloseElement();
+        }
+    };
+
+    private async Task ScanAsync(PhotoSource source)
+    {
+        problem = null;
+        var captured = await Capture.CaptureAsync(source, 1600);
+        if (captured is null)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var scanned = await Scanner.ScanAsync(captured);
+            photo = captured;
+            label = scanned;
+            name = scanned.Name.Value ?? "";
+            roaster = scanned.Roaster.Value ?? "";
+            country = scanned.Country.Value ?? "";
+            region = scanned.Region.Value ?? "";
+            process = scanned.Process.Value ?? "";
+            varieties = scanned.Varieties.Value ?? "";
+            roastLevel = scanned.RoastLevel.Value ?? "";
+            notes = scanned.TastingNotes.Value ?? "";
+            weight = scanned.WeightG.Value ?? "";
+            roastDate = BeanImport.ParseDate(scanned.RoastDate.Value)?.ToString("yyyy-MM-dd") ?? "";
+            await Rematch();
+        }
+        catch (LabelScanException exception)
+        {
+            problem = exception.Problem;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task Rematch()
+    {
+        match = LabelMatcher.Find(roaster, name, country, await VendorStore.ListAsync(), await BeanStore.ListAsync());
+        linkRoaster = true;
+        linkBean = true;
+    }
+
+    private void Reset()
+    {
+        label = null;
+        photo = null;
+        match = null;
+        nameMissing = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        nameMissing = string.IsNullOrWhiteSpace(name);
+        if (nameMissing)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var existingBean = match?.BestBean is { } b && linkBean ? b.Item.Id : null;
+            var existingRoaster = match?.BestRoaster is { } r && linkRoaster ? r.Item.Id : null;
+            var photoId = existingBean is null && photo is not null ? (await Photos.AddAsync(photo)).Id : null;
+            var grams = BeanImport.ParseWeightG(weight);
+            var saved = await ScanSaver.SaveAsync(
+                new ScanReview(name, roaster, existingRoaster, country, region, process, varieties, roastLevel, notes, grams, BeanImport.ParseDate(roastDate), existingBean, photoId),
+                BeanStore, BagStore, VendorStore);
+            Navigation.NavigateTo($"beans/{saved.Bean.Id}");
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}
