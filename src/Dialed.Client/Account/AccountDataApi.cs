@@ -33,6 +33,51 @@ public sealed class AccountDataApi(HttpClient http, IAccessTokenProvider tokens)
         using var response = await SendAsync(HttpMethod.Post, "account/delete", new { state, credential = credential.RootElement }, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<PasskeyInfo>> ListPasskeysAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, "account/passkeys", null, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<List<PasskeyInfo>>(Json, cancellationToken) ?? [];
+    }
+
+    public async Task RenamePasskeyAsync(string id, string name, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Put, $"account/passkeys/{Uri.EscapeDataString(id)}", new { name }, cancellationToken);
+    }
+
+    public async Task RemovePasskeyAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Delete, $"account/passkeys/{Uri.EscapeDataString(id)}", null, cancellationToken);
+    }
+
+    public async Task<AccountApi.Ceremony> AddPasskeyOptionsAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Post, "account/passkeys/options", new { }, cancellationToken);
+        var dto = await response.Content.ReadFromJsonAsync<CeremonyDto>(Json, cancellationToken)
+            ?? throw new AccountApiException("The server sent an empty answer.");
+        return new AccountApi.Ceremony(dto.Options.GetRawText(), dto.State);
+    }
+
+    public async Task AddPasskeyAsync(string state, string credentialJson, string name, CancellationToken cancellationToken = default)
+    {
+        using var credential = JsonDocument.Parse(credentialJson);
+        using var response = await SendAsync(HttpMethod.Post, $"account/passkeys?name={Uri.EscapeDataString(name)}", new { state, credential = credential.RootElement }, cancellationToken);
+    }
+
+    public async Task<RecoveryStatus?> RecoveryStatusAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, "account/recovery", null, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<RecoveryStatus>(Json, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<string>> RegenerateRecoveryCodesAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Post, "account/recovery/codes", null, cancellationToken);
+        var dto = await response.Content.ReadFromJsonAsync<RecoveryCodesDto>(Json, cancellationToken);
+        return dto?.Codes ?? [];
+    }
+
+    private sealed record RecoveryCodesDto(List<string> Codes);
+
     private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object? body, CancellationToken cancellationToken)
     {
         string token;

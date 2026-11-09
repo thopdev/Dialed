@@ -528,4 +528,24 @@
   <data name="People_LoadMore" xml:space="preserve"><value>Meer laden</value></data>
   <data name="Household_Transfer" xml:space="preserve"><value>Eigenaar maken</value></data>
   <data name="Household_ConfirmTransfer" xml:space="preserve"><value>Ja, eigenaarschap overdragen</value></data>
+  <data name="Passkeys_Name" xml:space="preserve"><value>Naam van passkey</value></data>
+  <data name="Passkeys_Rename" xml:space="preserve"><value>Hernoemen</value></data>
+  <data name="Passkeys_Remove" xml:space="preserve"><value>Verwijderen</value></data>
+  <data name="Passkeys_RemoveConfirm" xml:space="preserve"><value>Ja, verwijderen</value></data>
+  <data name="Passkeys_Add" xml:space="preserve"><value>Nog een passkey toevoegen</value></data>
+  <data name="Passkeys_NewName" xml:space="preserve"><value>Nog een passkey</value></data>
+  <data name="Passkeys_Synced" xml:space="preserve"><value>gesynchroniseerd</value></data>
+  <data name="Passkeys_SecondHint" xml:space="preserve"><value>Je hebt één passkey die alleen op dit apparaat staat. Voeg een tweede toe (ander apparaat of beveiligingssleutel), zodat je niet buitengesloten raakt.</value></data>
+  <data name="Recovery_CodesTitle" xml:space="preserve"><value>Bewaar je herstelcodes</value></data>
+  <data name="Recovery_CodesBody" xml:space="preserve"><value>Elke code werkt één keer als je je passkeys kwijtraakt. Je ziet ze alleen nu: schrijf ze op of bewaar ze in een wachtwoordmanager.</value></data>
+  <data name="Recovery_CodesSaved" xml:space="preserve"><value>Ik heb ze bewaard</value></data>
+  <data name="Recovery_Regenerate" xml:space="preserve"><value>Nieuwe herstelcodes</value></data>
+  <data name="Recovery_CodesLeft" xml:space="preserve"><value>Herstelcodes over: {0}</value></data>
+  <data name="Recovery_Lost" xml:space="preserve"><value>Passkey kwijt?</value></data>
+  <data name="Recovery_Hint" xml:space="preserve"><value>Vul je e-mailadres en een herstelcode in, of vraag een code per e-mail aan. Daarna maak je een nieuwe passkey op dit apparaat.</value></data>
+  <data name="Recovery_Code" xml:space="preserve"><value>Herstelcode</value></data>
+  <data name="Recovery_SendEmail" xml:space="preserve"><value>Mail me een code</value></data>
+  <data name="Recovery_Submit" xml:space="preserve"><value>Account herstellen</value></data>
+  <data name="Recovery_EmailSent" xml:space="preserve"><value>Als dit adres een account heeft, is er een code onderweg.</value></data>
+  <data name="Recovery_Missing" xml:space="preserve"><value>Vul je e-mailadres en een code in.</value></data>
 </root>

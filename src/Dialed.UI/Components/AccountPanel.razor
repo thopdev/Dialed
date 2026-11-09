@@ -35,6 +35,26 @@
                 <button id="account-signin" type="button" class="dialed-button" disabled="@busy" @onclick="SignInAsync">@L["Account_SignIn"]</button>
             </div>
         </form>
+
+        <p><button id="account-lost" type="button" class="dialed-button" @onclick="@(() => recovering = !recovering)">@L["Recovery_Lost"]</button></p>
+        @if (recovering)
+        {
+            <form class="dialed-form" id="account-recover-form" @onsubmit="RecoverAsync" @onsubmit:preventDefault>
+                <p class="dialed-muted">@L["Recovery_Hint"]</p>
+                <div class="dialed-field">
+                    <label for="recover-email">@L["Account_Email"]</label>
+                    <input id="recover-email" type="email" maxlength="256" autocomplete="email" @bind="email" @bind:event="oninput" />
+                </div>
+                <div class="dialed-field">
+                    <label for="recover-code">@L["Recovery_Code"]</label>
+                    <input id="recover-code" type="text" maxlength="32" autocomplete="one-time-code" autocapitalize="characters" @bind="recoveryCode" @bind:event="oninput" />
+                </div>
+                <div class="dialed-form-actions">
+                    <button id="recover-send-email" type="button" class="dialed-button" disabled="@busy" @onclick="SendEmailCodeAsync">@L["Recovery_SendEmail"]</button>
+                    <button id="recover-submit" type="submit" class="dialed-button dialed-button-primary" disabled="@busy">@L["Recovery_Submit"]</button>
+                </div>
+            </form>
+        }
     }
 
     @if (message is not null)
@@ -47,6 +67,8 @@
     private string displayName = "";
     private string email = "";
     private string inviteCode = "";
+    private string recoveryCode = "";
+    private bool recovering;
     private bool busy;
     private string? message;
 
@@ -63,6 +85,37 @@
         }
 
         await RunAsync(() => Account.SignUpAsync(email.Trim(), displayName.Trim(), inviteCode));
+    }
+
+    private async Task SendEmailCodeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+        {
+            message = L["Account_EmailInvalid"];
+            return;
+        }
+
+        busy = true;
+        message = null;
+        var result = await Account.SendRecoveryEmailAsync(email.Trim());
+        busy = false;
+        message = result.Outcome switch
+        {
+            AccountOutcome.Success => L["Recovery_EmailSent"],
+            AccountOutcome.Refused => result.Message,
+            _ => L["Account_Unavailable"],
+        };
+    }
+
+    private async Task RecoverAsync()
+    {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || string.IsNullOrWhiteSpace(recoveryCode))
+        {
+            message = L["Recovery_Missing"];
+            return;
+        }
+
+        await RunAsync(() => Account.RecoverAsync(email.Trim(), recoveryCode.Trim()));
     }
 
     private Task SignInAsync() => RunAsync(() => Account.SignInAsync());
