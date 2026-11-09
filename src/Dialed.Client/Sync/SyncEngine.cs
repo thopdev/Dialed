@@ -37,6 +37,43 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
         return adopted;
     }
 
+    /// <summary>
+    /// Makes this device hold only the data of <paramref name="householdId"/>. When it differs from the household last synced for,
+    /// what other people shared in the old one is removed, positions and versions are forgotten (the new household is pulled in
+    /// full) and the person's own records move over. Returns <c>true</c> when the household had changed.
+    /// </summary>
+    public async Task<bool> ReconcileHouseholdAsync(string householdId, CancellationToken cancellationToken = default)
+    {
+        var known = await state.GetHouseholdAsync(cancellationToken);
+        if (known == householdId)
+        {
+            return false;
+        }
+
+        if (known is null || householdId == Data.LocalContext.LocalHouseholdId)
+        {
+            // First sync on this device, or signed out: nothing to move, and nothing is wiped on sign-out.
+            await state.SetHouseholdAsync(householdId, cancellationToken);
+            return false;
+        }
+
+        await SwitchHouseholdAsync(householdId, cancellationToken);
+        return true;
+    }
+
+    /// <summary>The person joined, left or was removed: forget the old household's positions, remove what others shared there, move their own records over.</summary>
+    public async Task SwitchHouseholdAsync(string householdId, CancellationToken cancellationToken = default)
+    {
+        await state.SetHouseholdAsync(householdId, cancellationToken);
+        await state.ResetServerStateAsync(cancellationToken);
+        foreach (var table in byName.Values)
+        {
+            await table.PurgeForeignRecordsAsync(cancellationToken);
+        }
+
+        await AdoptLocalRecordsAsync(cancellationToken);
+    }
+
     public async Task<SyncResult> SyncAsync(CancellationToken cancellationToken = default)
     {
         if (!await gate.WaitAsync(0, cancellationToken))

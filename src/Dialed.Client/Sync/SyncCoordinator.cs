@@ -128,6 +128,12 @@ public sealed class SyncCoordinator : IDisposable
         SyncResult result;
         try
         {
+            // Removed from a household (or moved by another device): the token now names another one, so tidy up before syncing.
+            if (tokens.HouseholdId is { } householdId)
+            {
+                await engine.ReconcileHouseholdAsync(householdId, cancellationToken);
+            }
+
             result = await engine.SyncAsync(cancellationToken);
         }
         catch (OperationCanceledException)
