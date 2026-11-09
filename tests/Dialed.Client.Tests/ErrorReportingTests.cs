@@ -125,7 +125,7 @@ public sealed class ErrorReportingTests
     [Fact]
     public void The_scrubber_cuts_long_text()
     {
-        ErrorScrubber.Scrub(new string('a', 50) + " " + new string('b', 50), 20).Length.ShouldBe(20);
+        ErrorScrubber.Scrub(string.Concat(Enumerable.Repeat("word ", 20)), 20).Length.ShouldBe(20);
         ErrorScrubber.Scrub(null, 20).ShouldBe("");
     }
 }

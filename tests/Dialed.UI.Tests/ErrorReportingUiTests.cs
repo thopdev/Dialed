@@ -16,7 +16,7 @@ public sealed class ErrorReportingUiTests : UiTestContext
 
     private IRenderedComponent<ReportingErrorBoundary> BrokenScreen() =>
         Render<ReportingErrorBoundary>(p => p
-            .Add(b => b.ChildContent, (RenderFragment)(builder => builder.OpenComponent<Thrower>(0)))
+            .Add(b => b.ChildContent, (RenderFragment)(builder => { builder.OpenComponent<Thrower>(0); builder.CloseComponent(); }))
             .Add(b => b.ErrorContent, (RenderFragment<Exception>)(_ => builder => builder.AddContent(0, "broken"))));
 
     [Fact]
