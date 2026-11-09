@@ -1,0 +1,161 @@
+@page "/import"
+@using Dialed.Client.Data
+@using Dialed.Domain.Import
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Vendor> VendorStore
+
+<PageHeader Title="@L["Import_Title"]" BackHref="more" />
+
+<p class="dialed-muted">@L["Import_Intro"]</p>
+
+<div class="dialed-field">
+    <label for="import-file">@L["Import_Choose"]</label>
+    <InputFile id="import-file" accept=".csv,.txt,text/csv,text/plain" OnChange="LoadAsync" />
+</div>
+
+@if (error is not null)
+{
+    <p id="import-error" role="alert">@error</p>
+}
+
+@if (headers is not null)
+{
+    <section id="import-mapping">
+        <h2>@L["Import_Columns"]</h2>
+        @foreach (var field in Enum.GetValues<ImportField>())
+        {
+            <div class="dialed-field">
+                <label for="@($"map-{field}")">@L[$"Import_Field_{field}"]</label>
+                <select id="@($"map-{field}")" value="@(mapping.TryGetValue(field, out var column) ? column.ToString() : "")" @onchange="e => SetMapping(field, e.Value?.ToString())">
+                    <option value="">@L["Import_NotImported"]</option>
+                    @for (var i = 0; i < headers.Count; i++)
+                    {
+                        <option value="@i">@headers[i]</option>
+                    }
+                </select>
+            </div>
+        }
+    </section>
+
+    @if (plan is not null)
+    {
+        <section id="import-summary">
+            <h2>@L["Import_Preview"]</h2>
+            <p id="import-counts">@L["Import_Counts", plan.Beans.Count, plan.Beans.Count(b => b.Bag is not null), plan.AlreadyThere]</p>
+            @if (!mapping.ContainsKey(ImportField.Name))
+            {
+                <p role="alert">@L["Import_NeedName"]</p>
+            }
+
+            @if (plan.Warnings.Count > 0)
+            {
+                <details>
+                    <summary>@L["Import_Warnings", plan.Warnings.Count]</summary>
+                    <ul>
+                        @foreach (var warning in plan.Warnings.Take(50))
+                        {
+                            <li>@warning</li>
+                        }
+                    </ul>
+                </details>
+            }
+
+            <div class="dialed-form-actions">
+                <button id="import-run" type="button" class="dialed-button dialed-button-primary" disabled="@(busy || plan.Beans.Count == 0)" @onclick="ImportAsync">@L["Import_Run"]</button>
+            </div>
+        </section>
+    }
+}
+
+@if (result is not null)
+{
+    <p id="import-done" role="status">@L["Import_Done", result.Beans, result.Bags, result.Roasters]</p>
+}
+
+@code {
+    private const long MaxBytes = 5 * 1024 * 1024;
+
+    private IReadOnlyList<string>? headers;
+    private IReadOnlyList<IReadOnlyList<string>> dataRows = [];
+    private readonly Dictionary<ImportField, int> mapping = [];
+    private ImportPlan? plan;
+    private ImportResult? result;
+    private string? error;
+    private bool busy;
+
+    private async Task LoadAsync(InputFileChangeEventArgs args)
+    {
+        error = null;
+        result = null;
+        headers = null;
+        plan = null;
+        try
+        {
+            using var reader = new StreamReader(args.File.OpenReadStream(MaxBytes));
+            var rows = Csv.Parse(await reader.ReadToEndAsync());
+            if (rows.Count < 2)
+            {
+                error = L["Import_Empty"].Value;
+                return;
+            }
+
+            headers = rows[0];
+            dataRows = [.. rows.Skip(1)];
+            mapping.Clear();
+            foreach (var (field, column) in BeanImport.DetectMapping(headers))
+            {
+                mapping[field] = column;
+            }
+
+            await ReplanAsync();
+        }
+        catch (IOException)
+        {
+            error = L["Import_TooBig"].Value;
+        }
+    }
+
+    private async Task SetMapping(ImportField field, string? value)
+    {
+        if (int.TryParse(value, out var column))
+        {
+            mapping[field] = column;
+        }
+        else
+        {
+            mapping.Remove(field);
+        }
+
+        await ReplanAsync();
+    }
+
+    private async Task ReplanAsync()
+    {
+        var beans = await BeanStore.ListAsync();
+        var roasters = (await VendorStore.ListAsync()).ToDictionary(v => v.Id, v => v.Name);
+        plan = BeanImport.Plan(dataRows, mapping, beans.Select(b => (b.Name, b.RoasterId is { } id && roasters.TryGetValue(id, out var name) ? name : null)));
+    }
+
+    private async Task ImportAsync()
+    {
+        if (plan is null)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            result = await BeanImporter.ApplyAsync(plan, BeanStore, BagStore, VendorStore);
+            plan = null;
+            headers = null;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

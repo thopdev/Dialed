@@ -585,4 +585,30 @@
   <data name="KnownIssues_Recovery" xml:space="preserve"><value>Herstel per e-mail wordt nog niet verstuurd. Bewaar de herstelcodes die je bij het aanmaken van je account krijgt.</value></data>
   <data name="KnownIssues_Timer" xml:space="preserve"><value>Het geluid van de brewtimer kan gedempt worden door de stille modus van de iPhone, en het scherm kan op sommige apparaten toch dimmen.</value></data>
   <data name="KnownIssues_Offline" xml:space="preserve"><value>Voor het delen van foto's en AI-advies is een verbinding nodig; al het andere werkt offline.</value></data>
+  <data name="Import_Title" xml:space="preserve"><value>Bonen importeren</value></data>
+  <data name="Import_Intro" xml:space="preserve"><value>Haal bonen binnen uit een CSV-bestand, bijvoorbeeld een export uit een spreadsheet of een andere koffie-app. Kolommen worden herkend aan hun naam; controleer de koppeling hieronder. Bonen die er al zijn worden overgeslagen.</value></data>
+  <data name="Import_Choose" xml:space="preserve"><value>CSV-bestand</value></data>
+  <data name="Import_Columns" xml:space="preserve"><value>Kolommen</value></data>
+  <data name="Import_NotImported" xml:space="preserve"><value>Niet importeren</value></data>
+  <data name="Import_Preview" xml:space="preserve"><value>Voorbeeld</value></data>
+  <data name="Import_Counts" xml:space="preserve"><value>{0} bonen worden toegevoegd, {1} met een zak. {2} al aanwezig.</value></data>
+  <data name="Import_NeedName" xml:space="preserve"><value>Kies de kolom met de naam van de boon.</value></data>
+  <data name="Import_Warnings" xml:space="preserve"><value>{0} opmerkingen over rijen</value></data>
+  <data name="Import_Run" xml:space="preserve"><value>Importeren</value></data>
+  <data name="Import_Done" xml:space="preserve"><value>{0} bonen, {1} zakken en {2} nieuwe branders geïmporteerd.</value></data>
+  <data name="Import_Empty" xml:space="preserve"><value>Het bestand heeft geen rijen om te importeren. De eerste rij moet de kolomnamen bevatten.</value></data>
+  <data name="Import_TooBig" xml:space="preserve"><value>Het bestand is te groot (maximaal 5 MB).</value></data>
+  <data name="Import_Field_Name" xml:space="preserve"><value>Naam</value></data>
+  <data name="Import_Field_Roaster" xml:space="preserve"><value>Brander</value></data>
+  <data name="Import_Field_Country" xml:space="preserve"><value>Land</value></data>
+  <data name="Import_Field_Region" xml:space="preserve"><value>Regio</value></data>
+  <data name="Import_Field_Process" xml:space="preserve"><value>Proces</value></data>
+  <data name="Import_Field_Varieties" xml:space="preserve"><value>Variëteiten</value></data>
+  <data name="Import_Field_RoastLevel" xml:space="preserve"><value>Brandingsgraad</value></data>
+  <data name="Import_Field_Rating" xml:space="preserve"><value>Beoordeling (1-5)</value></data>
+  <data name="Import_Field_Notes" xml:space="preserve"><value>Notities</value></data>
+  <data name="Import_Field_WeightG" xml:space="preserve"><value>Gewicht zak</value></data>
+  <data name="Import_Field_Price" xml:space="preserve"><value>Prijs</value></data>
+  <data name="Import_Field_PurchasedOn" xml:space="preserve"><value>Aankoopdatum</value></data>
+  <data name="Import_Field_RoastDate" xml:space="preserve"><value>Brandingsdatum</value></data>
 </root>
