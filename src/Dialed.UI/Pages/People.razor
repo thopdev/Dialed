@@ -5,25 +5,35 @@
 @inject FriendsApi Friends
 @inject AuthSession Session
 @inject IStringLocalizer<Strings> L
+@inject Dialed.Client.Platform.IShareService Share
 
 <PageHeader Title="@L["Nav_People"]" />
 
 @if (!Session.IsSignedIn)
 {
-    <EmptyState Message="@L["People_SignInFirst"]" />
+    <EmptyState Icon="@(new Icons.Regular.Size24.People())" Message="@L["People_SignInFirst"]">
+        <a id="people-sign-in" class="dialed-button dialed-button-primary" href="settings#group-account">@L["People_GoToAccount"]</a>
+    </EmptyState>
 }
 else
 {
-    <section id="people-code">
-        <h2>@L["People_YourCode"]</h2>
-        <p class="dialed-muted">@L["People_YourCodeHint"]</p>
+    <section id="people-code" class="dialed-card dialed-friend-code" aria-labelledby="people-code-title">
+        <h2 id="people-code-title">@L["People_YourCode"]</h2>
         <p><strong id="people-my-code" class="dialed-code">@(myCode ?? "…")</strong></p>
+        <p class="dialed-muted">@L["People_YourCodeHint"]</p>
         <div class="dialed-form-actions">
+            @if (canShare && myCode is not null)
+            {
+                <button id="people-share" type="button" class="dialed-button dialed-button-primary dialed-button-icon" @onclick="ShareCodeAsync">
+                    <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size20.Share())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                    @L["People_ShareCode"]
+                </button>
+            }
             <button id="people-rotate" type="button" class="dialed-button" disabled="@busy" @onclick="RotateAsync">@L["People_NewCode"]</button>
         </div>
     </section>
 
-    <section id="people-follow">
+    <section id="people-follow" class="dialed-people-section">
         <h2>@L["People_Follow"]</h2>
         <form class="dialed-form" @onsubmit="FollowAsync" @onsubmit:preventDefault>
             <div class="dialed-field">
@@ -38,17 +48,18 @@ else
 
     @if (message is not null)
     {
-        <p id="people-message" role="status">@message</p>
+        <p id="people-message" class="dialed-banner dialed-banner-info" role="status">@message</p>
     }
 
     @if (loadFailed)
     {
-        <p id="people-offline" class="dialed-muted">@L["People_Offline"]</p>
+        <EmptyState Icon="@(new Icons.Regular.Size24.CloudOff())" Message="@L["People_Offline"]" />
+        <p id="people-offline" class="dialed-visually-hidden">@L["People_Offline"]</p>
         <button id="people-retry" type="button" class="dialed-button" @onclick="LoadAsync">@L["Error_Retry"]</button>
     }
     else if (requests is not null)
     {
-        <section id="people-requests">
+        <section id="people-requests" class="dialed-people-section">
             <h2>@L["People_Requests"]</h2>
             @if (requests.Count == 0)
             {
@@ -57,16 +68,17 @@ else
             <ul class="dialed-list">
                 @foreach (var person in requests)
                 {
-                    <li class="people-request" data-user="@person.UserId">
-                        <span>@person.DisplayName</span>
-                        <button type="button" class="dialed-button dialed-button-primary people-accept" disabled="@busy" @onclick="() => AcceptAsync(person)">@L["People_Accept"]</button>
-                        <button type="button" class="dialed-button people-decline" disabled="@busy" @onclick="() => DeclineAsync(person)">@L["People_Decline"]</button>
+                    <li class="people-row people-request" data-user="@person.UserId">
+                        <Avatar Name="@person.DisplayName" />
+                        <span class="people-row-text"><span class="people-row-name">@person.DisplayName</span><span class="dialed-chip dialed-chip-small people-state">@L["People_State_WantsToFollow"]</span></span>
+                        <span class="people-row-actions"><button type="button" class="dialed-button dialed-button-primary people-accept" disabled="@busy" @onclick="() => AcceptAsync(person)">@L["People_Accept"]</button>
+                        <button type="button" class="dialed-button people-decline" disabled="@busy" @onclick="() => DeclineAsync(person)">@L["People_Decline"]</button></span>
                     </li>
                 }
             </ul>
         </section>
 
-        <section id="people-following">
+        <section id="people-following" class="dialed-people-section">
             <h2>@L["People_Following"]</h2>
             @if (following!.Count == 0 && pending!.Count == 0)
             {
@@ -75,22 +87,24 @@ else
             <ul class="dialed-list">
                 @foreach (var person in following)
                 {
-                    <li class="people-followed" data-user="@person.UserId">
-                        <a href="people/@person.UserId">@person.DisplayName</a>
-                        <button type="button" class="dialed-button people-unfollow" disabled="@busy" @onclick="() => UnfollowAsync(person)">@L["People_Unfollow"]</button>
+                    <li class="people-row people-followed" data-user="@person.UserId">
+                        <Avatar Name="@person.DisplayName" />
+                        <span class="people-row-text"><a class="people-row-name" href="people/@person.UserId">@person.DisplayName</a><span class="dialed-chip dialed-chip-small dialed-chip-positive people-state">@L["People_State_Following"]</span></span>
+                        <span class="people-row-actions"><button type="button" class="dialed-button people-unfollow" disabled="@busy" @onclick="() => UnfollowAsync(person)">@L["People_Unfollow"]</button></span>
                     </li>
                 }
                 @foreach (var person in pending!)
                 {
-                    <li class="people-pending" data-user="@person.UserId">
-                        <span>@person.DisplayName · @L["People_Waiting"]</span>
-                        <button type="button" class="dialed-button people-cancel" disabled="@busy" @onclick="() => UnfollowAsync(person)">@L["Cancel"]</button>
+                    <li class="people-row people-pending" data-user="@person.UserId">
+                        <Avatar Name="@person.DisplayName" />
+                        <span class="people-row-text"><span class="people-row-name">@person.DisplayName</span><span class="dialed-chip dialed-chip-small dialed-chip-waiting people-state">@L["People_State_Waiting"]</span></span>
+                        <span class="people-row-actions"><button type="button" class="dialed-button people-cancel" disabled="@busy" @onclick="() => UnfollowAsync(person)">@L["Cancel"]</button></span>
                     </li>
                 }
             </ul>
         </section>
 
-        <section id="people-followers">
+        <section id="people-followers" class="dialed-people-section">
             <h2>@L["People_Followers"]</h2>
             @if (followers!.Count == 0)
             {
@@ -99,10 +113,11 @@ else
             <ul class="dialed-list">
                 @foreach (var person in followers)
                 {
-                    <li class="people-follower" data-user="@person.UserId">
-                        <span>@person.DisplayName</span>
-                        <button type="button" class="dialed-button people-remove" disabled="@busy" @onclick="() => RemoveFollowerAsync(person)">@L["People_RemoveFollower"]</button>
-                        <button type="button" class="dialed-button dialed-button-danger people-block" disabled="@busy" @onclick="() => BlockAsync(person)">@L["People_Block"]</button>
+                    <li class="people-row people-follower" data-user="@person.UserId">
+                        <Avatar Name="@person.DisplayName" />
+                        <span class="people-row-text"><span class="people-row-name">@person.DisplayName</span><span class="dialed-chip dialed-chip-small people-state">@L["People_State_FollowsYou"]</span></span>
+                        <span class="people-row-actions"><button type="button" class="dialed-button people-remove" disabled="@busy" @onclick="() => RemoveFollowerAsync(person)">@L["People_RemoveFollower"]</button>
+                        <button type="button" class="dialed-button dialed-button-danger people-block" disabled="@busy" @onclick="() => BlockAsync(person)">@L["People_Block"]</button></span>
                     </li>
                 }
             </ul>
@@ -110,14 +125,15 @@ else
 
         @if (blocked!.Count > 0)
         {
-            <section id="people-blocked">
+            <section id="people-blocked" class="dialed-people-section">
                 <h2>@L["People_Blocked"]</h2>
                 <ul class="dialed-list">
                     @foreach (var person in blocked)
                     {
-                        <li class="people-blocked-person" data-user="@person.UserId">
-                            <span>@person.DisplayName</span>
-                            <button type="button" class="dialed-button people-unblock" disabled="@busy" @onclick="() => UnblockAsync(person)">@L["People_Unblock"]</button>
+                        <li class="people-row people-blocked-person" data-user="@person.UserId">
+                            <Avatar Name="@person.DisplayName" />
+                            <span class="people-row-text"><span class="people-row-name">@person.DisplayName</span><span class="dialed-chip dialed-chip-small dialed-chip-danger people-state">@L["People_State_Blocked"]</span></span>
+                            <span class="people-row-actions"><button type="button" class="dialed-button people-unblock" disabled="@busy" @onclick="() => UnblockAsync(person)">@L["People_Unblock"]</button></span>
                         </li>
                     }
                 </ul>
@@ -132,11 +148,13 @@ else
     private string? message;
     private bool busy;
     private bool loadFailed;
+    private bool canShare;
     private IReadOnlyList<Person>? requests, following, pending, followers, blocked;
 
     protected override async Task OnInitializedAsync()
     {
         Session.Changed += OnChanged;
+        canShare = await Share.IsSupportedAsync();
         if (Session.IsSignedIn)
         {
             await LoadAsync();
@@ -191,6 +209,14 @@ else
         }
 
         busy = false;
+    }
+
+    private async Task ShareCodeAsync()
+    {
+        if (myCode is not null)
+        {
+            await Share.ShareAsync(new Dialed.Client.Platform.ShareRequest(L["People_ShareTitle"].Value, string.Format(L["People_ShareText"].Value, myCode)));
+        }
     }
 
     private async Task RotateAsync() => await RunAsync(async () => myCode = await Friends.RotateCodeAsync(), L["People_CodeRotated"]);

@@ -643,6 +643,39 @@
   <data name="Scan_Problem_QuotaUsed" xml:space="preserve"><value>Je hebt vandaag alle labelscans gebruikt. Voer de boon met de hand in of probeer het morgen opnieuw.</value></data>
   <data name="Scan_Problem_Disabled" xml:space="preserve"><value>Scannen staat tijdelijk uit. Voer de boon met de hand in.</value></data>
   <data name="Scan_Problem_Unavailable" xml:space="preserve"><value>Het etiket kon nu niet gelezen worden. Voer de boon met de hand in of probeer het later opnieuw.</value></data>
+  <data name="Settings_JumpTo" xml:space="preserve"><value>Ga naar</value></data>
+  <data name="Settings_GroupProfile" xml:space="preserve"><value>Profiel</value></data>
+  <data name="Settings_GroupPreferences" xml:space="preserve"><value>Voorkeuren</value></data>
+  <data name="Settings_GroupData" xml:space="preserve"><value>Gegevens en synchronisatie</value></data>
+  <data name="Settings_GroupHelp" xml:space="preserve"><value>Hulp en feedback</value></data>
+  <data name="Settings_GroupAbout" xml:space="preserve"><value>Over</value></data>
+  <data name="People_GoToAccount" xml:space="preserve"><value>Inloggen</value></data>
+  <data name="People_ShareCode" xml:space="preserve"><value>Code delen</value></data>
+  <data name="People_ShareTitle" xml:space="preserve"><value>Mijn Dialed-vriendcode</value></data>
+  <data name="People_ShareText" xml:space="preserve"><value>Volg mij op Dialed met mijn vriendcode {0}.</value></data>
+  <data name="People_State_WantsToFollow" xml:space="preserve"><value>Wil je volgen</value></data>
+  <data name="People_State_Following" xml:space="preserve"><value>Je volgt</value></data>
+  <data name="People_State_FollowsYou" xml:space="preserve"><value>Volgt jou</value></data>
+  <data name="People_State_Blocked" xml:space="preserve"><value>Geblokkeerd</value></data>
+  <data name="People_ProfileUnavailableTitle" xml:space="preserve"><value>Nog niet zichtbaar</value></data>
+  <data name="People_BackToPeople" xml:space="preserve"><value>Terug naar Mensen</value></data>
+  <data name="People_SharedLabel" xml:space="preserve"><value>Gedeelde koffie</value></data>
+  <data name="Onboarding_ProgressLabel" xml:space="preserve"><value>Voortgang instellen</value></data>
+  <data name="Onboarding_Step_install" xml:space="preserve"><value>Installeer Dialed</value></data>
+  <data name="Onboarding_Step_units" xml:space="preserve"><value>Kies je eenheden</value></data>
+  <data name="Onboarding_Step_methods" xml:space="preserve"><value>Hoe zet jij koffie?</value></data>
+  <data name="Onboarding_Step_gear" xml:space="preserve"><value>Je spullen</value></data>
+  <data name="Onboarding_StepHint_install" xml:space="preserve"><value>Zet Dialed op je beginscherm, dan opent het schermvullend en werkt het offline.</value></data>
+  <data name="Onboarding_StepHint_units" xml:space="preserve"><value>Gram en °C, of ounces en °F. Je kunt dit later wijzigen in Instellingen.</value></data>
+  <data name="Onboarding_StepHint_methods" xml:space="preserve"><value>Kies je favoriete methodes; die staan bovenaan als je een kop logt.</value></data>
+  <data name="Onboarding_StepHint_gear" xml:space="preserve"><value>Voeg nu je molen en brewer toe, of sla dit over en doe het later.</value></data>
+  <data name="More_GroupCoffee" xml:space="preserve"><value>Je koffie</value></data>
+  <data name="More_GroupInsights" xml:space="preserve"><value>Inzichten</value></data>
+  <data name="More_GroupSocial" xml:space="preserve"><value>Vrienden</value></data>
+  <data name="More_GroupApp" xml:space="preserve"><value>App</value></data>
+  <data name="Settings_GroupHousehold" xml:space="preserve"><value>Huishouden</value></data>
+  <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
+  <data name="People_State_Waiting" xml:space="preserve"><value>Wacht op antwoord</value></data>
   <data name="Day_Today" xml:space="preserve"><value>Vandaag</value></data>
   <data name="Day_Yesterday" xml:space="preserve"><value>Gisteren</value></data>
   <data name="Beans_Filters" xml:space="preserve"><value>Filters</value></data>

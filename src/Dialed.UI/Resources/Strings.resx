@@ -644,6 +644,39 @@
   <data name="Scan_Problem_QuotaUsed" xml:space="preserve"><value>You have used all label scans for today. Enter the bean by hand, or try again tomorrow.</value></data>
   <data name="Scan_Problem_Disabled" xml:space="preserve"><value>Scanning is switched off for now. Enter the bean by hand.</value></data>
   <data name="Scan_Problem_Unavailable" xml:space="preserve"><value>The label could not be read right now. Enter the bean by hand, or try again later.</value></data>
+  <data name="Settings_JumpTo" xml:space="preserve"><value>Jump to</value></data>
+  <data name="Settings_GroupProfile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Settings_GroupPreferences" xml:space="preserve"><value>Preferences</value></data>
+  <data name="Settings_GroupData" xml:space="preserve"><value>Data and sync</value></data>
+  <data name="Settings_GroupHelp" xml:space="preserve"><value>Help and feedback</value></data>
+  <data name="Settings_GroupAbout" xml:space="preserve"><value>About</value></data>
+  <data name="People_GoToAccount" xml:space="preserve"><value>Sign in</value></data>
+  <data name="People_ShareCode" xml:space="preserve"><value>Share code</value></data>
+  <data name="People_ShareTitle" xml:space="preserve"><value>My Dialed friend code</value></data>
+  <data name="People_ShareText" xml:space="preserve"><value>Follow me on Dialed with my friend code {0}.</value></data>
+  <data name="People_State_WantsToFollow" xml:space="preserve"><value>Wants to follow you</value></data>
+  <data name="People_State_Following" xml:space="preserve"><value>Following</value></data>
+  <data name="People_State_FollowsYou" xml:space="preserve"><value>Follows you</value></data>
+  <data name="People_State_Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="People_ProfileUnavailableTitle" xml:space="preserve"><value>Not visible yet</value></data>
+  <data name="People_BackToPeople" xml:space="preserve"><value>Back to People</value></data>
+  <data name="People_SharedLabel" xml:space="preserve"><value>Shared coffee</value></data>
+  <data name="Onboarding_ProgressLabel" xml:space="preserve"><value>Setup progress</value></data>
+  <data name="Onboarding_Step_install" xml:space="preserve"><value>Install Dialed</value></data>
+  <data name="Onboarding_Step_units" xml:space="preserve"><value>Choose your units</value></data>
+  <data name="Onboarding_Step_methods" xml:space="preserve"><value>How do you brew?</value></data>
+  <data name="Onboarding_Step_gear" xml:space="preserve"><value>Your gear</value></data>
+  <data name="Onboarding_StepHint_install" xml:space="preserve"><value>Add Dialed to your Home Screen so it opens full screen and works offline.</value></data>
+  <data name="Onboarding_StepHint_units" xml:space="preserve"><value>Grams and °C, or ounces and °F. You can change this later in Settings.</value></data>
+  <data name="Onboarding_StepHint_methods" xml:space="preserve"><value>Pick your favourite methods; they come first when you log a brew.</value></data>
+  <data name="Onboarding_StepHint_gear" xml:space="preserve"><value>Add your grinder and brewer now, or skip this and do it later.</value></data>
+  <data name="More_GroupCoffee" xml:space="preserve"><value>Your coffee</value></data>
+  <data name="More_GroupInsights" xml:space="preserve"><value>Insights</value></data>
+  <data name="More_GroupSocial" xml:space="preserve"><value>Friends</value></data>
+  <data name="More_GroupApp" xml:space="preserve"><value>App</value></data>
+  <data name="Settings_GroupHousehold" xml:space="preserve"><value>Household</value></data>
+  <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
+  <data name="People_State_Waiting" xml:space="preserve"><value>Waiting for an answer</value></data>
   <data name="Day_Today" xml:space="preserve"><value>Today</value></data>
   <data name="Day_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
   <data name="Beans_Filters" xml:space="preserve"><value>Filters</value></data>

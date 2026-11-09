@@ -56,6 +56,9 @@ public abstract class UiTestContext : BunitContext
     /// <summary>The API's household endpoints: a household of one by default.</summary>
     protected TestHouseholdServer HouseholdServer { get; } = new();
 
+    /// <summary>The system share sheet: what was shared, and whether the platform has one.</summary>
+    protected TestShare Shares { get; } = new();
+
     protected UiTestContext()
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
@@ -78,6 +81,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IConnectivity>(Network);
         Services.AddSingleton<IAppLifecycle, TestLifecycle>();
         Services.AddSingleton<IErrorSink>(ErrorSink);
+        Services.AddSingleton<IShareService>(Shares);
         Services.AddDialedSync();
         Services.AddSingleton<IPasskeyClient>(Passkeys);
         Services.AddSingleton<ISessionStore, InMemorySessionStore>();
@@ -415,6 +419,21 @@ public abstract class UiTestContext : BunitContext
         {
             LastSource = source;
             return Task.FromResult(Next);
+        }
+    }
+
+    protected sealed class TestShare : IShareService
+    {
+        public bool Supported { get; set; } = true;
+
+        public List<ShareRequest> Shared { get; } = [];
+
+        public Task<bool> IsSupportedAsync() => Task.FromResult(Supported);
+
+        public Task<bool> ShareAsync(ShareRequest request)
+        {
+            Shared.Add(request);
+            return Task.FromResult(true);
         }
     }
 

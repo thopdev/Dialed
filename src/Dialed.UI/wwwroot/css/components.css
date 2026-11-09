@@ -1973,3 +1973,301 @@ button.dialed-chip::after {
     margin: var(--dialed-space-5) 0 var(--dialed-space-2);
     font-size: var(--dialed-text-l);
 }
+
+/* ---- Settings, More, People and Onboarding (#216) ------------------------------------------- */
+
+.dialed-button-subtle {
+    background: transparent;
+    border-color: transparent;
+    color: var(--colorNeutralForeground2, #424242);
+}
+
+/* Settings: a row of chips to jump to a group, then one card per group. */
+.dialed-settings-jump {
+    display: flex;
+    gap: var(--dialed-space-2);
+    margin: 0 calc(-1 * var(--dialed-space-4)) var(--dialed-space-2);
+    padding: var(--dialed-space-1) var(--dialed-space-4) var(--dialed-space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.dialed-settings-jump .dialed-chip {
+    flex: none;
+    min-height: var(--dialed-touch-target);
+    text-decoration: none;
+}
+
+.dialed-settings-group {
+    margin-top: var(--dialed-space-5);
+    scroll-margin-top: var(--dialed-space-3);
+}
+
+.dialed-settings-group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-2);
+}
+
+.dialed-settings-group-header h2 {
+    margin: 0;
+    font-size: var(--dialed-text-l);
+}
+
+.dialed-settings-group-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--dialed-radius-s);
+    background: var(--colorBrandBackground2, #f4ece6);
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+.dialed-settings-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-4);
+}
+
+/* Settings that bring their own heading get a quieter one inside a card. */
+.dialed-settings-card h2,
+.dialed-settings-card h3,
+.dialed-settings-card legend {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-settings-item + .dialed-settings-item {
+    padding-top: var(--dialed-space-4);
+    border-top: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-settings-card .dialed-field-pair input {
+    min-height: var(--dialed-touch-target);
+    width: 5rem;
+    padding: 0 var(--dialed-space-2);
+    font: inherit;
+    color: inherit;
+    background: var(--colorNeutralBackground1, #fff);
+    border: 1px solid var(--colorNeutralStroke1, #d1d1d1);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-settings-card .dialed-field-pair label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+/* More: icons in the same style as the tab bar. */
+.dialed-more-group .dialed-group-title {
+    margin-top: var(--dialed-space-4);
+}
+
+.dialed-more-icon {
+    border-radius: var(--dialed-radius-s);
+    background: var(--colorNeutralBackground3, #f5f5f5);
+    color: var(--colorNeutralForeground2, #424242);
+}
+
+/* People */
+.dialed-friend-code {
+    margin-bottom: var(--dialed-space-4);
+    text-align: center;
+}
+
+.dialed-friend-code h2 {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    color: var(--colorNeutralForeground2, #424242);
+}
+
+.dialed-friend-code .dialed-code {
+    display: inline-block;
+    margin: var(--dialed-space-2) 0;
+    padding: var(--dialed-space-2) var(--dialed-space-4);
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorNeutralBackground3, #f5f5f5);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: var(--dialed-text-2xl);
+    letter-spacing: 0.15em;
+}
+
+.dialed-friend-code .dialed-form-actions {
+    justify-content: center;
+}
+
+.dialed-people-section h2 {
+    margin: var(--dialed-space-5) 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-l);
+}
+
+.dialed-people-section ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.people-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.people-row-text {
+    flex: 1 1 8rem;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.people-row-name {
+    font-weight: var(--dialed-weight-semibold);
+    overflow-wrap: anywhere;
+}
+
+a.people-row-name {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+.people-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-chip-waiting {
+    border-style: dashed;
+    color: var(--colorNeutralForeground2, #424242);
+}
+
+.dialed-chip-danger {
+    border-color: var(--colorPaletteRedBorder2, #c50f1f);
+    color: var(--colorPaletteRedForeground1, #b10e1c);
+}
+
+.people-blocked-person .dialed-avatar {
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+.dialed-friend-header {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    margin-bottom: var(--dialed-space-4);
+}
+
+.dialed-friend-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dialed-friend-header-text strong {
+    font-size: var(--dialed-text-xl);
+}
+
+/* Segmented control (tabs on a friend's profile). */
+.dialed-segmented {
+    display: flex;
+    gap: 2px;
+    margin-bottom: var(--dialed-space-3);
+    padding: 2px;
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorNeutralBackground3, #f5f5f5);
+}
+
+.dialed-segment {
+    flex: 1;
+    min-height: var(--dialed-touch-target);
+    padding: 0 var(--dialed-space-2);
+    border: 0;
+    border-radius: calc(var(--dialed-radius-m) - 2px);
+    background: transparent;
+    color: var(--colorNeutralForeground2, #424242);
+    font: inherit;
+    font-weight: var(--dialed-weight-semibold);
+    cursor: pointer;
+}
+
+.dialed-segment.selected {
+    background: var(--colorNeutralBackground1, #fff);
+    color: var(--colorNeutralForeground1, #242424);
+    box-shadow: var(--dialed-shadow-card);
+}
+
+.dialed-friend-items li {
+    display: flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+    padding: var(--dialed-space-2) var(--dialed-space-1);
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+/* Onboarding: progress, a friendly icon per step, the step in a card. */
+.dialed-onboarding {
+    max-width: 32rem;
+}
+
+.dialed-onboarding-progress p {
+    margin: var(--dialed-space-1) 0 0;
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-onboarding-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: var(--dialed-space-5) 0 var(--dialed-space-4);
+    text-align: center;
+}
+
+.dialed-onboarding-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 5rem;
+    height: 5rem;
+    margin-bottom: var(--dialed-space-3);
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorBrandBackground2, #f4ece6);
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+.dialed-onboarding-hero h2 {
+    margin: 0 0 var(--dialed-space-1);
+    font-size: var(--dialed-text-xl);
+}
+
+.dialed-onboarding-hero p {
+    margin: 0;
+}
+
+.dialed-onboarding-card legend {
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-onboarding-gear {
+    margin-bottom: var(--dialed-space-2);
+}
+
+.dialed-onboarding-actions {
+    margin-top: var(--dialed-space-4);
+}
+
+.dialed-onboarding-actions #onboarding-next {
+    flex: 1;
+}
+
