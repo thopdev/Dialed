@@ -1,0 +1,85 @@
+@implements IDisposable
+@using Dialed.Client.Account
+@inject AccountDataService Data
+@inject AuthSession Session
+@inject NavigationManager Navigation
+@inject IStringLocalizer<Strings> L
+
+@* Export your data and delete the account; both need an account, so nothing shows while signed out. *@
+@if (Session.IsSignedIn)
+{
+    <div id="data-controls">
+        <div class="dialed-form-actions">
+            <button id="data-export" type="button" class="dialed-button" disabled="@busy" @onclick="ExportAsync">@L["Settings_Export"]</button>
+            <button id="data-delete" type="button" class="dialed-button dialed-button-danger" disabled="@busy" @onclick="@(() => confirming = true)">@L["Settings_DeleteAccount"]</button>
+        </div>
+
+        @if (confirming)
+        {
+            <div class="dialed-confirm" role="alertdialog" aria-label="@L["Account_DeleteTitle"]">
+                <p><strong>@L["Account_DeleteTitle"]</strong></p>
+                <p>@L["Account_DeleteBody"]</p>
+                <p class="dialed-muted">@L["Account_DeletePasskeyNote"]</p>
+                <div class="dialed-form-actions">
+                    <button id="data-delete-confirm" type="button" class="dialed-button dialed-button-danger" disabled="@busy" @onclick="DeleteAsync">@L["Account_DeleteConfirm"]</button>
+                    <button type="button" class="dialed-button" disabled="@busy" @onclick="@(() => confirming = false)">@L["Cancel"]</button>
+                </div>
+            </div>
+        }
+
+        @if (message is not null)
+        {
+            <p id="data-message" role="status">@message</p>
+        }
+    </div>
+}
+
+@code {
+    private bool busy;
+    private bool confirming;
+    private string? message;
+
+    protected override void OnInitialized() => Session.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task ExportAsync()
+    {
+        busy = true;
+        message = null;
+        var result = await Data.ExportAsync();
+        busy = false;
+        message = result.Outcome switch
+        {
+            AccountOutcome.Success => L["Settings_ExportDone"],
+            AccountOutcome.Cancelled => null,
+            AccountOutcome.Refused => result.Message,
+            _ => L["Account_Unavailable"],
+        };
+    }
+
+    private async Task DeleteAsync()
+    {
+        busy = true;
+        message = null;
+        var result = await Data.DeleteAccountAsync();
+        busy = false;
+        if (result.Outcome == AccountOutcome.Success)
+        {
+            // Everything on this device is gone: start again from a clean app.
+            Navigation.NavigateTo("", forceLoad: true);
+            return;
+        }
+
+        confirming = result.Outcome == AccountOutcome.Cancelled;
+        message = result.Outcome switch
+        {
+            AccountOutcome.Cancelled => L["Account_Cancelled"],
+            AccountOutcome.NotSupported => L["Account_NotSupported"],
+            AccountOutcome.Refused => result.Message,
+            _ => L["Account_Unavailable"],
+        };
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

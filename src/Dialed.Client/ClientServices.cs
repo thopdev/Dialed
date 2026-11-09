@@ -105,7 +105,7 @@ public static class ClientServices
     /// <see cref="AddDialedData"/> and <see cref="AddDialedSync"/>; the host registers <see cref="AccountApi"/>'s HttpClient through
     /// <paramref name="api"/> and an <see cref="Platform.IPasskeyClient"/> (and, to keep the sign-in, an <see cref="ISessionStore"/>).
     /// </summary>
-    public static IServiceCollection AddDialedAccount(this IServiceCollection services, Func<IServiceProvider, AccountApi> api, Func<IServiceProvider, HouseholdApi> households)
+    public static IServiceCollection AddDialedAccount(this IServiceCollection services, Func<IServiceProvider, AccountApi> api, Func<IServiceProvider, HouseholdApi> households, Func<IServiceProvider, AccountDataApi>? accountData = null)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(api);
@@ -115,6 +115,18 @@ public static class ClientServices
         services.TryAddSingleton<AuthSession>();
         services.TryAddSingleton(api);
         services.TryAddSingleton(households);
+        if (accountData is not null)
+        {
+            services.TryAddSingleton(accountData);
+            services.TryAddSingleton(sp => new AccountDataService(
+                sp.GetRequiredService<AccountDataApi>(),
+                sp.GetRequiredService<IFileExport>(),
+                sp.GetRequiredService<IPasskeyClient>(),
+                sp.GetRequiredService<AuthSession>(),
+                sp.GetService<TimeProvider>() ?? TimeProvider.System,
+                sp.GetService<ILocalStore>()));
+        }
+
         services.TryAddSingleton<AccountService>();
         services.TryAddSingleton<HouseholdManager>();
 

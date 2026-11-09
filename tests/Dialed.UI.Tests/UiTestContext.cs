@@ -39,6 +39,11 @@ public abstract class UiTestContext : BunitContext
     /// <summary>The API's account endpoints: set <see cref="TestAccountServer.Respond"/> to change what it answers.</summary>
     protected TestAccountServer Accounts { get; } = new();
 
+    /// <summary>The export and delete endpoints, and the file the person receives.</summary>
+    protected TestAccountDataServer DataServer { get; } = new();
+
+    protected TestFiles Files { get; } = new();
+
     /// <summary>The API's household endpoints: a household of one by default.</summary>
     protected TestHouseholdServer HouseholdServer { get; } = new();
 
@@ -67,6 +72,9 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<AuthSession>();
         Services.AddSingleton(new AccountApi(new HttpClient(Accounts) { BaseAddress = new Uri("https://api.test/") }));
         Services.AddSingleton<AccountService>();
+        Services.AddSingleton<IFileExport>(Files);
+        Services.AddSingleton(new AccountDataApi(new HttpClient(DataServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
+        Services.AddSingleton<AccountDataService>();
         Services.AddSingleton(new HouseholdApi(new HttpClient(HouseholdServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<HouseholdManager>();
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -166,6 +174,50 @@ public abstract class UiTestContext : BunitContext
         public Task<PasskeyOutcome> GetAsync(string optionsJson, bool autofill = false) => Task.FromResult(Next);
 
         public Task CancelPendingAsync() => Task.CompletedTask;
+    }
+
+    protected sealed class TestFiles : IFileExport
+    {
+        public List<(string Name, string ContentType, byte[] Content)> Saved { get; } = [];
+
+        /// <summary>Pretend the person dismissed the share sheet.</summary>
+        public bool Dismiss { get; set; }
+
+        public Task<bool> SaveAsync(string fileName, string contentType, byte[] content)
+        {
+            if (Dismiss)
+            {
+                return Task.FromResult(false);
+            }
+
+            Saved.Add((fileName, contentType, content));
+            return Task.FromResult(true);
+        }
+    }
+
+    protected sealed class TestAccountDataServer : HttpMessageHandler
+    {
+        public List<string> Paths { get; } = [];
+
+        /// <summary>Overrides the answer for a path; return <c>null</c> for the default answer.</summary>
+        public Func<string, HttpResponseMessage?>? Respond { get; set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var path = request.RequestUri!.AbsolutePath.TrimStart('/');
+            Paths.Add(path);
+            if (Respond?.Invoke(path) is { } custom)
+            {
+                return Task.FromResult(custom);
+            }
+
+            return Task.FromResult(path switch
+            {
+                "account/export" => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"formatVersion\":1}", System.Text.Encoding.UTF8, "application/json") },
+                "account/delete/options" => new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("{\"options\":{\"challenge\":\"c\"},\"state\":\"s\"}", System.Text.Encoding.UTF8, "application/json") },
+                _ => new HttpResponseMessage(System.Net.HttpStatusCode.NoContent),
+            });
+        }
     }
 
     /// <summary>A stand-in for the API's account endpoints: ceremonies succeed and hand out tokens unless told otherwise.</summary>

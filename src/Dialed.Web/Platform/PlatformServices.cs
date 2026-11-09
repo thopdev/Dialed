@@ -14,6 +14,7 @@ internal static class PlatformServices
         services.AddSingleton<BrowserConnectivity>();
         services.AddSingleton<IConnectivity>(sp => sp.GetRequiredService<BrowserConnectivity>());
         services.AddSingleton<IShareService, BrowserShareService>();
+        services.AddSingleton<IFileExport, BrowserFileExport>();
         services.AddSingleton<IPasskeyClient, BrowserPasskeyClient>();
         services.AddSingleton<IStoragePersistence, BrowserStoragePersistence>();
         services.AddSingleton<IWakeLock, BrowserWakeLock>();

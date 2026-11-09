@@ -41,7 +41,8 @@ builder.Services.AddSingleton<ISessionStore, BrowserSessionStore>();
 builder.Services.AddDialedSync();
 builder.Services.AddDialedAccount(
     _ => new AccountApi(new HttpClient { BaseAddress = apiBaseAddress }),
-    sp => new HouseholdApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
+    sp => new HouseholdApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
+    sp => new AccountDataApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());

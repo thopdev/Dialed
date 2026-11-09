@@ -489,4 +489,10 @@
   <data name="DialIn_Reason_Balanced" xml:space="preserve"><value>The cup was balanced. Change one thing at a time if you want to explore.</value></data>
   <data name="Account_InviteCode" xml:space="preserve"><value>Invite code</value></data>
   <data name="Account_InviteHint" xml:space="preserve"><value>Dialed is in a private beta: creating an account needs an invite code.</value></data>
+  <data name="Settings_Export" xml:space="preserve"><value>Export my data</value></data>
+  <data name="Settings_ExportDone" xml:space="preserve"><value>Your data was exported as a JSON file.</value></data>
+  <data name="Account_DeleteTitle" xml:space="preserve"><value>Delete your account?</value></data>
+  <data name="Account_DeleteBody" xml:space="preserve"><value>Your account, sign-ins and friend connections are deleted. A household you are alone in is deleted with all its data; in a shared household your items stay but no longer show your name. This cannot be undone.</value></data>
+  <data name="Account_DeletePasskeyNote" xml:space="preserve"><value>You confirm with your passkey. The passkey itself stays in your password manager or keychain; you can remove it there.</value></data>
+  <data name="Account_DeleteConfirm" xml:space="preserve"><value>Delete account and data</value></data>
 </root>
