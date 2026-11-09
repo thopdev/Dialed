@@ -100,6 +100,8 @@ public sealed class AccessibilityTests : UiTestContext
 
     [Fact] public void More_is_labeled() => Audit<More>();
 
+    [Fact] public void Import_is_labeled() => Audit<Import>();
+
     [Fact] public void Onboarding_is_labeled() => Audit<Onboarding>();
 
     [Fact] public void Tab_bar_is_labeled() => Audit<Dialed.UI.Layout.TabBar>();
