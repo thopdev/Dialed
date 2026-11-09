@@ -84,23 +84,18 @@ public sealed class HouseholdScopeTests
     }
 
     [Fact]
-    public async Task Joining_another_household_purges_the_old_one_and_the_next_sync_pulls_the_new_one()
+    public async Task Joining_another_household_purges_the_old_one_and_starts_the_next_pull_from_scratch()
     {
         var (alices, bobs) = await BothHaveOneAndShare();
-        var carolRepo = new InMemoryRepository<Recipe>(new Context("carol", "h2"), time);
-        var carolState = new InMemorySyncState();
-        var carolEngine = new SyncEngine([new SyncTable<Recipe>("recipes", carolRepo, carolState, server, time).Attach()], carolState);
-        var carolsRecipe = await carolRepo.SaveAsync(new Recipe { MethodCode = "aeropress", Name = "Carol's" }, Ct);
-        await carolEngine.SyncAsync(Ct);
         bobContext.HouseholdId = "h2";
 
         await bob.SwitchHouseholdAsync("h2", Ct);
-        await Task.Delay(5, Ct);
-        await bob.SyncAsync(Ct);
 
         (await bobRecipes.GetAsync(alices.Id, Ct)).ShouldBeNull();
-        (await bobRecipes.GetAsync(bobs.Id, Ct)).ShouldNotBeNull();
-        (await bobRecipes.GetAsync(carolsRecipe.Id, Ct)).ShouldNotBeNull();
+        (await bobRecipes.GetAsync(bobs.Id, Ct))!.HouseholdId.ShouldBe("h2");
+        (await bobState.GetWatermarkAsync("recipes", Ct)).ShouldBeNull();
+        (await bobState.GetServerVersionAsync("recipes", alices.Id, Ct)).ShouldBeNull();
+        (await bobState.PendingAsync(Ct)).ShouldContain(e => e.EntityId == bobs.Id);
     }
 
     [Fact]
