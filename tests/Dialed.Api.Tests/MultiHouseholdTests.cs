@@ -132,7 +132,10 @@ public sealed class MultiHouseholdTests(WebApplicationFactory<Program> factory) 
         await PutBean(person, "Office bean", VisibilityRules.Household);
         var sync = Service<ISyncStore>();
 
-        (await Service<AccountDeleter>().DeleteAsync(person.Id, Ct)).ShouldBeTrue();
+        using (var scope = factory.Services.CreateScope())
+        {
+            (await scope.ServiceProvider.GetRequiredService<AccountDeleter>().DeleteAsync(person.Id, Ct)).ShouldBeTrue();
+        }
 
         // The household they were alone in is gone with its data; the shared one keeps the item, no longer pointing to them.
         (await sync.ListAuthoredAsync(person.HouseholdId, person.Id, "beans", Ct)).ShouldBeEmpty();
