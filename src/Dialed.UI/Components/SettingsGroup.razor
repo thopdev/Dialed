@@ -1,0 +1,26 @@
+@* A group on the settings screen: an icon and heading, then its settings in one card. *@
+<section class="dialed-settings-group" id="@Id" aria-labelledby="@($"{Id}-title")">
+    <header class="dialed-settings-group-header">
+        <span class="dialed-settings-group-icon" aria-hidden="true">
+            <FluentIcon Value="@Icon" Color="Color.Custom" CustomColor="currentColor" />
+        </span>
+        <h2 id="@($"{Id}-title")">@Title</h2>
+    </header>
+    <div class="dialed-card dialed-settings-card">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Id { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public Icon Icon { get; set; } = default!;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

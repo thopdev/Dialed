@@ -7,72 +7,95 @@
 
 <PageHeader Title="@L["Settings_Title"]" BackHref="more" />
 
-<section id="settings-profile">
-    <h2>@L["Settings_Profile"]</h2>
-    <ProfileForm />
-</section>
+<nav class="dialed-settings-jump" aria-label="@L["Settings_JumpTo"]">
+    @foreach (var (id, key) in Groups)
+    {
+        <a class="dialed-chip" href="@($"settings#{id}")">@L[key]</a>
+    }
+</nav>
 
-<section id="settings-passkeys">
-    <h2>@L["Settings_Passkeys"]</h2>
-    <p class="dialed-muted">@L["Settings_ComingWithAccounts"]</p>
-</section>
+<SettingsGroup Id="group-profile" Title="@L["Settings_GroupProfile"]" Icon="@(new Icons.Regular.Size24.Person())">
+    <div id="settings-profile">
+        <ProfileForm />
+    </div>
+</SettingsGroup>
 
-<section id="settings-units">
-    <UnitsSetting />
-</section>
+<SettingsGroup Id="group-preferences" Title="@L["Settings_GroupPreferences"]" Icon="@(new Icons.Regular.Size24.Options())">
+    <div id="settings-units" class="dialed-settings-item">
+        <UnitsSetting />
+    </div>
+    <div id="settings-methods" class="dialed-settings-item">
+        <FavouriteMethodsPicker />
+    </div>
+    <div id="settings-inventory" class="dialed-settings-item">
+        <InventorySettingsForm />
+    </div>
+</SettingsGroup>
 
-<section id="settings-methods">
-    <FavouriteMethodsPicker />
-</section>
+<SettingsGroup Id="group-household" Title="@L["Settings_GroupHousehold"]" Icon="@(new Icons.Regular.Size24.People())">
+    <div id="settings-household">
+        <HouseholdPanel />
+    </div>
+</SettingsGroup>
 
-<section id="settings-inventory">
-    <InventorySettingsForm />
-</section>
+<SettingsGroup Id="group-data" Title="@L["Settings_GroupData"]" Icon="@(new Icons.Regular.Size24.Database())">
+    <div id="settings-sync" class="dialed-settings-item">
+        <h3>@L["More_Diagnostics"]</h3>
+        <ApiStatus />
+        <SyncDiagnostics />
+    </div>
+    <div id="settings-storage" class="dialed-settings-item">
+        <h3>@L["Settings_Storage"]</h3>
+        <p id="storage-status" class="dialed-muted">@L[Storage.Durable ? (Storage.Persisted ? "Storage_Persisted" : "Storage_Unprotected") : "Storage_Memory"]</p>
+    </div>
+</SettingsGroup>
 
-<section id="settings-household">
-    <h2>@L["Settings_Household"]</h2>
-    <HouseholdPanel />
-</section>
+<SettingsGroup Id="group-account" Title="@L["Settings_Account"]" Icon="@(new Icons.Regular.Size24.ShieldLock())">
+    <div id="settings-account" class="dialed-settings-item">
+        <AccountPanel />
+    </div>
+    <div id="settings-passkeys" class="dialed-settings-item">
+        <PasskeysPanel />
+    </div>
+    <div class="dialed-settings-item">
+        <DataControls />
+    </div>
+</SettingsGroup>
 
-<section id="settings-setup">
-    <h2>@L["Settings_Setup"]</h2>
-    <a id="settings-reopen-onboarding" class="dialed-button" href="welcome">@L["Settings_ReopenSetup"]</a>
-</section>
+<SettingsGroup Id="group-privacy" Title="@L["Settings_GroupPrivacy"]" Icon="@(new Icons.Regular.Size24.LockClosed())">
+    <div id="settings-privacy">
+        <p><a id="privacy-link" class="dialed-inline-link" href="privacy">@L["Settings_PrivacyLink"]</a></p>
+        <ErrorReportingSetting />
+    </div>
+</SettingsGroup>
 
-<InstallGuide />
+<SettingsGroup Id="group-help" Title="@L["Settings_GroupHelp"]" Icon="@(new Icons.Regular.Size24.ChatHelp())">
+    <div id="settings-feedback" class="dialed-settings-item">
+        <h3>@L["Feedback_Title"]</h3>
+        <FeedbackPanel />
+    </div>
+    <div id="settings-setup" class="dialed-settings-item">
+        <h3>@L["Settings_Setup"]</h3>
+        <a id="settings-reopen-onboarding" class="dialed-button" href="welcome">@L["Settings_ReopenSetup"]</a>
+    </div>
+    <InstallGuide />
+</SettingsGroup>
 
-<section id="settings-sync">
-    <h2>@L["More_Diagnostics"]</h2>
-    <ApiStatus />
-    <SyncDiagnostics />
-</section>
-
-<section id="settings-storage">
-    <h2>@L["Settings_Storage"]</h2>
-    <p id="storage-status" class="dialed-muted">@L[Storage.Durable ? (Storage.Persisted ? "Storage_Persisted" : "Storage_Unprotected") : "Storage_Memory"]</p>
-</section>
-
-<section id="settings-privacy">
-    <h2>@L["Settings_Privacy"]</h2>
-    <p><a id="privacy-link" href="privacy">@L["Settings_PrivacyLink"]</a></p>
-    <ErrorReportingSetting />
-</section>
-
-<section id="settings-feedback">
-    <h2>@L["Feedback_Title"]</h2>
-    <FeedbackPanel />
-</section>
-
-<section id="settings-account">
-    <h2>@L["Settings_Account"]</h2>
-    <AccountPanel />
-    <PasskeysPanel />
-    <DataControls />
-</section>
-
-<p class="dialed-muted" id="settings-version">@string.Format(L["Settings_Version"].Value, Version)</p>
+<SettingsGroup Id="group-about" Title="@L["Settings_GroupAbout"]" Icon="@(new Icons.Regular.Size24.Info())">
+    <p class="dialed-muted" id="settings-version">@string.Format(L["Settings_Version"].Value, Version)</p>
+</SettingsGroup>
 
 @code {
+    private static readonly (string Id, string Key)[] Groups =
+    [
+        ("group-profile", "Settings_GroupProfile"),
+        ("group-preferences", "Settings_GroupPreferences"),
+        ("group-data", "Settings_GroupData"),
+        ("group-account", "Settings_Account"),
+        ("group-privacy", "Settings_GroupPrivacy"),
+        ("group-about", "Settings_GroupAbout"),
+    ];
+
     private static string Version =>
         typeof(Settings).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "dev";
 }

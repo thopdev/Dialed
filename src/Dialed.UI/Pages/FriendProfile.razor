@@ -13,7 +13,14 @@
 }
 else if (profile is null)
 {
-    <EmptyState Message="@L[offline ? "People_Offline" : "People_ProfileUnavailable"]" />
+    <EmptyState Icon="@(offline ? new Icons.Regular.Size24.CloudOff() : new Icons.Regular.Size24.PersonClock())"
+                Title="@(offline ? null : L["People_ProfileUnavailableTitle"].Value)"
+                Message="@L[offline ? "People_Offline" : "People_ProfileUnavailable"]">
+        @if (!offline)
+        {
+            <a id="friend-back-people" class="dialed-button" href="people">@L["People_BackToPeople"]</a>
+        }
+    </EmptyState>
     @if (offline)
     {
         <button id="friend-retry" type="button" class="dialed-button" @onclick="LoadAsync">@L["Error_Retry"]</button>
@@ -26,16 +33,18 @@ else
         <p id="friend-offline" class="dialed-muted" role="status">@L["People_ShowingSaved"]</p>
     }
 
-    <header id="friend-header" class="dialed-person">
-        <span class="dialed-avatar" aria-hidden="true">@Initial(profile.DisplayName)</span>
-        <strong id="friend-name">@profile.DisplayName</strong>
-        <span id="friend-counts" class="dialed-muted">@string.Format(L["People_Counts"].Value, profile.Beans, profile.Recipes, profile.Brews, profile.Followers)</span>
+    <header id="friend-header" class="dialed-friend-header">
+        <Avatar Name="@profile.DisplayName" Size="64" />
+        <div class="dialed-friend-header-text">
+            <strong id="friend-name">@profile.DisplayName</strong>
+            <span id="friend-counts" class="dialed-muted">@string.Format(L["People_Counts"].Value, profile.Beans, profile.Recipes, profile.Brews, profile.Followers)</span>
+        </div>
     </header>
 
-    <div role="tablist" class="dialed-tabs">
+    <div role="tablist" class="dialed-segmented" aria-label="@L["People_SharedLabel"]">
         @foreach (var tab in Tabs)
         {
-            <button type="button" role="tab" id="friend-tab-@tab" class="dialed-button @(tab == current ? "dialed-button-primary" : "")" aria-selected="@(tab == current)" @onclick="() => SelectAsync(tab)">@L[$"People_Tab_{tab}"]</button>
+            <button type="button" role="tab" id="friend-tab-@tab" class="dialed-segment @(tab == current ? "selected" : "")" aria-selected="@(tab == current)" @onclick="() => SelectAsync(tab)">@L[$"People_Tab_{tab}"]</button>
         }
     </div>
 
@@ -45,11 +54,11 @@ else
     }
     else if (items.Count == 0)
     {
-        <EmptyState Message="@L["People_NothingShared"]" />
+        <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["People_NothingShared"]" />
     }
     else
     {
-        <ul id="friend-items" class="dialed-list">
+        <ul id="friend-items" class="dialed-list dialed-friend-items">
             @foreach (var item in items)
             {
                 <li class="friend-item">@Title(item)</li>
@@ -137,7 +146,6 @@ else
         busy = false;
     }
 
-    private static string Initial(string name) => string.IsNullOrWhiteSpace(name) ? "?" : name.Trim()[..1].ToUpperInvariant();
 
     private static string Title(JsonElement item)
     {

@@ -5,19 +5,58 @@
 
 <PageHeader Title="@L["Nav_More"]" />
 
-<div class="dialed-list">
-    <ListRow Title="@L["Settings_Title"]" Href="settings" />
-    <ListRow Title="@L["More_Vendors"]" Href="vendors" />
-    <ListRow Title="@L["History_Title"]" Href="history" />
-    <ListRow Title="@L["Stock_Title"]" Href="inventory" />
-    <ListRow Title="@L["Import_Title"]" Href="import" />
-    <ListRow Title="@L["Stats_Title"]" Href="statistics" />
-    <ListRow Title="@L["More_Bags"]" Href="bags" />
-    <ListRow Title="@L["Gear_Title"]" Href="equipment" />
-    <ListRow Title="@L["Nav_People"]" Href="people" />
-</div>
+@foreach (var group in Groups)
+{
+    <section class="dialed-more-group" aria-labelledby="@($"more-{group.Id}")">
+        <h2 class="dialed-group-title" id="@($"more-{group.Id}")">@L[group.TitleKey]</h2>
+        <div class="dialed-list">
+            @foreach (var item in group.Items)
+            {
+                <ListRow Title="@L[item.TitleKey]" Href="@item.Href" data-more="@item.Href">
+                    <Leading>
+                        <span class="dialed-thumb dialed-more-icon" style="--dialed-thumb-size: 36px" aria-hidden="true">
+                            <FluentIcon Value="@item.Icon" Color="Color.Custom" CustomColor="currentColor" />
+                        </span>
+                    </Leading>
+                </ListRow>
+            }
+        </div>
+    </section>
+}
 
 @if (AppEnvironment.IsDevelopment)
 {
-    <p><a href="dev/gallery">Component gallery</a></p>
+    <p><a class="dialed-inline-link" href="dev/gallery">Component gallery</a></p>
+}
+
+@code {
+    private sealed record Item(string Href, string TitleKey, Icon Icon);
+
+    private sealed record Group(string Id, string TitleKey, IReadOnlyList<Item> Items);
+
+    /// <summary>Everything that is not a tab, grouped the way people look for it.</summary>
+    private static readonly IReadOnlyList<Group> Groups =
+    [
+        new("coffee", "More_GroupCoffee",
+        [
+            new("bags", "More_Bags", new Icons.Regular.Size24.Box()),
+            new("inventory", "Stock_Title", new Icons.Regular.Size24.Archive()),
+            new("vendors", "More_Vendors", new Icons.Regular.Size24.Building()),
+            new("equipment", "Gear_Title", new Icons.Regular.Size24.Wrench()),
+        ]),
+        new("insights", "More_GroupInsights",
+        [
+            new("history", "History_Title", new Icons.Regular.Size24.History()),
+            new("statistics", "Stats_Title", new Icons.Regular.Size24.DataBarVertical()),
+        ]),
+        new("social", "More_GroupSocial",
+        [
+            new("people", "Nav_People", new Icons.Regular.Size24.People()),
+        ]),
+        new("app", "More_GroupApp",
+        [
+            new("import", "Import_Title", new Icons.Regular.Size24.ArrowImport()),
+            new("settings", "Settings_Title", new Icons.Regular.Size24.Settings()),
+        ]),
+    ];
 }

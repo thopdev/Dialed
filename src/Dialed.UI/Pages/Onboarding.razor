@@ -9,49 +9,76 @@
 @inject NavigationManager Navigation
 
 <PageHeader Title="@L["Onboarding_Title"]" />
-<p class="dialed-muted" id="onboarding-progress">@string.Format(L["Onboarding_Progress"].Value, index + 1, steps.Count)</p>
 
-@switch (steps[index])
-{
-    case "install":
-        <h2>@L["Onboarding_InstallTitle"]</h2>
-        <InstallGuide />
-        break;
-    case "units":
-        <h2>@L["Units_Title"]</h2>
-        <UnitsSetting />
-        break;
-    case "methods":
-        <h2>@L["Fav_Title"]</h2>
-        <FavouriteMethodsPicker />
-        break;
-    case "gear":
-        <h2>@L["Onboarding_GearTitle"]</h2>
-        <p class="dialed-muted">@L["Onboarding_GearHint"]</p>
-        <div class="dialed-form">
-            <fieldset class="dialed-field-pair">
-                <legend>@L["Onboarding_Grinder"]</legend>
-                <label>@L["Gear_Brand"] <input id="ob-grinder-brand" type="text" @bind="grinderBrand" /></label>
-                <label>@L["Gear_Model"] <input id="ob-grinder-model" type="text" @bind="grinderModel" /></label>
-            </fieldset>
-            <fieldset class="dialed-field-pair">
-                <legend>@L["Onboarding_Brewer"]</legend>
-                <label>@L["Gear_Brand"] <input id="ob-brewer-brand" type="text" @bind="brewerBrand" /></label>
-                <label>@L["Gear_Model"] <input id="ob-brewer-model" type="text" @bind="brewerModel" /></label>
-            </fieldset>
-        </div>
-        break;
-}
+<div class="dialed-onboarding">
+    <div class="dialed-onboarding-progress">
+        <Meter Label="@L["Onboarding_ProgressLabel"]" Fraction="@((index + 1) / (double)steps.Count)" ValueText="@ProgressText" />
+        <p class="dialed-muted" id="onboarding-progress">@ProgressText</p>
+    </div>
 
-<div class="dialed-form-actions">
-    @if (index > 0)
-    {
-        <button id="onboarding-back" type="button" class="dialed-button" @onclick="Back">@L["Onboarding_Back"]</button>
-    }
-    <button id="onboarding-next" type="button" class="dialed-button dialed-button-primary" @onclick="NextAsync">
-        @(index == steps.Count - 1 ? L["Onboarding_Finish"] : L["Onboarding_Next"])
-    </button>
-    <button id="onboarding-skip" type="button" class="dialed-button" @onclick="SkipAsync">@L["Onboarding_Skip"]</button>
+    <div class="dialed-onboarding-hero" data-step="@steps[index]">
+        <span class="dialed-onboarding-icon" aria-hidden="true">
+            <FluentIcon Value="@StepIcon" Color="Color.Custom" CustomColor="currentColor" Width="40px" />
+        </span>
+        <h2 id="onboarding-step-title">@L[$"Onboarding_Step_{steps[index]}"]</h2>
+        <p class="dialed-muted" id="onboarding-step-hint">@L[$"Onboarding_StepHint_{steps[index]}"]</p>
+    </div>
+
+    <div class="dialed-card dialed-onboarding-card">
+        @switch (steps[index])
+        {
+            case "install":
+                <InstallGuide />
+                break;
+            case "units":
+                <UnitsSetting />
+                break;
+            case "methods":
+                <FavouriteMethodsPicker />
+                break;
+            case "gear":
+                <div class="dialed-form">
+                    <fieldset class="dialed-field dialed-onboarding-gear">
+                        <legend>@L["Onboarding_Grinder"]</legend>
+                        <div class="dialed-field-row">
+                            <div class="dialed-field">
+                                <label for="ob-grinder-brand">@L["Gear_Brand"]</label>
+                                <input id="ob-grinder-brand" type="text" autocomplete="off" autocapitalize="words" placeholder="Comandante" @bind="grinderBrand" />
+                            </div>
+                            <div class="dialed-field">
+                                <label for="ob-grinder-model">@L["Gear_Model"]</label>
+                                <input id="ob-grinder-model" type="text" autocomplete="off" placeholder="C40" @bind="grinderModel" />
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="dialed-field dialed-onboarding-gear">
+                        <legend>@L["Onboarding_Brewer"]</legend>
+                        <div class="dialed-field-row">
+                            <div class="dialed-field">
+                                <label for="ob-brewer-brand">@L["Gear_Brand"]</label>
+                                <input id="ob-brewer-brand" type="text" autocomplete="off" autocapitalize="words" placeholder="Hario" @bind="brewerBrand" />
+                            </div>
+                            <div class="dialed-field">
+                                <label for="ob-brewer-model">@L["Gear_Model"]</label>
+                                <input id="ob-brewer-model" type="text" autocomplete="off" placeholder="V60" @bind="brewerModel" />
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+                break;
+        }
+    </div>
+
+    <div class="dialed-form-actions dialed-onboarding-actions">
+        @if (index > 0)
+        {
+            <button id="onboarding-back" type="button" class="dialed-button" @onclick="Back">@L["Onboarding_Back"]</button>
+        }
+        <button id="onboarding-next" type="button" class="dialed-button dialed-button-primary" @onclick="NextAsync">
+            @(index == steps.Count - 1 ? L["Onboarding_Finish"] : L["Onboarding_Next"])
+        </button>
+        <button id="onboarding-skip" type="button" class="dialed-button dialed-button-subtle" @onclick="SkipAsync">@L["Onboarding_Skip"]</button>
+    </div>
 </div>
 
 @code {
@@ -66,6 +93,16 @@
     {
         steps = [.. new[] { Pwa.NeedsInstallGuide && !Pwa.IsInstalled ? "install" : null, "units", "methods", "gear" }.OfType<string>()];
     }
+
+    private string ProgressText => string.Format(L["Onboarding_Progress"].Value, index + 1, steps.Count);
+
+    private Icon StepIcon => steps[index] switch
+    {
+        "install" => new Icons.Regular.Size24.PhoneAdd(),
+        "units" => new Icons.Regular.Size24.Scales(),
+        "methods" => new Icons.Regular.Size24.DrinkCoffee(),
+        _ => new Icons.Regular.Size24.Wrench(),
+    };
 
     private void Back() => index = Math.Max(0, index - 1);
 
