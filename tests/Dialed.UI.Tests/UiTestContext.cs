@@ -25,6 +25,8 @@ public abstract class UiTestContext : BunitContext
     protected TestUser Context { get; } = new();
 
     /// <summary>Stands in for the camera and photo library: set <see cref="TestPhotoCapture.Next"/> to what the user will "take".</summary>
+    protected TestScanner Scanner { get; } = new();
+
     protected TestPhotoCapture Camera { get; } = new();
 
     /// <summary>Sync as the app sees it: set <see cref="TestTokens.Value"/> to sign in, <see cref="TestSyncTransport.Offline"/> to cut the server off.</summary>
@@ -70,6 +72,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<ILocalFileStore, InMemoryLocalFileStore>();
         Services.AddSingleton<PhotoService>();
         Services.AddSingleton<IPhotoCapture>(Camera);
+        Services.AddSingleton<Dialed.Client.Scan.ILabelScanner>(Scanner);
         Services.AddSingleton<IAccessTokenProvider>(Tokens);
         Services.AddSingleton<ISyncTransport>(Transport);
         Services.AddSingleton<IConnectivity>(Network);
@@ -383,6 +386,23 @@ public abstract class UiTestContext : BunitContext
 
         private static HttpResponseMessage Json(string json) =>
             new(System.Net.HttpStatusCode.OK) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
+    }
+
+    protected sealed class TestScanner : Dialed.Client.Scan.ILabelScanner
+    {
+        public Dialed.Client.Scan.ScannedLabel? Result { get; set; }
+
+        public Dialed.Client.Scan.ScanProblem? Problem { get; set; }
+
+        public int Scans { get; private set; }
+
+        public Task<Dialed.Client.Scan.ScannedLabel> ScanAsync(CapturedPhoto photo, CancellationToken cancellationToken = default)
+        {
+            Scans++;
+            return Problem is { } problem
+                ? throw new Dialed.Client.Scan.LabelScanException(problem)
+                : Task.FromResult(Result ?? throw new InvalidOperationException("No scan result set."));
+        }
     }
 
     protected sealed class TestPhotoCapture : IPhotoCapture

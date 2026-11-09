@@ -362,7 +362,7 @@
   <data name="Home_AddFirstBean" xml:space="preserve"><value>Add your first bean</value></data>
   <data name="Home_LogBrew" xml:space="preserve"><value>Log brew</value></data>
   <data name="Home_ScanBag" xml:space="preserve"><value>Scan bag</value></data>
-  <data name="Home_ScanHint" xml:space="preserve"><value>Scanning is coming; for now Scan bag opens the new bag form.</value></data>
+  <data name="Home_ScanHint" xml:space="preserve"><value>Take a photo of a bag label to add the bean and the bag.</value></data>
   <data name="Home_OpenBags" xml:space="preserve"><value>Open bags</value></data>
   <data name="Home_NoOpenBags" xml:space="preserve"><value>No open bags.</value></data>
   <data name="Home_BrewAgain" xml:space="preserve"><value>Brew again</value></data>
@@ -625,4 +625,23 @@
   <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log brews with a grinder and grind setting to see trends.</value></data>
   <data name="Stats_NothingYet" xml:space="preserve"><value>Nothing yet.</value></data>
   <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} brews</value></data>
+  <data name="Scan_Title" xml:space="preserve"><value>Scan label</value></data>
+  <data name="Scan_Hint" xml:space="preserve"><value>Hold the bag so the whole label is in view, in good light, and take a photo. You can check and change everything before it is saved.</value></data>
+  <data name="Scan_Reading" xml:space="preserve"><value>Reading the label…</value></data>
+  <data name="Scan_Review" xml:space="preserve"><value>Check what was read. Fields marked as uncertain may be wrong.</value></data>
+  <data name="Scan_Uncertain" xml:space="preserve"><value>Not sure about this one, please check.</value></data>
+  <data name="Scan_RoasterMatch" xml:space="preserve"><value>You already have a roaster called “{0}”.</value></data>
+  <data name="Scan_BeanMatch" xml:space="preserve"><value>You already have a bean called “{0}”.</value></data>
+  <data name="Scan_LinkExisting" xml:space="preserve"><value>Link to the existing roaster</value></data>
+  <data name="Scan_UseExistingBean" xml:space="preserve"><value>Use the existing bean (only add this bag)</value></data>
+  <data name="Scan_CreateNew" xml:space="preserve"><value>Create a new one</value></data>
+  <data name="Scan_BagHeading" xml:space="preserve"><value>Bag</value></data>
+  <data name="Scan_Save" xml:space="preserve"><value>Save bean and bag</value></data>
+  <data name="Scan_Again" xml:space="preserve"><value>Scan again</value></data>
+  <data name="Scan_SignedOut" xml:space="preserve"><value>Scanning needs an account because the label is read on the server. Sign in, or enter the bean by hand.</value></data>
+  <data name="Scan_Problem_SignedOut" xml:space="preserve"><value>Please sign in again to scan.</value></data>
+  <data name="Scan_Problem_Offline" xml:space="preserve"><value>You are offline. Scanning needs a connection; enter the bean by hand or try again later.</value></data>
+  <data name="Scan_Problem_QuotaUsed" xml:space="preserve"><value>You have used all label scans for today. Enter the bean by hand, or try again tomorrow.</value></data>
+  <data name="Scan_Problem_Disabled" xml:space="preserve"><value>Scanning is switched off for now. Enter the bean by hand.</value></data>
+  <data name="Scan_Problem_Unavailable" xml:space="preserve"><value>The label could not be read right now. Enter the bean by hand, or try again later.</value></data>
 </root>

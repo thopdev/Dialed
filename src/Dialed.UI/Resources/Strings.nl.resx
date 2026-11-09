@@ -361,7 +361,7 @@
   <data name="Home_AddFirstBean" xml:space="preserve"><value>Voeg je eerste boon toe</value></data>
   <data name="Home_LogBrew" xml:space="preserve"><value>Brew loggen</value></data>
   <data name="Home_ScanBag" xml:space="preserve"><value>Zak scannen</value></data>
-  <data name="Home_ScanHint" xml:space="preserve"><value>Scannen komt eraan; voor nu opent Zak scannen het formulier voor een nieuwe zak.</value></data>
+  <data name="Home_ScanHint" xml:space="preserve"><value>Maak een foto van het etiket om de boon en de zak toe te voegen.</value></data>
   <data name="Home_OpenBags" xml:space="preserve"><value>Geopende zakken</value></data>
   <data name="Home_NoOpenBags" xml:space="preserve"><value>Geen geopende zakken.</value></data>
   <data name="Home_BrewAgain" xml:space="preserve"><value>Opnieuw zetten</value></data>
@@ -624,4 +624,23 @@
   <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log bereidingen met een molen en maalstand om trends te zien.</value></data>
   <data name="Stats_NothingYet" xml:space="preserve"><value>Nog niets.</value></data>
   <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} bereidingen</value></data>
+  <data name="Scan_Title" xml:space="preserve"><value>Label scannen</value></data>
+  <data name="Scan_Hint" xml:space="preserve"><value>Houd de zak zo dat het hele etiket in beeld is, bij goed licht, en maak een foto. Je kunt alles controleren en aanpassen voordat het wordt opgeslagen.</value></data>
+  <data name="Scan_Reading" xml:space="preserve"><value>Etiket lezen…</value></data>
+  <data name="Scan_Review" xml:space="preserve"><value>Controleer wat er gelezen is. Velden die als onzeker zijn gemarkeerd kunnen fout zijn.</value></data>
+  <data name="Scan_Uncertain" xml:space="preserve"><value>Hier ben ik niet zeker van, controleer het even.</value></data>
+  <data name="Scan_RoasterMatch" xml:space="preserve"><value>Je hebt al een brander met de naam “{0}”.</value></data>
+  <data name="Scan_BeanMatch" xml:space="preserve"><value>Je hebt al een boon met de naam “{0}”.</value></data>
+  <data name="Scan_LinkExisting" xml:space="preserve"><value>Koppel aan de bestaande brander</value></data>
+  <data name="Scan_UseExistingBean" xml:space="preserve"><value>Gebruik de bestaande boon (voeg alleen deze zak toe)</value></data>
+  <data name="Scan_CreateNew" xml:space="preserve"><value>Maak een nieuwe aan</value></data>
+  <data name="Scan_BagHeading" xml:space="preserve"><value>Zak</value></data>
+  <data name="Scan_Save" xml:space="preserve"><value>Boon en zak opslaan</value></data>
+  <data name="Scan_Again" xml:space="preserve"><value>Opnieuw scannen</value></data>
+  <data name="Scan_SignedOut" xml:space="preserve"><value>Scannen vraagt een account omdat het etiket op de server wordt gelezen. Log in of voer de boon met de hand in.</value></data>
+  <data name="Scan_Problem_SignedOut" xml:space="preserve"><value>Log opnieuw in om te scannen.</value></data>
+  <data name="Scan_Problem_Offline" xml:space="preserve"><value>Je bent offline. Scannen heeft een verbinding nodig; voer de boon met de hand in of probeer het later opnieuw.</value></data>
+  <data name="Scan_Problem_QuotaUsed" xml:space="preserve"><value>Je hebt vandaag alle labelscans gebruikt. Voer de boon met de hand in of probeer het morgen opnieuw.</value></data>
+  <data name="Scan_Problem_Disabled" xml:space="preserve"><value>Scannen staat tijdelijk uit. Voer de boon met de hand in.</value></data>
+  <data name="Scan_Problem_Unavailable" xml:space="preserve"><value>Het etiket kon nu niet gelezen worden. Voer de boon met de hand in of probeer het later opnieuw.</value></data>
 </root>

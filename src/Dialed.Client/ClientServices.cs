@@ -110,6 +110,16 @@ public static class ClientServices
         public Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
     }
 
+    /// <summary>Registers label scanning (#83). <paramref name="scanner"/> creates the API client, so the host decides the base address.</summary>
+    public static IServiceCollection AddDialedScan(this IServiceCollection services, Func<IServiceProvider, Scan.ILabelScanner> scanner)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(scanner);
+
+        services.TryAddSingleton(scanner);
+        return services;
+    }
+
     /// <summary>
     /// Accounts: the sign-in session, the API calls, the passkey flow and the access token for sync. Call after
     /// <see cref="AddDialedData"/> and <see cref="AddDialedSync"/>; the host registers <see cref="AccountApi"/>'s HttpClient through

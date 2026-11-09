@@ -59,7 +59,7 @@ public sealed class HomeInventoryTests : UiTestContext
         rows[0].TextContent.ShouldContain("10 days since roast");
         rows[0].TextContent.ShouldContain("cups");
         page.Find("#home-log-brew").GetAttribute("href").ShouldBe("brew");
-        page.Find("#home-scan-bag").GetAttribute("href").ShouldBe("bags/new");
+        page.Find("#home-scan-bag").GetAttribute("href").ShouldBe("scan");
     }
 
     [Fact]
