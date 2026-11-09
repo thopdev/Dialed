@@ -12,8 +12,11 @@ public sealed record StoreResult(StoreOutcome Outcome, SyncRow? Row = null, stri
 /// <summary>Rows per table, always scoped to one household. In memory for now; Cosmos DB (one container, partition <c>/householdId</c>) replaces it.</summary>
 public interface ISyncStore
 {
-    /// <summary>Rows changed after the watermark, ordered by update time then id, deleted ones included.</summary>
-    Task<(IReadOnlyList<SyncRow> Rows, bool HasMore)> PullAsync(string householdId, string table, DateTimeOffset? afterUpdatedAt, string? afterId, int pageSize, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Rows changed after the watermark, ordered by update time then id, deleted ones included. Items another member made
+    /// private are left out for <paramref name="viewerId"/>.
+    /// </summary>
+    Task<(IReadOnlyList<SyncRow> Rows, bool HasMore)> PullAsync(string householdId, string viewerId, string table, DateTimeOffset? afterUpdatedAt, string? afterId, int pageSize, CancellationToken cancellationToken = default);
 
     /// <summary>Creates or updates one row. <paramref name="ifMatch"/> is the version the edit started from (<c>null</c> for a new record).</summary>
     Task<StoreResult> PushAsync(string householdId, string userId, string table, string id, JsonObject entity, string? ifMatch, CancellationToken cancellationToken = default);
@@ -26,7 +29,7 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
     // Ids are only unique within a household, so the household is part of the key (it is the partition in Cosmos DB).
     private readonly Dictionary<(string Household, string Table, string Id), SyncRow> rows = [];
 
-    public Task<(IReadOnlyList<SyncRow> Rows, bool HasMore)> PullAsync(string householdId, string table, DateTimeOffset? afterUpdatedAt, string? afterId, int pageSize, CancellationToken cancellationToken = default)
+    public Task<(IReadOnlyList<SyncRow> Rows, bool HasMore)> PullAsync(string householdId, string viewerId, string table, DateTimeOffset? afterUpdatedAt, string? afterId, int pageSize, CancellationToken cancellationToken = default)
     {
         pageSize = Math.Clamp(pageSize, 1, 500);
         lock (gate)
@@ -34,6 +37,7 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
             var matching = rows
                 .Where(r => r.Key.Household == householdId && r.Key.Table == table)
                 .Select(r => r.Value)
+                .Where(r => VisibilityRules.CanRead(VisibilityRules.Of(r.Entity), VisibilityRules.InHousehold(r.Entity, viewerId)))
                 .Where(r => afterUpdatedAt is null
                     || r.UpdatedAt > afterUpdatedAt
                     || (r.UpdatedAt == afterUpdatedAt && string.CompareOrdinal(r.Id, afterId ?? "") > 0))
@@ -63,6 +67,12 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
         {
             var key = (householdId, table, id);
             var exists = rows.TryGetValue(key, out var current);
+
+            // Someone else's private item is invisible to the caller: they cannot overwrite it either, and learn nothing about it.
+            if (exists && !VisibilityRules.CanRead(VisibilityRules.Of(current!.Entity), VisibilityRules.InHousehold(current.Entity, userId)))
+            {
+                return Task.FromResult(new StoreResult(StoreOutcome.Forbidden, Message: "No access to that record."));
+            }
 
             // The same id in another household is a different record, but we never reveal that one exists.
             if (exists && ifMatch != current!.Version.ToString())
