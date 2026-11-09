@@ -1,5 +1,6 @@
 using Dialed.Api.Auth;
 using Dialed.Api.Configuration;
+using Dialed.Api.Friends;
 using Dialed.Api.Households;
 using Dialed.Api.Passkeys;
 using Dialed.Api.Protection;
@@ -23,6 +24,7 @@ builder.Services.AddDialedAuth(builder.Configuration, builder.Environment);
 builder.Services.AddDialedPasskeys(builder.Configuration);
 builder.Services.AddDialedSync();
 builder.Services.AddDialedHouseholds(builder.Environment);
+builder.Services.AddDialedFriends();
 builder.Services.AddDevelopmentSeeding(builder.Configuration);
 
 var app = builder.Build();
@@ -39,5 +41,6 @@ app.MapDialedAuth(app.Environment);
 app.MapDialedPasskeys();
 app.MapDialedSync();
 app.MapDialedHouseholds();
+app.MapDialedFriends();
 
 app.Run();

@@ -14,6 +14,9 @@ public sealed class ProtectionOptions
     /// <summary>Requests per minute for one user on the AI endpoints (<c>/ai</c>), which cost money.</summary>
     public int AiRequestsPerMinute { get; set; } = 10;
 
+    /// <summary>Requests per minute for one user on the friend endpoints (<c>/friends</c>), which is stricter so friend codes cannot be guessed.</summary>
+    public int FriendsRequestsPerMinute { get; set; } = 30;
+
     /// <summary>Largest accepted request body. Photos do not go through the API (they use direct upload URLs).</summary>
     public long MaxRequestBodyBytes { get; set; } = 1_048_576;
 }

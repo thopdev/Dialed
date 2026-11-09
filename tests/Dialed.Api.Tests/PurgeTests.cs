@@ -21,7 +21,7 @@ public sealed class PurgeTests
         store.PushAsync("h", "alice", table, id, new JsonObject { ["id"] = id, ["deleted"] = deleted }, ifMatch, Ct);
 
     private static async Task<int> Count(InMemorySyncStore store, string table) =>
-        (await store.PullAsync("h", table, null, null, 500, Ct)).Rows.Count;
+        (await store.PullAsync("h", "alice", table, null, null, 500, Ct)).Rows.Count;
 
     [Fact]
     public async Task Records_deleted_more_than_thirty_days_ago_are_removed_and_counted_per_table()
