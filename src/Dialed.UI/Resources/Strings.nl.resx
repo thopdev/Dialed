@@ -459,4 +459,26 @@
   <data name="Storage_Persisted" xml:space="preserve"><value>Je gegevens staan op dit apparaat en de browser wist ze niet om ruimte vrij te maken.</value></data>
   <data name="Storage_Unprotected" xml:space="preserve"><value>Je gegevens staan op dit apparaat, maar de browser kan ze wissen als de ruimte krap wordt. Log in om online een kopie te bewaren.</value></data>
   <data name="Storage_Memory" xml:space="preserve"><value>Je gegevens worden alleen bewaard zolang de app open is. Log in om online een kopie te bewaren.</value></data>
+  <data name="DialIn_Title" xml:space="preserve"><value>Wat te proberen</value></data>
+  <data name="DialIn_Primary" xml:space="preserve"><value>Probeer eerst</value></data>
+  <data name="DialIn_Secondary" xml:space="preserve"><value>Of probeer</value></data>
+  <data name="DialIn_Kind_GrindFiner" xml:space="preserve"><value>Maal fijner</value></data>
+  <data name="DialIn_Kind_GrindCoarser" xml:space="preserve"><value>Maal grover</value></data>
+  <data name="DialIn_Kind_IncreaseDose" xml:space="preserve"><value>Gebruik meer koffie</value></data>
+  <data name="DialIn_Kind_DecreaseDose" xml:space="preserve"><value>Gebruik minder koffie</value></data>
+  <data name="DialIn_Kind_LongerRatio" xml:space="preserve"><value>Gebruik meer water of opbrengst</value></data>
+  <data name="DialIn_Kind_ShorterRatio" xml:space="preserve"><value>Gebruik minder water of opbrengst</value></data>
+  <data name="DialIn_Kind_HotterWater" xml:space="preserve"><value>Gebruik heter water</value></data>
+  <data name="DialIn_Kind_CoolerWater" xml:space="preserve"><value>Gebruik koeler water</value></data>
+  <data name="DialIn_Kind_Keep" xml:space="preserve"><value>Houd dit recept aan</value></data>
+  <data name="DialIn_Reason_Sour" xml:space="preserve"><value>Het smaakte zuur, wat meestal betekent dat er te weinig is geëxtraheerd.</value></data>
+  <data name="DialIn_Reason_Bitter" xml:space="preserve"><value>Het smaakte bitter, wat meestal betekent dat er te veel is geëxtraheerd.</value></data>
+  <data name="DialIn_Reason_Weak" xml:space="preserve"><value>Het was slap.</value></data>
+  <data name="DialIn_Reason_Strong" xml:space="preserve"><value>Het was sterk.</value></data>
+  <data name="DialIn_Reason_Thin" xml:space="preserve"><value>De body was dun.</value></data>
+  <data name="DialIn_Reason_Heavy" xml:space="preserve"><value>De body was vol.</value></data>
+  <data name="DialIn_Reason_Flat" xml:space="preserve"><value>Het miste zoetheid, wat vaak betekent dat er te weinig is geëxtraheerd.</value></data>
+  <data name="DialIn_Reason_ShotTooFast" xml:space="preserve"><value>De shot liep snel.</value></data>
+  <data name="DialIn_Reason_ShotTooSlow" xml:space="preserve"><value>De shot liep langzaam.</value></data>
+  <data name="DialIn_Reason_Balanced" xml:space="preserve"><value>De kop was gebalanceerd. Verander één ding tegelijk als je wilt experimenteren.</value></data>
 </root>
