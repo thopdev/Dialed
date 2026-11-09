@@ -42,10 +42,13 @@ public sealed class SyncRobustnessTests
     {
         public List<string?> Bearers { get; } = [];
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public List<string> Bodies { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Bearers.Add(request.Headers.Authorization?.Parameter);
-            return Task.FromResult(respond(request));
+            Bodies.Add(request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken));
+            return respond(request);
         }
     }
 
@@ -81,21 +84,16 @@ public sealed class SyncRobustnessTests
     [Fact]
     public async Task A_push_is_sent_again_with_the_same_content_after_renewing()
     {
-        var bodies = new List<string>();
-        var handler = new Handler(request =>
-        {
-            bodies.Add(request.Content!.ReadAsStringAsync(Ct).GetAwaiter().GetResult());
-            return request.Headers.Authorization?.Parameter == "old"
-                ? new HttpResponseMessage(HttpStatusCode.Unauthorized)
-                : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"entity\":{\"id\":\"v1\",\"name\":\"Roaster\"},\"version\":\"2\"}", System.Text.Encoding.UTF8, "application/json") };
-        });
+        var handler = new Handler(request => request.Headers.Authorization?.Parameter == "old"
+            ? new HttpResponseMessage(HttpStatusCode.Unauthorized)
+            : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"entity\":{\"id\":\"v1\",\"name\":\"Roaster\"},\"version\":\"2\"}", System.Text.Encoding.UTF8, "application/json") });
         var transport = new HttpSyncTransport(new HttpClient(handler) { BaseAddress = new Uri("https://api.test/") }, new Tokens());
 
         var result = await transport.PushAsync("vendors", new Vendor { Id = "v1", Name = "Roaster" }, "1", Ct);
 
         result.Outcome.ShouldBe(PushOutcome.Accepted);
-        bodies.Count.ShouldBe(2);
-        bodies[1].ShouldBe(bodies[0]);
+        handler.Bodies.Count.ShouldBe(2);
+        handler.Bodies[1].ShouldBe(handler.Bodies[0]);
     }
 
     // ---- refused changes ----------------------------------------------------------------------
