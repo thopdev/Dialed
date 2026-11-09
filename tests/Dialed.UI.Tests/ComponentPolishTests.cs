@@ -54,7 +54,7 @@ public sealed class ComponentPolishTests : UiTestContext
         var element = meter.Find("[role=meter]");
         element.GetAttribute("aria-valuenow").ShouldBe(percent.ToString(System.Globalization.CultureInfo.InvariantCulture));
         element.GetAttribute("aria-label").ShouldBe("Remaining");
-        meter.Find(".dialed-meter-fill").GetAttribute("style").ShouldContain($"width: {percent}%");
+        meter.Find(".dialed-meter-fill").GetAttribute("style")!.ShouldContain($"width: {percent}%");
     }
 
     [Fact]
