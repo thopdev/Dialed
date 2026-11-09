@@ -17,6 +17,9 @@ public sealed class ProtectionOptions
     /// <summary>Requests per minute for one user on the friend endpoints (<c>/friends</c>), which is stricter so friend codes cannot be guessed.</summary>
     public int FriendsRequestsPerMinute { get; set; } = 30;
 
+    /// <summary>Send <c>Strict-Transport-Security</c>. On everywhere except local development, where the API runs over plain HTTP.</summary>
+    public bool Hsts { get; set; } = true;
+
     /// <summary>Largest accepted request body. Photos do not go through the API (they use direct upload URLs).</summary>
     public long MaxRequestBodyBytes { get; set; } = 1_048_576;
 }

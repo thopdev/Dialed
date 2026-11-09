@@ -47,16 +47,62 @@ public interface IEmailRecoveryStore
 
     /// <summary>Checks the code for the account. Every call counts as an attempt; too many attempts burn the code.</summary>
     Task<bool> CheckAsync(string accountId, string codeHash, DateTimeOffset now, bool consume, CancellationToken cancellationToken = default);
+
+    /// <summary>Says whether a new email may go out now (and notes it). A second one inside the cooldown is refused, so the address cannot be spammed.</summary>
+    Task<bool> TryBeginSendAsync(string accountId, DateTimeOffset now, TimeSpan cooldown, CancellationToken cancellationToken = default);
+
+    /// <summary>Too many wrong codes for this account lately: recovery is paused, whoever asks.</summary>
+    Task<bool> IsLockedAsync(string accountId, DateTimeOffset now, CancellationToken cancellationToken = default);
+
+    Task RecordFailureAsync(string accountId, DateTimeOffset now, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryEmailRecoveryStore : IEmailRecoveryStore
 {
     public const int MaxAttempts = 5;
+    public const int MaxFailures = 10;
+    public static readonly TimeSpan FailureWindow = TimeSpan.FromMinutes(15);
 
     private sealed record Entry(string Hash, DateTimeOffset ExpiresAt, int Attempts);
 
     private readonly Lock gate = new();
     private readonly Dictionary<string, Entry> entries = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, DateTimeOffset> lastSent = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (int Count, DateTimeOffset Since)> failures = new(StringComparer.Ordinal);
+
+    public Task<bool> TryBeginSendAsync(string accountId, DateTimeOffset now, TimeSpan cooldown, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            if (lastSent.TryGetValue(accountId, out var last) && now - last < cooldown)
+            {
+                return Task.FromResult(false);
+            }
+
+            lastSent[accountId] = now;
+            return Task.FromResult(true);
+        }
+    }
+
+    public Task<bool> IsLockedAsync(string accountId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult(failures.TryGetValue(accountId, out var f) && now - f.Since < FailureWindow && f.Count >= MaxFailures);
+        }
+    }
+
+    public Task RecordFailureAsync(string accountId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            failures[accountId] = failures.TryGetValue(accountId, out var f) && now - f.Since < FailureWindow
+                ? (f.Count + 1, f.Since)
+                : (1, now);
+        }
+
+        return Task.CompletedTask;
+    }
 
     public Task PutAsync(string accountId, string codeHash, DateTimeOffset expiresAt, CancellationToken cancellationToken = default)
     {
@@ -112,6 +158,7 @@ public sealed class RecoveryService(UserManager<AccountUser> accounts, IEmailRec
     public const int MinPasskeysToKeep = 1;
     private const string Alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static readonly TimeSpan EmailCodeLifetime = TimeSpan.FromMinutes(15);
+    public static readonly TimeSpan EmailCooldown = TimeSpan.FromMinutes(1);
 
     /// <summary>New codes like <c>ABCD-2345</c>; only their hashes are kept.</summary>
     public static IReadOnlyList<string> NewCodes()
@@ -144,6 +191,11 @@ public sealed class RecoveryService(UserManager<AccountUser> accounts, IEmailRec
             return;
         }
 
+        if (!await emailCodes.TryBeginSendAsync(account.Id, time.GetUtcNow(), EmailCooldown, ct))
+        {
+            return; // one a minute is enough; nothing is said about it either
+        }
+
         var code = RandomNumberGenerator.GetInt32(0, 100_000_000).ToString("D8", System.Globalization.CultureInfo.InvariantCulture);
         await emailCodes.PutAsync(account.Id, Hash(code), time.GetUtcNow().Add(EmailCodeLifetime), ct);
         await email.SendAsync(
@@ -161,19 +213,31 @@ public sealed class RecoveryService(UserManager<AccountUser> accounts, IEmailRec
             return null;
         }
 
+        // Too many wrong guesses lately: refuse everything for a while, even a right code.
+        if (await emailCodes.IsLockedAsync(account.Id, time.GetUtcNow(), ct))
+        {
+            return null;
+        }
+
         var hash = Hash(code);
-        if (account.RecoveryCodeHashes.Contains(hash))
+        if (account.RecoveryCodeHashes.Contains(hash) || await emailCodes.CheckAsync(account.Id, hash, time.GetUtcNow(), consume: false, ct))
         {
             return account;
         }
 
-        return await emailCodes.CheckAsync(account.Id, hash, time.GetUtcNow(), consume: false, ct) ? account : null;
+        await emailCodes.RecordFailureAsync(account.Id, time.GetUtcNow(), ct);
+        return null;
     }
 
     /// <summary>Uses the code up. <c>false</c> when it no longer matches (someone else used it first).</summary>
     public async Task<bool> ConsumeAsync(string accountId, string code, CancellationToken ct = default)
     {
         if (await accounts.FindByIdAsync(accountId) is not { } account)
+        {
+            return false;
+        }
+
+        if (await emailCodes.IsLockedAsync(accountId, time.GetUtcNow(), ct))
         {
             return false;
         }
