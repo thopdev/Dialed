@@ -146,6 +146,27 @@ public static class AccountEndpoints
             return await deleter.DeleteAsync(userId, http.RequestAborted) ? Results.NoContent() : Results.NotFound();
         });
 
+        // Passkeys and recovery codes of the signed-in account (#112).
+        group.MapGet("/passkeys", async (ClaimsPrincipal user, RecoveryService recovery, CancellationToken ct) =>
+            await recovery.ListPasskeysAsync(Sub(user), ct) is { } list ? Results.Ok(list) : Results.NotFound());
+        group.MapPut("/passkeys/{id}", async (string id, RenamePasskeyRequest request, ClaimsPrincipal user, RecoveryService recovery, CancellationToken ct) =>
+            await recovery.RenamePasskeyAsync(Sub(user), id, request.Name, ct) ? Results.NoContent() : Results.NotFound());
+        group.MapDelete("/passkeys/{id}", async (string id, ClaimsPrincipal user, RecoveryService recovery, CancellationToken ct) =>
+            await recovery.RemovePasskeyAsync(Sub(user), id, ct) switch
+            {
+                RemoveResult.Removed => Results.NoContent(),
+                RemoveResult.LastOne => Results.Problem(detail: "You cannot remove your last passkey.", statusCode: StatusCodes.Status409Conflict),
+                _ => Results.NotFound(),
+            });
+        group.MapPost("/passkeys/options", (HttpContext http, ClaimsPrincipal user, PasskeyCeremonies ceremonies) => ceremonies.AddPasskeyOptionsAsync(http, Sub(user)));
+        group.MapPost("/passkeys", (HttpContext http, CeremonyCompleteRequest request, ClaimsPrincipal user, PasskeyCeremonies ceremonies, string? name) => ceremonies.AddPasskeyAsync(http, request, Sub(user), name));
+        group.MapGet("/recovery", async (ClaimsPrincipal user, RecoveryService recovery, CancellationToken ct) =>
+            await recovery.StatusAsync(Sub(user), ct) is { } status ? Results.Ok(status) : Results.NotFound());
+        group.MapPost("/recovery/codes", async (ClaimsPrincipal user, RecoveryService recovery, CancellationToken ct) =>
+            await recovery.RegenerateCodesAsync(Sub(user), ct) is { } codes ? Results.Ok(new RecoveryCodesDto(codes)) : Results.NotFound());
+
         return endpoints;
     }
+
+    private static string Sub(ClaimsPrincipal user) => user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
 }
