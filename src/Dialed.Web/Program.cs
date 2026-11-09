@@ -2,6 +2,7 @@ using Bit.Bsqlite.Storage.IndexedDb;
 using Bit.Bsqlite.Storage.Opfs;
 using Dialed.Client;
 using Dialed.Client.Account;
+using Dialed.Client.Friends;
 using Dialed.Client.Households;
 using Dialed.Client.Storage;
 using Dialed.Client.Sync;
@@ -42,7 +43,8 @@ builder.Services.AddDialedSync();
 builder.Services.AddDialedAccount(
     _ => new AccountApi(new HttpClient { BaseAddress = apiBaseAddress }),
     sp => new HouseholdApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
-    sp => new AccountDataApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
+    sp => new AccountDataApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
+    sp => new FriendsApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());

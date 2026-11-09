@@ -495,4 +495,36 @@
   <data name="Account_DeleteBody" xml:space="preserve"><value>Your account, sign-ins and friend connections are deleted. A household you are alone in is deleted with all its data; in a shared household your items stay but no longer show your name. This cannot be undone.</value></data>
   <data name="Account_DeletePasskeyNote" xml:space="preserve"><value>You confirm with your passkey. The passkey itself stays in your password manager or keychain; you can remove it there.</value></data>
   <data name="Account_DeleteConfirm" xml:space="preserve"><value>Delete account and data</value></data>
+  <data name="People_SignInFirst" xml:space="preserve"><value>Sign in to follow friends and see what they share.</value></data>
+  <data name="People_YourCode" xml:space="preserve"><value>Your friend code</value></data>
+  <data name="People_YourCodeHint" xml:space="preserve"><value>Share this code with someone so they can ask to follow you. You decide who gets accepted.</value></data>
+  <data name="People_NewCode" xml:space="preserve"><value>Get a new code</value></data>
+  <data name="People_CodeRotated" xml:space="preserve"><value>New code created. The old one no longer works.</value></data>
+  <data name="People_Follow" xml:space="preserve"><value>Follow a friend</value></data>
+  <data name="People_FriendCode" xml:space="preserve"><value>Friend code</value></data>
+  <data name="People_SendRequest" xml:space="preserve"><value>Send request</value></data>
+  <data name="People_RequestSent" xml:space="preserve"><value>Request sent. You can see their coffee once they accept.</value></data>
+  <data name="People_Offline" xml:space="preserve"><value>Could not reach the server. Friends need a connection.</value></data>
+  <data name="People_Requests" xml:space="preserve"><value>Requests</value></data>
+  <data name="People_NoRequests" xml:space="preserve"><value>No one is waiting for your answer.</value></data>
+  <data name="People_Accept" xml:space="preserve"><value>Accept</value></data>
+  <data name="People_Decline" xml:space="preserve"><value>Decline</value></data>
+  <data name="People_Following" xml:space="preserve"><value>Following</value></data>
+  <data name="People_NoFollowing" xml:space="preserve"><value>You do not follow anyone yet.</value></data>
+  <data name="People_Waiting" xml:space="preserve"><value>waiting for an answer</value></data>
+  <data name="People_Unfollow" xml:space="preserve"><value>Unfollow</value></data>
+  <data name="People_Followers" xml:space="preserve"><value>Followers</value></data>
+  <data name="People_NoFollowers" xml:space="preserve"><value>No one follows you yet.</value></data>
+  <data name="People_RemoveFollower" xml:space="preserve"><value>Remove</value></data>
+  <data name="People_Block" xml:space="preserve"><value>Block</value></data>
+  <data name="People_Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="People_Unblock" xml:space="preserve"><value>Unblock</value></data>
+  <data name="People_ProfileUnavailable" xml:space="preserve"><value>This profile is not available. You may not follow this person, or the request is still waiting.</value></data>
+  <data name="People_ShowingSaved" xml:space="preserve"><value>No connection: showing what was saved the last time.</value></data>
+  <data name="People_Counts" xml:space="preserve"><value>{0} beans · {1} recipes · {2} brews · {3} followers</value></data>
+  <data name="People_Tab_beans" xml:space="preserve"><value>Beans</value></data>
+  <data name="People_Tab_recipes" xml:space="preserve"><value>Recipes</value></data>
+  <data name="People_Tab_brews" xml:space="preserve"><value>Brews</value></data>
+  <data name="People_NothingShared" xml:space="preserve"><value>Nothing is shared here yet.</value></data>
+  <data name="People_LoadMore" xml:space="preserve"><value>Load more</value></data>
 </root>

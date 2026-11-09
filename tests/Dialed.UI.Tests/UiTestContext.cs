@@ -1,6 +1,7 @@
 using Bunit;
 using Dialed.Client;
 using Dialed.Client.Account;
+using Dialed.Client.Friends;
 using Dialed.Client.Households;
 using Dialed.Client.Data;
 using Dialed.Client.Platform;
@@ -44,6 +45,9 @@ public abstract class UiTestContext : BunitContext
 
     protected TestFiles ExportedFiles { get; } = new();
 
+    /// <summary>The friend endpoints; set <see cref="TestFriendsServer.Respond"/> to script answers per "METHOD path".</summary>
+    protected TestFriendsServer FriendsServer { get; } = new();
+
     /// <summary>The API's household endpoints: a household of one by default.</summary>
     protected TestHouseholdServer HouseholdServer { get; } = new();
 
@@ -75,6 +79,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IFileExport>(ExportedFiles);
         Services.AddSingleton(new AccountDataApi(new HttpClient(DataServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<AccountDataService>();
+        Services.AddSingleton(new FriendsApi(new HttpClient(FriendsServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton(new HouseholdApi(new HttpClient(HouseholdServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<HouseholdManager>();
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -192,6 +197,35 @@ public abstract class UiTestContext : BunitContext
 
             Saved.Add((fileName, contentType, content));
             return Task.FromResult(true);
+        }
+    }
+
+    protected sealed class TestFriendsServer : HttpMessageHandler
+    {
+        public List<string> Calls { get; } = [];
+
+        /// <summary>Overrides the answer for "METHOD path?query"; return <c>null</c> for the default (empty lists, code ABCD2345, no content).</summary>
+        public Func<string, HttpResponseMessage?>? Respond { get; set; }
+
+        public static HttpResponseMessage Json(string json, System.Net.HttpStatusCode status = System.Net.HttpStatusCode.OK) =>
+            new(status) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var call = $"{request.Method} {request.RequestUri!.PathAndQuery.TrimStart('/')}";
+            Calls.Add(call);
+            if (Respond?.Invoke(call) is { } custom)
+            {
+                return Task.FromResult(custom);
+            }
+
+            var path = request.RequestUri.AbsolutePath.TrimStart('/');
+            return Task.FromResult(path switch
+            {
+                "friends/code" or "friends/code/rotate" => Json("{\"code\":\"ABCD2345\"}"),
+                "friends/requests" or "friends/following" or "friends/following/pending" or "friends/followers" or "friends/blocks" => Json("[]"),
+                _ => new HttpResponseMessage(System.Net.HttpStatusCode.NoContent),
+            });
         }
     }
 
