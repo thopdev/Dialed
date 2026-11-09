@@ -31,6 +31,8 @@ public sealed class SyncCoordinator : IDisposable
     private readonly TimeSpan debounce;
     private readonly Lock gate = new();
     private CancellationTokenSource? pendingRequest;
+    private CancellationTokenSource? retryTimer;
+    private int consecutiveFailures;
     private bool started;
     private bool disposed;
 
@@ -60,6 +62,13 @@ public sealed class SyncCoordinator : IDisposable
 
     /// <summary>Local changes not yet on the server (the "not yet synced" indicator).</summary>
     public int PendingCount { get; private set; }
+
+    /// <summary>When the next automatic retry runs after the server could not be reached; <c>null</c> when none is planned.</summary>
+    public DateTimeOffset? NextRetryAt { get; private set; }
+
+    /// <summary>How long to wait before retry number <paramref name="failures"/> in a row: 5 s, 10 s, 20 s ... at most 5 minutes.</summary>
+    public static TimeSpan BackoffDelay(int failures) =>
+        TimeSpan.FromSeconds(Math.Min(300, 5 * Math.Pow(2, Math.Max(0, failures - 1))));
 
     /// <summary>Raised whenever anything above changes.</summary>
     public event Action? Changed;
@@ -92,10 +101,20 @@ public sealed class SyncCoordinator : IDisposable
             return SyncResult.AlreadyRunning;
         }
 
-        if (await tokens.GetAccessTokenAsync(cancellationToken) is null)
+        try
         {
-            Update(SyncStatus.NeedsSignIn);
-            await RefreshPendingAsync();
+            if (await tokens.GetAccessTokenAsync(cancellationToken) is null)
+            {
+                Update(SyncStatus.NeedsSignIn);
+                await RefreshPendingAsync();
+                return new SyncResult(SyncOutcome.Offline);
+            }
+        }
+        catch (SyncTransportException)
+        {
+            // The sign-in could not be renewed right now (offline or server trouble): keep everything and try again later.
+            Update(SyncStatus.Offline);
+            ScheduleRetry();
             return new SyncResult(SyncOutcome.Offline);
         }
 
@@ -126,6 +145,11 @@ public sealed class SyncCoordinator : IDisposable
         if (result.Outcome == SyncOutcome.Completed)
         {
             LastSyncedAt = time.GetUtcNow();
+            StopRetrying();
+        }
+        else
+        {
+            ScheduleRetry();
         }
 
         await RefreshPendingAsync();
@@ -164,11 +188,60 @@ public sealed class SyncCoordinator : IDisposable
             disposed = true;
             pendingRequest?.Cancel();
             pendingRequest?.Dispose();
+            retryTimer?.Cancel();
+            retryTimer?.Dispose();
         }
 
         state.OutboxChanged -= OnOutboxChanged;
         connectivity.Changed -= OnConnectivityChanged;
         lifecycle.Resumed -= OnResumed;
+    }
+
+    /// <summary>The server could not be reached: try again after an exponentially growing wait, so a flaky connection is not hammered.</summary>
+    private void ScheduleRetry()
+    {
+        CancellationTokenSource timer;
+        TimeSpan delay;
+        lock (gate)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            retryTimer?.Cancel();
+            retryTimer?.Dispose();
+            timer = retryTimer = new CancellationTokenSource();
+            consecutiveFailures++;
+            delay = BackoffDelay(consecutiveFailures);
+            NextRetryAt = time.GetUtcNow() + delay;
+        }
+
+        _ = RetryAfterAsync(delay, timer.Token);
+    }
+
+    private void StopRetrying()
+    {
+        lock (gate)
+        {
+            consecutiveFailures = 0;
+            NextRetryAt = null;
+            retryTimer?.Cancel();
+            retryTimer?.Dispose();
+            retryTimer = null;
+        }
+    }
+
+    private async Task RetryAfterAsync(TimeSpan delay, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(delay, time, cancellationToken);
+            await SyncNowAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private async Task RunAfterDebounceAsync(CancellationToken cancellationToken)

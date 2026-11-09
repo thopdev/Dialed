@@ -21,6 +21,9 @@ public interface ISyncState
 
     Task RecordFailureAsync(long sequence, string error, CancellationToken cancellationToken = default);
 
+    /// <summary>Forgets the failed attempts of an entry so it is tried again as if new.</summary>
+    Task ResetFailureAsync(long sequence, CancellationToken cancellationToken = default);
+
     Task<string?> GetServerVersionAsync(string table, string entityId, CancellationToken cancellationToken = default);
 
     Task SetServerVersionAsync(string table, string entityId, string version, CancellationToken cancellationToken = default);

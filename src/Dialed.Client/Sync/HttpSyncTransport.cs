@@ -10,6 +10,12 @@ namespace Dialed.Client.Sync;
 public interface IAccessTokenProvider
 {
     Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a fresh token after the server refused <paramref name="refusedToken"/> (for example because it expired during a long sync).
+    /// <c>null</c> when signed out. Providers that cannot renew simply return the current token.
+    /// </summary>
+    Task<string?> RenewAccessTokenAsync(string? refusedToken, CancellationToken cancellationToken = default) => GetAccessTokenAsync(cancellationToken);
 }
 
 /// <summary>The sync protocol over HTTP: <c>GET /sync/{table}</c> to pull and <c>PUT /sync/{table}/{id}</c> with <c>If-Match</c> to push (see Dialed.Api).</summary>
@@ -24,16 +30,21 @@ public sealed class HttpSyncTransport(HttpClient http, IAccessTokenProvider toke
     public async Task<PushResult<T>> PushAsync<T>(string table, T entity, string? ifMatchVersion, CancellationToken cancellationToken = default)
         where T : SyncEntity
     {
-        using var request = new HttpRequestMessage(HttpMethod.Put, $"sync/{Uri.EscapeDataString(table)}/{Uri.EscapeDataString(entity.Id)}")
+        HttpRequestMessage Build()
         {
-            Content = JsonContent.Create(entity, options: Json),
-        };
-        if (ifMatchVersion is not null)
-        {
-            request.Headers.TryAddWithoutValidation("If-Match", $"\"{ifMatchVersion}\"");
+            var request = new HttpRequestMessage(HttpMethod.Put, $"sync/{Uri.EscapeDataString(table)}/{Uri.EscapeDataString(entity.Id)}")
+            {
+                Content = JsonContent.Create(entity, options: Json),
+            };
+            if (ifMatchVersion is not null)
+            {
+                request.Headers.TryAddWithoutValidation("If-Match", $"\"{ifMatchVersion}\"");
+            }
+
+            return request;
         }
 
-        using var response = await SendAsync(request, cancellationToken);
+        using var response = await SendAsync(Build, cancellationToken);
         switch (response.StatusCode)
         {
             case HttpStatusCode.OK:
@@ -56,8 +67,7 @@ public sealed class HttpSyncTransport(HttpClient http, IAccessTokenProvider toke
             url += $"&afterUpdatedAt={Uri.EscapeDataString(after.UpdatedAt.ToString("O"))}&afterId={Uri.EscapeDataString(after.Id)}";
         }
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, url);
-        using var response = await SendAsync(request, cancellationToken);
+        using var response = await SendAsync(() => new HttpRequestMessage(HttpMethod.Get, url), cancellationToken);
         if (response.StatusCode != HttpStatusCode.OK)
         {
             throw new SyncTransportException($"Server answered {(int)response.StatusCode}.");
@@ -67,22 +77,39 @@ public sealed class HttpSyncTransport(HttpClient http, IAccessTokenProvider toke
         return new PullPage<T>([.. page.Records.Select(r => new ServerRecord<T>(r.Entity, r.Version))], page.HasMore);
     }
 
-    private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    /// <summary>Sends the request; when the server refuses the token (expired mid-sync) it renews the token once and sends again.</summary>
+    private async Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> build, CancellationToken cancellationToken)
     {
         var token = await tokens.GetAccessTokenAsync(cancellationToken)
             ?? throw new SyncTransportException("Not signed in.");
+
+        var response = await SendOnceAsync(build, token, cancellationToken);
+        if (response.StatusCode is not HttpStatusCode.Unauthorized)
+        {
+            return response;
+        }
+
+        response.Dispose();
+        var renewed = await tokens.RenewAccessTokenAsync(token, cancellationToken)
+            ?? throw new SyncTransportException("Not signed in.");
+        response = await SendOnceAsync(build, renewed, cancellationToken);
+        if (response.StatusCode is HttpStatusCode.Unauthorized)
+        {
+            response.Dispose();
+            throw new SyncTransportException("Sign-in expired.");
+        }
+
+        return response;
+    }
+
+    private async Task<HttpResponseMessage> SendOnceAsync(Func<HttpRequestMessage> build, string token, CancellationToken cancellationToken)
+    {
+        using var request = build();
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         try
         {
-            var response = await http.SendAsync(request, cancellationToken);
-            if (response.StatusCode is HttpStatusCode.Unauthorized)
-            {
-                response.Dispose();
-                throw new SyncTransportException("Sign-in expired.");
-            }
-
-            return response;
+            return await http.SendAsync(request, cancellationToken);
         }
         catch (HttpRequestException e)
         {

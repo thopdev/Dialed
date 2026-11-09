@@ -15,6 +15,16 @@ public sealed class SyncEngine(IEnumerable<ISyncTable> tables, ISyncState state,
     public async Task<int> PendingCountAsync(CancellationToken cancellationToken = default) =>
         (await state.PendingAsync(cancellationToken)).Count;
 
+    /// <summary>Local changes the server refused or that keep failing, with the reason; they stay queued until retried or discarded.</summary>
+    public async Task<IReadOnlyList<OutboxEntry>> FailedAsync(CancellationToken cancellationToken = default) =>
+        [.. (await state.PendingAsync(cancellationToken)).Where(e => e.LastError is not null)];
+
+    /// <summary>Forgets the failure so the next sync tries the change again.</summary>
+    public Task RetryAsync(long sequence, CancellationToken cancellationToken = default) => state.ResetFailureAsync(sequence, cancellationToken);
+
+    /// <summary>Stops trying to send this change. The record stays on this device but the server never gets this version.</summary>
+    public Task DiscardAsync(long sequence, CancellationToken cancellationToken = default) => state.RemoveAsync(sequence, cancellationToken);
+
     /// <summary>After sign-in: records made on this device before it belonged to a household move into the person's household and are queued.</summary>
     public async Task<int> AdoptLocalRecordsAsync(CancellationToken cancellationToken = default)
     {
