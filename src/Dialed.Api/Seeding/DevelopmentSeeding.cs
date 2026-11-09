@@ -56,6 +56,7 @@ public static class DevelopmentSeedingServiceCollectionExtensions
     {
         services.Configure<SeedOptions>(configuration.GetSection(SeedOptions.SectionName));
         services.AddHostedService<DevelopmentSeedRunner>();
+        services.AddScoped<IDevelopmentSeeder, DemoDataSeeder>();
         return services;
     }
 }
