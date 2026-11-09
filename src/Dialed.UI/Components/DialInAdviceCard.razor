@@ -1,0 +1,68 @@
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.DialIn
+@using Dialed.Domain.Equipment
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject UnitFormatter Units
+
+@* What to try next, from the offline rules in Dialed.Domain (#85). *@
+@if (advice is not null)
+{
+    <section id="dialin-advice" class="dialed-dialin" aria-labelledby="dialin-title">
+        <h2 id="dialin-title">@L["DialIn_Title"]</h2>
+        <ol class="dialed-dialin-list">
+            <li id="dialin-primary">
+                <p class="dialed-dialin-label">@L["DialIn_Primary"]</p>
+                @Suggestion(advice.Primary)
+            </li>
+            @if (advice.Secondary is { } secondary)
+            {
+                <li id="dialin-secondary">
+                    <p class="dialed-dialin-label">@L["DialIn_Secondary"]</p>
+                    @Suggestion(secondary)
+                </li>
+            }
+        </ol>
+    </section>
+}
+
+@code {
+    private DialInAdvice? advice;
+
+    [Parameter, EditorRequired]
+    public Brew Brew { get; set; } = default!;
+
+    /// <summary>The grinder's scale, so the suggested setting is one the grinder has.</summary>
+    [Parameter]
+    public GrindScale? Scale { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var method = BrewMethodCatalog.Default.Find(Brew.MethodCode);
+        advice = method is null ? null : DialInAdvisor.Advise(method, Brew, Scale);
+    }
+
+    private RenderFragment Suggestion(DialInSuggestion suggestion) => __builder =>
+    {
+        <p class="dialed-dialin-action"><strong>@L[$"DialIn_Kind_{suggestion.Kind}"]</strong>@Change(suggestion)</p>
+        <p class="dialed-muted">@L[$"DialIn_Reason_{suggestion.Reason}"]</p>
+    };
+
+    private string Change(DialInSuggestion suggestion)
+    {
+        if (suggestion.From is not { } from || suggestion.To is not { } to)
+        {
+            return "";
+        }
+
+        return $" ({Value(suggestion.Kind, from)} → {Value(suggestion.Kind, to)})";
+    }
+
+    private string Value(SuggestionKind kind, decimal value) => kind switch
+    {
+        SuggestionKind.GrindFiner or SuggestionKind.GrindCoarser => GrindScale.Format(value),
+        SuggestionKind.HotterWater or SuggestionKind.CoolerWater => Units.Temperature(value),
+        _ => Units.Weight(value),
+    };
+}

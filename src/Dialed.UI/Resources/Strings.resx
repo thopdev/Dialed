@@ -460,4 +460,26 @@
   <data name="Storage_Persisted" xml:space="preserve"><value>Your data is saved on this device and the browser will not clear it to free up space.</value></data>
   <data name="Storage_Unprotected" xml:space="preserve"><value>Your data is saved on this device, but the browser may clear it when space runs low. Sign in to keep a copy online.</value></data>
   <data name="Storage_Memory" xml:space="preserve"><value>Your data is only kept while the app is open. Sign in to keep a copy online.</value></data>
+  <data name="DialIn_Title" xml:space="preserve"><value>What to try next</value></data>
+  <data name="DialIn_Primary" xml:space="preserve"><value>Try first</value></data>
+  <data name="DialIn_Secondary" xml:space="preserve"><value>Or try</value></data>
+  <data name="DialIn_Kind_GrindFiner" xml:space="preserve"><value>Grind finer</value></data>
+  <data name="DialIn_Kind_GrindCoarser" xml:space="preserve"><value>Grind coarser</value></data>
+  <data name="DialIn_Kind_IncreaseDose" xml:space="preserve"><value>Use more coffee</value></data>
+  <data name="DialIn_Kind_DecreaseDose" xml:space="preserve"><value>Use less coffee</value></data>
+  <data name="DialIn_Kind_LongerRatio" xml:space="preserve"><value>Use more water or yield</value></data>
+  <data name="DialIn_Kind_ShorterRatio" xml:space="preserve"><value>Use less water or yield</value></data>
+  <data name="DialIn_Kind_HotterWater" xml:space="preserve"><value>Use hotter water</value></data>
+  <data name="DialIn_Kind_CoolerWater" xml:space="preserve"><value>Use cooler water</value></data>
+  <data name="DialIn_Kind_Keep" xml:space="preserve"><value>Keep this recipe</value></data>
+  <data name="DialIn_Reason_Sour" xml:space="preserve"><value>It tasted sour, which usually means too little extraction.</value></data>
+  <data name="DialIn_Reason_Bitter" xml:space="preserve"><value>It tasted bitter, which usually means too much extraction.</value></data>
+  <data name="DialIn_Reason_Weak" xml:space="preserve"><value>It was weak.</value></data>
+  <data name="DialIn_Reason_Strong" xml:space="preserve"><value>It was strong.</value></data>
+  <data name="DialIn_Reason_Thin" xml:space="preserve"><value>The body was thin.</value></data>
+  <data name="DialIn_Reason_Heavy" xml:space="preserve"><value>The body was heavy.</value></data>
+  <data name="DialIn_Reason_Flat" xml:space="preserve"><value>It lacked sweetness, which often means too little extraction.</value></data>
+  <data name="DialIn_Reason_ShotTooFast" xml:space="preserve"><value>The shot ran fast.</value></data>
+  <data name="DialIn_Reason_ShotTooSlow" xml:space="preserve"><value>The shot ran slow.</value></data>
+  <data name="DialIn_Reason_Balanced" xml:space="preserve"><value>The cup was balanced. Change one thing at a time if you want to explore.</value></data>
 </root>

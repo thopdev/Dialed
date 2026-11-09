@@ -686,6 +686,28 @@ button.dialed-chip::after {
     margin: 0;
 }
 
+/* ---- Dial-in advice (#85) -------------------------------------------------------------------- */
+
+.dialed-dialin-list {
+    display: grid;
+    gap: var(--dialed-space-3);
+    margin: var(--dialed-space-3) 0;
+    padding-left: var(--dialed-space-5);
+}
+
+.dialed-dialin-label {
+    margin: 0;
+    color: var(--colorNeutralForeground3);
+    font-size: var(--fontSizeBase200);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.dialed-dialin-action,
+.dialed-dialin-list .dialed-muted {
+    margin: 0;
+}
+
 /* ---- Equipment (#58) ------------------------------------------------------------------------- */
 
 .dialed-defaults-row {
