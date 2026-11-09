@@ -52,7 +52,7 @@ public sealed record CoffeeStatistics(
             Favourites(liveBrews, bagById, beanById, bean => bean.Origin.Country),
             Favourites(liveBrews, bagById, beanById, bean => bean.RoasterId is { } id && vendorById.TryGetValue(id, out var vendor) ? vendor.Name : null),
             Favourites(liveBrews, bagById, beanById, bean => bean.Process),
-            GrindTrends(liveBrews, equipment.Where(e => !e.Deleted && e.Kind == EquipmentKind.Grinder)),
+            GrindTrendsOf(liveBrews, equipment.Where(e => !e.Deleted && e.Kind == EquipmentKind.Grinder)),
             liveBrews.Count);
     }
 
@@ -90,7 +90,7 @@ public sealed record CoffeeStatistics(
             .OrderByDescending(f => f.Brews).ThenByDescending(f => f.AverageRating ?? 0).ThenBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
             .Take(Top)];
 
-    private static List<GrinderTrend> GrindTrends(List<Brew> brews, IEnumerable<EquipmentItem> grinders) =>
+    private static List<GrinderTrend> GrindTrendsOf(List<Brew> brews, IEnumerable<EquipmentItem> grinders) =>
         [.. grinders
             .Select(grinder => new GrinderTrend(
                 grinder.Id,
