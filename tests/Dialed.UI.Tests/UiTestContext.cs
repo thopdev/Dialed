@@ -175,16 +175,20 @@ public abstract class UiTestContext : BunitContext
 
         public List<string> Paths { get; } = [];
 
+        /// <summary>The request bodies, in order, next to <see cref="Paths"/>.</summary>
+        public List<string> Bodies { get; } = [];
+
         /// <summary>Overrides the answer for a path (<c>auth/signup</c>, ...); return <c>null</c> for the default answer.</summary>
         public Func<string, HttpResponseMessage?>? Respond { get; set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var path = request.RequestUri!.AbsolutePath.TrimStart('/');
             Paths.Add(path);
+            Bodies.Add(request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken));
             if (Respond?.Invoke(path) is { } custom)
             {
-                return Task.FromResult(custom);
+                return custom;
             }
 
             var json = path switch
@@ -193,10 +197,10 @@ public abstract class UiTestContext : BunitContext
                 "auth/signup" or "auth/signin" => TokensJson,
                 _ => "{}",
             };
-            return Task.FromResult(new HttpResponseMessage(path == "auth/signout" ? System.Net.HttpStatusCode.NoContent : System.Net.HttpStatusCode.OK)
+            return new HttpResponseMessage(path == "auth/signout" ? System.Net.HttpStatusCode.NoContent : System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
-            });
+            };
         }
     }
 

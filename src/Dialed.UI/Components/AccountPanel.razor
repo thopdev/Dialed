@@ -25,6 +25,11 @@
                 <label for="account-email">@L["Account_Email"]</label>
                 <input id="account-email" type="email" maxlength="256" autocomplete="username webauthn" @bind="email" @bind:event="oninput" />
             </div>
+            <div class="dialed-field">
+                <label for="account-invite">@L["Account_InviteCode"]</label>
+                <input id="account-invite" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" @bind="inviteCode" @bind:event="oninput" />
+                <p class="dialed-muted">@L["Account_InviteHint"]</p>
+            </div>
             <div class="dialed-form-actions">
                 <button id="account-signup" type="submit" class="dialed-button dialed-button-primary" disabled="@busy">@L["Account_SignUp"]</button>
                 <button id="account-signin" type="button" class="dialed-button" disabled="@busy" @onclick="SignInAsync">@L["Account_SignIn"]</button>
@@ -41,6 +46,7 @@
 @code {
     private string displayName = "";
     private string email = "";
+    private string inviteCode = "";
     private bool busy;
     private string? message;
 
@@ -56,7 +62,7 @@
             return;
         }
 
-        await RunAsync(() => Account.SignUpAsync(email.Trim(), displayName.Trim()));
+        await RunAsync(() => Account.SignUpAsync(email.Trim(), displayName.Trim(), inviteCode));
     }
 
     private Task SignInAsync() => RunAsync(() => Account.SignInAsync());

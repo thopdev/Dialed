@@ -6,7 +6,7 @@ namespace Dialed.Client.Account;
 /// <summary>Sign-up, sign-in and sign-out with passkeys: runs the ceremony between the platform and the API.</summary>
 public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, AuthSession session, SyncEngine engine, SyncCoordinator sync)
 {
-    public async Task<AccountResult> SignUpAsync(string email, string displayName, CancellationToken cancellationToken = default)
+    public async Task<AccountResult> SignUpAsync(string email, string displayName, string? inviteCode = null, CancellationToken cancellationToken = default)
     {
         if (!await passkeys.IsSupportedAsync())
         {
@@ -14,7 +14,7 @@ public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, Auth
         }
 
         return await RunAsync(
-            () => api.SignUpOptionsAsync(email, displayName, cancellationToken),
+            () => api.SignUpOptionsAsync(email, displayName, inviteCode, cancellationToken),
             options => passkeys.CreateAsync(options),
             (state, credential) => api.SignUpAsync(state, credential, cancellationToken),
             cancellationToken);

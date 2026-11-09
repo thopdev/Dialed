@@ -486,4 +486,6 @@
   <data name="DialIn_Reason_ShotTooFast" xml:space="preserve"><value>De shot liep snel.</value></data>
   <data name="DialIn_Reason_ShotTooSlow" xml:space="preserve"><value>De shot liep langzaam.</value></data>
   <data name="DialIn_Reason_Balanced" xml:space="preserve"><value>De kop was gebalanceerd. Verander één ding tegelijk als je wilt experimenteren.</value></data>
+  <data name="Account_InviteCode" xml:space="preserve"><value>Uitnodigingscode</value></data>
+  <data name="Account_InviteHint" xml:space="preserve"><value>Dialed zit in een besloten bèta: voor een account heb je een uitnodigingscode nodig.</value></data>
 </root>

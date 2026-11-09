@@ -14,8 +14,8 @@ public sealed class AccountApi(HttpClient http)
 
     private sealed record CeremonyDto(JsonElement Options, string State);
 
-    public Task<Ceremony> SignUpOptionsAsync(string email, string displayName, CancellationToken cancellationToken = default) =>
-        StartAsync("auth/signup/options", new { email, displayName }, cancellationToken);
+    public Task<Ceremony> SignUpOptionsAsync(string email, string displayName, string? inviteCode = null, CancellationToken cancellationToken = default) =>
+        StartAsync("auth/signup/options", new { email, displayName, inviteCode = string.IsNullOrWhiteSpace(inviteCode) ? null : inviteCode.Trim() }, cancellationToken);
 
     public Task<Ceremony> SignInOptionsAsync(CancellationToken cancellationToken = default) =>
         StartAsync("auth/signin/options", new { }, cancellationToken);
