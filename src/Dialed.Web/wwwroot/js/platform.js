@@ -377,6 +377,25 @@ export function errorReportingSave(value) {
     }
 }
 
+// ---- Preferences (#226): units, profile, setup done -------------------------------------------------
+const preferencesKey = 'dialed.preferences.v1';
+
+export function preferencesLoad() {
+    try {
+        return localStorage.getItem(preferencesKey);
+    } catch {
+        return null;
+    }
+}
+
+export function preferencesSave(json) {
+    try {
+        localStorage.setItem(preferencesKey, json);
+    } catch {
+        // blocked or full: the change lasts until the app closes
+    }
+}
+
 function deviceType() {
     const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
     const width = Math.min(window.screen?.width ?? 0, window.screen?.height ?? 0) || window.innerWidth;

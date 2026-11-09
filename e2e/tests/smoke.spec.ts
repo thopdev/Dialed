@@ -17,10 +17,13 @@ async function startApp(page: Page) {
   await expect(page).toHaveURL(/\/welcome$/, { timeout: 90_000 });
 }
 
+// Home greets by time of day ("Good morning", "Good evening, Alice").
+const homeGreeting = /^Good (morning|afternoon|evening)/;
+
 async function skipSetup(page: Page) {
   await startApp(page);
   await page.locator('#onboarding-skip').click();
-  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: homeGreeting })).toBeVisible();
 }
 
 async function addBeanAndBag(page: Page, beanName: string) {
@@ -50,7 +53,7 @@ test('first launch shows setup, which can be skipped', async ({ page }) => {
 
   await page.locator('#onboarding-skip').click();
 
-  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: homeGreeting })).toBeVisible();
   await expect(page.locator('#home-first-bean')).toBeVisible();
 });
 
@@ -102,7 +105,7 @@ test('keeps working offline and when the connection returns', async ({ page, con
 
   await context.setOffline(false);
   await page.getByRole('link', { name: 'Home', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: homeGreeting })).toBeVisible();
 });
 
 test('settings page opens with every section', async ({ page }) => {

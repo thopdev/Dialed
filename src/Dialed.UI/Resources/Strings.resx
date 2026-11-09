@@ -658,4 +658,26 @@
   <data name="Recipe_TimeShort" xml:space="preserve"><value>Time</value></data>
   <data name="Step_For" xml:space="preserve"><value>for {0} s</value></data>
   <data name="Version_Changes" xml:space="preserve"><value>Changes</value></data>
+  <data name="Home_GoodMorning" xml:space="preserve"><value>Good morning</value></data>
+  <data name="Home_GoodAfternoon" xml:space="preserve"><value>Good afternoon</value></data>
+  <data name="Home_GoodEvening" xml:space="preserve"><value>Good evening</value></data>
+  <data name="Home_GoodMorningName" xml:space="preserve"><value>Good morning, {0}</value></data>
+  <data name="Home_GoodAfternoonName" xml:space="preserve"><value>Good afternoon, {0}</value></data>
+  <data name="Home_GoodEveningName" xml:space="preserve"><value>Good evening, {0}</value></data>
+  <data name="Home_NoBrewsToday" xml:space="preserve"><value>No brews yet today.</value></data>
+  <data name="Home_BrewsTodayOne" xml:space="preserve"><value>{0} brew today, last at {1}.</value></data>
+  <data name="Home_BrewsToday" xml:space="preserve"><value>{0} brews today, last at {1}.</value></data>
+  <data name="Home_Recent" xml:space="preserve"><value>Recent brews</value></data>
+  <data name="Home_SeeAll" xml:space="preserve"><value>See all</value></data>
+  <data name="Home_RemainingOf" xml:space="preserve"><value>Coffee left in {0}</value></data>
+  <data name="Home_LeftOf" xml:space="preserve"><value>{0} of {1} left</value></data>
+  <data name="Brew_OfWeight" xml:space="preserve"><value>of {0}</value></data>
+  <data name="Brew_Days" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Brew_SinceRoast" xml:space="preserve"><value>Since roast</value></data>
+  <data name="Brew_SectionWhat" xml:space="preserve"><value>Method and drink</value></data>
+  <data name="Brew_SectionNumbers" xml:space="preserve"><value>Numbers</value></data>
+  <data name="Brew_SectionNotes" xml:space="preserve"><value>Photos and notes</value></data>
+  <data name="Brew_Ratio" xml:space="preserve"><value>Ratio</value></data>
+  <data name="Timer_Progress" xml:space="preserve"><value>Brew progress</value></data>
+  <data name="Timer_ProgressValue" xml:space="preserve"><value>{0} of {1}</value></data>
 </root>
