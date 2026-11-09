@@ -1,5 +1,6 @@
 @page "/bags"
 @page "/bags/{Id}"
+@using System.Globalization
 @using Dialed.Client.Data
 @using Dialed.Client.Preferences
 @using Dialed.Domain.Inventory
@@ -11,6 +12,7 @@
 @inject IRepository<Vendor> VendorStore
 @inject IRepository<Brew> BrewStore
 @inject UnitFormatter Units
+@inject IUserPreferences Preferences
 @inject NavigationManager Navigation
 @inject TimeProvider Time
 
@@ -28,7 +30,9 @@
         }
         else if (bags.Count == 0)
         {
-            <EmptyState Message="@L["Bags_Empty"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Bags_Empty"]">
+                <a class="dialed-button dialed-button-primary" href="bags/new">@L["Bags_New"]</a>
+            </EmptyState>
         }
         else
         {
@@ -46,7 +50,24 @@
                 <div class="dialed-list">
                     @foreach (var bag in Visible)
                     {
-                        <ListRow Title="@BeanName(bag.BeanId)" Subtitle="@Summary(bag)" Href="@($"bags/{bag.Id}")" />
+                        var item = StockOf(bag);
+                        <ListRow Title="@BeanName(bag.BeanId)" Subtitle="@Summary(bag)" Href="@($"bags/{bag.Id}")" data-bag="@bag.Id">
+                            <Leading><RoastThumb PhotoId="@BeanOf(bag)?.PhotoIds.FirstOrDefault()" Level="@BeanOf(bag)?.RoastLevel" /></Leading>
+                            <Below>
+                                @if (item is not null && bag.Status != BagStatus.Finished)
+                                {
+                                    <Meter Label="@string.Format(L["Stock_LeftIn"].Value, BeanName(bag.BeanId))" Fraction="@Fraction(item)"
+                                           Tone="@(item.IsLow ? Meter.MeterTone.Warning : Meter.MeterTone.Normal)"
+                                           ValueText="@string.Format(L["Stock_LeftOf"].Value, Units.Weight(item.RemainingG), Units.Weight(bag.WeightG))" />
+                                }
+                            </Below>
+                            <Trailing>
+                                @if (item is not null && bag.Status != BagStatus.Finished && item.Freshness != Freshness.Unknown)
+                                {
+                                    <span class="dialed-chip">@L[$"Fresh_{item.Freshness}"]</span>
+                                }
+                            </Trailing>
+                        </ListRow>
                     }
                 </div>
             }
@@ -55,7 +76,7 @@
     <Detail>
         @if (Id is null)
         {
-            <EmptyState Message="@L["Bags_SelectPrompt"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Bags_SelectPrompt"]" />
         }
         else if (Id == "new")
         {
@@ -76,8 +97,12 @@
         {
             <PageHeader Title="@BeanName(current.BeanId)" BackHref="bags">
                 <Actions>
-                    <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
-                    <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                    <button type="button" id="bag-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
+                        <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
+                    </button>
+                    <button type="button" id="bag-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="@(() => confirmingDelete = true)">
+                        <FluentIcon Value="@(new Icons.Regular.Size24.Delete())" Color="Color.Custom" CustomColor="currentColor" />
+                    </button>
                 </Actions>
             </PageHeader>
 
@@ -108,61 +133,84 @@
                 </div>
             }
 
-            <Card>
-                <ChipGroup Label="@L["Bag_Status"]"><Chip Selected="true">@L[$"BagStatus_{current.Status}"]</Chip></ChipGroup>
-                <dl class="dialed-facts">
-                    <dt>@L["Bag_Remaining"]</dt>
-                    <dd>@Units.Weight(BagInventory.Display(remaining)) / @Units.Weight(current.WeightG)</dd>
-                    @if (BagLifecycle.AgeDays(current, Today) is { } age)
+            <Card class="dialed-card dialed-bag-summary" id="bag-summary">
+                <div class="dialed-bag-summary-top">
+                    <RoastThumb PhotoId="@BeanOf(current)?.PhotoIds.FirstOrDefault()" Level="@BeanOf(current)?.RoastLevel" Size="72" />
+                    <div>
+                        <span class="dialed-chip dialed-chip-status" id="bag-status">@L[$"BagStatus_{current.Status}"]</span>
+                        <p class="dialed-muted dialed-bag-storage">@L[$"BagStorage_{current.Storage}"]</p>
+                    </div>
+                </div>
+                <div class="dialed-stat-grid">
+                    <StatTile Value="@Units.Weight(BagInventory.Display(remaining))" Label="@L["Bag_Remaining"]" Hint="@string.Format(L["Bag_OfWeight"].Value, Units.Weight(current.WeightG))" />
+                    @if (BagLifecycle.AgeDays(current, Today) is { } ageDays)
                     {
-                        <dt>@L["Bag_Age"]</dt>
-                        <dd>@string.Format(L["Bag_AgeDays"].Value, age)</dd>
+                        <StatTile Value="@string.Format(L["Bag_DaysShort"].Value, ageDays)" Label="@L["Bag_Age"]" Hint="@(current.FrozenDays > 0 || current.Status == BagStatus.Frozen ? L["Bag_AgeFrozenHint"].Value : null)" />
                     }
-                    @if (SellerName(current) is { } seller)
+                    @if (current.PriceCents is { } priceCents)
                     {
-                        <dt>@L["Bag_Seller"]</dt>
-                        <dd><a href="@($"vendors/{current.SellerId}")">@seller</a></dd>
+                        <StatTile Value="@Price(priceCents, current.Currency)" Label="@L["Bag_PriceShort"]" />
                     }
-                    @if (current.PriceCents is { } cents)
-                    {
-                        <dt>@L["Bag_Price"]</dt>
-                        <dd>@((cents / 100m).ToString("0.00")) @current.Currency</dd>
-                    }
-                    @DateFact("Bag_RoastDate", current.RoastDate)
-                    @DateFact("Bag_PurchasedOn", current.PurchasedOn)
-                    @DateFact("Bag_OpenedOn", current.OpenedOn)
-                    @DateFact("Bag_FrozenSince", current.FrozenOn)
-                    @DateFact("Bag_FinishedOn", current.FinishedOn)
-                    <dt>@L["Bag_Storage"]</dt>
-                    <dd>@L[$"BagStorage_{current.Storage}"]</dd>
-                </dl>
+                </div>
+                @if (current.Status != BagStatus.Finished)
+                {
+                    <Meter Label="@L["Bag_Remaining"]" Fraction="@(current.WeightG > 0 ? (double)(BagInventory.Display(remaining) / current.WeightG) : 0)"
+                           Tone="@(BagInventory.Display(remaining) < Preferences.Inventory.LowStockG ? Meter.MeterTone.Warning : Meter.MeterTone.Normal)"
+                           ValueText="@string.Format(L["Stock_LeftOf"].Value, Units.Weight(BagInventory.Display(remaining)), Units.Weight(current.WeightG))" />
+                }
             </Card>
+
+            @if (current.Status != BagStatus.Finished && BagLifecycle.AgeDays(current, Today) is { } age)
+            {
+                <SectionHeader Title="@L["Bag_Freshness"]" />
+                <FreshnessTimeline Id="bag-freshness" AgeDays="age" Window="@Preferences.Inventory.RestWindows.For(BeanOf(current)?.RoastLevel)" RestDaysOverride="current.RestDaysOverride" />
+            }
+
+            <SectionHeader Title="@L["Bag_Details"]" />
+            <dl class="dialed-facts" id="bag-facts">
+                @if (SellerName(current) is { } seller)
+                {
+                    <dt>@L["Bag_Seller"]</dt>
+                    <dd><a href="@($"vendors/{current.SellerId}")">@seller</a></dd>
+                }
+                @DateFact("Bag_RoastDate", current.RoastDate)
+                @DateFact("Bag_PurchasedOn", current.PurchasedOn)
+                @DateFact("Bag_OpenedOn", current.OpenedOn)
+                @DateFact("Bag_FrozenSince", current.FrozenOn)
+                @DateFact("Bag_FinishedOn", current.FinishedOn)
+            </dl>
 
             @if (current.Status != BagStatus.Finished)
             {
-                <div class="dialed-field">
-                    <label for="bag-step-date">@L["Bag_StepDate"]</label>
-                    <input id="bag-step-date" type="date" @bind="stepDate" />
-                </div>
-                <div class="dialed-form-actions">
-                    @if (BagLifecycle.CanOpen(current))
-                    {
-                        <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryOpen))">@L["Bag_Open"]</button>
-                    }
-                    @if (BagLifecycle.CanFreeze(current))
-                    {
-                        <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryFreeze))">@L["Bag_Freeze"]</button>
-                    }
-                    @if (BagLifecycle.CanThaw(current))
-                    {
-                        <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryThaw))">@L["Bag_Thaw"]</button>
-                    }
-                    <button type="button" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryFinish))">@L["Bag_Finish"]</button>
+                <SectionHeader Title="@L["Bag_NextStep"]" />
+                <div class="dialed-bag-steps">
+                    <div class="dialed-field">
+                        <label for="bag-step-date">@L["Bag_StepDate"]</label>
+                        <input id="bag-step-date" type="date" @bind="stepDate" />
+                    </div>
+                    <div class="dialed-form-actions">
+                        @if (BagLifecycle.CanOpen(current))
+                        {
+                            <button type="button" id="bag-open" class="dialed-button dialed-button-primary" @onclick="@(() => Step(BagLifecycle.TryOpen))">@L["Bag_Open"]</button>
+                        }
+                        @if (BagLifecycle.CanFreeze(current))
+                        {
+                            <button type="button" id="bag-freeze" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryFreeze))">@L["Bag_Freeze"]</button>
+                        }
+                        @if (BagLifecycle.CanThaw(current))
+                        {
+                            <button type="button" id="bag-thaw" class="dialed-button dialed-button-primary" @onclick="@(() => Step(BagLifecycle.TryThaw))">@L["Bag_Thaw"]</button>
+                        }
+                        <button type="button" id="bag-finish" class="dialed-button" @onclick="@(() => Step(BagLifecycle.TryFinish))">@L["Bag_Finish"]</button>
+                    </div>
                 </div>
             }
 
-            <div class="dialed-form-actions">
-                <button type="button" class="dialed-button" @onclick="BoughtAgainAsync">@L["Bag_BoughtAgain"]</button>
+            <div class="dialed-form-actions dialed-bag-again">
+                <button type="button" id="bag-bought-again" class="dialed-button dialed-button-icon" @onclick="BoughtAgainAsync">
+                    <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size20.ArrowRepeatAll())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                    @L["Bag_BoughtAgain"]
+                </button>
             </div>
         }
     </Detail>
@@ -175,6 +223,7 @@
     private IReadOnlyList<Bean> beans = [];
     private IReadOnlyList<Vendor> vendors = [];
     private IReadOnlyList<Brew> brews = [];
+    private Dictionary<string, BagStock> stockByBag = [];
     private Bag? current;
     private decimal remaining;
     private bool showFinished;
@@ -203,7 +252,7 @@
         if (date is { } value)
         {
             <dt>@L[labelKey]</dt>
-            <dd>@value.ToString("yyyy-MM-dd")</dd>
+            <dd>@value.ToString("d MMM yyyy", CultureInfo.CurrentCulture)</dd>
         }
     };
 
@@ -233,6 +282,7 @@
         current = Id is null or "new" ? null : bags.FirstOrDefault(bag => bag.Id == Id);
 
         brews = await BrewStore.ListAsync();
+        stockByBag = InventoryOverview.Build(bags, beans, brews, Today, Preferences.Inventory).ToDictionary(s => s.Bag.Id);
         remaining = current is null ? 0m : BagInventory.Remaining(current.WeightG, brews.Where(b => b.BagId == current.Id && !b.Deleted).Select(b => b.DoseG), []);
     }
 
@@ -249,6 +299,15 @@
 
     private string BeanName(string beanId) => beans.FirstOrDefault(bean => bean.Id == beanId)?.Name ?? L["Bag_UnknownBean"].Value;
 
+    private BagStock? StockOf(Bag bag) => stockByBag.GetValueOrDefault(bag.Id);
+
+    private Bean? BeanOf(Bag bag) => beans.FirstOrDefault(bean => bean.Id == bag.BeanId);
+
+    private static double Fraction(BagStock item) => item.Bag.WeightG > 0 ? (double)(item.RemainingG / item.Bag.WeightG) : 0;
+
+    private static string Price(int cents, string? currency) =>
+        $"{(cents / 100m).ToString("N2", CultureInfo.CurrentCulture)} {currency}".Trim();
+
     private string? SellerName(Bag bag) => vendors.FirstOrDefault(vendor => vendor.Id == bag.SellerId)?.Name;
 
     private string Summary(Bag bag)
@@ -256,7 +315,7 @@
         var parts = new List<string> { Units.Weight(bag.WeightG), L[$"BagStatus_{bag.Status}"].Value };
         if (BagLifecycle.AgeDays(bag, Today) is { } age && bag.Status != BagStatus.Finished)
         {
-            parts.Add(string.Format(L["Bag_AgeDays"].Value, age));
+            parts.Add(string.Format(L["Bag_AgeShort"].Value, age));
         }
 
         return string.Join(" · ", parts);

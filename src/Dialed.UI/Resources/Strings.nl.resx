@@ -676,6 +676,39 @@
   <data name="Settings_GroupHousehold" xml:space="preserve"><value>Huishouden</value></data>
   <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="People_State_Waiting" xml:space="preserve"><value>Wacht op antwoord</value></data>
+  <data name="Beans_Filters" xml:space="preserve"><value>Filters</value></data>
+  <data name="Beans_FiltersCount" xml:space="preserve"><value>Filters ({0})</value></data>
+  <data name="Beans_BagsInStockOne" xml:space="preserve"><value>{0} zak</value></data>
+  <data name="Beans_BagsInStock" xml:space="preserve"><value>{0} zakken</value></data>
+  <data name="Bean_AltitudeShort" xml:space="preserve"><value>Hoogte</value></data>
+  <data name="Bean_AltitudeRange" xml:space="preserve"><value>Vul een hoogte tussen 0 en 5000 m in.</value></data>
+  <data name="Bean_BestRecipeLabel" xml:space="preserve"><value>Beste recept</value></data>
+  <data name="Bean_RecentBrews" xml:space="preserve"><value>Recent gezet</value></data>
+  <data name="Bag_RoastedOn" xml:space="preserve"><value>Gebrand {0}</value></data>
+  <data name="Bag_OfWeight" xml:space="preserve"><value>van {0}</value></data>
+  <data name="Bag_DaysShort" xml:space="preserve"><value>{0} d</value></data>
+  <data name="Bag_AgeShort" xml:space="preserve"><value>{0} dagen oud</value></data>
+  <data name="Bag_AgeFrozenHint" xml:space="preserve"><value>zonder de tijd in de vriezer</value></data>
+  <data name="Bag_Freshness" xml:space="preserve"><value>Versheid</value></data>
+  <data name="Bag_Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Bag_NextStep" xml:space="preserve"><value>Volgende stap</value></data>
+  <data name="Stock_LeftIn" xml:space="preserve"><value>Koffie over in {0}</value></data>
+  <data name="Stock_LeftOf" xml:space="preserve"><value>{0} van {1} over</value></data>
+  <data name="Stock_Count" xml:space="preserve"><value>{0} zakken</value></data>
+  <data name="Freshness_Timeline" xml:space="preserve"><value>{0} dagen na branden: {1}. Klaar vanaf dag {2}, minder vers na dag {3}.</value></data>
+  <data name="Freshness_State_Resting" xml:space="preserve"><value>rust nog</value></data>
+  <data name="Freshness_State_Peak" xml:space="preserve"><value>op zijn best</value></data>
+  <data name="Freshness_State_Past" xml:space="preserve"><value>over zijn best</value></data>
+  <data name="Freshness_State_Unknown" xml:space="preserve"><value>onbekend</value></data>
+  <data name="BeanForm_SectionBean" xml:space="preserve"><value>Boon</value></data>
+  <data name="BeanForm_SectionOrigin" xml:space="preserve"><value>Herkomst</value></data>
+  <data name="BeanForm_SectionRoast" xml:space="preserve"><value>Branding</value></data>
+  <data name="BeanForm_SectionTasting" xml:space="preserve"><value>Smaak</value></data>
+  <data name="BeanForm_SectionSharing" xml:space="preserve"><value>Delen</value></data>
+  <data name="BagForm_SectionBag" xml:space="preserve"><value>Zak</value></data>
+  <data name="BagForm_SectionPurchase" xml:space="preserve"><value>Aankoop</value></data>
+  <data name="BagForm_SectionStorage" xml:space="preserve"><value>Bewaren</value></data>
+  <data name="Bag_PriceShort" xml:space="preserve"><value>Prijs</value></data>
   <data name="Home_GoodMorning" xml:space="preserve"><value>Goedemorgen</value></data>
   <data name="Home_GoodAfternoon" xml:space="preserve"><value>Goedemiddag</value></data>
   <data name="Home_GoodEvening" xml:space="preserve"><value>Goedenavond</value></data>
