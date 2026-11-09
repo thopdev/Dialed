@@ -998,3 +998,41 @@ button.dialed-chip::after {
         border: 1px solid CanvasText;
     }
 }
+
+/* ---- Statistics (#101) --------------------------------------------------------------------- */
+
+.dialed-stat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-bars {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-bars li {
+    display: grid;
+    grid-template-columns: 5rem 1fr 4.5rem;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-bar {
+    display: block;
+    height: 0.75rem;
+    min-width: 2px;
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorBrandBackground, #6f4e37);
+}
+
+.dialed-bar-value {
+    text-align: end;
+    font-size: var(--dialed-text-s);
+}

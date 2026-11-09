@@ -1,0 +1,34 @@
+@using System.Globalization
+@using Dialed.Domain.Statistics
+@inject IStringLocalizer<Strings> L
+
+<section id="@Id">
+    <h2>@Title</h2>
+    @if (Items.Count == 0)
+    {
+        <p class="dialed-muted">@L["Stats_NothingYet"]</p>
+    }
+    else
+    {
+        <ol class="dialed-list">
+            @foreach (var item in Items)
+            {
+                <li class="dialed-stat-row">
+                    <span>@item.Name</span>
+                    <span>@L["Stats_BrewsCount", item.Brews]@(item.AverageRating is { } rating ? $" · {rating.ToString("0.0", CultureInfo.CurrentCulture)} ★" : "")</span>
+                </li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Id { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Favourite> Items { get; set; } = [];
+}
