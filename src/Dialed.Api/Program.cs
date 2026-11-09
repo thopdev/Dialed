@@ -32,6 +32,7 @@ builder.Services.AddDevelopmentSeeding(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseSecurityHeaders();
 app.UseCors();
 app.UseRequestSizeLimit();
 app.UseAuthentication();

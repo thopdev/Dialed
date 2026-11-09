@@ -1,0 +1,24 @@
+# Security review before the private beta (#93)
+
+Checklist from #93. Status as of 2026-11-09. "Needs Azure" items cannot be verified until the Azure environment exists.
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| Authorization on every endpoint | Done | `SecurityTests.Every_endpoint_requires_a_signed_in_user_unless_it_is_listed_as_open_on_purpose` fails when an endpoint is added without authorization and without being listed as open on purpose. Role, visibility, follow and block rules have their own tests (`HouseholdTests`, `MultiHouseholdTests`, `VisibilityTests`, `FriendTests`, `DeleteAccountTests`). |
+| Passkey config (RP ID, origins) | Done | RP ID derived from an allow-listed origin only (`OriginPolicy`); ceremony state is protected, single-use and bound to the origin. |
+| Recovery flows | Done | Recovery codes are hashed, shown once, single use. Email codes: hashed, 15 minutes, 5 guesses, one email per minute per account. After 10 wrong codes in 15 minutes recovery is paused for the account. Recovery ends all old sessions. Unknown emails get the same answer. |
+| Rate limits | Done | Per address on `/auth` (covers sign-up, sign-in, recovery), per user on `/friends`, `/ai` and the rest. |
+| CORS | Done | Only configured app origins (`App:Origins`, patterns for dev tunnels). |
+| API response headers | Done | `nosniff`, `Referrer-Policy: no-referrer`, a closed CSP, `Cache-Control: no-store` on everything personal, HSTS (off only in local development). |
+| CSP on the PWA | Partly | Delivered as `Content-Security-Policy-Report-Only` in `staticwebapp.config.json`. Enforce it after a pass on a real iPhone/Safari without violations (issue filed). |
+| HTTPS | Needs Azure | Container Apps ingress terminates TLS; verify HTTP is redirected once deployed. |
+| SAS scope and expiry, Key Vault, managed identities | Needs Azure | Photos are not stored yet (#68/#69); check when they are. |
+| Dependabot alerts | Open | #183 and the earlier ones are for the owner to merge. |
+| Token lifetimes | Checked | Short access token, rotating refresh tokens with reuse detection; all sessions are revoked on recovery and on account deletion. |
+| Logs without personal data | Checked | No log call includes an email, name, token or code (the email stand-in logs only the subject). Keep it so: review new `Log*` calls. |
+
+## Known limits (filed as issues)
+
+- Recovery lockout and email cooldown are in memory per instance; they move to the database with Cosmos DB.
+- Recovery codes are 40 bits; with the lockout and rate limits guessing is not practical, but the length can grow if needed.
+- The CSP is report-only until verified on devices.
