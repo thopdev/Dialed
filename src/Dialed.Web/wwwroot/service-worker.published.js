@@ -16,7 +16,7 @@ self.addEventListener('message', event => {
 const cacheNamePrefix = 'offline-cache-';
 const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
 const offlineAssetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.webmanifest$/];
-const offlineAssetsExclude = [/^service-worker\.js$/];
+const offlineAssetsExclude = [/^service-worker\.js$/, /^icons\/splash\//]; // splash screens are only used by iOS at launch; keep them out of the offline cache
 
 // Replace with the real base path if the app is hosted below the root.
 const base = '/';

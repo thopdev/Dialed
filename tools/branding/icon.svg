@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Dialed app icon: a coffee bean on espresso brown. Regenerate the PNGs with tools/branding/generate.py -->
+  <rect width="512" height="512" fill="#6F4E37"/>
+  <g transform="rotate(32 256 256)">
+    <ellipse cx="256" cy="256" rx="124" ry="168" fill="#F4ECE0"/>
+    <path d="M256 96 C 214 160, 298 208, 256 262 C 214 316, 298 352, 256 416" fill="none" stroke="#6F4E37" stroke-width="18" stroke-linecap="round"/>
+  </g>
+</svg>
