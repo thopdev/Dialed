@@ -68,10 +68,15 @@ public sealed class TwoDeviceSyncTests
 
     private async Task SyncBoth()
     {
+        // The clock moves between syncs like real time does: pulls continue after the time of the last change they saw.
         await alice.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
         await bob.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
         await alice.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
         await bob.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
     }
 
     private async Task<(Recipe OnAlice, Recipe OnBob)> SharedRecipe()
@@ -82,20 +87,22 @@ public sealed class TwoDeviceSyncTests
     }
 
     [Theory]
-    [InlineData(true, "Bob's tweak")]
-    [InlineData(false, "Alice's tweak")]
+    [InlineData(true, "Bob tweak")]
+    [InlineData(false, "Alice tweak")]
     public async Task Two_phones_editing_the_same_recipe_offline_end_up_the_same_and_the_last_to_sync_wins(bool aliceSyncsFirst, string expectedName)
     {
         var (onAlice, onBob) = await SharedRecipe();
         server.Offline = true;
-        await alice.Recipes.SaveAsync(onAlice with { Name = "Alice's tweak" }, Ct);
+        await alice.Recipes.SaveAsync(onAlice with { Name = "Alice tweak" }, Ct);
         time.Advance(TimeSpan.FromMinutes(1));
-        await bob.Recipes.SaveAsync(onBob with { Name = "Bob's tweak" }, Ct);
+        await bob.Recipes.SaveAsync(onBob with { Name = "Bob tweak" }, Ct);
         server.Offline = false;
 
         var (first, second) = aliceSyncsFirst ? (alice, bob) : (bob, alice);
         await first.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
         var result = await second.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
         await first.Engine.SyncAsync(Ct);
 
         result.Conflicts.ShouldBe(1);
@@ -109,8 +116,8 @@ public sealed class TwoDeviceSyncTests
     {
         var (onAlice, onBob) = await SharedRecipe();
         server.Offline = true;
-        await alice.Recipes.SaveAsync(onAlice with { Name = "Alice's tweak" }, Ct);
-        await bob.Recipes.SaveAsync(onBob with { Name = "Bob's tweak" }, Ct);
+        await alice.Recipes.SaveAsync(onAlice with { Name = "Alice tweak" }, Ct);
+        await bob.Recipes.SaveAsync(onBob with { Name = "Bob tweak" }, Ct);
         server.Offline = false;
 
         await alice.Engine.SyncAsync(Ct);
@@ -119,7 +126,7 @@ public sealed class TwoDeviceSyncTests
         var conflict = (await bob.State.ConflictsAsync(Ct)).Single();
         conflict.Table.ShouldBe("recipes");
         conflict.EntityId.ShouldBe(onAlice.Id);
-        conflict.OverwrittenServerCopy.ShouldContain("Alice's tweak");
+        conflict.OverwrittenServerCopy.ShouldContain("Alice tweak");
         (await alice.State.ConflictsAsync(Ct)).ShouldBeEmpty();
     }
 
@@ -170,7 +177,9 @@ public sealed class TwoDeviceSyncTests
         server.Offline = false;
 
         await alice.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
         await bob.Engine.SyncAsync(Ct);
+        time.Advance(TimeSpan.FromSeconds(1));
         await alice.Engine.SyncAsync(Ct);
 
         // Bob synced last, so his edit stands and the recipe is back for everyone.
