@@ -1,5 +1,221 @@
 @page "/people"
+@using Dialed.Client.Account
+@using Dialed.Client.Friends
+@implements IDisposable
+@inject FriendsApi Friends
+@inject AuthSession Session
 @inject IStringLocalizer<Strings> L
 
 <PageHeader Title="@L["Nav_People"]" />
-<EmptyState Message="@L["People_Empty"]" />
+
+@if (!Session.IsSignedIn)
+{
+    <EmptyState Message="@L["People_SignInFirst"]" />
+}
+else
+{
+    <section id="people-code">
+        <h2>@L["People_YourCode"]</h2>
+        <p class="dialed-muted">@L["People_YourCodeHint"]</p>
+        <p><strong id="people-my-code" class="dialed-code">@(myCode ?? "…")</strong></p>
+        <div class="dialed-form-actions">
+            <button id="people-rotate" type="button" class="dialed-button" disabled="@busy" @onclick="RotateAsync">@L["People_NewCode"]</button>
+        </div>
+    </section>
+
+    <section id="people-follow">
+        <h2>@L["People_Follow"]</h2>
+        <form class="dialed-form" @onsubmit="FollowAsync" @onsubmit:preventDefault>
+            <div class="dialed-field">
+                <label for="people-follow-code">@L["People_FriendCode"]</label>
+                <input id="people-follow-code" type="text" maxlength="16" autocomplete="off" autocapitalize="characters" @bind="followCode" @bind:event="oninput" />
+            </div>
+            <div class="dialed-form-actions">
+                <button id="people-follow-submit" type="submit" class="dialed-button dialed-button-primary" disabled="@(busy || string.IsNullOrWhiteSpace(followCode))">@L["People_SendRequest"]</button>
+            </div>
+        </form>
+    </section>
+
+    @if (message is not null)
+    {
+        <p id="people-message" role="status">@message</p>
+    }
+
+    @if (loadFailed)
+    {
+        <p id="people-offline" class="dialed-muted">@L["People_Offline"]</p>
+        <button id="people-retry" type="button" class="dialed-button" @onclick="LoadAsync">@L["Error_Retry"]</button>
+    }
+    else if (requests is not null)
+    {
+        <section id="people-requests">
+            <h2>@L["People_Requests"]</h2>
+            @if (requests.Count == 0)
+            {
+                <p class="dialed-muted">@L["People_NoRequests"]</p>
+            }
+            <ul class="dialed-list">
+                @foreach (var person in requests)
+                {
+                    <li class="people-request" data-user="@person.UserId">
+                        <span>@person.DisplayName</span>
+                        <button type="button" class="dialed-button dialed-button-primary people-accept" disabled="@busy" @onclick="() => AcceptAsync(person)">@L["People_Accept"]</button>
+                        <button type="button" class="dialed-button people-decline" disabled="@busy" @onclick="() => DeclineAsync(person)">@L["People_Decline"]</button>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <section id="people-following">
+            <h2>@L["People_Following"]</h2>
+            @if (following!.Count == 0 && pending!.Count == 0)
+            {
+                <p class="dialed-muted">@L["People_NoFollowing"]</p>
+            }
+            <ul class="dialed-list">
+                @foreach (var person in following)
+                {
+                    <li class="people-followed" data-user="@person.UserId">
+                        <a href="people/@person.UserId">@person.DisplayName</a>
+                        <button type="button" class="dialed-button people-unfollow" disabled="@busy" @onclick="() => UnfollowAsync(person)">@L["People_Unfollow"]</button>
+                    </li>
+                }
+                @foreach (var person in pending)
+                {
+                    <li class="people-pending" data-user="@person.UserId">
+                        <span>@person.DisplayName · @L["People_Waiting"]</span>
+                        <button type="button" class="dialed-button people-cancel" disabled="@busy" @onclick="() => UnfollowAsync(person)">@L["Cancel"]</button>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <section id="people-followers">
+            <h2>@L["People_Followers"]</h2>
+            @if (followers!.Count == 0)
+            {
+                <p class="dialed-muted">@L["People_NoFollowers"]</p>
+            }
+            <ul class="dialed-list">
+                @foreach (var person in followers)
+                {
+                    <li class="people-follower" data-user="@person.UserId">
+                        <span>@person.DisplayName</span>
+                        <button type="button" class="dialed-button people-remove" disabled="@busy" @onclick="() => RemoveFollowerAsync(person)">@L["People_RemoveFollower"]</button>
+                        <button type="button" class="dialed-button dialed-button-danger people-block" disabled="@busy" @onclick="() => BlockAsync(person)">@L["People_Block"]</button>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        @if (blocked!.Count > 0)
+        {
+            <section id="people-blocked">
+                <h2>@L["People_Blocked"]</h2>
+                <ul class="dialed-list">
+                    @foreach (var person in blocked)
+                    {
+                        <li class="people-blocked-person" data-user="@person.UserId">
+                            <span>@person.DisplayName</span>
+                            <button type="button" class="dialed-button people-unblock" disabled="@busy" @onclick="() => UnblockAsync(person)">@L["People_Unblock"]</button>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+    }
+}
+
+@code {
+    private string? myCode;
+    private string followCode = "";
+    private string? message;
+    private bool busy;
+    private bool loadFailed;
+    private IReadOnlyList<Person>? requests, following, pending, followers, blocked;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        if (Session.IsSignedIn)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        if (Session.IsSignedIn && requests is null)
+        {
+            await LoadAsync();
+        }
+
+        StateHasChanged();
+    });
+
+    private async Task LoadAsync()
+    {
+        loadFailed = false;
+        try
+        {
+            myCode = await Friends.GetCodeAsync();
+            requests = await Friends.RequestsAsync();
+            following = await Friends.FollowingAsync();
+            pending = await Friends.PendingFollowingAsync();
+            followers = await Friends.FollowersAsync();
+            blocked = await Friends.BlockedAsync();
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            loadFailed = true;
+        }
+    }
+
+    private async Task RunAsync(Func<Task> action, string? done = null)
+    {
+        busy = true;
+        message = null;
+        try
+        {
+            await action();
+            await LoadAsync();
+            message = done;
+        }
+        catch (AccountRefusedException e)
+        {
+            message = e.Message;
+        }
+        catch (AccountApiException)
+        {
+            message = L["Account_Unavailable"];
+        }
+
+        busy = false;
+    }
+
+    private async Task RotateAsync() => await RunAsync(async () => myCode = await Friends.RotateCodeAsync(), L["People_CodeRotated"]);
+
+    private async Task FollowAsync()
+    {
+        var code = followCode.Trim();
+        await RunAsync(async () =>
+        {
+            await Friends.FollowAsync(code);
+            followCode = "";
+        }, L["People_RequestSent"]);
+    }
+
+    private Task AcceptAsync(Person person) => RunAsync(() => Friends.AcceptAsync(person.UserId));
+
+    private Task DeclineAsync(Person person) => RunAsync(() => Friends.DeclineAsync(person.UserId));
+
+    private Task UnfollowAsync(Person person) => RunAsync(() => Friends.UnfollowAsync(person.UserId));
+
+    private Task RemoveFollowerAsync(Person person) => RunAsync(() => Friends.RemoveFollowerAsync(person.UserId));
+
+    private Task BlockAsync(Person person) => RunAsync(() => Friends.BlockAsync(person.UserId));
+
+    private Task UnblockAsync(Person person) => RunAsync(() => Friends.UnblockAsync(person.UserId));
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

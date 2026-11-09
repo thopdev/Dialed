@@ -1,0 +1,148 @@
+@page "/people/{UserId}"
+@using System.Text.Json
+@using Dialed.Client.Account
+@using Dialed.Client.Friends
+@inject FriendsApi Friends
+@inject IStringLocalizer<Strings> L
+
+<PageHeader Title="@(profile?.DisplayName ?? L["Nav_People"].Value)" BackHref="people" />
+
+@if (loading)
+{
+    <Loading IsLoading="true" />
+}
+else if (profile is null)
+{
+    <EmptyState Message="@L[offline ? "People_Offline" : "People_ProfileUnavailable"]" />
+    @if (offline)
+    {
+        <button id="friend-retry" type="button" class="dialed-button" @onclick="LoadAsync">@L["Error_Retry"]</button>
+    }
+}
+else
+{
+    @if (offline)
+    {
+        <p id="friend-offline" class="dialed-muted" role="status">@L["People_ShowingSaved"]</p>
+    }
+
+    <header id="friend-header" class="dialed-person">
+        <span class="dialed-avatar" aria-hidden="true">@Initial(profile.DisplayName)</span>
+        <strong id="friend-name">@profile.DisplayName</strong>
+        <span id="friend-counts" class="dialed-muted">@string.Format(L["People_Counts"].Value, profile.Beans, profile.Recipes, profile.Brews, profile.Followers)</span>
+    </header>
+
+    <div role="tablist" class="dialed-tabs">
+        @foreach (var tab in Tabs)
+        {
+            <button type="button" role="tab" id="friend-tab-@tab" class="dialed-button @(tab == current ? "dialed-button-primary" : "")" aria-selected="@(tab == current)" @onclick="() => SelectAsync(tab)">@L[$"People_Tab_{tab}"]</button>
+        }
+    </div>
+
+    @if (page is null)
+    {
+        <Loading IsLoading="true" />
+    }
+    else if (items.Count == 0)
+    {
+        <EmptyState Message="@L["People_NothingShared"]" />
+    }
+    else
+    {
+        <ul id="friend-items" class="dialed-list">
+            @foreach (var item in items)
+            {
+                <li class="friend-item">@Title(item)</li>
+            }
+        </ul>
+        @if (page.HasMore)
+        {
+            <button id="friend-more" type="button" class="dialed-button" disabled="@busy" @onclick="MoreAsync">@L["People_LoadMore"]</button>
+        }
+    }
+}
+
+@code {
+    private static readonly string[] Tabs = ["beans", "recipes", "brews"];
+
+    [Parameter]
+    public string UserId { get; set; } = "";
+
+    private FriendProfile? profile;
+    private SharedPage? page;
+    private readonly List<JsonElement> items = [];
+    private string current = "beans";
+    private bool loading = true;
+    private bool offline;
+    private bool busy;
+
+    protected override async Task OnParametersSetAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        offline = false;
+        try
+        {
+            profile = await Friends.ProfileAsync(UserId);
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            // No network: show what was seen last time, if anything.
+            offline = true;
+            profile = Friends.CachedProfile(UserId);
+        }
+
+        loading = false;
+        if (profile is not null)
+        {
+            await SelectAsync(current);
+        }
+    }
+
+    private async Task SelectAsync(string tab)
+    {
+        current = tab;
+        page = null;
+        items.Clear();
+        try
+        {
+            page = await Friends.SharedAsync(UserId, tab, 0) ?? new SharedPage([], 0, false);
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            offline = true;
+            page = Friends.CachedFirstPage(UserId, tab) ?? new SharedPage([], 0, false);
+        }
+
+        items.AddRange(page.Items);
+    }
+
+    private async Task MoreAsync()
+    {
+        busy = true;
+        try
+        {
+            if (await Friends.SharedAsync(UserId, current, items.Count) is { } next)
+            {
+                items.AddRange(next.Items);
+                page = next;
+            }
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            offline = true;
+        }
+
+        busy = false;
+    }
+
+    private static string Initial(string name) => string.IsNullOrWhiteSpace(name) ? "?" : name.Trim()[..1].ToUpperInvariant();
+
+    private static string Title(JsonElement item)
+    {
+        static string? Text(JsonElement e, string name) => e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+        return Text(item, "name") ?? Text(item, "methodCode") ?? Text(item, "id") ?? "";
+    }
+}

@@ -494,4 +494,36 @@
   <data name="Account_DeleteBody" xml:space="preserve"><value>Je account, inlogsessies en vriendverbindingen worden verwijderd. Een huishouden waarin je alleen zit wordt met alle gegevens verwijderd; in een gedeeld huishouden blijven je items bestaan, maar zonder je naam. Dit kan niet ongedaan worden gemaakt.</value></data>
   <data name="Account_DeletePasskeyNote" xml:space="preserve"><value>Je bevestigt met je passkey. De passkey zelf blijft in je wachtwoordmanager of sleutelhanger; die kun je daar verwijderen.</value></data>
   <data name="Account_DeleteConfirm" xml:space="preserve"><value>Account en gegevens verwijderen</value></data>
+  <data name="People_SignInFirst" xml:space="preserve"><value>Log in om vrienden te volgen en te zien wat ze delen.</value></data>
+  <data name="People_YourCode" xml:space="preserve"><value>Jouw vriendcode</value></data>
+  <data name="People_YourCodeHint" xml:space="preserve"><value>Deel deze code zodat iemand je kan vragen om te volgen. Jij bepaalt wie je accepteert.</value></data>
+  <data name="People_NewCode" xml:space="preserve"><value>Nieuwe code maken</value></data>
+  <data name="People_CodeRotated" xml:space="preserve"><value>Nieuwe code gemaakt. De oude werkt niet meer.</value></data>
+  <data name="People_Follow" xml:space="preserve"><value>Een vriend volgen</value></data>
+  <data name="People_FriendCode" xml:space="preserve"><value>Vriendcode</value></data>
+  <data name="People_SendRequest" xml:space="preserve"><value>Verzoek versturen</value></data>
+  <data name="People_RequestSent" xml:space="preserve"><value>Verzoek verstuurd. Je ziet hun koffie zodra ze accepteren.</value></data>
+  <data name="People_Offline" xml:space="preserve"><value>Geen verbinding met de server. Voor vrienden heb je internet nodig.</value></data>
+  <data name="People_Requests" xml:space="preserve"><value>Verzoeken</value></data>
+  <data name="People_NoRequests" xml:space="preserve"><value>Niemand wacht op je antwoord.</value></data>
+  <data name="People_Accept" xml:space="preserve"><value>Accepteren</value></data>
+  <data name="People_Decline" xml:space="preserve"><value>Afwijzen</value></data>
+  <data name="People_Following" xml:space="preserve"><value>Volgend</value></data>
+  <data name="People_NoFollowing" xml:space="preserve"><value>Je volgt nog niemand.</value></data>
+  <data name="People_Waiting" xml:space="preserve"><value>wacht op antwoord</value></data>
+  <data name="People_Unfollow" xml:space="preserve"><value>Ontvolgen</value></data>
+  <data name="People_Followers" xml:space="preserve"><value>Volgers</value></data>
+  <data name="People_NoFollowers" xml:space="preserve"><value>Nog niemand volgt jou.</value></data>
+  <data name="People_RemoveFollower" xml:space="preserve"><value>Verwijderen</value></data>
+  <data name="People_Block" xml:space="preserve"><value>Blokkeren</value></data>
+  <data name="People_Blocked" xml:space="preserve"><value>Geblokkeerd</value></data>
+  <data name="People_Unblock" xml:space="preserve"><value>Deblokkeren</value></data>
+  <data name="People_ProfileUnavailable" xml:space="preserve"><value>Dit profiel is niet beschikbaar. Je volgt deze persoon misschien niet, of het verzoek wacht nog.</value></data>
+  <data name="People_ShowingSaved" xml:space="preserve"><value>Geen verbinding: je ziet wat de vorige keer is bewaard.</value></data>
+  <data name="People_Counts" xml:space="preserve"><value>{0} bonen · {1} recepten · {2} brews · {3} volgers</value></data>
+  <data name="People_Tab_beans" xml:space="preserve"><value>Bonen</value></data>
+  <data name="People_Tab_recipes" xml:space="preserve"><value>Recepten</value></data>
+  <data name="People_Tab_brews" xml:space="preserve"><value>Brews</value></data>
+  <data name="People_NothingShared" xml:space="preserve"><value>Hier wordt nog niets gedeeld.</value></data>
+  <data name="People_LoadMore" xml:space="preserve"><value>Meer laden</value></data>
 </root>

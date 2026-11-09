@@ -1,5 +1,6 @@
 using Dialed.Client.Account;
 using Dialed.Client.Data;
+using Dialed.Client.Friends;
 using Dialed.Client.Households;
 using Dialed.Client.Platform;
 using Dialed.Client.Storage;
@@ -106,7 +107,7 @@ public static class ClientServices
     /// <see cref="AddDialedData"/> and <see cref="AddDialedSync"/>; the host registers <see cref="AccountApi"/>'s HttpClient through
     /// <paramref name="api"/> and an <see cref="Platform.IPasskeyClient"/> (and, to keep the sign-in, an <see cref="ISessionStore"/>).
     /// </summary>
-    public static IServiceCollection AddDialedAccount(this IServiceCollection services, Func<IServiceProvider, AccountApi> api, Func<IServiceProvider, HouseholdApi> households, Func<IServiceProvider, AccountDataApi>? accountData = null)
+    public static IServiceCollection AddDialedAccount(this IServiceCollection services, Func<IServiceProvider, AccountApi> api, Func<IServiceProvider, HouseholdApi> households, Func<IServiceProvider, AccountDataApi>? accountData = null, Func<IServiceProvider, FriendsApi>? friends = null)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(api);
@@ -126,6 +127,11 @@ public static class ClientServices
                 sp.GetRequiredService<AuthSession>(),
                 sp.GetService<TimeProvider>() ?? TimeProvider.System,
                 sp.GetService<ILocalStore>()));
+        }
+
+        if (friends is not null)
+        {
+            services.TryAddSingleton(friends);
         }
 
         services.TryAddSingleton<AccountService>();
