@@ -551,4 +551,6 @@
   <data name="Recovery_Missing" xml:space="preserve"><value>Enter your email and a code.</value></data>
   <data name="Household_Active" xml:space="preserve"><value>Household</value></data>
   <data name="Household_SwitchPending" xml:space="preserve"><value>Some changes have not been sent yet. Wait until they are synced, then switch.</value></data>
+  <data name="ErrorReporting_Label" xml:space="preserve"><value>Send anonymous error reports</value></data>
+  <data name="ErrorReporting_Hint" xml:space="preserve"><value>When the app breaks or syncing keeps failing, it tells the developer what kind of error it was and which app version you use. Never your name, email, recipes or notes. You can turn this off any time.</value></data>
 </root>

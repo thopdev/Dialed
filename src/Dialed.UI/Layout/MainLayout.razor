@@ -18,21 +18,21 @@
         <UpdateBanner />
         <SyncIndicator />
         <HouseholdPicker Id="household-picker-header" />
-        <ErrorBoundary @ref="errorBoundary">
+        <ReportingErrorBoundary @ref="errorBoundary">
             <ChildContent>
                 @Body
             </ChildContent>
             <ErrorContent Context="exception">
                 <ErrorPanel OnRetry="Recover" />
             </ErrorContent>
-        </ErrorBoundary>
+        </ReportingErrorBoundary>
     </main>
 
     <TabBar />
 </div>
 
 @code {
-    private ErrorBoundary? errorBoundary;
+    private ReportingErrorBoundary? errorBoundary;
 
     // Navigating away from a broken screen should show the next one, not the error again.
     protected override void OnParametersSet() => errorBoundary?.Recover();

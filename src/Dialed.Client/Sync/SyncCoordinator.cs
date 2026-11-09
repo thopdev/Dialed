@@ -73,6 +73,9 @@ public sealed class SyncCoordinator : IDisposable
     /// <summary>Raised whenever anything above changes.</summary>
     public event Action? Changed;
 
+    /// <summary>Raised when a sync ended with changes that could not be sent (for error reporting).</summary>
+    public event Action<SyncResult>? SyncFailed;
+
     /// <summary>Starts listening for triggers and does the first sync. Call once, after the platform services started.</summary>
     public async Task StartAsync()
     {
@@ -148,6 +151,11 @@ public sealed class SyncCoordinator : IDisposable
         }
 
         LastResult = result;
+        if (result.Failed > 0)
+        {
+            SyncFailed?.Invoke(result);
+        }
+
         if (result.Outcome == SyncOutcome.Completed)
         {
             LastSyncedAt = time.GetUtcNow();

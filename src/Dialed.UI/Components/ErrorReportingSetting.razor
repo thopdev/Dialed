@@ -1,0 +1,27 @@
+@using Dialed.Client.Telemetry
+@implements IDisposable
+@inject IErrorReportingSettings Reporting
+@inject IStringLocalizer<Strings> L
+
+@* Opt-out for anonymous error reports (#91). *@
+<div id="error-reporting-setting" class="dialed-field">
+    <label>
+        <input id="error-reporting-toggle" type="checkbox" checked="@Reporting.Enabled" @onchange="OnToggle" />
+        @L["ErrorReporting_Label"]
+    </label>
+    <p class="dialed-muted">@L["ErrorReporting_Hint"]</p>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Reporting.Changed += OnChanged;
+        await Reporting.InitializeAsync();
+    }
+
+    private Task OnToggle(ChangeEventArgs args) => Reporting.SetEnabledAsync(args.Value is true);
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Reporting.Changed -= OnChanged;
+}

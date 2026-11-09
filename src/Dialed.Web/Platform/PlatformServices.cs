@@ -1,5 +1,7 @@
 using Dialed.Client.Platform;
+using Dialed.Client.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Dialed.Web.Platform;
 
@@ -15,6 +17,9 @@ internal static class PlatformServices
         services.AddSingleton<IConnectivity>(sp => sp.GetRequiredService<BrowserConnectivity>());
         services.AddSingleton<IShareService, BrowserShareService>();
         services.AddSingleton<IFileExport, BrowserFileExport>();
+        services.AddSingleton<IErrorSink, BrowserErrorSink>();
+        services.AddSingleton<IErrorReportingSettings, BrowserErrorReportingSettings>();
+        services.AddSingleton<ILoggerProvider>(sp => new ErrorReportingLoggerProvider(sp));
         services.AddSingleton<IPasskeyClient, BrowserPasskeyClient>();
         services.AddSingleton<IStoragePersistence, BrowserStoragePersistence>();
         services.AddSingleton<IWakeLock, BrowserWakeLock>();
