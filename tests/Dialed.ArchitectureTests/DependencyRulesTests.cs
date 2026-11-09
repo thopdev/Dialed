@@ -45,7 +45,7 @@ public sealed class DependencyRulesTests
         string[] expected =
         [
             "IPhotoCapture", "ILocalFileStore", "IConnectivity", "IShareService", "IPasskeyClient",
-            "IStoragePersistence", "IWakeLock", "ISoundCue", "IAppLifecycle",
+            "IStoragePersistence", "IWakeLock", "ISoundCue", "IAppLifecycle", "IFileExport",
         ];
 
         var platform = typeof(ClientAssembly).Assembly.GetTypes()
