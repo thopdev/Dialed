@@ -119,8 +119,8 @@ public sealed class RecoveryService(UserManager<AccountUser> accounts, IEmailRec
         var codes = new List<string>();
         for (var c = 0; c < RecoveryCodeCount; c++)
         {
-            Span<char> chars = stackalloc char[9];
-            for (var i = 0; i < 9; i++)
+            var chars = new char[9];
+            for (var i = 0; i < chars.Length; i++)
             {
                 chars[i] = i == 4 ? '-' : Alphabet[RandomNumberGenerator.GetInt32(Alphabet.Length)];
             }
