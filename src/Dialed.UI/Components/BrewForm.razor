@@ -8,7 +8,9 @@
 @inject UnitFormatter Units
 
 @* Log one brew: prefilled (from a recipe or an earlier brew), everything editable, then taste feedback. *@
-<form class="dialed-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+<form class="dialed-form dialed-brew-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
+    <section class="dialed-form-section" aria-labelledby="brew-section-what">
+    <h2 id="brew-section-what" class="dialed-form-section-title">@L["Brew_SectionWhat"]</h2>
     <div class="dialed-field">
         <label for="brew-method">@L["Recipe_Method"]</label>
         <select id="brew-method" value="@methodCode" @onchange="OnMethodChanged">
@@ -47,22 +49,32 @@
         </div>
     }
 
-    <div class="dialed-field">
-        <label for="brew-dose">@L["Recipe_Dose"] (@Units.WeightLabel)</label>
-        <input id="brew-dose" type="number" inputmode="decimal" step="any" min="0" @bind="dose" @bind:event="onchange"
-               aria-invalid="@(doseError is not null ? "true" : null)" />
-        @if (doseError is not null)
+    </section>
+
+    <section class="dialed-form-section" aria-labelledby="brew-section-numbers">
+    <h2 id="brew-section-numbers" class="dialed-form-section-title">@L["Brew_SectionNumbers"]</h2>
+    <div class="dialed-field-row">
+        <div class="dialed-field dialed-field-large">
+            <label for="brew-dose">@L["Recipe_Dose"] (@Units.WeightLabel)</label>
+            <input id="brew-dose" type="number" inputmode="decimal" step="any" min="0" @bind="dose" @bind:event="onchange"
+                   aria-invalid="@(doseError is not null ? "true" : null)" aria-describedby="@(doseError is not null ? "brew-dose-error" : null)" />
+            @if (doseError is not null)
+            {
+                <div id="brew-dose-error" class="dialed-field-error" role="alert">@doseError</div>
+            }
+        </div>
+
+        @if (UsesLiquid)
         {
-            <div class="dialed-field-error" role="alert">@doseError</div>
+            <div class="dialed-field dialed-field-large">
+                <label for="brew-liquid">@(Uses(BrewParameter.Water) ? L["Recipe_Water"] : L["Recipe_Yield"]) (@Units.WeightLabel)</label>
+                <input id="brew-liquid" type="number" inputmode="decimal" step="any" min="0" @bind="liquid" @bind:event="onchange" />
+            </div>
         }
     </div>
-
-    @if (UsesLiquid)
+    @if (RatioText is { } ratioText)
     {
-        <div class="dialed-field">
-            <label for="brew-liquid">@(Uses(BrewParameter.Water) ? L["Recipe_Water"] : L["Recipe_Yield"]) (@Units.WeightLabel)</label>
-            <input id="brew-liquid" type="number" inputmode="decimal" step="any" min="0" @bind="liquid" @bind:event="onchange" />
-        </div>
+        <p id="brew-ratio" class="dialed-ratio" aria-live="polite">@L["Brew_Ratio"] <strong>@ratioText</strong></p>
     }
 
     <div class="dialed-field">
@@ -81,24 +93,29 @@
         <GrindSettingInput Label="@L["Recipe_Grind"]" Scale="scale" @bind-Value="grind" />
     }
 
-    @if (Uses(BrewParameter.Temperature))
-    {
-        <div class="dialed-field">
-            <label for="brew-temp">@L["Recipe_Temp"] (@Units.TemperatureLabel)</label>
-            <input id="brew-temp" type="number" inputmode="decimal" step="any" @bind="temp" @bind:event="onchange" />
-        </div>
-    }
+    <div class="dialed-field-row">
+        @if (Uses(BrewParameter.Temperature))
+        {
+            <div class="dialed-field">
+                <label for="brew-temp">@L["Recipe_Temp"] (@Units.TemperatureLabel)</label>
+                <input id="brew-temp" type="number" inputmode="decimal" step="any" @bind="temp" @bind:event="onchange" />
+            </div>
+        }
 
-    @if (Uses(BrewParameter.Time))
-    {
-        <div class="dialed-field">
-            <label for="brew-time">@L["Recipe_Time"]</label>
-            <input id="brew-time" type="number" inputmode="numeric" min="0" @bind="timeS" @bind:event="onchange" />
-        </div>
-    }
+        @if (Uses(BrewParameter.Time))
+        {
+            <div class="dialed-field">
+                <label for="brew-time">@L["Recipe_Time"]</label>
+                <input id="brew-time" type="number" inputmode="numeric" min="0" @bind="timeS" @bind:event="onchange" />
+            </div>
+        }
+    </div>
+    </section>
 
+    <section class="dialed-form-section" aria-labelledby="brew-section-taste">
+    <h2 id="brew-section-taste" class="dialed-form-section-title">@L["Brew_Taste"]</h2>
     <fieldset class="dialed-field dialed-taste-group">
-        <legend>@L["Brew_Taste"]</legend>
+        <legend class="dialed-visually-hidden">@L["Brew_Taste"]</legend>
         <TasteSlider Label="@L["Taste_Acidity"]" LowLabel="@L["Taste_Sour"]" HighLabel="@L["Taste_Bitter"]" Min="Taste.Min" Max="Taste.Max" @bind-Value="acidity" />
         <TasteSlider Label="@L["Taste_Strength"]" LowLabel="@L["Taste_Weak"]" HighLabel="@L["Taste_Strong"]" Min="Taste.Min" Max="Taste.Max" @bind-Value="strength" />
         <TasteSlider Label="@L["Taste_Body"]" LowLabel="@L["Taste_Thin"]" HighLabel="@L["Taste_Heavy"]" Min="Taste.Min" Max="Taste.Max" @bind-Value="body" />
@@ -110,6 +127,10 @@
         <StarRating @bind-Value="rating" />
     </div>
 
+    </section>
+
+    <section class="dialed-form-section" aria-labelledby="brew-section-notes">
+    <h2 id="brew-section-notes" class="dialed-form-section-title">@L["Brew_SectionNotes"]</h2>
     <div class="dialed-field">
         <label>@L["Photo_Title"]</label>
         <PhotoStrip PhotoIds="@photoIds" PhotoIdsChanged="@(v => photoIds = v)" Label="@L["Photo_Title"].Value" />
@@ -130,7 +151,9 @@
         </select>
     </div>
 
-    <div class="dialed-form-actions">
+    </section>
+
+    <div class="dialed-form-actions dialed-sticky-actions">
         <button type="submit" class="dialed-button dialed-button-primary">@L["Brew_Save"]</button>
         <button type="button" class="dialed-button" @onclick="OnCancel">@L["Cancel"]</button>
     </div>
@@ -181,6 +204,11 @@
     private bool Uses(BrewParameter parameter) => Method?.Uses(parameter) ?? true;
 
     private bool UsesLiquid => Uses(BrewParameter.Water) || Uses(BrewParameter.Yield);
+
+    /// <summary>Liquid to dose as "1:2.0", once both are filled in.</summary>
+    private string? RatioText => UsesLiquid && dose is > 0m && liquid is > 0m
+        ? $"1:{(liquid.Value / dose.Value).ToString("0.0", System.Globalization.CultureInfo.CurrentCulture)}"
+        : null;
 
     protected override void OnParametersSet()
     {

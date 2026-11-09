@@ -74,6 +74,20 @@ else
         </section>
 
         <section>
+            <h2>Method icons, rating badge, bag card (#213)</h2>
+            <div class="dialed-gallery-stack">
+                <div style="display: flex; gap: 12px; align-items: center">
+                    <MethodIcon Code="espresso" /><MethodIcon Code="v60" /><MethodIcon Code="aeropress" /><MethodIcon Code="cold-brew" /><MethodIcon Code="moka-pot" />
+                    <RatingBadge Value="4" />
+                </div>
+                <ListRow Title="Ethiopia Guji" Subtitle="15 g → 250 g · Hario V60" Href="history">
+                    <Leading><MethodIcon Code="v60" /></Leading>
+                    <Trailing><RatingBadge Value="5" /></Trailing>
+                </ListRow>
+            </div>
+        </section>
+
+        <section>
             <h2>Star rating</h2>
             <div class="dialed-gallery-stack">
                 <StarRating @bind-Value="rating" />

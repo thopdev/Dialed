@@ -19,6 +19,7 @@ internal static class PlatformServices
         services.AddSingleton<IFileExport, BrowserFileExport>();
         services.AddSingleton<IErrorSink, BrowserErrorSink>();
         services.AddSingleton<IErrorReportingSettings, BrowserErrorReportingSettings>();
+        services.AddSingleton<IPreferenceStore, BrowserPreferenceStore>();
         services.AddSingleton<ILoggerProvider>(sp => new ErrorReportingLoggerProvider(sp));
         services.AddSingleton<IPasskeyClient, BrowserPasskeyClient>();
         services.AddSingleton<IStoragePersistence, BrowserStoragePersistence>();

@@ -209,7 +209,50 @@ public sealed class BrewTimerTests : UiTestContext
 
         var page = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
 
-        page.Find($"a[href='brew/{bag.Id}/timer/{recipe.Id}']").TextContent.ShouldBe("Timer");
+        page.Find($"a[href='brew/{bag.Id}/timer/{recipe.Id}']").TextContent.Trim().ShouldBe("Timer");
+    }
+
+    // ---- Progress and step list (#213) --------------------------------------------------------
+
+    [Fact]
+    public async Task Guided_timer_lists_every_step_and_marks_the_running_one()
+    {
+        var page = RenderTimer(await V60());
+
+        var steps = page.FindAll("#timer-steps li");
+        steps.Count.ShouldBe(3);
+        steps.Select(s => s.QuerySelector(".dialed-timer-step-at")!.TextContent).ShouldBe(["0:00", "0:45", "1:30"]);
+        page.FindAll("#timer-steps li[aria-current]").ShouldBeEmpty();
+
+        page.Find("#timer-start").Click();
+        await Advance(page, 50);
+
+        var current = page.Find("#timer-steps li[aria-current=step]");
+        current.TextContent.ShouldContain("Pour to 150 g");
+        page.FindAll("#timer-steps li.done").Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Progress_bar_fills_towards_the_recipe_time()
+    {
+        var page = RenderTimer(await V60());
+        page.Find("#timer-start").Click();
+
+        await Advance(page, 90);
+
+        var meter = page.Find("#timer-progress");
+        meter.GetAttribute("role").ShouldBe("meter");
+        meter.GetAttribute("aria-valuenow").ShouldBe("50");
+        meter.GetAttribute("aria-valuetext").ShouldBe("1:30 of 3:00");
+    }
+
+    [Fact]
+    public async Task Espresso_progress_runs_to_the_top_of_the_shot_band_and_has_no_step_list()
+    {
+        var page = RenderTimer(await Espresso());
+
+        page.Find("#timer-progress").GetAttribute("aria-valuetext").ShouldBe("0:00 of 0:30");
+        page.FindAll("#timer-steps").ShouldBeEmpty();
     }
 
     // ---- Fakes --------------------------------------------------------------------------------

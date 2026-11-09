@@ -31,6 +31,13 @@ else
 
         <div id="timer-clock" class="dialed-timer-clock" role="timer" aria-label="@L["Timer_Elapsed"]">@Clock(elapsed)</div>
 
+        @if (ProgressTotal is { } total and > 0)
+        {
+            <Meter id="timer-progress" Label="@L["Timer_Progress"]" Fraction="@((double)elapsed / total)"
+                   Tone="@(isEspresso && running && band.StatusAt(elapsed) == ShotStatus.TooLong ? Meter.MeterTone.Danger : Meter.MeterTone.Normal)"
+                   ValueText="@string.Format(L["Timer_ProgressValue"].Value, Clock(elapsed), Clock(total))" />
+        }
+
         @if (isEspresso)
         {
             <p id="timer-band" class="dialed-timer-sub">@string.Format(L["Timer_Band"].Value, band.LowerS, band.UpperS)</p>
@@ -69,6 +76,25 @@ else
                     }
                 </p>
             }
+        }
+
+        @if (!isEspresso && timeline.Steps.Count > 0)
+        {
+            <ol id="timer-steps" class="dialed-timer-steps" aria-label="@L["Recipe_Steps"]">
+                @for (var i = 0; i < timeline.Steps.Count; i++)
+                {
+                    var step = timeline.Steps[i];
+                    var stepState = i < state.CurrentIndex || (state.IsFinished && running) ? "done" : i == state.CurrentIndex && running ? "current" : "";
+                    <li class="dialed-timer-step-item @stepState" aria-current="@(stepState == "current" ? "step" : null)">
+                        <span class="dialed-timer-step-at">@Clock(step.AtS)</span>
+                        <span class="dialed-timer-step-kind">@L[$"StepKind_{step.Kind}"]</span>
+                        @if (step.WaterG is { } water)
+                        {
+                            <span class="dialed-timer-step-water">@string.Format(L["Timer_Target"].Value, Units.Weight(water))</span>
+                        }
+                    </li>
+                }
+            </ol>
         }
 
         <div class="dialed-form-actions dialed-timer-actions">
@@ -130,6 +156,9 @@ else
 
         loading = false;
     }
+
+    /// <summary>What the progress bar fills towards: the recipe's total time, or the top of the shot band for espresso.</summary>
+    private int? ProgressTotal => isEspresso ? band.UpperS : timeline.TotalS;
 
     private static string Clock(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
 
