@@ -30,7 +30,7 @@ public sealed class SecurityTests(PasskeyApp app) : IClassFixture<PasskeyApp>
         "POST /admin/invites", // needs the admin key header
     ];
 
-    private static readonly string[] DevelopmentOnly = ["POST /auth/dev", "GET /health", "GET /alive"];
+    private static readonly string[] DevelopmentOnly = ["POST /auth/dev", "* /health", "* /alive"];
 
     [Fact]
     public void Every_endpoint_requires_a_signed_in_user_unless_it_is_listed_as_open_on_purpose()
