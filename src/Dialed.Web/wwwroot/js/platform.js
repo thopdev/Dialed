@@ -162,6 +162,31 @@ export async function share(title, text, url) {
     }
 }
 
+// ---- Files ----------------------------------------------------------------------------------------
+
+// Shares the file where the platform can (phones), otherwise downloads it. False when the share sheet was dismissed.
+export async function saveFile(fileName, contentType, bytes) {
+    const file = new File([bytes], fileName, { type: contentType });
+    if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({ files: [file], title: fileName });
+            return true;
+        } catch (e) {
+            if (e.name === 'AbortError') return false;
+            // fall through to a download
+        }
+    }
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    return true;
+}
+
 // ---- Passkeys (same conversion as the spike, ADR-0010) --------------------------------------------
 
 const b64urlToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=')), c => c.charCodeAt(0)).buffer;

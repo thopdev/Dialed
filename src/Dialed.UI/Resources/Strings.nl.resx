@@ -488,4 +488,10 @@
   <data name="DialIn_Reason_Balanced" xml:space="preserve"><value>De kop was gebalanceerd. Verander één ding tegelijk als je wilt experimenteren.</value></data>
   <data name="Account_InviteCode" xml:space="preserve"><value>Uitnodigingscode</value></data>
   <data name="Account_InviteHint" xml:space="preserve"><value>Dialed zit in een besloten bèta: voor een account heb je een uitnodigingscode nodig.</value></data>
+  <data name="Settings_Export" xml:space="preserve"><value>Mijn gegevens exporteren</value></data>
+  <data name="Settings_ExportDone" xml:space="preserve"><value>Je gegevens zijn geëxporteerd als JSON-bestand.</value></data>
+  <data name="Account_DeleteTitle" xml:space="preserve"><value>Je account verwijderen?</value></data>
+  <data name="Account_DeleteBody" xml:space="preserve"><value>Je account, inlogsessies en vriendverbindingen worden verwijderd. Een huishouden waarin je alleen zit wordt met alle gegevens verwijderd; in een gedeeld huishouden blijven je items bestaan, maar zonder je naam. Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="Account_DeletePasskeyNote" xml:space="preserve"><value>Je bevestigt met je passkey. De passkey zelf blijft in je wachtwoordmanager of sleutelhanger; die kun je daar verwijderen.</value></data>
+  <data name="Account_DeleteConfirm" xml:space="preserve"><value>Account en gegevens verwijderen</value></data>
 </root>

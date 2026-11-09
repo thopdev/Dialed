@@ -33,9 +33,9 @@ public sealed class SettingsOnboardingTests : UiTestContext
     }
 
     [Fact]
-    public void Deleting_the_account_is_not_available_yet()
+    public void Export_and_delete_are_only_offered_to_a_signed_in_person()
     {
-        Render<Settings>().FindAll("#settings-account button").Last().HasAttribute("disabled").ShouldBeTrue();
+        Render<Settings>().FindAll("#data-delete").ShouldBeEmpty();
     }
 
     [Fact]
