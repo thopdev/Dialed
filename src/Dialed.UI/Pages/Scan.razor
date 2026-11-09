@@ -117,7 +117,7 @@ else
         </div>
         <div class="@Field(label.RoastDate)">
             <label for="scan-roastdate">@L["Import_Field_RoastDate"]</label>
-            <input id="scan-roastdate" type="date" @bind="roastDate" />
+            <input id="scan-roastdate" type="date" value="@roastDate" @onchange="e => roastDate = e.Value?.ToString() ?? string.Empty" />
             @Uncertain(label.RoastDate)
         </div>
 
