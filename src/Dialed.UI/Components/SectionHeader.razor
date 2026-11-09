@@ -1,0 +1,16 @@
+@* A heading for a group on a screen, with optional actions at the end (for example "See all"). *@
+<div class="dialed-section-header">
+    <h2>@Title</h2>
+    @if (Actions is not null)
+    {
+        <div class="dialed-section-actions">@Actions</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}

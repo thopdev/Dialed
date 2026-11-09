@@ -1,0 +1,47 @@
+@inject Dialed.Client.PhotoService Photos
+
+@* A square thumbnail: the item's first photo when there is one, otherwise a calm placeholder with an icon. Decorative unless Alt is given. *@
+<span class="dialed-thumb" style="--dialed-thumb-size: @(Size)px" @attributes="AdditionalAttributes">
+    @if (uri is not null)
+    {
+        <img src="@uri" alt="@(Alt ?? "")" loading="lazy" />
+    }
+    else if (Placeholder is not null)
+    {
+        <span class="dialed-thumb-placeholder" aria-hidden="true">
+            <FluentIcon Value="@Placeholder" Color="Color.Custom" CustomColor="currentColor" />
+        </span>
+    }
+</span>
+
+@code {
+    private string? uri;
+    private string? loadedFor;
+
+    /// <summary>The photo to show, or <c>null</c> for the placeholder.</summary>
+    [Parameter]
+    public string? PhotoId { get; set; }
+
+    [Parameter]
+    public Icon? Placeholder { get; set; } = new Icons.Regular.Size24.Box();
+
+    [Parameter]
+    public int Size { get; set; } = 56;
+
+    [Parameter]
+    public string? Alt { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PhotoId == loadedFor)
+        {
+            return;
+        }
+
+        loadedFor = PhotoId;
+        uri = PhotoId is null ? null : await Photos.GetDataUriAsync(PhotoId);
+    }
+}

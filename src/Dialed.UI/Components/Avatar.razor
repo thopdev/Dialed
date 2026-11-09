@@ -1,0 +1,36 @@
+@* A round badge with someone's initials, in a colour that stays the same for the same name. *@
+<span class="dialed-avatar dialed-avatar-@(Hue)" style="--dialed-avatar-size: @(Size)px" role="img" aria-label="@Name" @attributes="AdditionalAttributes">
+    <span aria-hidden="true">@Initials</span>
+</span>
+
+@code {
+    private const int Hues = 6;
+
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = "";
+
+    [Parameter]
+    public int Size { get; set; } = 40;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>First letters of the first and last word ("Thomas Hopp" gives "TH"); "?" for an empty name.</summary>
+    public static string InitialsOf(string? name)
+    {
+        var words = (name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return words.Length switch
+        {
+            0 => "?",
+            1 => char.ToUpperInvariant(words[0][0]).ToString(),
+            _ => string.Concat(char.ToUpperInvariant(words[0][0]), char.ToUpperInvariant(words[^1][0])),
+        };
+    }
+
+    /// <summary>The same name always gets the same colour (a stable hash, not string.GetHashCode which changes per run).</summary>
+    public static int HueOf(string? name) => (name ?? "").Aggregate(7, (hash, c) => unchecked(hash * 31 + c) & 0x7fffffff) % Hues;
+
+    private string Initials => InitialsOf(Name);
+
+    private int Hue => HueOf(Name);
+}

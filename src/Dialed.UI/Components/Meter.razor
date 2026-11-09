@@ -1,0 +1,32 @@
+@* A horizontal bar for "how much of something": remaining coffee, freshness. Announced as a meter with its value and label. *@
+<div class="dialed-meter dialed-meter-@(Tone.ToString().ToLowerInvariant())" role="meter" aria-label="@Label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Percent" aria-valuetext="@(ValueText ?? $"{Percent}%")" @attributes="AdditionalAttributes">
+    <span class="dialed-meter-fill" style="width: @(Percent)%"></span>
+</div>
+
+@code {
+    public enum MeterTone
+    {
+        Normal,
+        Warning,
+        Danger,
+    }
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>0 to 1; values outside are clamped.</summary>
+    [Parameter]
+    public double Fraction { get; set; }
+
+    [Parameter]
+    public MeterTone Tone { get; set; }
+
+    /// <summary>What a screen reader says instead of the percentage, for example "120 of 250 g".</summary>
+    [Parameter]
+    public string? ValueText { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private int Percent => (int)Math.Round(Math.Clamp(double.IsNaN(Fraction) ? 0 : Fraction, 0, 1) * 100);
+}
