@@ -861,14 +861,14 @@ button.dialed-chip::after {
     position: absolute;
     top: 2px;
     right: calc(50% - 22px);
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 9px;
+    min-width: 1.125rem;
+    min-height: 1.125rem;
+    padding: 0 0.3rem;
+    border-radius: var(--dialed-radius-pill);
     background: var(--colorPaletteRedBackground3, #c50f1f);
-    color: #fff;
-    font-size: 11px;
-    line-height: 18px;
+    color: var(--colorNeutralForegroundOnBrand, #fff);
+    font-size: var(--dialed-text-xs);
+    line-height: 1.125rem;
     text-align: center;
 }
 
@@ -924,7 +924,7 @@ button.dialed-chip::after {
     display: grid;
     place-items: center;
     text-align: center;
-    font-size: 12px;
+    font-size: var(--dialed-text-xs);
     border: 1px dashed currentColor;
     border-radius: 8px;
 }
@@ -962,4 +962,39 @@ button.dialed-chip::after {
 
 .passkey-name {
     font-weight: 600;
+}
+
+/* ---- Accessibility (#49) ------------------------------------------------------------------- */
+
+/* A visible keyboard and switch-control focus ring in both themes. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--colorStrokeFocus2, currentColor);
+    outline-offset: 2px;
+}
+
+/* People who ask for less motion get none: no pulsing, shimmer or smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Large text: wrapping controls and labels grow instead of clipping. */
+.dialed-tab-label {
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+/* Windows high contrast / forced colours: borders must not vanish with the background. */
+@media (forced-colors: active) {
+    .dialed-swatch,
+    .dialed-tabbar,
+    .dialed-card {
+        border: 1px solid CanvasText;
+    }
 }
