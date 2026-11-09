@@ -34,6 +34,24 @@ public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, Auth
             cancellationToken);
     }
 
+    /// <summary>Gets a new token pair now (for example after the household changed, since the token carries it). Signs out when the server no longer accepts the session.</summary>
+    public async Task RefreshSessionAsync(CancellationToken cancellationToken = default)
+    {
+        if (session.Tokens is not { } tokens)
+        {
+            return;
+        }
+
+        var renewed = await api.RefreshAsync(tokens.RefreshToken, cancellationToken);
+        if (renewed is null)
+        {
+            await session.ClearAsync(cancellationToken);
+            return;
+        }
+
+        await session.SetAsync(renewed, cancellationToken);
+    }
+
     /// <summary>Signs out of this device. The server is told on a best-effort basis; local sign-out always happens.</summary>
     public async Task SignOutAsync(CancellationToken cancellationToken = default)
     {

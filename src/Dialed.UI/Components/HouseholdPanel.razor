@@ -1,0 +1,184 @@
+@using Dialed.Client.Account
+@using Dialed.Client.Households
+@implements IDisposable
+@inject HouseholdManager Households
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+
+@* Who is in the household, invite codes, joining, leaving and removing. Needs an account. *@
+<div id="household-panel">
+    @if (!Session.IsSignedIn)
+    {
+        <p id="household-signin-hint" class="dialed-muted">@L["Household_SignInFirst"]</p>
+    }
+    else if (household is null)
+    {
+        <p class="dialed-muted">@(failed ? L["Household_LoadFailed"] : L["Household_Loading"])</p>
+        @if (failed)
+        {
+            <button id="household-retry" type="button" class="dialed-button" @onclick="LoadAsync">@L["Error_Retry"]</button>
+        }
+    }
+    else
+    {
+        <h3 id="household-name">@household.Name</h3>
+        <ul id="household-members" class="dialed-list">
+            @foreach (var member in household.Members)
+            {
+                <li class="household-member" data-user="@member.UserId">
+                    <span>@member.DisplayName@(member.IsOwner ? " · " + L["Household_Owner"].Value : "")</span>
+                    @if (household.YouAreOwner && !member.IsOwner)
+                    {
+                        @if (removing == member.UserId)
+                        {
+                            <button type="button" class="dialed-button household-remove-confirm" disabled="@busy" @onclick="() => RemoveAsync(member.UserId)">@L["Household_ConfirmRemove"]</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="dialed-button household-remove" @onclick="() => removing = member.UserId">@L["Household_Remove"]</button>
+                        }
+                    }
+                </li>
+            }
+        </ul>
+
+        @if (household.YouAreOwner)
+        {
+            <div class="dialed-form-actions">
+                <button id="household-invite" type="button" class="dialed-button" disabled="@busy" @onclick="InviteAsync">@L["Household_CreateInvite"]</button>
+            </div>
+            @if (invite is not null)
+            {
+                <p id="household-invite-code">@L["Household_InviteCode", invite.Code, invite.ExpiresAt.ToLocalTime().ToString("d", System.Globalization.CultureInfo.CurrentCulture)]</p>
+            }
+        }
+
+        @if (household.Members.Count == 1)
+        {
+            <form class="dialed-form" id="household-join-form" @onsubmit="JoinAsync" @onsubmit:preventDefault>
+                <div class="dialed-field">
+                    <label for="household-code-input">@L["Household_HaveCode"]</label>
+                    <input id="household-code-input" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" @bind="code" @bind:event="oninput" />
+                </div>
+                <div class="dialed-form-actions">
+                    <button id="household-join" type="submit" class="dialed-button" disabled="@busy">@L["Household_Join"]</button>
+                </div>
+            </form>
+        }
+        else if (!household.YouAreOwner)
+        {
+            <div class="dialed-form-actions">
+                @if (confirmingLeave)
+                {
+                    <button id="household-leave-confirm" type="button" class="dialed-button" disabled="@busy" @onclick="LeaveAsync">@L["Household_ConfirmLeave"]</button>
+                }
+                else
+                {
+                    <button id="household-leave" type="button" class="dialed-button" @onclick="() => confirmingLeave = true">@L["Household_Leave"]</button>
+                }
+            </div>
+        }
+    }
+
+    @if (message is not null)
+    {
+        <p id="household-message" role="status">@message</p>
+    }
+</div>
+
+@code {
+    private HouseholdInfo? household;
+    private InviteInfo? invite;
+    private string code = "";
+    private string? message;
+    private string? removing;
+    private bool confirmingLeave;
+    private bool busy;
+    private bool failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnSessionChanged;
+        if (Session.IsSignedIn)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private void OnSessionChanged()
+    {
+        if (!Session.IsSignedIn)
+        {
+            household = null;
+            invite = null;
+        }
+
+        _ = InvokeAsync(async () =>
+        {
+            if (Session.IsSignedIn && household is null && !busy)
+            {
+                await LoadAsync();
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadAsync()
+    {
+        failed = false;
+        try
+        {
+            household = await Households.GetAsync();
+        }
+        catch (Exception exception) when (exception is AccountApiException or AccountRefusedException)
+        {
+            failed = true;
+        }
+    }
+
+    private Task InviteAsync() => RunAsync(async () => invite = await Households.CreateInviteAsync());
+
+    private Task JoinAsync() => RunAsync(async () =>
+    {
+        household = await Households.JoinAsync(code.Trim());
+        code = "";
+        invite = null;
+    });
+
+    private Task LeaveAsync() => RunAsync(async () =>
+    {
+        household = await Households.LeaveAsync();
+        confirmingLeave = false;
+    });
+
+    private Task RemoveAsync(string userId) => RunAsync(async () =>
+    {
+        household = await Households.RemoveMemberAsync(userId);
+        removing = null;
+    });
+
+    private async Task RunAsync(Func<Task> action)
+    {
+        busy = true;
+        message = null;
+        try
+        {
+            await action();
+        }
+        catch (AccountRefusedException exception)
+        {
+            message = exception.Message;
+        }
+        catch (AccountApiException)
+        {
+            message = L["Account_Unavailable"];
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    public void Dispose() => Session.Changed -= OnSessionChanged;
+}
