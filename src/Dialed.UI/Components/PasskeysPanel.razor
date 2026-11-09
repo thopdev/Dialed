@@ -1,0 +1,182 @@
+@implements IDisposable
+@using Dialed.Client.Account
+@inject PasskeyManager Passkeys
+@inject AccountService Account
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+
+@* Recovery codes (shown once), the account's passkeys, and a nudge to add a second one. Nothing shows while signed out. *@
+@if (Session.IsSignedIn)
+{
+    <div id="passkeys-panel">
+        @if (Account.PendingRecoveryCodes is { } codes)
+        {
+            <div id="recovery-codes" class="dialed-confirm" role="alertdialog" aria-label="@L["Recovery_CodesTitle"]">
+                <p><strong>@L["Recovery_CodesTitle"]</strong></p>
+                <p>@L["Recovery_CodesBody"]</p>
+                <ul class="dialed-code-list">
+                    @foreach (var recoveryCode in codes)
+                    {
+                        <li><code>@recoveryCode</code></li>
+                    }
+                </ul>
+                <div class="dialed-form-actions">
+                    <button id="recovery-codes-saved" type="button" class="dialed-button dialed-button-primary" @onclick="Account.DismissRecoveryCodes">@L["Recovery_CodesSaved"]</button>
+                </div>
+            </div>
+        }
+
+        @if (status is not null && PasskeyManager.NeedsSecondPasskey(status))
+        {
+            <p id="passkeys-second-hint" class="dialed-muted">@L["Passkeys_SecondHint"]</p>
+        }
+
+        @if (loaded)
+        {
+            <ul id="passkeys-list" class="dialed-list">
+                @foreach (var passkey in list)
+                {
+                    <li class="passkey-row" data-passkey="@passkey.Id">
+                        @if (editing == passkey.Id)
+                        {
+                            <input class="passkey-name-input" type="text" maxlength="60" aria-label="@L["Passkeys_Name"]" @bind="newName" @bind:event="oninput" />
+                            <button type="button" class="dialed-button passkey-save" disabled="@busy" @onclick="() => RenameAsync(passkey.Id)">@L["Save"]</button>
+                            <button type="button" class="dialed-button" @onclick="() => editing = null">@L["Cancel"]</button>
+                        }
+                        else
+                        {
+                            <span class="passkey-name">@passkey.Name</span>
+                            <span class="dialed-muted">@passkey.CreatedAt.ToLocalTime().ToString("d")@(passkey.BackedUp ? " · " + L["Passkeys_Synced"] : "")</span>
+                            <button type="button" class="dialed-button passkey-rename" disabled="@busy" @onclick="() => StartRename(passkey)">@L["Passkeys_Rename"]</button>
+                            @if (list.Count > 1)
+                            {
+                                if (removing == passkey.Id)
+                                {
+                                    <button type="button" class="dialed-button dialed-button-danger passkey-remove-confirm" disabled="@busy" @onclick="() => RemoveAsync(passkey.Id)">@L["Passkeys_RemoveConfirm"]</button>
+                                    <button type="button" class="dialed-button" @onclick="() => removing = null">@L["Cancel"]</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="dialed-button passkey-remove" disabled="@busy" @onclick="() => removing = passkey.Id">@L["Passkeys_Remove"]</button>
+                                }
+                            }
+                        }
+                    </li>
+                }
+            </ul>
+
+            <div class="dialed-form-actions">
+                <button id="passkeys-add" type="button" class="dialed-button" disabled="@busy" @onclick="AddAsync">@L["Passkeys_Add"]</button>
+                <button id="recovery-regenerate" type="button" class="dialed-button" disabled="@busy" @onclick="RegenerateAsync">@L["Recovery_Regenerate"]</button>
+            </div>
+            @if (status is not null)
+            {
+                <p id="recovery-left" class="dialed-muted">@string.Format(L["Recovery_CodesLeft"].Value, status.RecoveryCodesLeft)</p>
+            }
+        }
+
+        @if (message is not null)
+        {
+            <p id="passkeys-message" role="status">@message</p>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<PasskeyInfo> list = [];
+    private RecoveryStatus? status;
+    private bool loaded;
+    private bool busy;
+    private string? message;
+    private string? editing;
+    private string? removing;
+    private string newName = "";
+    private bool wasSignedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        Account.RecoveryCodesChanged += OnChanged;
+        wasSignedIn = Session.IsSignedIn;
+        if (wasSignedIn)
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        if (Session.IsSignedIn && !wasSignedIn)
+        {
+            wasSignedIn = true;
+            await ReloadAsync();
+        }
+        else if (!Session.IsSignedIn)
+        {
+            wasSignedIn = false;
+            loaded = false;
+        }
+
+        StateHasChanged();
+    });
+
+    private async Task ReloadAsync()
+    {
+        var (passkeys, recovery, result) = await Passkeys.LoadAsync();
+        if (result.Succeeded)
+        {
+            list = passkeys;
+            status = recovery;
+            loaded = true;
+        }
+        else
+        {
+            message = Describe(result);
+        }
+    }
+
+    private string? Describe(AccountResult result) => result.Outcome switch
+    {
+        AccountOutcome.Success => null,
+        AccountOutcome.Cancelled => L["Account_Cancelled"],
+        AccountOutcome.NotSupported => L["Account_NotSupported"],
+        AccountOutcome.Refused => result.Message,
+        _ => L["Account_Unavailable"],
+    };
+
+    private async Task RunAsync(Func<Task<AccountResult>> action)
+    {
+        busy = true;
+        message = null;
+        var result = await action();
+        message = Describe(result);
+        if (result.Succeeded)
+        {
+            editing = null;
+            removing = null;
+            await ReloadAsync();
+        }
+
+        busy = false;
+    }
+
+    private void StartRename(PasskeyInfo passkey)
+    {
+        editing = passkey.Id;
+        newName = passkey.Name;
+    }
+
+    private Task RenameAsync(string id) => RunAsync(() => Passkeys.RenameAsync(id, newName));
+
+    private Task RemoveAsync(string id) => RunAsync(() => Passkeys.RemoveAsync(id));
+
+    private Task AddAsync() => RunAsync(() => Passkeys.AddAsync(L["Passkeys_NewName"]));
+
+    private Task RegenerateAsync() => RunAsync(() => Passkeys.RegenerateCodesAsync());
+
+    public void Dispose()
+    {
+        Session.Changed -= OnChanged;
+        Account.RecoveryCodesChanged -= OnChanged;
+    }
+}

@@ -6,6 +6,56 @@ namespace Dialed.Client.Account;
 /// <summary>Sign-up, sign-in and sign-out with passkeys: runs the ceremony between the platform and the API.</summary>
 public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, AuthSession session, SyncEngine engine, SyncCoordinator sync)
 {
+    /// <summary>Recovery codes the person has not yet confirmed they saved. Only in memory: they are shown once and never stored here.</summary>
+    public IReadOnlyList<string>? PendingRecoveryCodes { get; private set; }
+
+    public event Action? RecoveryCodesChanged;
+
+    public void ShowRecoveryCodes(IReadOnlyList<string> codes)
+    {
+        PendingRecoveryCodes = codes;
+        RecoveryCodesChanged?.Invoke();
+    }
+
+    public void DismissRecoveryCodes()
+    {
+        PendingRecoveryCodes = null;
+        RecoveryCodesChanged?.Invoke();
+    }
+
+    /// <summary>Emails a one-time code for recovering the account.</summary>
+    public async Task<AccountResult> SendRecoveryEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await api.RecoverEmailAsync(email, cancellationToken);
+            return AccountResult.Ok;
+        }
+        catch (AccountRefusedException exception)
+        {
+            return new AccountResult(AccountOutcome.Refused, exception.Message);
+        }
+        catch (AccountApiException exception)
+        {
+            return new AccountResult(AccountOutcome.Unavailable, exception.Message);
+        }
+    }
+
+    /// <summary>Signs in again after losing every passkey: a recovery code (or emailed code) proves it is you and a new passkey is made on this device.</summary>
+    public async Task<AccountResult> RecoverAsync(string email, string code, CancellationToken cancellationToken = default)
+    {
+        if (!await passkeys.IsSupportedAsync())
+        {
+            return new AccountResult(AccountOutcome.NotSupported);
+        }
+
+        return await RunAsync(
+            () => api.RecoverOptionsAsync(email, code, cancellationToken),
+            options => passkeys.CreateAsync(options),
+            (state, credential) => api.RecoverAsync(state, credential, cancellationToken),
+            cancellationToken);
+    }
+
     public async Task<AccountResult> SignUpAsync(string email, string displayName, string? inviteCode = null, CancellationToken cancellationToken = default)
     {
         if (!await passkeys.IsSupportedAsync())
@@ -93,7 +143,12 @@ public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, Auth
             }
 
             var tokens = await complete(ceremony.State, outcome.ResponseJson!);
-            await session.SetAsync(tokens, cancellationToken);
+            if (tokens.RecoveryCodes is { Count: > 0 } codes)
+            {
+                ShowRecoveryCodes(codes);
+            }
+
+            await session.SetAsync(tokens with { RecoveryCodes = null }, cancellationToken);
 
             // What was made before signing in now belongs to this person's household, and goes up with the next sync.
             await engine.AdoptLocalRecordsAsync(cancellationToken);
