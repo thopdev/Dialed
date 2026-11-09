@@ -20,14 +20,14 @@ public sealed class AccessibilityTests : UiTestContext
 
     private static IEnumerable<string> Problems<T>(IRenderedComponent<T> screen) where T : IComponent
     {
-        var document = screen.Nodes.First().Owner!;
+        var labelled = screen.FindAll("label[for]").Select(l => l.GetAttribute("for")).ToHashSet();
 
         foreach (var field in screen.FindAll("input, select, textarea").Where(f => !Hidden(f)))
         {
             var id = field.Id;
             var named = field.HasAttribute("aria-label") || field.HasAttribute("aria-labelledby")
                 || field.Closest("label") is not null
-                || (!string.IsNullOrEmpty(id) && document.QuerySelector($"label[for='{id}']") is not null);
+                || (!string.IsNullOrEmpty(id) && labelled.Contains(id));
             if (!named)
             {
                 yield return "field without label: " + Describe(field);
