@@ -1,6 +1,7 @@
 using Dialed.Client.Account;
 using Dialed.Client.Data;
 using Dialed.Client.Households;
+using Dialed.Client.Storage;
 using Dialed.Client.Sync;
 using Dialed.Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,9 +18,45 @@ public static class ClientServices
 
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<ICurrentContext, LocalContext>();
+        services.TryAddSingleton<ILocalStore, InMemoryLocalStore>();
+        services.TryAddSingleton<StorageStatus>();
         services.TryAddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
         return services;
     }
+
+    /// <summary>
+    /// Reads everything the <see cref="ILocalStore"/> holds back into the repositories and the sync state. Hosts call this once
+    /// after building the service provider and before the first screen renders.
+    /// </summary>
+    public static async Task LoadLocalDataAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        List<ILoadable> loadables =
+        [
+            Loadable<Bean>(services),
+            Loadable<Bag>(services),
+            Loadable<Brew>(services),
+            Loadable<Recipe>(services),
+            Loadable<EquipmentItem>(services),
+            Loadable<Vendor>(services),
+            Loadable<Photo>(services),
+            Loadable<MethodDefault>(services),
+        ];
+        if (services.GetService<ISyncState>() is ILoadable state)
+        {
+            loadables.Add(state);
+        }
+
+        foreach (var loadable in loadables)
+        {
+            await loadable.LoadAsync(cancellationToken);
+        }
+    }
+
+    private static ILoadable Loadable<T>(IServiceProvider services)
+        where T : SyncEntity =>
+        (ILoadable)services.GetRequiredService<IRepository<T>>();
 
     /// <summary>
     /// Sync for the record types the server knows (see the API's table list). The host registers <see cref="ISyncTransport"/>,
@@ -31,7 +68,7 @@ public static class ClientServices
         ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<IAccessTokenProvider, NotSignedIn>();
-        services.TryAddSingleton<InMemorySyncState>();
+        services.TryAddSingleton(sp => new InMemorySyncState(sp.GetService<ILocalStore>()));
         services.TryAddSingleton<ISyncState>(sp => sp.GetRequiredService<InMemorySyncState>());
         services.TryAddSingleton(sp => new SyncEngine(
             [

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// The app keeps its data in memory for now, so every step moves by tapping links:
-// a full page load (page.goto) would start with an empty store again.
+// Records are kept in the local database, but preferences (such as "setup skipped") are still in memory,
+// so after a page load the app shows the setup again.
 
 async function startApp(page: Page) {
   // Show what the app reports while it starts, so a failed run explains itself in the CI log.
@@ -63,6 +63,18 @@ test('add a bean and a bag, then see them on Home', async ({ page }) => {
   await expect(page.locator('#home-log-brew')).toBeVisible();
   // The new bag is still sealed, so it is not an open bag yet.
   await expect(page.locator('#home-open-bags')).toHaveCount(0);
+});
+
+test('records are still there after reloading the app', async ({ page }) => {
+  await skipSetup(page);
+  await addBeanAndBag(page, 'Gesha Village');
+
+  await page.reload();
+  await expect(page).toHaveURL(/\/welcome$/, { timeout: 90_000 });
+  await page.locator('#onboarding-skip').click();
+  await page.getByRole('link', { name: 'Beans', exact: true }).click();
+
+  await expect(page.getByText('Gesha Village')).toBeVisible();
 });
 
 test('log a brew and find it in the history', async ({ page }) => {

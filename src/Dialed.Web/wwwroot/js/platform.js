@@ -3,6 +3,20 @@
 
 const state = { wakeLock: null, audio: null, passkeyAbort: null };
 
+// ---- Storage -----------------------------------------------------------------------------------
+
+// Asks the browser not to clear this origin's data when space runs low; resolves to whether it agreed.
+export async function requestPersistentStorage() {
+    try {
+        if (navigator.storage?.persisted && await navigator.storage.persisted()) {
+            return true;
+        }
+        return navigator.storage?.persist ? await navigator.storage.persist() : false;
+    } catch {
+        return false;
+    }
+}
+
 // ---- Photos ------------------------------------------------------------------------------------
 
 export function capturePhoto(useCamera, maxDimension) {

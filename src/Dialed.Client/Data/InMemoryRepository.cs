@@ -1,14 +1,48 @@
+using System.Text.Json;
+using Dialed.Client.Storage;
 using Dialed.Client.Sync;
 using Dialed.Domain.Model;
 
 namespace Dialed.Client.Data;
 
-/// <summary>Records kept in memory for the session. Same behaviour as the future database: stamping, versions and soft delete.</summary>
-public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider time) : ISyncRepository<T>
+/// <summary>
+/// Records held in memory, with stamping, versions and soft delete. When a <see cref="ILocalStore"/> is given every change is
+/// written through to it and <see cref="LoadAsync"/> reads it back at startup, so the data survives a restart.
+/// </summary>
+public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider time, ILocalStore? store = null) : ISyncRepository<T>, ILoadable
     where T : SyncEntity
 {
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    private static readonly string Collection = typeof(T).Name;
+
     private readonly Dictionary<string, T> records = [];
     private readonly Lock gate = new();
+
+    public async Task LoadAsync(CancellationToken cancellationToken = default)
+    {
+        if (store is null)
+        {
+            return;
+        }
+
+        var documents = await store.ReadAllAsync(Collection, cancellationToken);
+        lock (gate)
+        {
+            records.Clear();
+            foreach (var json in documents.Values)
+            {
+                if (JsonSerializer.Deserialize<T>(json, Json) is { } record)
+                {
+                    records[record.Id] = record;
+                }
+            }
+        }
+
+        Changed?.Invoke();
+    }
+
+    private Task PersistAsync(T record, CancellationToken cancellationToken) =>
+        store is null ? Task.CompletedTask : store.PutAsync(Collection, record.Id, JsonSerializer.Serialize(record, Json), cancellationToken);
 
     public event Action? Changed;
 
@@ -30,7 +64,7 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
         }
     }
 
-    public Task<T> SaveAsync(T entity, CancellationToken cancellationToken = default)
+    public async Task<T> SaveAsync(T entity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(entity);
 
@@ -72,12 +106,13 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
             records[saved.Id] = saved;
         }
 
+        await PersistAsync(saved, cancellationToken);
         Changed?.Invoke();
         LocalChanged?.Invoke(saved);
-        return Task.FromResult(saved);
+        return saved;
     }
 
-    public Task DeleteAsync(string id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         T? deleted = null;
         lock (gate)
@@ -97,11 +132,10 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
 
         if (deleted is not null)
         {
+            await PersistAsync(deleted, cancellationToken);
             Changed?.Invoke();
             LocalChanged?.Invoke(deleted);
         }
-
-        return Task.CompletedTask;
     }
 
     public Task<T?> GetIncludingDeletedAsync(string id, CancellationToken cancellationToken = default)
@@ -112,7 +146,7 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
         }
     }
 
-    public Task<T> ApplyRemoteAsync(T remote, CancellationToken cancellationToken = default)
+    public async Task<T> ApplyRemoteAsync(T remote, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(remote);
 
@@ -124,11 +158,12 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
             records[stored.Id] = stored;
         }
 
+        await PersistAsync(stored, cancellationToken);
         Changed?.Invoke();
-        return Task.FromResult(stored);
+        return stored;
     }
 
-    public Task<int> AdoptAsync(CancellationToken cancellationToken = default)
+    public async Task<int> AdoptAsync(CancellationToken cancellationToken = default)
     {
         List<T> adopted = [];
         lock (gate)
@@ -151,6 +186,11 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
 
         if (adopted.Count > 0)
         {
+            foreach (var record in adopted)
+            {
+                await PersistAsync(record, cancellationToken);
+            }
+
             Changed?.Invoke();
             foreach (var record in adopted)
             {
@@ -158,6 +198,6 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
             }
         }
 
-        return Task.FromResult(adopted.Count);
+        return adopted.Count;
     }
 }

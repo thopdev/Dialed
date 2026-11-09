@@ -456,4 +456,7 @@
   <data name="Household_Join" xml:space="preserve"><value>Lid worden van huishouden</value></data>
   <data name="Household_Leave" xml:space="preserve"><value>Huishouden verlaten</value></data>
   <data name="Household_ConfirmLeave" xml:space="preserve"><value>Echt verlaten</value></data>
+  <data name="Storage_Persisted" xml:space="preserve"><value>Je gegevens staan op dit apparaat en de browser wist ze niet om ruimte vrij te maken.</value></data>
+  <data name="Storage_Unprotected" xml:space="preserve"><value>Je gegevens staan op dit apparaat, maar de browser kan ze wissen als de ruimte krap wordt. Log in om online een kopie te bewaren.</value></data>
+  <data name="Storage_Memory" xml:space="preserve"><value>Je gegevens worden alleen bewaard zolang de app open is. Log in om online een kopie te bewaren.</value></data>
 </root>
