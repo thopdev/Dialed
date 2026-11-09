@@ -24,7 +24,9 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 - Do not request computer-use access. Do not enter credentials anywhere.
 - User-only items: merging PRs, branch protection, Dependabot decisions, Azure setup, iPhone checks.
 - Commits and PRs end with the attribution lines the session provides.
+- UI PRs show what changed: a "Screenshots" section in the PR description with before (current `main`) and after at iPhone width (about 390 px), light mode, plus a short GIF for anything interactive. Dark mode and iPad go in one collapsed sheet. Keep the images on the code-free `pr-media` branch (one folder per PR, never merged) and link them with `?raw=true`.
 
 ## Where things stand
 - Waves 0 to 3 done (core app, accounts, households, friends, sync, passkeys, security, error reporting, accessibility pass, install metadata, privacy page, feedback, statistics, CSV import, label scan with a fake AI client, AI quotas).
-- Open: visual polish stories #213 (Home/Brew), #214 (Beans/Bags/Inventory), #215 (Recipes/History), #216 (Settings/More/People/Onboarding), built on the shared components of #217. Also pending: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (owner has to give the address), offline scan queue (needs #68), JS-level error reporting, Azure items (#25, #79, #84, #198, #199).
+- Visual polish (#213 to #216, on the shared components of #217) is done and merged; preferences and finished setup are saved on the device (`StoredUserPreferences`).
+- Open: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (owner has to give the address), offline scan queue (needs #68), JS-level error reporting, Azure items (#25, #79, #84, #198, #199).
