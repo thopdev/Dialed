@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nederlandse UI-tekst voor Dialed. Elke sleutel uit Strings.resx staat hier ook in; een test bewaakt dat. -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_Name" xml:space="preserve"><value>Dialed</value></data>
+  <data name="App_Tagline" xml:space="preserve"><value>Krijg elke kop perfect ingesteld.</value></data>
+  <data name="PageTitle_Format" xml:space="preserve"><value>{0} · Dialed</value></data>
+  <data name="Nav_Label" xml:space="preserve"><value>Hoofdnavigatie</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav_Brew" xml:space="preserve"><value>Zetten</value></data>
+  <data name="Nav_Beans" xml:space="preserve"><value>Bonen</value></data>
+  <data name="Nav_Recipes" xml:space="preserve"><value>Recepten</value></data>
+  <data name="Nav_People" xml:space="preserve"><value>Mensen</value></data>
+  <data name="Nav_More" xml:space="preserve"><value>Meer</value></data>
+  <data name="Brew_Empty" xml:space="preserve"><value>Je gezette koppen verschijnen hier.</value></data>
+  <data name="Beans_Empty" xml:space="preserve"><value>Nog geen bonen. Voeg je eerste zak toe om te beginnen.</value></data>
+  <data name="Beans_SelectPrompt" xml:space="preserve"><value>Selecteer een zak om de details te zien.</value></data>
+  <data name="Beans_Detail" xml:space="preserve"><value>Zak {0}</value></data>
+  <data name="Recipes_Empty" xml:space="preserve"><value>Je recepten verschijnen hier.</value></data>
+  <data name="People_Empty" xml:space="preserve"><value>Je huishouden en vrienden verschijnen hier.</value></data>
+  <data name="More_Diagnostics" xml:space="preserve"><value>Diagnostiek</value></data>
+  <data name="Api_Status" xml:space="preserve"><value>API: {0}</value></data>
+  <data name="Api_Checking" xml:space="preserve"><value>controleren…</value></data>
+  <data name="Api_Unreachable" xml:space="preserve"><value>onbereikbaar</value></data>
+  <data name="Back" xml:space="preserve"><value>Terug</value></data>
+  <data name="Loading" xml:space="preserve"><value>Laden…</value></data>
+  <data name="Error_Title" xml:space="preserve"><value>Er ging iets mis</value></data>
+  <data name="Error_Message" xml:space="preserve"><value>Dit scherm kon niet worden getoond. Je gegevens zijn veilig.</value></data>
+  <data name="Error_Retry" xml:space="preserve"><value>Probeer opnieuw</value></data>
+  <data name="NotFound_Title" xml:space="preserve"><value>Niet gevonden</value></data>
+  <data name="NotFound_Message" xml:space="preserve"><value>Sorry, hier is niets te vinden.</value></data>
+  <data name="NotFound_Home" xml:space="preserve"><value>Naar Zetten</value></data>
+  <data name="Rating_Label" xml:space="preserve"><value>Beoordeling</value></data>
+  <data name="Rating_Value" xml:space="preserve"><value>{0} van {1} sterren</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>Sluiten</value></data>
+  <data name="Update_Available" xml:space="preserve"><value>Er is een nieuwe versie van Dialed beschikbaar.</value></data>
+  <data name="Update_Reload" xml:space="preserve"><value>Herladen</value></data>
+  <data name="Install_Title" xml:space="preserve"><value>Zet Dialed op je beginscherm</value></data>
+  <data name="Install_Intro" xml:space="preserve"><value>Open Dialed als elke andere app, op volledig scherm en offline beschikbaar.</value></data>
+  <data name="Install_Step1" xml:space="preserve"><value>Tik op de Deel-knop in de werkbalk van Safari.</value></data>
+  <data name="Install_Step2" xml:space="preserve"><value>Scroll omlaag en kies "Zet op beginscherm".</value></data>
+  <data name="Install_Step3" xml:space="preserve"><value>Tik op "Voeg toe". Dialed staat nu op je beginscherm.</value></data>
+  <data name="Grind_Decrease" xml:space="preserve"><value>Fijner</value></data>
+  <data name="Grind_Increase" xml:space="preserve"><value>Grover</value></data>
+  <data name="Grind_Clicks" xml:space="preserve"><value>klikken</value></data>
+  <data name="Grind_Invalid" xml:space="preserve"><value>Vul een getal in.</value></data>
+  <data name="Grind_Min" xml:space="preserve"><value>De laagste stand is {0}.</value></data>
+  <data name="Grind_Max" xml:space="preserve"><value>De hoogste stand is {0}.</value></data>
+  <data name="Grind_Step" xml:space="preserve"><value>Gebruik stappen van {0}.</value></data>
+  <data name="Units_Title" xml:space="preserve"><value>Eenheden</value></data>
+  <data name="Units_Metric" xml:space="preserve"><value>Metrisch (g, ml, °C)</value></data>
+  <data name="Units_Imperial" xml:space="preserve"><value>Imperiaal (oz, fl oz, °F)</value></data>
+  <data name="Vendors_Title" xml:space="preserve"><value>Branders &amp; verkopers</value></data>
+  <data name="Vendors_New" xml:space="preserve"><value>Nieuw</value></data>
+  <data name="Vendors_Empty" xml:space="preserve"><value>Nog geen branders of verkopers. Voeg de eerste toe om je bonen en zakken eraan te koppelen.</value></data>
+  <data name="Vendors_Search" xml:space="preserve"><value>Zoeken</value></data>
+  <data name="Vendors_Filter" xml:space="preserve"><value>Toon</value></data>
+  <data name="Vendors_All" xml:space="preserve"><value>Alle</value></data>
+  <data name="Vendors_Roasters" xml:space="preserve"><value>Branders</value></data>
+  <data name="Vendors_Sellers" xml:space="preserve"><value>Verkopers</value></data>
+  <data name="Vendors_NoResults" xml:space="preserve"><value>Niets gevonden.</value></data>
+  <data name="Vendors_SelectPrompt" xml:space="preserve"><value>Selecteer een brander of verkoper om de details te zien.</value></data>
+  <data name="Vendors_NotFound" xml:space="preserve"><value>Deze brander of verkoper bestaat niet meer.</value></data>
+  <data name="Vendor_Name" xml:space="preserve"><value>Naam</value></data>
+  <data name="Vendor_Kinds" xml:space="preserve"><value>Soort</value></data>
+  <data name="Vendor_Roaster" xml:space="preserve"><value>Brander</value></data>
+  <data name="Vendor_Seller" xml:space="preserve"><value>Verkoper</value></data>
+  <data name="Vendor_Country" xml:space="preserve"><value>Land</value></data>
+  <data name="Vendor_City" xml:space="preserve"><value>Plaats</value></data>
+  <data name="Vendor_Website" xml:space="preserve"><value>Website</value></data>
+  <data name="Vendor_Notes" xml:space="preserve"><value>Notities</value></data>
+  <data name="Vendor_NameRequired" xml:space="preserve"><value>Vul een naam in.</value></data>
+  <data name="Vendor_KindRequired" xml:space="preserve"><value>Kies brander, verkoper of beide.</value></data>
+  <data name="Vendor_WebsiteInvalid" xml:space="preserve"><value>Vul een webadres in, zoals voorbeeld.nl.</value></data>
+  <data name="Vendor_BeansHeading" xml:space="preserve"><value>Hier gebrande bonen</value></data>
+  <data name="Vendor_NoBeans" xml:space="preserve"><value>Nog geen bonen.</value></data>
+  <data name="Vendor_BagsHeading" xml:space="preserve"><value>Hier gekochte zakken</value></data>
+  <data name="Vendor_NoBags" xml:space="preserve"><value>Nog geen zakken.</value></data>
+  <data name="Vendor_DeleteTitle" xml:space="preserve"><value>{0} verwijderen?</value></data>
+  <data name="Vendor_DeleteUsed" xml:space="preserve"><value>Wordt gebruikt door {0} boon/bonen en {1} zak(ken). Die blijven bestaan, maar verliezen hun koppeling met deze brander of verkoper.</value></data>
+  <data name="Vendor_DeleteUnused" xml:space="preserve"><value>Er verwijst niets naar.</value></data>
+  <data name="Save" xml:space="preserve"><value>Opslaan</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuleren</value></data>
+  <data name="Edit" xml:space="preserve"><value>Bewerken</value></data>
+  <data name="Delete" xml:space="preserve"><value>Verwijderen</value></data>
+  <data name="Error_Conflict" xml:space="preserve"><value>Dit item is elders gewijzigd. Open het opnieuw en voer je wijziging nogmaals door.</value></data>
+  <data name="Picker_Placeholder" xml:space="preserve"><value>Zoek of voeg toe</value></data>
+  <data name="Picker_Clear" xml:space="preserve"><value>Selectie wissen</value></data>
+  <data name="Picker_Create" xml:space="preserve"><value>"{0}" aanmaken</value></data>
+  <data name="More_Vendors" xml:space="preserve"><value>Branders &amp; verkopers</value></data>
+  <data name="Beans_New" xml:space="preserve"><value>Boon toevoegen</value></data>
+  <data name="Beans_Search" xml:space="preserve"><value>Bonen zoeken</value></data>
+  <data name="Beans_Any" xml:space="preserve"><value>Alle</value></data>
+  <data name="Beans_Sort" xml:space="preserve"><value>Sorteren op</value></data>
+  <data name="Beans_Stock" xml:space="preserve"><value>Voorraad</value></data>
+  <data name="Beans_All" xml:space="preserve"><value>Alle</value></data>
+  <data name="Beans_InStock" xml:space="preserve"><value>Op voorraad</value></data>
+  <data name="Beans_NoResults" xml:space="preserve"><value>Niets gevonden.</value></data>
+  <data name="Beans_NotFound" xml:space="preserve"><value>Deze boon bestaat niet meer.</value></data>
+  <data name="Bean_Name" xml:space="preserve"><value>Naam</value></data>
+  <data name="Bean_NameRequired" xml:space="preserve"><value>Vul een naam in.</value></data>
+  <data name="Bean_Roaster" xml:space="preserve"><value>Brander</value></data>
+  <data name="Bean_Country" xml:space="preserve"><value>Land</value></data>
+  <data name="Bean_Region" xml:space="preserve"><value>Regio</value></data>
+  <data name="Bean_Farm" xml:space="preserve"><value>Boerderij</value></data>
+  <data name="Bean_Producer" xml:space="preserve"><value>Producent</value></data>
+  <data name="Bean_Varieties" xml:space="preserve"><value>Variëteiten</value></data>
+  <data name="Bean_Process" xml:space="preserve"><value>Verwerking</value></data>
+  <data name="Bean_ProcessOther" xml:space="preserve"><value>Andere verwerking</value></data>
+  <data name="Bean_Altitude" xml:space="preserve"><value>Hoogte (m)</value></data>
+  <data name="Bean_RoastLevel" xml:space="preserve"><value>Brandingsgraad</value></data>
+  <data name="Bean_RoastStyle" xml:space="preserve"><value>Brandingsstijl</value></data>
+  <data name="Bean_Decaf" xml:space="preserve"><value>Cafeïnevrij</value></data>
+  <data name="Bean_TastingNotes" xml:space="preserve"><value>Smaaknotities</value></data>
+  <data name="Bean_Rating" xml:space="preserve"><value>Beoordeling</value></data>
+  <data name="Bean_Notes" xml:space="preserve"><value>Notities</value></data>
+  <data name="Bean_Visibility" xml:space="preserve"><value>Zichtbaar voor</value></data>
+  <data name="Bean_None" xml:space="preserve"><value>Niet ingesteld</value></data>
+  <data name="Bean_Other" xml:space="preserve"><value>Anders…</value></data>
+  <data name="Bean_BagsHeading" xml:space="preserve"><value>Zakken</value></data>
+  <data name="Bean_NoBags" xml:space="preserve"><value>Nog geen zakken.</value></data>
+  <data name="Bean_DeleteTitle" xml:space="preserve"><value>{0} verwijderen?</value></data>
+  <data name="Bean_DeleteUsed" xml:space="preserve"><value>Hiermee verwijder je ook {0} zak(ken).</value></data>
+  <data name="Bean_DeleteUnused" xml:space="preserve"><value>Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="Chip_Add" xml:space="preserve"><value>Toevoegen</value></data>
+  <data name="Chip_Remove" xml:space="preserve"><value>{0} verwijderen</value></data>
+  <data name="Yes" xml:space="preserve"><value>Ja</value></data>
+  <data name="RoastLevel_Light" xml:space="preserve"><value>Licht</value></data>
+  <data name="RoastLevel_MediumLight" xml:space="preserve"><value>Medium-licht</value></data>
+  <data name="RoastLevel_Medium" xml:space="preserve"><value>Medium</value></data>
+  <data name="RoastLevel_MediumDark" xml:space="preserve"><value>Medium-donker</value></data>
+  <data name="RoastLevel_Dark" xml:space="preserve"><value>Donker</value></data>
+  <data name="RoastStyle_Espresso" xml:space="preserve"><value>Espresso</value></data>
+  <data name="RoastStyle_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="RoastStyle_Omni" xml:space="preserve"><value>Omni</value></data>
+  <data name="Visibility_Private" xml:space="preserve"><value>Alleen ik</value></data>
+  <data name="Visibility_Household" xml:space="preserve"><value>Huishouden</value></data>
+  <data name="Visibility_Friends" xml:space="preserve"><value>Vrienden</value></data>
+  <data name="BeanSort_Name" xml:space="preserve"><value>Naam</value></data>
+  <data name="BeanSort_Rating" xml:space="preserve"><value>Beoordeling</value></data>
+  <data name="BeanSort_Newest" xml:space="preserve"><value>Nieuwste</value></data>
+  <data name="BagStatus_Sealed" xml:space="preserve"><value>Gesloten</value></data>
+  <data name="BagStatus_Open" xml:space="preserve"><value>Geopend</value></data>
+  <data name="BagStatus_Frozen" xml:space="preserve"><value>Ingevroren</value></data>
+  <data name="BagStatus_Finished" xml:space="preserve"><value>Op</value></data>
+  <data name="More_Bags" xml:space="preserve"><value>Zakken</value></data>
+  <data name="Bean_AddBag" xml:space="preserve"><value>Zak toevoegen</value></data>
+  <data name="Bags_Title" xml:space="preserve"><value>Zakken</value></data>
+  <data name="Bags_New" xml:space="preserve"><value>Zak toevoegen</value></data>
+  <data name="Bags_Empty" xml:space="preserve"><value>Nog geen zakken. Voeg de eerste toe die je hebt gekocht.</value></data>
+  <data name="Bags_Filter" xml:space="preserve"><value>Toon</value></data>
+  <data name="Bags_Active" xml:space="preserve"><value>Actief</value></data>
+  <data name="Bags_All" xml:space="preserve"><value>Alle</value></data>
+  <data name="Bags_NoResults" xml:space="preserve"><value>Geen actieve zakken.</value></data>
+  <data name="Bags_SelectPrompt" xml:space="preserve"><value>Selecteer een zak om de details te zien.</value></data>
+  <data name="Bags_NotFound" xml:space="preserve"><value>Deze zak bestaat niet meer.</value></data>
+  <data name="Bag_Bean" xml:space="preserve"><value>Boon</value></data>
+  <data name="Bag_ChooseBean" xml:space="preserve"><value>Kies een boon</value></data>
+  <data name="Bag_NewBean" xml:space="preserve"><value>Nieuwe boon</value></data>
+  <data name="Bag_BeanRequired" xml:space="preserve"><value>Kies een boon.</value></data>
+  <data name="Bag_Seller" xml:space="preserve"><value>Gekocht bij</value></data>
+  <data name="Bag_Price" xml:space="preserve"><value>Prijs (EUR)</value></data>
+  <data name="Bag_Weight" xml:space="preserve"><value>Gewicht (g)</value></data>
+  <data name="Bag_WeightRequired" xml:space="preserve"><value>Vul het gewicht van de zak in.</value></data>
+  <data name="Bag_RoastDate" xml:space="preserve"><value>Brandingsdatum</value></data>
+  <data name="Bag_PurchasedOn" xml:space="preserve"><value>Gekocht op</value></data>
+  <data name="Bag_OpenedOn" xml:space="preserve"><value>Geopend op</value></data>
+  <data name="Bag_FrozenSince" xml:space="preserve"><value>Ingevroren sinds</value></data>
+  <data name="Bag_FinishedOn" xml:space="preserve"><value>Op sinds</value></data>
+  <data name="Bag_Storage" xml:space="preserve"><value>Bewaring</value></data>
+  <data name="BagStorage_Pantry" xml:space="preserve"><value>Voorraadkast</value></data>
+  <data name="BagStorage_Fridge" xml:space="preserve"><value>Koelkast</value></data>
+  <data name="BagStorage_Freezer" xml:space="preserve"><value>Vriezer</value></data>
+  <data name="Bag_Remaining" xml:space="preserve"><value>Over</value></data>
+  <data name="Bag_Age" xml:space="preserve"><value>Leeftijd</value></data>
+  <data name="Bag_AgeDays" xml:space="preserve"><value>{0} dagen (zonder de tijd in de vriezer)</value></data>
+  <data name="Bag_StepDate" xml:space="preserve"><value>Datum voor de actie</value></data>
+  <data name="Bag_Open" xml:space="preserve"><value>Openen</value></data>
+  <data name="Bag_Freeze" xml:space="preserve"><value>Invriezen</value></data>
+  <data name="Bag_Thaw" xml:space="preserve"><value>Ontdooien</value></data>
+  <data name="Bag_Finish" xml:space="preserve"><value>Afronden</value></data>
+  <data name="Bag_StepInvalid" xml:space="preserve"><value>Die datum past niet bij deze actie.</value></data>
+  <data name="Bag_OfferFinish" xml:space="preserve"><value>Er is niets meer over in deze zak. Markeren als op?</value></data>
+  <data name="Bag_BoughtAgain" xml:space="preserve"><value>Opnieuw gekocht</value></data>
+  <data name="Bag_UnknownBean" xml:space="preserve"><value>Onbekende boon</value></data>
+  <data name="Bag_DeleteTitle" xml:space="preserve"><value>Deze zak verwijderen?</value></data>
+  <data name="Bag_DeleteBody" xml:space="preserve"><value>Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="Bag_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Gear_Title" xml:space="preserve"><value>Apparatuur</value></data>
+  <data name="Gear_New" xml:space="preserve"><value>Apparatuur toevoegen</value></data>
+  <data name="Gear_Empty" xml:space="preserve"><value>Nog geen apparatuur. Voeg je molen of zetter toe.</value></data>
+  <data name="Gear_SelectPrompt" xml:space="preserve"><value>Selecteer apparatuur om de details te zien.</value></data>
+  <data name="Gear_NotFound" xml:space="preserve"><value>Deze apparatuur bestaat niet meer.</value></data>
+  <data name="Gear_Kind" xml:space="preserve"><value>Soort</value></data>
+  <data name="Gear_Brand" xml:space="preserve"><value>Merk</value></data>
+  <data name="Gear_BrandRequired" xml:space="preserve"><value>Vul een merk in.</value></data>
+  <data name="Gear_Model" xml:space="preserve"><value>Model</value></data>
+  <data name="Gear_Notes" xml:space="preserve"><value>Notities</value></data>
+  <data name="Gear_Scale" xml:space="preserve"><value>Schaal van de maalstand</value></data>
+  <data name="Gear_ScaleClicks" xml:space="preserve"><value>Klikken vanaf dicht</value></data>
+  <data name="Gear_ScaleNumber" xml:space="preserve"><value>Genummerde draaiknop</value></data>
+  <data name="Gear_ScaleMin" xml:space="preserve"><value>Laagste stand</value></data>
+  <data name="Gear_ScaleMax" xml:space="preserve"><value>Hoogste stand</value></data>
+  <data name="Gear_ScaleStep" xml:space="preserve"><value>Stap (leeg = traploos)</value></data>
+  <data name="Grind_ErrorRange" xml:space="preserve"><value>De hoogste stand moet boven de laagste liggen.</value></data>
+  <data name="Grind_ErrorStep" xml:space="preserve"><value>De stap moet binnen het bereik passen.</value></data>
+  <data name="Grind_ErrorMissing" xml:space="preserve"><value>Vul de hoogste stand in.</value></data>
+  <data name="Gear_Defaults" xml:space="preserve"><value>Standaard per methode</value></data>
+  <data name="Gear_DefaultsHelp" xml:space="preserve"><value>De molen en zetter waarmee een nieuw recept voor elke methode begint.</value></data>
+  <data name="Gear_DefaultFor" xml:space="preserve"><value>Standaard voor</value></data>
+  <data name="Gear_DeleteTitle" xml:space="preserve"><value>{0} verwijderen?</value></data>
+  <data name="Gear_DeleteBody" xml:space="preserve"><value>Het wordt ook als standaard verwijderd. Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="EquipmentKind_Grinder" xml:space="preserve"><value>Molen</value></data>
+  <data name="EquipmentKind_Brewer" xml:space="preserve"><value>Zetter</value></data>
+  <data name="EquipmentKind_EspressoMachine" xml:space="preserve"><value>Espressomachine</value></data>
+  <data name="EquipmentKind_Kettle" xml:space="preserve"><value>Waterkoker</value></data>
+  <data name="EquipmentKind_Scale" xml:space="preserve"><value>Weegschaal</value></data>
+  <data name="EquipmentKind_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="EquipmentKind_Water" xml:space="preserve"><value>Water</value></data>
+  <data name="Recipes_New" xml:space="preserve"><value>Recept toevoegen</value></data>
+  <data name="Recipes_SelectPrompt" xml:space="preserve"><value>Selecteer een recept om te zien hoe het wordt gemaakt.</value></data>
+  <data name="Recipes_NotFound" xml:space="preserve"><value>Dit recept bestaat niet meer.</value></data>
+  <data name="Recipe_Name" xml:space="preserve"><value>Naam</value></data>
+  <data name="Recipe_NameRequired" xml:space="preserve"><value>Vul een naam in.</value></data>
+  <data name="Recipe_Method" xml:space="preserve"><value>Methode</value></data>
+  <data name="Recipe_Bean" xml:space="preserve"><value>Boon</value></data>
+  <data name="Recipe_Grinder" xml:space="preserve"><value>Molen</value></data>
+  <data name="Recipe_Brewer" xml:space="preserve"><value>Zetter</value></data>
+  <data name="Recipe_Dose" xml:space="preserve"><value>Dosis</value></data>
+  <data name="Recipe_Water" xml:space="preserve"><value>Water</value></data>
+  <data name="Recipe_Yield" xml:space="preserve"><value>Opbrengst</value></data>
+  <data name="Recipe_Ratio" xml:space="preserve"><value>Verhouding</value></data>
+  <data name="Recipe_PerLitre" xml:space="preserve"><value>{0} g per liter</value></data>
+  <data name="Recipe_Temp" xml:space="preserve"><value>Temperatuur</value></data>
+  <data name="Recipe_Grind" xml:space="preserve"><value>Maalstand</value></data>
+  <data name="Recipe_GrindNeedsGrinder" xml:space="preserve"><value>Kies een molen om de maalstand in te stellen.</value></data>
+  <data name="Recipe_Time" xml:space="preserve"><value>Tijd (s)</value></data>
+  <data name="Recipe_Preinfusion" xml:space="preserve"><value>Voorinfusie (s)</value></data>
+  <data name="Recipe_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Recipe_Steps" xml:space="preserve"><value>Stappen</value></data>
+  <data name="Recipe_Notes" xml:space="preserve"><value>Notities</value></data>
+  <data name="Recipe_DeleteTitle" xml:space="preserve"><value>{0} verwijderen?</value></data>
+  <data name="Step_Kind" xml:space="preserve"><value>Stap</value></data>
+  <data name="Step_At" xml:space="preserve"><value>Begint op (s)</value></data>
+  <data name="Step_Duration" xml:space="preserve"><value>Duurt (s)</value></data>
+  <data name="Step_Water" xml:space="preserve"><value>Totaal water na stap</value></data>
+  <data name="Step_Note" xml:space="preserve"><value>Notitie</value></data>
+  <data name="Step_Add" xml:space="preserve"><value>Stap toevoegen</value></data>
+  <data name="Step_Up" xml:space="preserve"><value>Omhoog</value></data>
+  <data name="Step_Down" xml:space="preserve"><value>Omlaag</value></data>
+  <data name="Step_Remove" xml:space="preserve"><value>Stap verwijderen</value></data>
+  <data name="Step_ToWater" xml:space="preserve"><value>tot {0}</value></data>
+  <data name="StepKind_Bloom" xml:space="preserve"><value>Bloom</value></data>
+  <data name="StepKind_Pour" xml:space="preserve"><value>Gieten</value></data>
+  <data name="StepKind_Stir" xml:space="preserve"><value>Roeren</value></data>
+  <data name="StepKind_Swirl" xml:space="preserve"><value>Zwenken</value></data>
+  <data name="StepKind_Press" xml:space="preserve"><value>Persen</value></data>
+  <data name="StepKind_Wait" xml:space="preserve"><value>Wachten</value></data>
+  <data name="Templates_Title" xml:space="preserve"><value>Beginpunten</value></data>
+  <data name="Templates_Subtitle" xml:space="preserve"><value>Een standaardrecept voor elke methode</value></data>
+  <data name="Templates_Help" xml:space="preserve"><value>Algemene recepten (versie {0}). Gebruik er een om het in je eigen recepten te kopiëren en aan te passen.</value></data>
+  <data name="Templates_Use" xml:space="preserve"><value>Gebruiken als beginpunt</value></data>
+  <data name="Recipes_Show" xml:space="preserve"><value>Toon</value></data>
+  <data name="Recipes_Favourites" xml:space="preserve"><value>Favorieten</value></data>
+  <data name="Recipe_Favourite" xml:space="preserve"><value>Favoriet</value></data>
+  <data name="Recipe_Unfavourite" xml:space="preserve"><value>Favoriet verwijderen</value></data>
+  <data name="Bean_BestRecipe" xml:space="preserve"><value>Beste recept: {0}</value></data>
+  <data name="Brew_NoBags" xml:space="preserve"><value>Nog geen zakken om uit te zetten. Voeg eerst een zak toe.</value></data>
+  <data name="Brew_PickBag" xml:space="preserve"><value>Kies de zak waaruit je zet.</value></data>
+  <data name="Brew_SelectPrompt" xml:space="preserve"><value>Selecteer een zak om te beginnen met zetten.</value></data>
+  <data name="Brew_Left" xml:space="preserve"><value>{0} over</value></data>
+  <data name="Brew_Again" xml:space="preserve"><value>Opnieuw zetten</value></data>
+  <data name="Brew_WithRecipe" xml:space="preserve"><value>Zetten met een recept</value></data>
+  <data name="Brew_NoRecipes" xml:space="preserve"><value>Nog geen recepten.</value></data>
+  <data name="Brew_WithoutRecipe" xml:space="preserve"><value>Zetten zonder recept</value></data>
+  <data name="Brew_LogTitle" xml:space="preserve"><value>Een brew loggen</value></data>
+  <data name="Brew_Save" xml:space="preserve"><value>Brew opslaan</value></data>
+  <data name="Brew_Drink" xml:space="preserve"><value>Drankje</value></data>
+  <data name="Brew_Milk" xml:space="preserve"><value>Melk</value></data>
+  <data name="Brew_MilkType" xml:space="preserve"><value>Soort melk</value></data>
+  <data name="Brew_DoseRequired" xml:space="preserve"><value>Vul de dosis in.</value></data>
+  <data name="Brew_Taste" xml:space="preserve"><value>Hoe smaakte het?</value></data>
+  <data name="Taste_Acidity" xml:space="preserve"><value>Zuurgraad</value></data>
+  <data name="Taste_Sour" xml:space="preserve"><value>Zuur</value></data>
+  <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
+  <data name="Taste_Strength" xml:space="preserve"><value>Sterkte</value></data>
+  <data name="Taste_Weak" xml:space="preserve"><value>Slap</value></data>
+  <data name="Taste_Strong" xml:space="preserve"><value>Sterk</value></data>
+  <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>
+  <data name="Taste_Thin" xml:space="preserve"><value>Dun</value></data>
+  <data name="Taste_Heavy" xml:space="preserve"><value>Vol</value></data>
+  <data name="Taste_Sweetness" xml:space="preserve"><value>Zoetheid</value></data>
+  <data name="Taste_Flat" xml:space="preserve"><value>Vlak</value></data>
+  <data name="Taste_Sweet" xml:space="preserve"><value>Zoet</value></data>
+  <data name="DrinkType_Espresso" xml:space="preserve"><value>Espresso</value></data>
+  <data name="DrinkType_Ristretto" xml:space="preserve"><value>Ristretto</value></data>
+  <data name="DrinkType_Lungo" xml:space="preserve"><value>Lungo</value></data>
+  <data name="DrinkType_Americano" xml:space="preserve"><value>Americano</value></data>
+  <data name="DrinkType_Cortado" xml:space="preserve"><value>Cortado</value></data>
+  <data name="DrinkType_Cappuccino" xml:space="preserve"><value>Cappuccino</value></data>
+  <data name="DrinkType_FlatWhite" xml:space="preserve"><value>Flat white</value></data>
+  <data name="DrinkType_Latte" xml:space="preserve"><value>Latte</value></data>
+  <data name="DrinkType_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="DrinkType_ColdBrew" xml:space="preserve"><value>Cold brew</value></data>
+  <data name="DrinkType_Other" xml:space="preserve"><value>Anders</value></data>
+  <data name="MilkType_Whole" xml:space="preserve"><value>Volle</value></data>
+  <data name="MilkType_SemiSkimmed" xml:space="preserve"><value>Halfvolle</value></data>
+  <data name="MilkType_Skimmed" xml:space="preserve"><value>Magere</value></data>
+  <data name="MilkType_Oat" xml:space="preserve"><value>Haver</value></data>
+  <data name="MilkType_Soy" xml:space="preserve"><value>Soja</value></data>
+  <data name="MilkType_Almond" xml:space="preserve"><value>Amandel</value></data>
+  <data name="MilkType_Other" xml:space="preserve"><value>Anders</value></data>
+  <data name="History_Title" xml:space="preserve"><value>Zetgeschiedenis</value></data>
+  <data name="History_Empty" xml:space="preserve"><value>Nog geen brews. Je brews staan hier.</value></data>
+  <data name="History_SelectPrompt" xml:space="preserve"><value>Selecteer een brew om de details te zien.</value></data>
+  <data name="History_NotFound" xml:space="preserve"><value>Deze brew bestaat niet meer.</value></data>
+  <data name="History_Person" xml:space="preserve"><value>Persoon</value></data>
+  <data name="History_MinRating" xml:space="preserve"><value>Beoordeling minstens</value></data>
+  <data name="History_You" xml:space="preserve"><value>Jij</value></data>
+  <data name="History_Parameters" xml:space="preserve"><value>Parameters</value></data>
+  <data name="History_Planned" xml:space="preserve"><value>Recept</value></data>
+  <data name="History_Actual" xml:space="preserve"><value>Gezet</value></data>
+  <data name="History_Time" xml:space="preserve"><value>Tijd</value></data>
+  <data name="History_Recipe" xml:space="preserve"><value>Recept: {0}</value></data>
+  <data name="History_Milk" xml:space="preserve"><value>{0} melk</value></data>
+  <data name="History_Balanced" xml:space="preserve"><value>Gebalanceerd</value></data>
+  <data name="History_DeleteTitle" xml:space="preserve"><value>Deze brew verwijderen?</value></data>
+  <data name="History_DeleteBody" xml:space="preserve"><value>De koffie gaat terug in de zak. Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="Version_PromptTitle" xml:space="preserve"><value>Dit recept heeft brews</value></data>
+  <data name="Version_PromptBody" xml:space="preserve"><value>Sla je wijzigingen op als nieuwe versie om de geschiedenis van je dial-in te bewaren, of werk deze versie bij.</value></data>
+  <data name="Version_SaveNew" xml:space="preserve"><value>Opslaan als nieuwe versie</value></data>
+  <data name="Version_UpdateThis" xml:space="preserve"><value>Deze versie bijwerken</value></data>
+  <data name="Version_Older" xml:space="preserve"><value>Dit is een oudere versie van het recept.</value></data>
+  <data name="Version_MakeCurrent" xml:space="preserve"><value>Huidig maken</value></data>
+  <data name="Version_Title" xml:space="preserve"><value>Versies</value></data>
+  <data name="Version_Label" xml:space="preserve"><value>Versie {0}</value></data>
+  <data name="Version_Current" xml:space="preserve"><value>Huidig</value></data>
+  <data name="Version_NoBrews" xml:space="preserve"><value>Nog geen brews</value></data>
+  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1} brew(s)</value></data>
+  <data name="Version_StepsChanged" xml:space="preserve"><value>Stappen gewijzigd</value></data>
+  <data name="Version_GrinderChanged" xml:space="preserve"><value>Molen gewijzigd</value></data>
+  <data name="Timer_Start" xml:space="preserve"><value>Timer</value></data>
+  <data name="Timer_StartFor" xml:space="preserve"><value>Start de timer voor {0}</value></data>
+  <data name="Timer_StartButton" xml:space="preserve"><value>Start</value></data>
+  <data name="Timer_Finish" xml:space="preserve"><value>Afronden en loggen</value></data>
+  <data name="Timer_Reset" xml:space="preserve"><value>Resetten</value></data>
+  <data name="Timer_Elapsed" xml:space="preserve"><value>Verstreken tijd</value></data>
+  <data name="Timer_GetReady" xml:space="preserve"><value>Maak je klaar</value></data>
+  <data name="Timer_Target" xml:space="preserve"><value>Giet tot {0}</value></data>
+  <data name="Timer_Next" xml:space="preserve"><value>Volgende: {0} over {1}</value></data>
+  <data name="Timer_Done" xml:space="preserve"><value>Klaar. Rond af om de brew te loggen.</value></data>
+  <data name="Timer_Band" xml:space="preserve"><value>Doel {0}-{1} s</value></data>
+  <data name="Shot_TooShort" xml:space="preserve"><value>Te kort</value></data>
+  <data name="Shot_InBand" xml:space="preserve"><value>Binnen het doelbereik</value></data>
+  <data name="Shot_TooLong" xml:space="preserve"><value>Te lang</value></data>
+  <data name="Home_WelcomeTitle" xml:space="preserve"><value>Welkom bij Dialed</value></data>
+  <data name="Home_Welcome" xml:space="preserve"><value>Voeg je eerste koffieboon toe om zakken en brews bij te houden.</value></data>
+  <data name="Home_AddFirstBean" xml:space="preserve"><value>Voeg je eerste boon toe</value></data>
+  <data name="Home_LogBrew" xml:space="preserve"><value>Brew loggen</value></data>
+  <data name="Home_ScanBag" xml:space="preserve"><value>Zak scannen</value></data>
+  <data name="Home_ScanHint" xml:space="preserve"><value>Scannen komt eraan; voor nu opent Zak scannen het formulier voor een nieuwe zak.</value></data>
+  <data name="Home_OpenBags" xml:space="preserve"><value>Geopende zakken</value></data>
+  <data name="Home_NoOpenBags" xml:space="preserve"><value>Geen geopende zakken.</value></data>
+  <data name="Home_BrewAgain" xml:space="preserve"><value>Opnieuw zetten</value></data>
+  <data name="Stock_Title" xml:space="preserve"><value>Voorraad</value></data>
+  <data name="Stock_Empty" xml:space="preserve"><value>Nog geen zakken.</value></data>
+  <data name="Stock_Group_Open" xml:space="preserve"><value>Geopend</value></data>
+  <data name="Stock_Group_Sealed" xml:space="preserve"><value>Gesloten</value></data>
+  <data name="Stock_Group_Frozen" xml:space="preserve"><value>Ingevroren</value></data>
+  <data name="Stock_Cups" xml:space="preserve"><value>ongeveer {0} kopjes</value></data>
+  <data name="Stock_DaysSinceRoast" xml:space="preserve"><value>{0} dagen sinds branding</value></data>
+  <data name="Stock_Low" xml:space="preserve"><value>Laag</value></data>
+  <data name="Stock_LowBadge" xml:space="preserve"><value>{0} zakken raken op</value></data>
+  <data name="Fresh_Resting" xml:space="preserve"><value>Rust</value></data>
+  <data name="Fresh_Peak" xml:space="preserve"><value>Op zijn best</value></data>
+  <data name="Fresh_Past" xml:space="preserve"><value>Over zijn hoogtepunt</value></data>
+  <data name="Fresh_Unknown" xml:space="preserve"><value>Onbekend</value></data>
+  <data name="Stock_Settings" xml:space="preserve"><value>Voorraadinstellingen</value></data>
+  <data name="Stock_LowThreshold" xml:space="preserve"><value>Weinig voorraad onder ({0})</value></data>
+  <data name="Stock_WindowsHint" xml:space="preserve"><value>Dagen na het branden waarna de koffie klaar is en waarna hij begint te vervagen.</value></data>
+  <data name="Stock_Light" xml:space="preserve"><value>Lichte branding</value></data>
+  <data name="Stock_Medium" xml:space="preserve"><value>Medium branding</value></data>
+  <data name="Stock_Dark" xml:space="preserve"><value>Donkere branding</value></data>
+  <data name="Stock_RestDays" xml:space="preserve"><value>Klaar na (dagen)</value></data>
+  <data name="Stock_PeakEnd" xml:space="preserve"><value>Vervaagt na (dagen)</value></data>
+  <data name="Stock_Saved" xml:space="preserve"><value>Opgeslagen</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Instellingen</value></data>
+  <data name="Settings_Profile" xml:space="preserve"><value>Profiel</value></data>
+  <data name="Settings_Passkeys" xml:space="preserve"><value>Passkeys</value></data>
+  <data name="Settings_Household" xml:space="preserve"><value>Actief huishouden</value></data>
+  <data name="Settings_Setup" xml:space="preserve"><value>Installatie</value></data>
+  <data name="Settings_ReopenSetup" xml:space="preserve"><value>Installatie opnieuw doorlopen</value></data>
+  <data name="Settings_ComingWithAccounts" xml:space="preserve"><value>Beschikbaar zodra accounts er zijn.</value></data>
+  <data name="Settings_Storage" xml:space="preserve"><value>Opslag</value></data>
+  <data name="Settings_StorageLater" xml:space="preserve"><value>De opslagstatus verschijnt hier zodra gegevens op dit apparaat worden bewaard.</value></data>
+  <data name="Settings_Privacy" xml:space="preserve"><value>Privacybeleid</value></data>
+  <data name="Settings_PrivacyLater" xml:space="preserve"><value>Het privacybeleid wordt voor de bèta hier gelinkt.</value></data>
+  <data name="Settings_Account" xml:space="preserve"><value>Account</value></data>
+  <data name="Settings_SignOut" xml:space="preserve"><value>Uitloggen</value></data>
+  <data name="Settings_DeleteAccount" xml:space="preserve"><value>Account verwijderen</value></data>
+  <data name="Settings_Version" xml:space="preserve"><value>Versie {0}</value></data>
+  <data name="Profile_Name" xml:space="preserve"><value>Weergavenaam</value></data>
+  <data name="Profile_DefaultVisibility" xml:space="preserve"><value>Nieuwe items zijn zichtbaar voor</value></data>
+  <data name="Fav_Title" xml:space="preserve"><value>Favoriete zetmethoden</value></data>
+  <data name="Onboarding_Title" xml:space="preserve"><value>Dialed instellen</value></data>
+  <data name="Onboarding_Progress" xml:space="preserve"><value>Stap {0} van {1}</value></data>
+  <data name="Onboarding_InstallTitle" xml:space="preserve"><value>Zet Dialed op je beginscherm</value></data>
+  <data name="Onboarding_GearTitle" xml:space="preserve"><value>Jouw apparatuur</value></data>
+  <data name="Onboarding_GearHint" xml:space="preserve"><value>Voeg je molen en zetter toe; je kunt later meer toevoegen.</value></data>
+  <data name="Onboarding_Grinder" xml:space="preserve"><value>Molen</value></data>
+  <data name="Onboarding_Brewer" xml:space="preserve"><value>Zetter</value></data>
+  <data name="Onboarding_Back" xml:space="preserve"><value>Terug</value></data>
+  <data name="Onboarding_Next" xml:space="preserve"><value>Volgende</value></data>
+  <data name="Onboarding_Finish" xml:space="preserve"><value>Voltooien</value></data>
+  <data name="Onboarding_Skip" xml:space="preserve"><value>Installatie overslaan</value></data>
+  <data name="Photo_Title" xml:space="preserve"><value>Foto's</value></data>
+  <data name="Photo_Take" xml:space="preserve"><value>Foto maken</value></data>
+  <data name="Photo_Choose" xml:space="preserve"><value>Foto kiezen</value></data>
+  <data name="Photo_Remove" xml:space="preserve"><value>Foto verwijderen</value></data>
+  <data name="Photo_Missing" xml:space="preserve"><value>Foto staat niet op dit apparaat</value></data>
+  <data name="Vendor_Logo" xml:space="preserve"><value>Logo</value></data>
+  <data name="Profile_Avatar" xml:space="preserve"><value>Avatar</value></data>
+  <data name="Sync_Status" xml:space="preserve"><value>Synchronisatie: {0}</value></data>
+  <data name="Sync_State_Idle" xml:space="preserve"><value>up-to-date</value></data>
+  <data name="Sync_State_Syncing" xml:space="preserve"><value>synchroniseren...</value></data>
+  <data name="Sync_State_Offline" xml:space="preserve"><value>offline, wijzigingen wachten op dit apparaat</value></data>
+  <data name="Sync_State_NeedsSignIn" xml:space="preserve"><value>niet ingelogd, alles blijft op dit apparaat</value></data>
+  <data name="Sync_Pending" xml:space="preserve"><value>Wacht op synchronisatie: {0}</value></data>
+  <data name="Sync_LastSynced" xml:space="preserve"><value>Laatst gesynchroniseerd: {0}</value></data>
+  <data name="Sync_LastResult" xml:space="preserve"><value>Laatste synchronisatie: {0} verzonden, {1} ontvangen, {2} mislukt</value></data>
+  <data name="Sync_Conflicts" xml:space="preserve"><value>Wijzigingen op dit apparaat die nieuwere hebben vervangen: {0}</value></data>
+  <data name="Sync_Now" xml:space="preserve"><value>Nu synchroniseren</value></data>
+  <data name="Sync_Indicator_Pending" xml:space="preserve"><value>{0} nog niet gesynchroniseerd</value></data>
+  <data name="Sync_Indicator_Offline" xml:space="preserve"><value>Offline: {0} nog niet gesynchroniseerd</value></data>
+  <data name="Account_SignedInAs" xml:space="preserve"><value>Ingelogd als {0}</value></data>
+  <data name="Account_LocalOnly" xml:space="preserve"><value>Je bent niet ingelogd: alles blijft op dit apparaat. Maak een account met een passkey om tussen apparaten te synchroniseren en met je huishouden te delen.</value></data>
+  <data name="Account_Email" xml:space="preserve"><value>E-mail</value></data>
+  <data name="Account_SignUp" xml:space="preserve"><value>Account maken met een passkey</value></data>
+  <data name="Account_SignIn" xml:space="preserve"><value>Inloggen met een passkey</value></data>
+  <data name="Account_EmailInvalid" xml:space="preserve"><value>Vul een geldig e-mailadres in.</value></data>
+  <data name="Account_Cancelled" xml:space="preserve"><value>Geannuleerd. Er is niets gewijzigd.</value></data>
+  <data name="Account_NotSupported" xml:space="preserve"><value>Deze browser ondersteunt geen passkeys.</value></data>
+  <data name="Account_Unavailable" xml:space="preserve"><value>Dat is niet gelukt. Controleer je verbinding en probeer het opnieuw.</value></data>
+  <data name="Household_SignInFirst" xml:space="preserve"><value>Log in (zie Account hieronder) om je koffie met anderen in een huishouden te delen.</value></data>
+  <data name="Household_Loading" xml:space="preserve"><value>Je huishouden laden...</value></data>
+  <data name="Household_LoadFailed" xml:space="preserve"><value>Je huishouden kon niet worden geladen. Controleer je verbinding.</value></data>
+  <data name="Household_Owner" xml:space="preserve"><value>eigenaar</value></data>
+  <data name="Household_Remove" xml:space="preserve"><value>Verwijderen</value></data>
+  <data name="Household_ConfirmRemove" xml:space="preserve"><value>Echt verwijderen</value></data>
+  <data name="Household_CreateInvite" xml:space="preserve"><value>Uitnodigingscode maken</value></data>
+  <data name="Household_InviteCode" xml:space="preserve"><value>Uitnodigingscode: {0} (geldig tot {1}, werkt één keer)</value></data>
+  <data name="Household_HaveCode" xml:space="preserve"><value>Heb je een uitnodigingscode?</value></data>
+  <data name="Household_Join" xml:space="preserve"><value>Lid worden van huishouden</value></data>
+  <data name="Household_Leave" xml:space="preserve"><value>Huishouden verlaten</value></data>
+  <data name="Household_ConfirmLeave" xml:space="preserve"><value>Echt verlaten</value></data>
+</root>

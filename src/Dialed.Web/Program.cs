@@ -20,7 +20,7 @@ var appBaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 var apiBaseAddress = ApiEndpoint.Resolve(builder.Configuration["Api:BaseUrl"], appBaseAddress);
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = apiBaseAddress });
 
-// UI: Fluent UI Blazor components and IStringLocalizer<Strings> (English resources in Dialed.UI).
+// UI: Fluent UI Blazor components and IStringLocalizer<Strings> (English resources in Dialed.UI, Dutch in Strings.nl.resx; Blazor picks the language from the browser).
 builder.Services.AddDialedData();
 builder.Services.AddSingleton<ISyncTransport>(sp => new HttpSyncTransport(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddSingleton<ISessionStore, BrowserSessionStore>();
