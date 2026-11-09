@@ -1695,6 +1695,21 @@ button.dialed-chip::after {
     font-size: var(--dialed-text-xs);
 }
 
+/* ---- Recipes and History (#215) ------------------------------------------------------------ */
+
+.dialed-field-inline {
+    margin: 0;
+    flex: 1 1 12rem;
+}
+
+.dialed-filter-summary {
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-icon-button-on {
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+}
+
 .dialed-group-title {
     display: flex;
     align-items: center;
@@ -1705,6 +1720,258 @@ button.dialed-chip::after {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--colorNeutralForeground3, #616161);
+}
+
+/* History grouped by day, with a header that stays while the day scrolls by. */
+.dialed-day-group + .dialed-day-group {
+    margin-top: var(--dialed-space-4);
+}
+
+.dialed-day-title {
+    position: sticky;
+    top: calc(-1 * var(--dialed-space-3));
+    z-index: 1;
+    margin: 0;
+    padding: var(--dialed-space-2) 0;
+    background: var(--colorNeutralBackground1, #fff);
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-row-person {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-xs);
+}
+
+/* Brew detail */
+.dialed-brew-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-brew-summary-top {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-brew-summary-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dialed-brew-summary-what {
+    font-size: var(--dialed-text-l);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-brew-summary .dialed-person {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    margin: 0;
+}
+
+/* Taste as four bars growing left or right from the middle. */
+.dialed-taste-chart {
+    display: grid;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-taste-chart-row {
+    display: grid;
+    grid-template-columns: 6rem 3.5rem 1fr 3.5rem;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-taste-chart-label {
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-taste-chart-end {
+    color: var(--colorNeutralForeground3, #616161);
+    font-size: var(--dialed-text-xs);
+}
+
+.dialed-taste-chart-end:last-child {
+    text-align: end;
+}
+
+.dialed-taste-chart-track {
+    position: relative;
+    height: 0.625rem;
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorNeutralBackground5, #ebebeb);
+}
+
+/* The "balanced" line in the middle. */
+.dialed-taste-chart-track::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -0.1875rem;
+    bottom: -0.1875rem;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--colorNeutralForeground3, #616161);
+}
+
+.dialed-taste-chart-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: var(--colorBrandBackground, #6f4e37);
+}
+
+.dialed-taste-chart-fill.low {
+    border-radius: var(--dialed-radius-pill) 0 0 var(--dialed-radius-pill);
+}
+
+.dialed-taste-chart-fill.high {
+    border-radius: 0 var(--dialed-radius-pill) var(--dialed-radius-pill) 0;
+}
+
+@media (max-width: 26rem) {
+    .dialed-taste-chart-row {
+        grid-template-columns: 3rem 1fr 3rem;
+    }
+
+    .dialed-taste-chart-label {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Recipe detail */
+.dialed-recipe-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    margin-bottom: var(--dialed-space-4);
+}
+
+.dialed-recipe-hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dialed-recipe-hero-method {
+    font-size: var(--dialed-text-l);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-recipe-parameters {
+    margin-bottom: var(--dialed-space-3);
+}
+
+/* Steps as a timeline: time on the left, a line joining the steps. */
+.dialed-step-timeline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-step-timeline li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+}
+
+.dialed-step-timeline li:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 1.6rem;
+    top: 2.25rem;
+    bottom: -0.5rem;
+    width: 2px;
+    background: var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-step-time {
+    display: inline-grid;
+    place-items: center;
+    height: 1.75rem;
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorBrandBackground2, #f4ece6);
+    color: var(--colorBrandForeground1, #6f4e37);
+    font-size: var(--dialed-text-s);
+    font-weight: var(--dialed-weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.dialed-step-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.dialed-step-kind {
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-step-detail {
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: var(--dialed-text-s);
+}
+
+/* Versions, newest first */
+.dialed-versions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-versions > li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-2);
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+    border-radius: var(--dialed-radius-m);
+}
+
+.dialed-versions > li[aria-current] {
+    border-color: var(--colorBrandStroke1, #6f4e37);
+}
+
+.dialed-version-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-version-head a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+    font-weight: var(--dialed-weight-semibold);
+    color: var(--colorBrandForeground1, #6f4e37);
+}
+
+.dialed-version-changes {
+    margin: 0;
+}
+
+/* The dial-in advice heading matches the other section headings on the brew detail. */
+.dialed-dialin h2 {
+    margin: var(--dialed-space-5) 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-l);
 }
 
 /* ---- Settings, More, People and Onboarding (#216) ------------------------------------------- */

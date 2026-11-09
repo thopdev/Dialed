@@ -32,28 +32,32 @@
         {
             @if (recipes.Count == 0)
             {
-                <EmptyState Message="@L["Recipes_Empty"]" />
+                <EmptyState Icon="@(new Icons.Regular.Size24.BookOpen())" Message="@L["Recipes_Empty"]">
+                    <a class="dialed-button dialed-button-primary" href="recipes/new">@L["Recipes_New"]</a>
+                </EmptyState>
             }
             else
             {
-                <div class="dialed-field">
-                    <label for="recipe-filter-bean">@L["Recipe_Bean"]</label>
-                    <select id="recipe-filter-bean" @bind="beanFilter">
-                        <option value="">@L["Beans_Any"]</option>
-                        @foreach (var bean in beans)
-                        {
-                            <option value="@bean.Id">@bean.Name</option>
-                        }
-                    </select>
+                <div class="dialed-filter-bar dialed-recipe-filters">
+                    <div class="dialed-field dialed-field-inline">
+                        <label for="recipe-filter-bean" class="dialed-visually-hidden">@L["Recipe_Bean"]</label>
+                        <select id="recipe-filter-bean" @bind="beanFilter">
+                            <option value="">@L["Recipes_AnyBean"]</option>
+                            @foreach (var bean in beans)
+                            {
+                                <option value="@bean.Id">@bean.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <ChipGroup Label="@L["Recipes_Show"]">
+                        <Chip Selected="@(!favouritesOnly)" OnClick="@(() => favouritesOnly = false)">@L["Beans_All"]</Chip>
+                        <Chip Selected="@favouritesOnly" OnClick="@(() => favouritesOnly = true)">@L["Recipes_Favourites"]</Chip>
+                    </ChipGroup>
                 </div>
-                <ChipGroup Label="@L["Recipes_Show"]">
-                    <Chip Selected="@(!favouritesOnly)" OnClick="@(() => favouritesOnly = false)">@L["Beans_All"]</Chip>
-                    <Chip Selected="@favouritesOnly" OnClick="@(() => favouritesOnly = true)">@L["Recipes_Favourites"]</Chip>
-                </ChipGroup>
 
                 @if (Groups.Count == 0)
                 {
-                    <EmptyState Message="@L["Beans_NoResults"]" />
+                    <EmptyState Icon="@(new Icons.Regular.Size24.Search())" Message="@L["Beans_NoResults"]" />
                 }
 
                 @foreach (var group in Groups)
@@ -62,21 +66,42 @@
                     <div class="dialed-list">
                         @foreach (var recipe in group.Recipes)
                         {
-                            <ListRow Title="@(recipe.IsFavourite ? "★ " + recipe.Name : recipe.Name)" Subtitle="@Subtitle(recipe)" Href="@($"recipes/{recipe.Id}")" />
+                            <ListRow Title="@(recipe.IsFavourite ? "★ " + recipe.Name : recipe.Name)" Subtitle="@Subtitle(recipe)" Href="@($"recipes/{recipe.Id}")" data-recipe="@recipe.Id">
+                                <Leading><MethodIcon Code="@recipe.MethodCode" /></Leading>
+                                <Below>
+                                    @if (KeyNumbers(recipe) is { Count: > 0 } numbers)
+                                    {
+                                        <span class="dialed-row-chips dialed-key-numbers">
+                                            @foreach (var number in numbers)
+                                            {
+                                                <span class="dialed-chip dialed-chip-small">@number</span>
+                                            }
+                                        </span>
+                                    }
+                                </Below>
+                                <Trailing>
+                                    @if (AverageRating(recipe) is { } average)
+                                    {
+                                        <RatingBadge Value="average" />
+                                    }
+                                </Trailing>
+                            </ListRow>
                         }
                     </div>
                 }
             }
 
             <div class="dialed-list">
-                <ListRow Title="@L["Templates_Title"]" Subtitle="@L["Templates_Subtitle"]" Href="recipes/templates" />
+                <ListRow Title="@L["Templates_Title"]" Subtitle="@L["Templates_Subtitle"]" Href="recipes/templates">
+                    <Leading><span class="dialed-thumb dialed-method-icon" style="--dialed-thumb-size: 40px" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.BookOpen())" Color="Color.Custom" CustomColor="currentColor" /></span></Leading>
+                </ListRow>
             </div>
         }
     </List>
     <Detail>
         @if (Id is null)
         {
-            <EmptyState Message="@L["Recipes_SelectPrompt"]" />
+            <EmptyState Icon="@(new Icons.Regular.Size24.BookOpen())" Message="@L["Recipes_SelectPrompt"]" />
         }
         else if (Id == "new")
         {
@@ -131,9 +156,23 @@
                 <Actions>
                     @if (!current.IsDefaultTemplate && !current.IsSuperseded)
                     {
-                        <button type="button" id="recipe-favourite" class="dialed-button" aria-pressed="@(current.IsFavourite ? "true" : "false")" @onclick="ToggleFavouriteAsync">@(current.IsFavourite ? L["Recipe_Unfavourite"] : L["Recipe_Favourite"])</button>
-                        <button type="button" class="dialed-button" @onclick="@(() => editing = true)">@L["Edit"]</button>
-                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = true)">@L["Delete"]</button>
+                        <button type="button" id="recipe-favourite" class="dialed-icon-button @(current.IsFavourite ? "dialed-icon-button-on" : "")" aria-pressed="@(current.IsFavourite ? "true" : "false")"
+                                aria-label="@L["Recipe_Favourite"]" title="@(current.IsFavourite ? L["Recipe_Unfavourite"] : L["Recipe_Favourite"])" @onclick="ToggleFavouriteAsync">
+                            @if (current.IsFavourite)
+                            {
+                                <FluentIcon Value="@(new Icons.Filled.Size24.Star())" Color="Color.Custom" CustomColor="currentColor" />
+                            }
+                            else
+                            {
+                                <FluentIcon Value="@(new Icons.Regular.Size24.Star())" Color="Color.Custom" CustomColor="currentColor" />
+                            }
+                        </button>
+                        <button type="button" id="recipe-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
+                            <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
+                        </button>
+                        <button type="button" id="recipe-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="@(() => confirmingDelete = true)">
+                            <FluentIcon Value="@(new Icons.Regular.Size24.Delete())" Color="Color.Custom" CustomColor="currentColor" />
+                        </button>
                     }
                 </Actions>
             </PageHeader>
@@ -165,15 +204,31 @@
                 </div>
             }
 
-            <Card>
-                <dl class="dialed-facts">
-                    <dt>@L["Recipe_Method"]</dt>
-                    <dd>@MethodName(current.MethodCode)</dd>
+            <div class="dialed-recipe-hero" id="recipe-hero">
+                <MethodIcon Code="@current.MethodCode" Size="56" />
+                <div class="dialed-recipe-hero-text">
+                    <span class="dialed-recipe-hero-method">@MethodName(current.MethodCode)</span>
                     @if (BeanName(current.BeanId) is { } bean)
                     {
-                        <dt>@L["Recipe_Bean"]</dt>
-                        <dd><a href="@($"beans/{current.BeanId}")">@bean</a></dd>
+                        <a href="@($"beans/{current.BeanId}")">@bean</a>
                     }
+                    <span class="dialed-muted" id="recipe-stats">@StatsText(current)</span>
+                </div>
+            </div>
+
+            @if (Parameters(current) is { Count: > 0 } parameters)
+            {
+                <div class="dialed-stat-grid dialed-recipe-parameters" id="recipe-parameters">
+                    @foreach (var (label, value) in parameters)
+                    {
+                        <StatTile Value="@value" Label="@label" />
+                    }
+                </div>
+            }
+
+            @if (GearName(current.GrinderId) is not null || GearName(current.BrewerId) is not null || current.Filter is not null)
+            {
+                <dl class="dialed-facts" id="recipe-gear">
                     @if (GearName(current.GrinderId) is { } grinder)
                     {
                         <dt>@L["Recipe_Grinder"]</dt>
@@ -184,93 +239,71 @@
                         <dt>@L["Recipe_Brewer"]</dt>
                         <dd>@brewer</dd>
                     }
-                    @if (current.DoseG is { } dose)
-                    {
-                        <dt>@L["Recipe_Dose"]</dt>
-                        <dd>@Units.Weight(dose)</dd>
-                    }
-                    @if (current.WaterG is { } water)
-                    {
-                        <dt>@L["Recipe_Water"]</dt>
-                        <dd>@Units.Weight(water)</dd>
-                    }
-                    @if (current.YieldG is { } yield)
-                    {
-                        <dt>@L["Recipe_Yield"]</dt>
-                        <dd>@Units.Weight(yield)</dd>
-                    }
-                    @if (current.Ratio is { } ratio)
-                    {
-                        <dt>@L["Recipe_Ratio"]</dt>
-                        <dd>1:@ratio.ToString("0.##")</dd>
-                    }
-                    @if (current.TempC is { } temp)
-                    {
-                        <dt>@L["Recipe_Temp"]</dt>
-                        <dd>@Units.Temperature(temp)</dd>
-                    }
-                    @if (current.GrindSetting is { } grind)
-                    {
-                        <dt>@L["Recipe_Grind"]</dt>
-                        <dd>@GrindScale.Format(grind)</dd>
-                    }
-                    @if (current.TimeS is { } time)
-                    {
-                        <dt>@L["Recipe_Time"]</dt>
-                        <dd>@time s</dd>
-                    }
-                    @if (current.PreinfusionS is { } pre)
-                    {
-                        <dt>@L["Recipe_Preinfusion"]</dt>
-                        <dd>@pre s</dd>
-                    }
                     @if (current.Filter is { } filter)
                     {
                         <dt>@L["Recipe_Filter"]</dt>
                         <dd>@filter</dd>
                     }
                 </dl>
-                @if (current.Notes is not null)
-                {
-                    <p class="dialed-vendor-notes">@current.Notes</p>
-                }
-            </Card>
+            }
+
+            @if (current.Notes is not null)
+            {
+                <Card class="dialed-card dialed-notes-card"><p class="dialed-vendor-notes">@current.Notes</p></Card>
+            }
+
+            @if (current.Steps.Count > 0)
+            {
+                <SectionHeader Title="@L["Recipe_Steps"]" />
+                <ol class="dialed-step-list dialed-step-timeline" id="recipe-steps">
+                    @foreach (var step in current.Steps)
+                    {
+                        <li>
+                            <span class="dialed-step-time">@Clock(step.AtS)</span>
+                            <span class="dialed-step-body">
+                                <span class="dialed-step-kind">@L[$"StepKind_{step.Kind}"]</span>
+                                @if (StepDetail(step) is { Length: > 0 } detail)
+                                {
+                                    <span class="dialed-step-detail">@detail</span>
+                                }
+                            </span>
+                        </li>
+                    }
+                </ol>
+            }
 
             @if (family.Count > 1)
             {
-                <h2>@L["Version_Title"]</h2>
-                <ol class="dialed-versions">
-                    @for (var i = 0; i < family.Count; i++)
+                <SectionHeader Title="@L["Version_Title"]" />
+                <ol class="dialed-versions" id="recipe-versions">
+                    @for (var i = family.Count - 1; i >= 0; i--)
                     {
                         var version = family[i];
                         var isCurrent = version.Id == familyCurrent?.Id;
-                        <li class="@(isCurrent ? "current" : null)" data-version="@version.Id">
-                            <a href="@($"recipes/{version.Id}")">@string.Format(L["Version_Label"].Value, i + 1)</a>
-                            @if (isCurrent)
+                        var isShown = version.Id == current.Id;
+                        <li class="@(isCurrent ? "current" : null)" data-version="@version.Id" aria-current="@(isShown ? "page" : null)">
+                            <div class="dialed-version-head">
+                                <a href="@($"recipes/{version.Id}")">@string.Format(L["Version_Label"].Value, i + 1)</a>
+                                @if (isCurrent)
+                                {
+                                    <span class="dialed-chip dialed-chip-small dialed-chip-positive">@L["Version_Current"]</span>
+                                }
+                                <span class="dialed-muted">@version.CreatedAt.ToLocalTime().ToString("d MMM yyyy", CultureInfo.CurrentCulture) · @StatsText(version)</span>
+                            </div>
+                            @if (Changes(version) is { Count: > 0 } changes)
                             {
-                                <strong> · @L["Version_Current"]</strong>
-                            }
-                            <span class="dialed-muted"> · @version.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd") · @StatsText(version)</span>
-                            @if (ChangeText(version) is { Length: > 0 } changes)
-                            {
-                                <div class="dialed-version-changes">@changes</div>
+                                <ul class="dialed-chip-list dialed-version-changes" aria-label="@L["Version_Changes"]">
+                                    @foreach (var change in changes)
+                                    {
+                                        <li><span class="dialed-chip dialed-chip-small">@change</span></li>
+                                    }
+                                </ul>
                             }
                             @if (!isCurrent)
                             {
                                 <button type="button" class="dialed-button" @onclick="() => MakeCurrentAsync(version)">@L["Version_MakeCurrent"]</button>
                             }
                         </li>
-                    }
-                </ol>
-            }
-
-            @if (current.Steps.Count > 0)
-            {
-                <h2>@L["Recipe_Steps"]</h2>
-                <ol class="dialed-step-list">
-                    @foreach (var step in current.Steps)
-                    {
-                        <li>@StepText(step)</li>
                     }
                 </ol>
             }
@@ -353,25 +386,98 @@
         return item is null ? null : string.IsNullOrWhiteSpace(item.Model) ? item.Brand : $"{item.Brand} {item.Model}";
     }
 
-    private string Subtitle(Recipe recipe)
+    private string Subtitle(Recipe recipe) => BeanName(recipe.BeanId) ?? MethodName(recipe.MethodCode);
+
+    /// <summary>Ratio with at most one decimal: "1:16.7", "1:2".</summary>
+    private static string RatioText(decimal ratio) => $"1:{ratio.ToString("0.#", CultureInfo.CurrentCulture)}";
+
+    private static string Clock(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
+
+    /// <summary>The numbers that make a recipe: dose, water or yield, ratio, temperature, time.</summary>
+    private List<string> KeyNumbers(Recipe recipe)
     {
-        var parts = new List<string> { MethodName(recipe.MethodCode) };
+        var numbers = new List<string>();
+        if (recipe.DoseG is { } dose)
+        {
+            numbers.Add(Units.Weight(dose));
+        }
+
+        if ((recipe.WaterG ?? recipe.YieldG) is { } liquid)
+        {
+            numbers.Add(Units.Weight(liquid));
+        }
+
         if (recipe.Ratio is { } ratio)
         {
-            parts.Add($"1:{ratio:0.##}");
+            numbers.Add(RatioText(ratio));
         }
 
-        if (BeanName(recipe.BeanId) is { } bean)
+        if (recipe.TempC is { } temp)
         {
-            parts.Add(bean);
+            numbers.Add(Units.Temperature(temp));
         }
 
-        return string.Join(" · ", parts);
+        if (recipe.TimeS is { } time)
+        {
+            numbers.Add(Clock(time));
+        }
+
+        return numbers;
     }
 
-    private string StepText(RecipeStep step)
+    private List<(string Label, string Value)> Parameters(Recipe recipe)
     {
-        var parts = new List<string> { $"{step.AtS} s", L[$"StepKind_{step.Kind}"].Value };
+        var list = new List<(string, string)>();
+        if (recipe.DoseG is { } dose)
+        {
+            list.Add((L["Recipe_Dose"].Value, Units.Weight(dose)));
+        }
+
+        if (recipe.WaterG is { } water)
+        {
+            list.Add((L["Recipe_Water"].Value, Units.Weight(water)));
+        }
+
+        if (recipe.YieldG is { } yield)
+        {
+            list.Add((L["Recipe_Yield"].Value, Units.Weight(yield)));
+        }
+
+        if (recipe.Ratio is { } ratio)
+        {
+            list.Add((L["Recipe_Ratio"].Value, RatioText(ratio)));
+        }
+
+        if (recipe.TempC is { } temp)
+        {
+            list.Add((L["Recipe_TempShort"].Value, Units.Temperature(temp)));
+        }
+
+        if (recipe.GrindSetting is { } grind)
+        {
+            list.Add((L["Recipe_Grind"].Value, GrindScale.Format(grind)));
+        }
+
+        if (recipe.TimeS is { } time)
+        {
+            list.Add((L["Recipe_TimeShort"].Value, Clock(time)));
+        }
+
+        if (recipe.PreinfusionS is { } pre)
+        {
+            list.Add((L["Recipe_Preinfusion"].Value, $"{pre} s"));
+        }
+
+        return list;
+    }
+
+    /// <summary>The average rating of this recipe's brews, rounded to whole stars; null without rated brews.</summary>
+    private int? AverageRating(Recipe recipe) =>
+        RecipeVersions.Stats(recipe.Id, brews).AverageRating is { } average ? (int)Math.Round(average, MidpointRounding.AwayFromZero) : null;
+
+    private string StepDetail(RecipeStep step)
+    {
+        var parts = new List<string>();
         if (step.WaterG is { } water)
         {
             parts.Add(string.Format(L["Step_ToWater"].Value, Units.Weight(water)));
@@ -379,7 +485,7 @@
 
         if (step.DurationS is { } duration)
         {
-            parts.Add($"{duration} s");
+            parts.Add(string.Format(L["Step_For"].Value, duration));
         }
 
         if (!string.IsNullOrWhiteSpace(step.Note))
@@ -527,12 +633,12 @@
             : string.Format(L["Version_Stats"].Value, stats.AverageRating is { } avg ? $"{avg:0.0} ★" : "–", stats.BrewCount);
     }
 
-    private string ChangeText(Recipe version)
+    private List<string> Changes(Recipe version)
     {
         var parent = version.ParentRecipeId is { } parentId ? family.FirstOrDefault(r => r.Id == parentId) : null;
         if (parent is null)
         {
-            return "";
+            return [];
         }
 
         var diff = RecipeVersions.Diff(parent, version);
@@ -547,7 +653,7 @@
             parts.Add(L["Version_GrinderChanged"].Value);
         }
 
-        return string.Join(", ", parts);
+        return parts;
     }
 
     private string ParameterLabel(BrewParameter parameter) => parameter switch

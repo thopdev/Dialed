@@ -62,14 +62,19 @@ public sealed class HistoryTests : UiTestContext
     }
 
     [Fact]
-    public async Task List_rows_show_who_brewed_with_an_avatar()
+    public async Task List_rows_show_who_brewed_with_an_avatar_once_more_than_one_person_brews()
     {
         var bag = await BagOf("Gesha");
         await Brews.SaveAsync(NewBrew(bag), Ct);
+        Render<History>().FindAll(".dialed-avatar").ShouldBeEmpty();
 
+        Context.UserId = "someone-else";
+        await Brews.SaveAsync(NewBrew(bag, minutesAgo: 5), Ct);
+        Context.UserId = "local-user";
         var page = Render<History>();
 
-        page.Find(".dialed-avatar").TextContent.ShouldBe("Y");
+        page.FindAll(".dialed-row-person").Select(p => p.TextContent.Trim()).ShouldContain(t => t.EndsWith(" someone-else"));
+        page.FindAll(".dialed-avatar").Count.ShouldBe(2);
     }
 
     [Fact]
@@ -107,7 +112,7 @@ public sealed class HistoryTests : UiTestContext
         var brew = await Brews.SaveAsync(NewBrew(bag), Ct);
         var page = Render<History>(p => p.Add(x => x.Id, brew.Id));
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Edit").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Edit").Click();
         page.Find("#brew-dose").Change("16");
         page.Find("form").Submit();
 
@@ -121,7 +126,7 @@ public sealed class HistoryTests : UiTestContext
         var brew = await Brews.SaveAsync(NewBrew(bag), Ct);
         var page = Render<History>(p => p.Add(x => x.Id, brew.Id));
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Delete").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Delete").Click();
         (await Brews.GetAsync(brew.Id, Ct)).ShouldNotBeNull();
         page.Find(".dialed-confirm .dialed-button-danger").Click();
 

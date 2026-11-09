@@ -676,8 +676,20 @@
   <data name="Settings_GroupHousehold" xml:space="preserve"><value>Huishouden</value></data>
   <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="People_State_Waiting" xml:space="preserve"><value>Wacht op antwoord</value></data>
+  <data name="Day_Today" xml:space="preserve"><value>Vandaag</value></data>
+  <data name="Day_Yesterday" xml:space="preserve"><value>Gisteren</value></data>
   <data name="Beans_Filters" xml:space="preserve"><value>Filters</value></data>
   <data name="Beans_FiltersCount" xml:space="preserve"><value>Filters ({0})</value></data>
+  <data name="History_CountOne" xml:space="preserve"><value>{0} keer gezet</value></data>
+  <data name="History_Count" xml:space="preserve"><value>{0} keer gezet</value></data>
+  <data name="History_ParameterColumn" xml:space="preserve"><value>Waarde</value></data>
+  <data name="History_RecipeLabel" xml:space="preserve"><value>Recept</value></data>
+  <data name="History_NotesAndPhotos" xml:space="preserve"><value>Notities en foto's</value></data>
+  <data name="Recipes_AnyBean" xml:space="preserve"><value>Alle bonen</value></data>
+  <data name="Recipe_TempShort" xml:space="preserve"><value>Temp</value></data>
+  <data name="Recipe_TimeShort" xml:space="preserve"><value>Tijd</value></data>
+  <data name="Step_For" xml:space="preserve"><value>{0} s lang</value></data>
+  <data name="Version_Changes" xml:space="preserve"><value>Wijzigingen</value></data>
   <data name="Beans_BagsInStockOne" xml:space="preserve"><value>{0} zak</value></data>
   <data name="Beans_BagsInStock" xml:space="preserve"><value>{0} zakken</value></data>
   <data name="Bean_AltitudeShort" xml:space="preserve"><value>Hoogte</value></data>
@@ -722,8 +734,6 @@
   <data name="Home_SeeAll" xml:space="preserve"><value>Alles bekijken</value></data>
   <data name="Home_RemainingOf" xml:space="preserve"><value>Koffie over in {0}</value></data>
   <data name="Home_LeftOf" xml:space="preserve"><value>{0} van {1} over</value></data>
-  <data name="Day_Today" xml:space="preserve"><value>Vandaag</value></data>
-  <data name="Day_Yesterday" xml:space="preserve"><value>Gisteren</value></data>
   <data name="Brew_OfWeight" xml:space="preserve"><value>van {0}</value></data>
   <data name="Brew_Days" xml:space="preserve"><value>{0} d</value></data>
   <data name="Brew_SinceRoast" xml:space="preserve"><value>Sinds branden</value></data>

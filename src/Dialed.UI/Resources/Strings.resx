@@ -677,8 +677,20 @@
   <data name="Settings_GroupHousehold" xml:space="preserve"><value>Household</value></data>
   <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="People_State_Waiting" xml:space="preserve"><value>Waiting for an answer</value></data>
+  <data name="Day_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Day_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
   <data name="Beans_Filters" xml:space="preserve"><value>Filters</value></data>
   <data name="Beans_FiltersCount" xml:space="preserve"><value>Filters ({0})</value></data>
+  <data name="History_CountOne" xml:space="preserve"><value>{0} brew</value></data>
+  <data name="History_Count" xml:space="preserve"><value>{0} brews</value></data>
+  <data name="History_ParameterColumn" xml:space="preserve"><value>Parameter</value></data>
+  <data name="History_RecipeLabel" xml:space="preserve"><value>Recipe</value></data>
+  <data name="History_NotesAndPhotos" xml:space="preserve"><value>Notes and photos</value></data>
+  <data name="Recipes_AnyBean" xml:space="preserve"><value>All beans</value></data>
+  <data name="Recipe_TempShort" xml:space="preserve"><value>Temp</value></data>
+  <data name="Recipe_TimeShort" xml:space="preserve"><value>Time</value></data>
+  <data name="Step_For" xml:space="preserve"><value>for {0} s</value></data>
+  <data name="Version_Changes" xml:space="preserve"><value>Changes</value></data>
   <data name="Beans_BagsInStockOne" xml:space="preserve"><value>{0} bag</value></data>
   <data name="Beans_BagsInStock" xml:space="preserve"><value>{0} bags</value></data>
   <data name="Bean_AltitudeShort" xml:space="preserve"><value>Altitude</value></data>
@@ -723,8 +735,6 @@
   <data name="Home_SeeAll" xml:space="preserve"><value>See all</value></data>
   <data name="Home_RemainingOf" xml:space="preserve"><value>Coffee left in {0}</value></data>
   <data name="Home_LeftOf" xml:space="preserve"><value>{0} of {1} left</value></data>
-  <data name="Day_Today" xml:space="preserve"><value>Today</value></data>
-  <data name="Day_Yesterday" xml:space="preserve"><value>Yesterday</value></data>
   <data name="Brew_OfWeight" xml:space="preserve"><value>of {0}</value></data>
   <data name="Brew_Days" xml:space="preserve"><value>{0} d</value></data>
   <data name="Brew_SinceRoast" xml:space="preserve"><value>Since roast</value></data>

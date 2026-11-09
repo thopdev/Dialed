@@ -24,7 +24,7 @@ public sealed class RecipeVersionTests : UiTestContext
 
     private static void EditDose(IRenderedComponent<Recipes> page, string dose)
     {
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Edit").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Edit").Click();
         page.Find("#recipe-dose").Change(dose);
         page.Find("form").Submit();
     }
@@ -129,14 +129,16 @@ public sealed class RecipeVersionTests : UiTestContext
 
         var page = Render<Recipes>(p => p.Add(x => x.Id, v2.Id));
 
-        var items = page.FindAll(".dialed-versions li");
+        // Newest first.
+        var items = page.FindAll(".dialed-versions > li");
         items.Count.ShouldBe(2);
-        items[0].TextContent.ShouldContain("Version 1");
-        items[0].TextContent.ShouldContain("4.0 ★ · 2 brew(s)");
-        items[1].TextContent.ShouldContain("Version 2");
-        items[1].TextContent.ShouldContain("Current");
-        items[1].TextContent.ShouldContain("Dose 15 g → 16 g");
-        items[1].TextContent.ShouldContain("No brews yet");
+        items[0].TextContent.ShouldContain("Version 2");
+        items[0].TextContent.ShouldContain("Current");
+        items[0].QuerySelectorAll(".dialed-version-changes .dialed-chip").Select(c => c.TextContent).ShouldBe(["Dose 15 g → 16 g"]);
+        items[0].TextContent.ShouldContain("No brews yet");
+        items[0].GetAttribute("aria-current").ShouldBe("page");
+        items[1].TextContent.ShouldContain("Version 1");
+        items[1].TextContent.ShouldContain("4.0 ★ · 2 brew(s)");
     }
 
     [Fact]
@@ -165,7 +167,7 @@ public sealed class RecipeVersionTests : UiTestContext
         await Recipes.SaveAsync(superseded, Ct);
         var page = Render<Recipes>(p => p.Add(x => x.Id, v2.Id));
 
-        page.FindAll(".dialed-page-actions button").First(b => b.TextContent == "Delete").Click();
+        page.FindAll(".dialed-page-actions button").First(b => b.GetAttribute("aria-label") == "Delete").Click();
         page.Find(".dialed-confirm .dialed-button-danger").Click();
 
         (await Recipes.GetAsync(v2.Id, Ct)).ShouldBeNull();
