@@ -55,6 +55,25 @@ else
         </section>
 
         <section>
+            <h2>Avatar, thumbnail, stat tiles, meter</h2>
+            <div class="dialed-gallery-stack">
+                <div style="display: flex; gap: 12px; align-items: center">
+                    <Avatar Name="Thomas Hopp" /><Avatar Name="Iris" /><Avatar Name="Otto de Hond" Size="56" /><Avatar Name="" />
+                    <Thumb /><Thumb Size="80" />
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 8px">
+                    <StatTile Value="182 g" Label="Remaining" Hint="of 250 g" />
+                    <StatTile Value="12 days" Label="Since roast" />
+                    <StatTile Value="4.5" Label="Average rating" />
+                </div>
+                <Meter Label="Remaining" Fraction="0.73" ValueText="182 of 250 g" />
+                <Meter Label="Low" Fraction="0.15" Tone="Meter.MeterTone.Warning" />
+                <Meter Label="Almost empty" Fraction="0.04" Tone="Meter.MeterTone.Danger" />
+                <SectionHeader Title="Section header"><Actions><a href="beans">See all</a></Actions></SectionHeader>
+            </div>
+        </section>
+
+        <section>
             <h2>Star rating</h2>
             <div class="dialed-gallery-stack">
                 <StarRating @bind-Value="rating" />
