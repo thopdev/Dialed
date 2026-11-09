@@ -73,6 +73,11 @@ public sealed class InMemoryUserStore(TimeProvider time) :
 
             user.Version++;
             users[user.Id] = user.Clone();
+            foreach (var stale in idByPasskey.Where(p => p.Value == user.Id).Select(p => p.Key).ToList())
+            {
+                idByPasskey.Remove(stale);
+            }
+
             foreach (var passkey in user.Passkeys)
             {
                 idByPasskey[Key(passkey.CredentialId)] = user.Id;

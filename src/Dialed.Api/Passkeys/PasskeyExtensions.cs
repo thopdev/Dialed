@@ -15,6 +15,10 @@ public static class PasskeyExtensions
             sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PasskeyOptions>>()));
         services.AddSingleton<ICeremonyNonces, InMemoryCeremonyNonces>();
         services.AddScoped<PasskeyCeremonies>();
+        services.AddScoped<RecoveryService>();
+        services.AddSingleton<IEmailRecoveryStore, InMemoryEmailRecoveryStore>();
+        services.AddSingleton<OutboxEmailSender>();
+        services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<OutboxEmailSender>());
 
         // In Azure the key ring must be shared and persisted (Blob Storage + Key Vault), or ceremony state
         // minted by one replica cannot be opened by another.
@@ -33,6 +37,14 @@ public static class PasskeyExtensions
         var auth = endpoints.MapGroup("/auth");
         auth.MapPost("/signup/options", (HttpContext http, SignUpOptionsRequest request, PasskeyCeremonies ceremonies) => ceremonies.SignUpOptionsAsync(http, request));
         auth.MapPost("/signup", (HttpContext http, CeremonyCompleteRequest request, PasskeyCeremonies ceremonies) => ceremonies.SignUpAsync(http, request));
+        auth.MapPost("/recover/email", async (RecoverEmailRequest request, RecoveryService recovery, HttpContext http) =>
+        {
+            // Always the same answer, so this cannot be used to find out who has an account.
+            await recovery.SendEmailCodeAsync(request.Email ?? "", http.RequestAborted);
+            return Results.NoContent();
+        });
+        auth.MapPost("/recover/options", (HttpContext http, RecoverOptionsRequest request, PasskeyCeremonies ceremonies) => ceremonies.RecoverOptionsAsync(http, request));
+        auth.MapPost("/recover", (HttpContext http, CeremonyCompleteRequest request, PasskeyCeremonies ceremonies) => ceremonies.RecoverAsync(http, request));
         auth.MapPost("/signin/options", (HttpContext http, PasskeyCeremonies ceremonies) => ceremonies.SignInOptionsAsync(http));
         auth.MapPost("/signin", (HttpContext http, CeremonyCompleteRequest request, PasskeyCeremonies ceremonies) => ceremonies.SignInAsync(http, request));
         return endpoints;

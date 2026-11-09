@@ -26,10 +26,14 @@ public sealed class AccountUser
 
     public List<StoredPasskey> Passkeys { get; set; } = [];
 
+    /// <summary>SHA-256 hashes of the recovery codes that are still unused. The codes themselves are shown once and never stored.</summary>
+    public List<string> RecoveryCodeHashes { get; set; } = [];
+
     public AccountUser Clone()
     {
         var copy = (AccountUser)MemberwiseClone();
         copy.Passkeys = [.. Passkeys.Select(p => p.Clone())];
+        copy.RecoveryCodeHashes = [.. RecoveryCodeHashes];
         return copy;
     }
 }

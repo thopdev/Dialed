@@ -4,7 +4,7 @@ namespace Dialed.Api.Auth;
 public sealed record AppUser(string Id, string? Email, string DisplayName, string HouseholdId);
 
 /// <summary>What a successful sign-in or refresh returns to the app.</summary>
-public sealed record TokenResponse(string AccessToken, DateTimeOffset AccessTokenExpiresAt, string RefreshToken, string UserId, string DisplayName, string HouseholdId);
+public sealed record TokenResponse(string AccessToken, DateTimeOffset AccessTokenExpiresAt, string RefreshToken, string UserId, string DisplayName, string HouseholdId, IReadOnlyList<string>? RecoveryCodes = null);
 
 public sealed record RefreshRequest(string RefreshToken);
 

@@ -28,12 +28,16 @@ public sealed class PasskeyCeremonies(
     IDataProtectionProvider dataProtection,
     IOptions<PasskeyOptions> options,
     IBetaInviteStore invites,
+    RecoveryService recovery,
+    IRefreshTokenStore refreshTokens,
     IOptions<BetaOptions> beta,
     TimeProvider time)
 {
     private const string SignUp = "signup";
     private const string SignIn = "signin";
     private const string Reauth = "reauth";
+    private const string AddPasskey = "addpasskey";
+    private const string Recover = "recover";
 
     private readonly IDataProtector protector = dataProtection.CreateProtector("Dialed.Passkeys.Ceremony.v1");
 
@@ -108,6 +112,10 @@ public sealed class PasskeyCeremonies(
         var account = new AccountUser { Id = state.UserId!, Email = state.Email, UserName = state.Email, DisplayName = state.DisplayName! };
         account.Passkeys.Add(StoredPasskey.From(result.Passkey));
 
+        // Recovery codes are shown once, now; only their hashes are kept.
+        var recoveryCodes = RecoveryService.NewCodes();
+        account.RecoveryCodeHashes = [.. recoveryCodes.Select(RecoveryService.Hash)];
+
         var created = await users.CreateAsync(account);
         if (!created.Succeeded)
         {
@@ -119,7 +127,119 @@ public sealed class PasskeyCeremonies(
         // Everyone starts in a household of their own; joining another one comes with households (#70).
         var person = new AppUser(account.Id, account.Email, account.DisplayName, "h-" + account.Id);
         await directory.AddAsync(person, http.RequestAborted);
-        return Results.Ok(await sessions.SignInAsync(person, http.RequestAborted));
+        return Results.Ok((await sessions.SignInAsync(person, http.RequestAborted)) with { RecoveryCodes = recoveryCodes });
+    }
+
+    /// <summary>Starts adding another passkey (another device) to the signed-in account.</summary>
+    public async Task<IResult> AddPasskeyOptionsAsync(HttpContext http, string accountId)
+    {
+        if (!origins.TryResolve(Origin(http), out var rpId))
+        {
+            return Problem(StatusCodes.Status400BadRequest, "Origin not allowed.");
+        }
+
+        if (await users.FindByIdAsync(accountId) is not { } account)
+        {
+            return Problem(StatusCodes.Status404NotFound, "Account not found.");
+        }
+
+        var handler = CreateHandler(rpId, Origin(http)!);
+        var result = await handler.MakeCreationOptionsAsync(new PasskeyUserEntity { Id = account.Id, Name = account.Email ?? account.Id, DisplayName = account.DisplayName }, http);
+        var state = Protect(new CeremonyState(AddPasskey, Origin(http)!, rpId, result.AttestationState, account.Id, account.Email, account.DisplayName));
+        return Results.Ok(new CeremonyOptionsResponse(JsonNode.Parse(result.CreationOptionsJson)!, state));
+    }
+
+    public async Task<IResult> AddPasskeyAsync(HttpContext http, CeremonyCompleteRequest request, string accountId, string? name)
+    {
+        var (state, error) = await OpenAsync(http, request.State, AddPasskey);
+        if (state is null)
+        {
+            return error!;
+        }
+
+        if (state.UserId != accountId)
+        {
+            return Problem(StatusCodes.Status400BadRequest, "Invalid ceremony state.");
+        }
+
+        var failure = await RegisterPasskeyAsync(http, request, state, name?.Trim() is { Length: > 0 and <= 60 } given ? given : "Another passkey");
+        return failure ?? Results.NoContent();
+    }
+
+    /// <summary>
+    /// Starts registering a new passkey after the person lost their old ones, proving they own the account with a recovery code
+    /// or a code sent to their email. Anything wrong looks the same, so it does not reveal whether an account exists.
+    /// </summary>
+    public async Task<IResult> RecoverOptionsAsync(HttpContext http, RecoverOptionsRequest request)
+    {
+        if (!origins.TryResolve(Origin(http), out var rpId))
+        {
+            return Problem(StatusCodes.Status400BadRequest, "Origin not allowed.");
+        }
+
+        if (await recovery.CheckAsync(request.Email, request.Code, http.RequestAborted) is not { } account)
+        {
+            return Problem(StatusCodes.Status401Unauthorized, "That code is not valid.");
+        }
+
+        var handler = CreateHandler(rpId, Origin(http)!);
+        var result = await handler.MakeCreationOptionsAsync(new PasskeyUserEntity { Id = account.Id, Name = account.Email ?? account.Id, DisplayName = account.DisplayName }, http);
+        var state = Protect(new CeremonyState(Recover, Origin(http)!, rpId, result.AttestationState, account.Id, account.Email, account.DisplayName) { RecoveryCode = request.Code.Trim() });
+        return Results.Ok(new CeremonyOptionsResponse(JsonNode.Parse(result.CreationOptionsJson)!, state));
+    }
+
+    /// <summary>Finishes recovery: the code is used up, the new passkey is added, every old session ends and the person is signed in.</summary>
+    public async Task<IResult> RecoverAsync(HttpContext http, CeremonyCompleteRequest request)
+    {
+        var (state, error) = await OpenAsync(http, request.State, Recover);
+        if (state is null)
+        {
+            return error!;
+        }
+
+        if (!await recovery.ConsumeAsync(state.UserId!, state.RecoveryCode ?? "", http.RequestAborted))
+        {
+            return Problem(StatusCodes.Status401Unauthorized, "That code is not valid.");
+        }
+
+        var failure = await RegisterPasskeyAsync(http, request, state, "Recovered passkey");
+        if (failure is not null)
+        {
+            return failure;
+        }
+
+        // Whoever held the old sign-ins may be the reason for the recovery: end them all.
+        await refreshTokens.RevokeUserAsync(state.UserId!, http.RequestAborted);
+        var person = await directory.FindByIdAsync(state.UserId!, http.RequestAborted);
+        return person is null
+            ? Problem(StatusCodes.Status401Unauthorized, "That code is not valid.")
+            : Results.Ok(await sessions.SignInAsync(person, http.RequestAborted));
+    }
+
+    private async Task<IResult?> RegisterPasskeyAsync(HttpContext http, CeremonyCompleteRequest request, CeremonyState state, string name)
+    {
+        var handler = CreateHandler(state.RpId, state.Origin);
+        var result = await handler.PerformAttestationAsync(new PasskeyAttestationContext
+        {
+            HttpContext = http,
+            CredentialJson = request.Credential.GetRawText(),
+            AttestationState = state.HandlerState,
+        });
+
+        if (!result.Succeeded || result.UserEntity?.Id != state.UserId)
+        {
+            return Problem(StatusCodes.Status400BadRequest, result.Failure?.Message ?? "Passkey registration failed.");
+        }
+
+        if (await users.FindByIdAsync(state.UserId!) is not { } account)
+        {
+            return Problem(StatusCodes.Status404NotFound, "Account not found.");
+        }
+
+        result.Passkey!.Name = name;
+        account.Passkeys.Add(StoredPasskey.From(result.Passkey));
+        var saved = await users.UpdateAsync(account);
+        return saved.Succeeded ? null : Problem(StatusCodes.Status409Conflict, "The account changed, try again.");
     }
 
     public async Task<IResult> SignInOptionsAsync(HttpContext http)
@@ -287,6 +407,9 @@ public sealed class PasskeyCeremonies(
         public string Nonce { get; init; } = "";
 
         public string? InviteCode { get; init; }
+
+        /// <summary>The recovery or email code that opened a recovery ceremony (inside the protected state).</summary>
+        public string? RecoveryCode { get; init; }
 
         public DateTimeOffset ExpiresAt { get; init; }
     }
