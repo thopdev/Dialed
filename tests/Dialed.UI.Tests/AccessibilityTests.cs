@@ -1,5 +1,7 @@
 using AngleSharp.Dom;
 using Bunit;
+using Dialed.Domain.Model;
+using Dialed.UI.Components;
 using Dialed.UI.Pages;
 using Microsoft.AspNetCore.Components;
 
@@ -81,6 +83,16 @@ public sealed class AccessibilityTests : UiTestContext
     [Fact] public void Brew_is_labeled() => Audit<BrewHome>();
 
     [Fact] public void Beans_is_labeled() => Audit<Beans>();
+
+    [Fact]
+    public void Recipe_suggestions_are_labeled()
+    {
+        var panel = Render<RecipeSuggestionPanel>(p => p.Add(x => x.Bean, new Bean { Name = "Gesha" }));
+        panel.Find("#suggest-go").Click();
+
+        panel.FindAll("#suggest-result").ShouldNotBeEmpty();
+        Problems(panel).Distinct().ToList().ShouldBeEmpty();
+    }
 
     [Fact] public void Recipes_is_labeled() => Audit<Recipes>();
 

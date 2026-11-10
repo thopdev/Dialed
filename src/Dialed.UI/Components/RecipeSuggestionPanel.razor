@@ -1,0 +1,217 @@
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Client.Recipes
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Equipment
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject IRecipeAssistant Assistant
+@inject IRepository<Bean> Beans
+@inject IRepository<Bag> Bags
+@inject IRepository<Recipe> Recipes
+@inject IRepository<Brew> Brews
+@inject IRepository<EquipmentItem> Gear
+@inject UnitFormatter Units
+@inject TimeProvider Time
+
+@* "Suggest a recipe" on the bean page (#87): a method and a grinder in, a recipe with a reason per number out, to save as a recipe. *@
+<section id="suggest" class="dialed-suggest" aria-labelledby="suggest-title">
+    <h2 id="suggest-title">@L["Suggest_Title"]</h2>
+    <p class="dialed-muted">@L["Suggest_Hint"]</p>
+    <div class="dialed-field-row">
+        <div class="dialed-field">
+            <label for="suggest-method">@L["Recipe_Method"]</label>
+            <select id="suggest-method" @bind="methodCode">
+                @foreach (var method in BrewMethodCatalog.Default.Methods)
+                {
+                    <option value="@method.Code">@method.Name</option>
+                }
+            </select>
+        </div>
+        <div class="dialed-field">
+            <label for="suggest-grinder">@L["Recipe_Grinder"]</label>
+            <select id="suggest-grinder" @bind="grinderId">
+                <option value="">@L["Suggest_NoGrinder"]</option>
+                @foreach (var grinder in grinders)
+                {
+                    <option value="@grinder.Id">@GearName(grinder)</option>
+                }
+            </select>
+        </div>
+    </div>
+    <p><button id="suggest-go" type="button" class="dialed-button dialed-button-primary" disabled="@busy" @onclick="SuggestAsync">@L[suggestion is null ? "Suggest_Go" : "Suggest_Again"]</button></p>
+
+    @if (busy)
+    {
+        <p id="suggest-busy" class="dialed-muted" role="status">@L["Suggest_Working"]</p>
+    }
+
+    @if (problem is { } p)
+    {
+        <p id="suggest-error" class="dialed-field-error" role="alert">@L[$"Suggest_Problem_{p}"]</p>
+    }
+
+    @if (suggestion is not null)
+    {
+        <div id="suggest-result" class="dialed-card dialed-suggest-result">
+            <dl class="dialed-suggest-list">
+                @foreach (var row in Rows(suggestion))
+                {
+                    <div class="dialed-suggest-row" data-parameter="@row.Parameter">
+                        <dt>@row.Label</dt>
+                        <dd><strong>@row.Value</strong><span class="dialed-muted">@row.Reason</span></dd>
+                    </div>
+                }
+            </dl>
+            @if (savedId is null)
+            {
+                <p><button id="suggest-save" type="button" class="dialed-button dialed-button-primary" disabled="@busy" @onclick="SaveAsync">@L["Suggest_Save"]</button></p>
+            }
+            else
+            {
+                <p id="suggest-saved" role="status">@L["Suggest_Saved"] <a id="suggest-open" href="@($"recipes/{savedId}")">@L["Suggest_Open"]</a></p>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private IReadOnlyList<EquipmentItem> grinders = [];
+    private string methodCode = BrewMethodCatalog.Default.Methods[0].Code;
+    private string grinderId = "";
+    private bool busy;
+    private AssistantProblem? problem;
+    private SuggestedRecipe? suggestion;
+    private string? savedId;
+
+    [Parameter, EditorRequired]
+    public Bean Bean { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        grinders = [.. (await Gear.ListAsync()).Where(g => !g.Deleted && g.Kind == EquipmentKind.Grinder)];
+    }
+
+    private static string GearName(EquipmentItem item) => string.IsNullOrWhiteSpace(item.Model) ? item.Brand : $"{item.Brand} {item.Model}";
+
+    private async Task SuggestAsync()
+    {
+        busy = true;
+        problem = null;
+        savedId = null;
+        try
+        {
+            suggestion = await Assistant.SuggestAsync(await RequestAsync());
+        }
+        catch (RecipeAssistantException exception)
+        {
+            suggestion = null;
+            problem = exception.Problem;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task<RecipeAssistantRequest> RequestAsync()
+    {
+        var grinder = grinders.FirstOrDefault(g => g.Id == grinderId);
+        var scale = grinder?.GrindScale;
+        var bags = (await Bags.ListAsync()).Where(b => !b.Deleted && b.BeanId == Bean.Id && b.RoastDate is not null);
+        var roasted = bags.Select(b => b.RoastDate!.Value).DefaultIfEmpty().Max();
+        int? days = roasted == default ? null : Math.Max(0, Time.GetLocalNow().DateTime.Date.Subtract(roasted.ToDateTime(TimeOnly.MinValue)).Days);
+
+        var brews = await Brews.ListAsync();
+        var averages = brews
+            .Where(b => !b.Deleted && b.RecipeId is not null && b.Rating is not null)
+            .GroupBy(b => b.RecipeId!)
+            .ToDictionary(g => g.Key, g => (decimal)g.Average(b => b.Rating!.Value));
+        var similar = SimilarBeanRecipes.Best(Bean, methodCode, await Beans.ListAsync(), await Recipes.ListAsync(), averages);
+
+        return new RecipeAssistantRequest(
+            methodCode,
+            BeanOrigin: Bean.Origin.Country,
+            BeanProcess: Bean.Process,
+            RoastLevel: Bean.RoastLevel?.ToString(),
+            Varieties: Bean.Varieties.Count == 0 ? null : string.Join(", ", Bean.Varieties),
+            DaysSinceRoast: days,
+            GrinderName: grinder is null ? null : GearName(grinder),
+            GrindMin: scale?.Min,
+            GrindMax: scale?.Max,
+            GrindStep: scale?.Step,
+            Similar: similar is null ? null : new SimilarRecipeInfo(
+                similar.DoseG, similar.WaterG, similar.YieldG, similar.GrindSetting, similar.TempC, similar.TimeS,
+                averages.TryGetValue(similar.Id, out var average) ? (double)average : null));
+    }
+
+    private async Task SaveAsync()
+    {
+        if (suggestion is null)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var method = BrewMethodCatalog.Default.Find(methodCode);
+            var saved = await Recipes.SaveAsync(new Recipe
+            {
+                MethodCode = methodCode,
+                Name = $"{Bean.Name} · {method?.Name ?? methodCode}",
+                BeanId = Bean.Id,
+                GrinderId = grinderId == "" ? null : grinderId,
+                DoseG = suggestion.DoseG,
+                WaterG = suggestion.WaterG,
+                YieldG = suggestion.YieldG,
+                GrindSetting = suggestion.GrindSetting,
+                TempC = suggestion.TempC,
+                TimeS = suggestion.TimeS,
+                SuggestedBy = suggestion.PromptVersion,
+            });
+            savedId = saved.Id;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private sealed record Row(string Parameter, string Label, string Value, string Reason);
+
+    private IEnumerable<Row> Rows(SuggestedRecipe s)
+    {
+        string Reason(string parameter)
+        {
+            var reason = s.Reasons.FirstOrDefault(r => r.Parameter == parameter);
+            return reason is null ? "" : reason.Text is { Length: > 0 } text ? text : L[$"Suggest_Reason_{reason.Code}"].Value;
+        }
+
+        yield return new Row("dose", L["Recipe_Dose"], Units.Weight(s.DoseG), Reason("dose"));
+        if (s.WaterG is { } water)
+        {
+            yield return new Row("water", L["Recipe_Water"], Units.Weight(water), Reason("water"));
+        }
+
+        if (s.YieldG is { } yield)
+        {
+            yield return new Row("yield", L["Recipe_Yield"], Units.Weight(yield), Reason("yield"));
+        }
+
+        if (s.GrindSetting is { } grind)
+        {
+            yield return new Row("grind", L["Recipe_Grind"], GrindScale.Format(grind), Reason("grind"));
+        }
+
+        if (s.TempC is { } temp)
+        {
+            yield return new Row("temperature", L["Recipe_Temp"], Units.Temperature(temp), Reason("temperature"));
+        }
+
+        if (s.TimeS is { } time)
+        {
+            yield return new Row("time", L["Recipe_TimeShort"], $"{time / 60}:{time % 60:00}", Reason("time"));
+        }
+    }
+}

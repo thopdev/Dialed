@@ -52,6 +52,7 @@ builder.Services.AddDialedAccount(
     sp => new AccountDataApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
     sp => new FriendsApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddDialedScan(sp => new Dialed.Client.Scan.LabelScanner(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
+builder.Services.AddDialedRecipeAssistant(sp => new Dialed.Client.Recipes.RecipeAssistant(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());

@@ -27,6 +27,8 @@ public abstract class UiTestContext : BunitContext
     /// <summary>Stands in for the camera and photo library: set <see cref="TestPhotoCapture.Next"/> to what the user will "take".</summary>
     protected TestScanner Scanner { get; } = new();
 
+    protected TestRecipeAssistant Assistant { get; } = new();
+
     protected TestPhotoCapture Camera { get; } = new();
 
     /// <summary>Sync as the app sees it: set <see cref="TestTokens.Value"/> to sign in, <see cref="TestSyncTransport.Offline"/> to cut the server off.</summary>
@@ -76,6 +78,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<PhotoService>();
         Services.AddSingleton<IPhotoCapture>(Camera);
         Services.AddSingleton<Dialed.Client.Scan.ILabelScanner>(Scanner);
+        Services.AddSingleton<Dialed.Client.Recipes.IRecipeAssistant>(Assistant);
         Services.AddSingleton<IAccessTokenProvider>(Tokens);
         Services.AddSingleton<ISyncTransport>(Transport);
         Services.AddSingleton<IConnectivity>(Network);
@@ -453,6 +456,26 @@ public abstract class UiTestContext : BunitContext
             return Problem is { } problem
                 ? throw new Dialed.Client.Scan.LabelScanException(problem)
                 : Task.FromResult(Result ?? throw new InvalidOperationException("No scan result set."));
+        }
+    }
+
+    protected sealed class TestRecipeAssistant : Dialed.Client.Recipes.IRecipeAssistant
+    {
+        public Dialed.Client.Recipes.SuggestedRecipe Result { get; set; } = new(
+            15m, 250m, null, 20m, 94m, 180,
+            [new("dose", "Baseline", null), new("water", "Ratio", null), new("grind", "OnScale", null), new("temperature", "Baseline", null), new("time", "Baseline", null)],
+            "recipe-rules-1", "rules");
+
+        public Dialed.Client.Recipes.AssistantProblem? Problem { get; set; }
+
+        public List<Dialed.Client.Recipes.RecipeAssistantRequest> Requests { get; } = [];
+
+        public Task<Dialed.Client.Recipes.SuggestedRecipe> SuggestAsync(Dialed.Client.Recipes.RecipeAssistantRequest request, CancellationToken cancellationToken = default)
+        {
+            Requests.Add(request);
+            return Problem is { } problem
+                ? throw new Dialed.Client.Recipes.RecipeAssistantException(problem)
+                : Task.FromResult(Result);
         }
     }
 

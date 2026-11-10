@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Dialed.AI.DialIn;
 using Dialed.AI.Labels;
+using Dialed.AI.Recipes;
 using Dialed.Telemetry;
 
 namespace Dialed.Api.Ai;
@@ -23,6 +24,7 @@ public static class AiEndpoints
 
         // The dial-in assistant answers with the offline rules until a Claude call for it has been verified against real brews (#86).
         services.TryAddSingleton<IDialInRefiner, RulesDialInRefiner>();
+        services.TryAddSingleton<IRecipeSuggester, RulesRecipeSuggester>();
 
         if (options.IsConfigured)
         {
@@ -127,6 +129,45 @@ public static class AiEndpoints
                 gate.Refund(userId, AiOperations.Suggestion);
                 logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Dial-in refinement failed");
                 return Results.Problem("No suggestion right now. The built-in advice still works.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+        });
+
+        group.MapPost("/recipe-suggestions", async (RecipeSuggestionContext context, ClaimsPrincipal user, AiGate gate, IRecipeSuggester suggester, ILoggerFactory logs, HttpContext http, CancellationToken ct) =>
+        {
+            if (Dialed.Domain.BrewMethods.BrewMethodCatalog.Default.Find(context.MethodCode ?? "") is null)
+            {
+                return Results.Problem("Send a known brew method.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
+            var entry = gate.TryEnter(userId, AiOperations.Suggestion);
+            if (entry.Status == AiGateStatus.Disabled)
+            {
+                return Results.Problem("AI is switched off for now. Enter the recipe by hand.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
+            }
+
+            if (entry.Status == AiGateStatus.QuotaExceeded)
+            {
+                http.Response.Headers.RetryAfter = ((int)Math.Ceiling(entry.RetryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return Results.Problem($"You have used all {entry.Limit} suggestions for today. Enter the recipe by hand, or try again tomorrow.", statusCode: StatusCodes.Status429TooManyRequests, extensions: new Dictionary<string, object?> { ["code"] = "ai-quota" });
+            }
+
+            var started = Stopwatch.GetTimestamp();
+            try
+            {
+                var suggestion = await suggester.SuggestAsync(context, ct);
+                var operation = new KeyValuePair<string, object?>("operation", "recipe");
+                DialedTelemetry.AiTokens.Add(suggestion.InputTokens, operation, new KeyValuePair<string, object?>("direction", "input"));
+                DialedTelemetry.AiTokens.Add(suggestion.OutputTokens, operation, new KeyValuePair<string, object?>("direction", "output"));
+                DialedTelemetry.AiLatency.Record(Stopwatch.GetElapsedTime(started).TotalMilliseconds, operation);
+                DialedTelemetry.AiEstimatedCost.Add((double)gate.EstimateCostUsd(suggestion.InputTokens, suggestion.OutputTokens), operation);
+                return Results.Ok(suggestion);
+            }
+            catch (RecipeSuggestionException exception)
+            {
+                gate.Refund(userId, AiOperations.Suggestion);
+                logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Recipe suggestion failed");
+                return Results.Problem("No suggestion right now. Enter the recipe by hand, or try again later.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
         });
 
