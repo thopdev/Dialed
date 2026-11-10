@@ -1,0 +1,20 @@
+{
+  "id": "synthetic-kenya-ounces",
+  "image": "synthetic-kenya-ounces.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "Day-first date with dots, weight in ounces and grams, lists split with slashes and dashes, no roast level. The name is the country in capitals.",
+  "tags": ["date-format", "units"],
+  "expected": {
+    "name": "Kenya",
+    "roaster": "Maple & Iron Roasting",
+    "country": "Kenya",
+    "region": "Nyeri",
+    "farm": "Mukanda Factory",
+    "process": "Washed",
+    "varieties": "SL28, SL34, Ruiru 11",
+    "tastingNotes": "blackcurrant, grapefruit, molasses",
+    "roastDate": "2026-10-03",
+    "weightG": "340"
+  }
+}
