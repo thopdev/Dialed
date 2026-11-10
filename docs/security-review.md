@@ -19,5 +19,5 @@ Checklist from #93. Status as of 2026-11-09. "Needs Azure" items cannot be verif
 
 ## Known limits (filed as issues)
 
-- Recovery lockout, email cooldown and email codes live in Cosmos DB (`CosmosEmailRecoveryStore`, container `recovery`, TTL per document) whenever a Cosmos DB connection string is set, as under the AppHost (#197). Without one (tests, a bare `dotnet run`) they stay in memory per instance. In Azure the connection uses managed identity rather than a key; connecting that way is part of the Cosmos DB setup in Azure.
+- Recovery lockout, email cooldown and email codes live in Cosmos DB (`CosmosEmailRecoveryStore`, container `recovery`, TTL per document) whenever a Cosmos DB connection string is set, as under the AppHost (#197). Without one (tests, a bare `dotnet run`) they stay in memory per instance. In Azure the connection uses managed identity rather than a key; see `docs/cosmos-stores.md` and #198.
 - Recovery codes are 40 bits; with the lockout and rate limits guessing is not practical, but the length can grow if needed.

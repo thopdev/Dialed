@@ -1,3 +1,4 @@
+using Dialed.Api.Data;
 using Dialed.Api.Passkeys;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -116,14 +117,13 @@ public sealed class InMemoryEmailRecoveryStoreTests : EmailRecoveryStoreContract
 
 /// <summary>
 /// The Cosmos DB store against a real Cosmos DB (the emulator in CI's <c>cosmos</c> job, or locally). Skips without
-/// <c>COSMOS_CONNECTION_STRING</c>. Each test class run uses its own container, removed afterwards.
+/// <c>COSMOS_CONNECTION_STRING</c>. Each test uses its own database, removed afterwards.
 /// </summary>
 public sealed class CosmosEmailRecoveryStoreTests : EmailRecoveryStoreContract, IAsyncLifetime
 {
     public static readonly string? ConnectionString = Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING");
 
-    private const string Database = "dialed-tests";
-    private readonly string containerId = $"recovery-{Guid.NewGuid():N}";
+    private readonly string database = $"dialed-tests-{Guid.NewGuid():N}";
     private readonly List<CosmosClient> clients = [];
 
     /// <summary>A new store over a new client, as a restarted or second API instance would have.</summary>
@@ -132,7 +132,7 @@ public sealed class CosmosEmailRecoveryStoreTests : EmailRecoveryStoreContract, 
         Assert.SkipWhen(string.IsNullOrEmpty(ConnectionString), "COSMOS_CONNECTION_STRING not set (runs in CI's cosmos job).");
         var client = CosmosConnection.CreateClient(ConnectionString!);
         clients.Add(client);
-        return new CosmosEmailRecoveryStore(new CosmosRecoveryContainer(client, Database, containerId), Time);
+        return new CosmosEmailRecoveryStore(new DialedCosmos(client, database), Time);
     }
 
     public ValueTask InitializeAsync() => ValueTask.CompletedTask;
@@ -143,7 +143,7 @@ public sealed class CosmosEmailRecoveryStoreTests : EmailRecoveryStoreContract, 
         {
             try
             {
-                await clients[0].GetContainer(Database, containerId).DeleteContainerAsync();
+                await clients[0].GetDatabase(database).DeleteAsync();
             }
             catch (CosmosException)
             {

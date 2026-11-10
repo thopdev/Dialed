@@ -1,8 +1,7 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Dialed.Api.Data;
 using Microsoft.Azure.Cosmos;
 
 namespace Dialed.Api.Passkeys;
@@ -14,8 +13,11 @@ namespace Dialed.Api.Passkeys;
 /// removes them once they no longer matter; reads still check the time themselves, because TTL follows the server clock.
 /// Concurrent writers are kept apart with ETags: a write that lost the race reads again and retries.
 /// </summary>
-public sealed class CosmosEmailRecoveryStore(CosmosRecoveryContainer recovery, TimeProvider time) : IEmailRecoveryStore
+public sealed class CosmosEmailRecoveryStore(DialedCosmos cosmos, TimeProvider time) : IEmailRecoveryStore
 {
+    /// <summary>One logical partition per account: all of an account's recovery state is read and written together.</summary>
+    public static readonly CosmosContainerSpec Container = new("recovery", "/accountId");
+
     private const string CodeId = "code";
     private const string SentId = "sent";
     private const string FailuresId = "failures";
@@ -26,7 +28,7 @@ public sealed class CosmosEmailRecoveryStore(CosmosRecoveryContainer recovery, T
 
     public async Task<bool> TryBeginSendAsync(string accountId, DateTimeOffset now, TimeSpan cooldown, CancellationToken cancellationToken = default)
     {
-        var container = await recovery.GetAsync(cancellationToken);
+        var container = await cosmos.ContainerAsync(Container, cancellationToken);
         var key = new PartitionKey(accountId);
         for (var attempt = 0; attempt < MaxRetries; attempt++)
         {
@@ -48,14 +50,14 @@ public sealed class CosmosEmailRecoveryStore(CosmosRecoveryContainer recovery, T
 
     public async Task<bool> IsLockedAsync(string accountId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var container = await recovery.GetAsync(cancellationToken);
+        var container = await cosmos.ContainerAsync(Container, cancellationToken);
         var (failures, _) = await ReadAsync<FailuresDocument>(container, FailuresId, new PartitionKey(accountId), cancellationToken);
         return failures is not null && now - failures.Since < EmailRecoveryLimits.FailureWindow && failures.Count >= EmailRecoveryLimits.MaxFailures;
     }
 
     public async Task RecordFailureAsync(string accountId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var container = await recovery.GetAsync(cancellationToken);
+        var container = await cosmos.ContainerAsync(Container, cancellationToken);
         var key = new PartitionKey(accountId);
         for (var attempt = 0; attempt < MaxRetries; attempt++)
         {
@@ -75,14 +77,14 @@ public sealed class CosmosEmailRecoveryStore(CosmosRecoveryContainer recovery, T
 
     public async Task PutAsync(string accountId, string codeHash, DateTimeOffset expiresAt, CancellationToken cancellationToken = default)
     {
-        var container = await recovery.GetAsync(cancellationToken);
+        var container = await cosmos.ContainerAsync(Container, cancellationToken);
         var document = new CodeDocument { Id = CodeId, AccountId = accountId, Hash = codeHash, ExpiresAt = expiresAt, Attempts = 0, Ttl = Ttl(expiresAt - time.GetUtcNow()) };
         await container.UpsertItemAsync(document, new PartitionKey(accountId), cancellationToken: cancellationToken);
     }
 
     public async Task<bool> CheckAsync(string accountId, string codeHash, DateTimeOffset now, bool consume, CancellationToken cancellationToken = default)
     {
-        var container = await recovery.GetAsync(cancellationToken);
+        var container = await cosmos.ContainerAsync(Container, cancellationToken);
         var key = new PartitionKey(accountId);
         for (var attempt = 0; attempt < MaxRetries; attempt++)
         {
@@ -183,88 +185,4 @@ public sealed class CosmosEmailRecoveryStore(CosmosRecoveryContainer recovery, T
         public int Count { get; init; }
         public DateTimeOffset Since { get; init; }
     }
-}
-
-/// <summary>The <c>recovery</c> container, created on first use (TTL on, per document).</summary>
-public sealed class CosmosRecoveryContainer(CosmosClient client, string databaseId, string containerId = CosmosRecoveryContainer.DefaultContainerId)
-{
-    public const string DefaultContainerId = "recovery";
-
-    private readonly SemaphoreSlim gate = new(1, 1);
-    private Container? container;
-
-    public async Task<Container> GetAsync(CancellationToken cancellationToken)
-    {
-        if (container is not null)
-        {
-            return container;
-        }
-
-        await gate.WaitAsync(cancellationToken);
-        try
-        {
-            if (container is null)
-            {
-                Database database = await client.CreateDatabaseIfNotExistsAsync(databaseId, cancellationToken: cancellationToken);
-                await database.CreateContainerIfNotExistsAsync(
-                    new ContainerProperties(containerId, "/accountId") { DefaultTimeToLive = -1 },
-                    cancellationToken: cancellationToken);
-                container = database.GetContainer(containerId);
-            }
-
-            return container;
-        }
-        finally
-        {
-            gate.Release();
-        }
-    }
-}
-
-/// <summary>Connects to Cosmos DB from a connection string (Aspire's <c>dialed</c> database reference, or <c>cosmos</c>).</summary>
-public static class CosmosConnection
-{
-    public const string DefaultDatabase = "dialed";
-
-    /// <summary>The client and database for the configured connection string, or <c>null</c> when none is set (in-memory stores then).</summary>
-    public static (string ConnectionString, string Database)? From(IConfiguration configuration)
-    {
-        var raw = configuration.GetConnectionString("dialed") ?? configuration.GetConnectionString("cosmos");
-        if (string.IsNullOrWhiteSpace(raw))
-        {
-            return null;
-        }
-
-        // Aspire adds "Database=dialed" to a database reference; the Cosmos DB client does not know that key.
-        var database = DefaultDatabase;
-        var parts = new List<string>();
-        foreach (var part in raw.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (part.StartsWith("Database=", StringComparison.OrdinalIgnoreCase))
-            {
-                database = part["Database=".Length..] is { Length: > 0 } name ? name : DefaultDatabase;
-            }
-            else
-            {
-                parts.Add(part);
-            }
-        }
-
-        return (string.Join(';', parts) + ";", database);
-    }
-
-    public static CosmosClient CreateClient(string connectionString) => new(connectionString, new CosmosClientOptions
-    {
-        // The Linux (vNext) emulator only supports gateway mode.
-        ConnectionMode = IsLocal(connectionString) ? ConnectionMode.Gateway : ConnectionMode.Direct,
-        LimitToEndpoint = true,
-        UseSystemTextJsonSerializerWithOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        },
-    });
-
-    private static bool IsLocal(string connectionString) =>
-        connectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase) || connectionString.Contains("127.0.0.1", StringComparison.Ordinal);
 }
