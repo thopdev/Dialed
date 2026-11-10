@@ -29,6 +29,8 @@ public abstract class UiTestContext : BunitContext
 
     protected TestRecipeAssistant Assistant { get; } = new();
 
+    protected TestDialInAssistant DialInAssistant { get; } = new();
+
     protected TestPhotoCapture Camera { get; } = new();
 
     /// <summary>Sync as the app sees it: set <see cref="TestTokens.Value"/> to sign in, <see cref="TestSyncTransport.Offline"/> to cut the server off.</summary>
@@ -79,6 +81,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IPhotoCapture>(Camera);
         Services.AddSingleton<Dialed.Client.Scan.ILabelScanner>(Scanner);
         Services.AddSingleton<Dialed.Client.Recipes.IRecipeAssistant>(Assistant);
+        Services.AddSingleton<Dialed.Client.DialIn.IDialInAssistant>(DialInAssistant);
         Services.AddSingleton<IAccessTokenProvider>(Tokens);
         Services.AddSingleton<ISyncTransport>(Transport);
         Services.AddSingleton<IConnectivity>(Network);
@@ -475,6 +478,26 @@ public abstract class UiTestContext : BunitContext
             Requests.Add(request);
             return Problem is { } problem
                 ? throw new Dialed.Client.Recipes.RecipeAssistantException(problem)
+                : Task.FromResult(Result);
+        }
+    }
+
+    /// <summary>Answers like the API's rules refiner for a sour shot ground on a 40-click grinder.</summary>
+    protected sealed class TestDialInAssistant : Dialed.Client.DialIn.IDialInAssistant
+    {
+        public Dialed.Client.DialIn.DialInAssistantAdvice Result { get; set; } = new(
+            [new("GrindFiner", 12m, 11m), new("HotterWater", 93m, 94m)],
+            "It tasted sour, which usually means too little extraction.", "rules-1+recent", "rules", "Sour");
+
+        public Dialed.Client.Recipes.AssistantProblem? Problem { get; set; }
+
+        public List<Dialed.Client.DialIn.DialInAssistantRequest> Requests { get; } = [];
+
+        public Task<Dialed.Client.DialIn.DialInAssistantAdvice> AdviseAsync(Dialed.Client.DialIn.DialInAssistantRequest request, CancellationToken cancellationToken = default)
+        {
+            Requests.Add(request);
+            return Problem is { } problem
+                ? throw new Dialed.Client.DialIn.DialInAssistantException(problem)
                 : Task.FromResult(Result);
         }
     }

@@ -58,9 +58,18 @@ else
     [Parameter]
     public string? BrewId { get; set; }
 
-    /// <summary><c>primary</c> or <c>secondary</c>: which dial-in suggestion of the earlier brew to put into this one (#86).</summary>
+    /// <summary>
+    /// <c>primary</c> or <c>secondary</c>: which rules suggestion of the earlier brew to put into this one; <c>ai</c>: the assistant's change
+    /// given by <see cref="ApplyKind"/> and <see cref="ApplyTo"/> (#86).
+    /// </summary>
     [SupplyParameterFromQuery(Name = "apply")]
     public string? Apply { get; set; }
+
+    [SupplyParameterFromQuery(Name = "kind")]
+    public string? ApplyKind { get; set; }
+
+    [SupplyParameterFromQuery(Name = "to")]
+    public string? ApplyTo { get; set; }
 
     private SuggestionKind? appliedKind;
 
@@ -96,6 +105,17 @@ else
                     appliedKind = suggestion.Kind;
                 }
             }
+            else if (Apply == "ai" && BrewMethodCatalog.Default.Find(previous.MethodCode) is { } aiMethod
+                && Enum.TryParse<SuggestionKind>(ApplyKind, out var kind) && Enum.IsDefined(kind)
+                && decimal.TryParse(ApplyTo, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var to) && to > 0m)
+            {
+                var suggestion = new DialInSuggestion(kind, SuggestionReason.Balanced, null, to);
+                if (DialInApply.CanApply(suggestion))
+                {
+                    initial = DialInApply.Apply(initial, aiMethod, suggestion);
+                    appliedKind = kind;
+                }
+            }
         }
         else
         {
@@ -117,7 +137,9 @@ else
     {
         var saved = await BrewStore.SaveAsync(brew with { BrewedAt = Time.GetUtcNow() });
         await LinkAppliedSuggestionAsync(saved);
-        Navigation.NavigateTo($"brew/{BagId}");
+
+        // A brew that did not taste right lands on the bag page with its dial-in advice (#86).
+        Navigation.NavigateTo(DialInHistory.NeedsAdvice(saved) ? $"brew/{BagId}?logged={saved.Id}" : $"brew/{BagId}");
     }
 
     /// <summary>

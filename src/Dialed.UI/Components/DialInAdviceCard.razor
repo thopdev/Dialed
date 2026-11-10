@@ -1,5 +1,8 @@
+@using System.Globalization
 @using Dialed.Client.Data
+@using Dialed.Client.DialIn
 @using Dialed.Client.Preferences
+@using AssistantProblem = Dialed.Client.Recipes.AssistantProblem
 @using Dialed.Domain.BrewMethods
 @using Dialed.Domain.DialIn
 @using Dialed.Domain.Equipment
@@ -7,10 +10,14 @@
 @inject IStringLocalizer<Strings> L
 @inject UnitFormatter Units
 @inject IRepository<DialInFeedback> Feedback
+@inject IRepository<Brew> Brews
+@inject IRepository<Bag> Bags
+@inject IRepository<Bean> Beans
+@inject IRepository<EquipmentItem> Gear
+@inject IDialInAssistant Assistant
 @inject NavigationManager Navigation
-@inject TimeProvider Time
 
-@* What to try next, from the offline rules in Dialed.Domain (#85). *@
+@* What to try next: the offline rules in Dialed.Domain at once (#85), and on request the assistant's refinement from the last brews of this bag (#86). *@
 @if (dismissed)
 {
     <p id="dialin-dismissed" class="dialed-muted" role="status">@L["DialIn_Dismissed"]</p>
@@ -34,6 +41,50 @@ else if (advice is not null)
         </ol>
         @if (advice.Primary.Kind != SuggestionKind.Keep)
         {
+            <div class="dialed-dialin-ai">
+                @if (refined is null)
+                {
+                    <p class="dialed-dialin-actions">
+                        <button id="dialin-ask" type="button" class="dialed-button" aria-describedby="dialin-ask-hint" disabled="@asking" @onclick="AskAsync">@L["DialIn_Ask"]</button>
+                    </p>
+                    <p id="dialin-ask-hint" class="dialed-muted">@L["DialIn_AskHint"]</p>
+                }
+
+                @if (asking)
+                {
+                    <p id="dialin-ask-busy" class="dialed-muted" role="status">@L["DialIn_Asking"]</p>
+                }
+
+                @if (problem is { } p)
+                {
+                    <p id="dialin-ask-error" class="dialed-field-error" role="alert">@L[$"DialIn_Problem_{p}"]</p>
+                }
+
+                @if (refined is not null)
+                {
+                    <div id="dialin-ai" class="dialed-dialin-ai-result" role="region" aria-labelledby="dialin-ai-title">
+                        <h3 id="dialin-ai-title">@L["DialIn_AiTitle"]</h3>
+                        <ol class="dialed-dialin-list">
+                            @for (var i = 0; i < refinedChanges.Count; i++)
+                            {
+                                var index = i;
+                                var change = refinedChanges[index];
+                                <li id="@($"dialin-ai-{index}")">
+                                    <p class="dialed-dialin-action"><strong>@L[$"DialIn_Kind_{change.Kind}"]</strong>@Change(change.Kind, change.From, change.To)</p>
+                                    @if (DialInApply.CanApply(change))
+                                    {
+                                        <p class="dialed-dialin-actions">
+                                            <button id="@($"dialin-ai-apply-{index}")" type="button" class="dialed-button dialed-button-primary" aria-label="@string.Format(L["DialIn_ApplyLabel"].Value, L[$"DialIn_Kind_{change.Kind}"].Value)" @onclick="() => ApplyRefinedAsync(change)">@L["DialIn_Apply"]</button>
+                                        </p>
+                                    }
+                                </li>
+                            }
+                        </ol>
+                        <p id="dialin-ai-why" class="dialed-muted">@RefinedWhy()</p>
+                    </div>
+                }
+            </div>
+
             <p class="dialed-dialin-actions">
                 <button id="dialin-dismiss" type="button" class="dialed-button" @onclick="DismissAsync">@L["DialIn_Dismiss"]</button>
             </p>
@@ -44,6 +95,11 @@ else if (advice is not null)
 @code {
     private DialInAdvice? advice;
     private bool dismissed;
+    private bool asking;
+    private AssistantProblem? problem;
+    private DialInAssistantAdvice? refined;
+    private IReadOnlyList<DialInSuggestion> refinedChanges = [];
+    private string? shownFor;
 
     [Parameter, EditorRequired]
     public Brew Brew { get; set; } = default!;
@@ -57,11 +113,18 @@ else if (advice is not null)
         var method = BrewMethodCatalog.Default.Find(Brew.MethodCode);
         advice = method is null ? null : DialInAdvisor.Advise(method, Brew, Scale);
         dismissed = (await Feedback.ListAsync()).Any(f => !f.Deleted && f.BrewId == Brew.Id && f.Outcome == DialInOutcome.Dismissed);
+        if (shownFor != Brew.Id)
+        {
+            shownFor = Brew.Id;
+            refined = null;
+            refinedChanges = [];
+            problem = null;
+        }
     }
 
     private RenderFragment Suggestion(DialInSuggestion suggestion, string id, string which) => __builder =>
     {
-        <p class="dialed-dialin-action"><strong>@L[$"DialIn_Kind_{suggestion.Kind}"]</strong>@Change(suggestion)</p>
+        <p class="dialed-dialin-action"><strong>@L[$"DialIn_Kind_{suggestion.Kind}"]</strong>@Change(suggestion.Kind, suggestion.From, suggestion.To)</p>
         <p class="dialed-muted">@L[$"DialIn_Reason_{suggestion.Reason}"]</p>
         @if (DialInApply.CanApply(suggestion))
         {
@@ -71,43 +134,134 @@ else if (advice is not null)
         }
     };
 
-    /// <summary>Records that the suggestion was used, then opens the brew form for the same bag with it filled in.</summary>
-    private async Task ApplyAsync(DialInSuggestion suggestion, string which)
+    /// <summary>Asks the assistant, with the latest earlier brews of the same bag and method, the bean and the grinder.</summary>
+    private async Task AskAsync()
     {
-        await RecordAsync(suggestion, DialInOutcome.Applied);
-        Navigation.NavigateTo($"brew/{Brew.BagId}/log/again/{Brew.Id}?apply={which}");
-    }
-
-    private async Task DismissAsync()
-    {
-        if (advice is null)
+        asking = true;
+        problem = null;
+        try
         {
-            return;
+            refined = await Assistant.AdviseAsync(await RequestAsync());
+            refinedChanges = [.. refined.Changes
+                .Select(c => Enum.TryParse<SuggestionKind>(c.Kind, out var kind) && Enum.IsDefined(kind) ? new DialInSuggestion(kind, SuggestionReason.Balanced, c.From, c.To) : null)
+                .OfType<DialInSuggestion>()
+                .Take(2)];
+            if (refinedChanges.Count == 0)
+            {
+                refined = null;
+                problem = AssistantProblem.Unavailable;
+            }
         }
-
-        await RecordAsync(advice.Primary, DialInOutcome.Dismissed);
-        dismissed = true;
+        catch (DialInAssistantException exception)
+        {
+            refined = null;
+            refinedChanges = [];
+            problem = exception.Problem;
+        }
+        finally
+        {
+            asking = false;
+        }
     }
 
-    private Task RecordAsync(DialInSuggestion suggestion, DialInOutcome outcome) =>
-        Feedback.SaveAsync(new DialInFeedback
-        {
-            BrewId = Brew.Id,
-            Kind = suggestion.Kind,
-            Outcome = outcome,
-            Source = "rules",
-            PromptVersion = DialInAdvisor.RulesVersion,
-            RatingBefore = outcome == DialInOutcome.Applied ? Brew.Rating : null,
-        });
-
-    private string Change(DialInSuggestion suggestion)
+    private async Task<DialInAssistantRequest> RequestAsync()
     {
-        if (suggestion.From is not { } from || suggestion.To is not { } to)
+        var bag = await Bags.GetAsync(Brew.BagId);
+        var bean = bag is null ? null : await Beans.GetAsync(bag.BeanId);
+        var grinder = Brew.GrinderId is null ? null : await Gear.GetAsync(Brew.GrinderId);
+        var scale = Scale ?? grinder?.GrindScale;
+        var recent = (await Brews.ListAsync())
+            .Where(b => !b.Deleted && b.Id != Brew.Id && b.BagId == Brew.BagId && b.MethodCode == Brew.MethodCode && b.BrewedAt < Brew.BrewedAt)
+            .OrderByDescending(b => b.BrewedAt)
+            .Take(DialInAssistantRequest.MaxRecent)
+            .Select(DialInBrewInfo.From)
+            .ToList();
+
+        return new DialInAssistantRequest(
+            Brew.MethodCode,
+            DialInBrewInfo.From(Brew),
+            recent,
+            BeanOrigin: bean?.Origin.Country,
+            BeanProcess: bean?.Process,
+            RoastLevel: bean?.RoastLevel?.ToString(),
+            GrinderName: grinder is null ? null : string.IsNullOrWhiteSpace(grinder.Model) ? grinder.Brand : $"{grinder.Brand} {grinder.Model}",
+            GrindMin: scale?.Min,
+            GrindMax: scale?.Max,
+            GrindStep: scale?.Step);
+    }
+
+    /// <summary>The reason in the user's language when the answer has a known code, else the assistant's own words.</summary>
+    private string RefinedWhy()
+    {
+        if (refined is null)
         {
             return "";
         }
 
-        return $" ({Value(suggestion.Kind, from)} → {Value(suggestion.Kind, to)})";
+        if (refined.ReasonCode is { Length: > 0 } code)
+        {
+            var worded = L[$"DialIn_Reason_{code}"];
+            if (!worded.ResourceNotFound)
+            {
+                return worded.Value;
+            }
+        }
+
+        return refined.Why;
+    }
+
+    /// <summary>Records that the suggestion was used, then opens the brew form for the same bag with it filled in.</summary>
+    private async Task ApplyAsync(DialInSuggestion suggestion, string which)
+    {
+        await RecordAsync(suggestion.Kind, DialInOutcome.Applied, "rules", DialInAdvisor.RulesVersion);
+        Navigation.NavigateTo($"brew/{Brew.BagId}/log/again/{Brew.Id}?apply={which}");
+    }
+
+    private async Task ApplyRefinedAsync(DialInSuggestion change)
+    {
+        if (refined is null || change.To is not { } to)
+        {
+            return;
+        }
+
+        await RecordAsync(change.Kind, DialInOutcome.Applied, "ai", refined.PromptVersion);
+        Navigation.NavigateTo($"brew/{Brew.BagId}/log/again/{Brew.Id}?apply=ai&kind={change.Kind}&to={to.ToString(CultureInfo.InvariantCulture)}");
+    }
+
+    /// <summary>Dismisses what is on top: the assistant's answer when there is one, else the rules' first suggestion.</summary>
+    private async Task DismissAsync()
+    {
+        if (refined is not null && refinedChanges.Count > 0)
+        {
+            await RecordAsync(refinedChanges[0].Kind, DialInOutcome.Dismissed, "ai", refined.PromptVersion);
+        }
+        else if (advice is not null)
+        {
+            await RecordAsync(advice.Primary.Kind, DialInOutcome.Dismissed, "rules", DialInAdvisor.RulesVersion);
+        }
+
+        dismissed = true;
+    }
+
+    private Task RecordAsync(SuggestionKind kind, DialInOutcome outcome, string source, string promptVersion) =>
+        Feedback.SaveAsync(new DialInFeedback
+        {
+            BrewId = Brew.Id,
+            Kind = kind,
+            Outcome = outcome,
+            Source = source,
+            PromptVersion = promptVersion,
+            RatingBefore = outcome == DialInOutcome.Applied ? Brew.Rating : null,
+        });
+
+    private string Change(SuggestionKind kind, decimal? from, decimal? to)
+    {
+        if (from is not { } f || to is not { } t)
+        {
+            return "";
+        }
+
+        return $" ({Value(kind, f)} → {Value(kind, t)})";
     }
 
     private string Value(SuggestionKind kind, decimal value) => kind switch
