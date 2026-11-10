@@ -29,4 +29,4 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 ## Where things stand
 - Waves 0 to 3 done (core app, accounts, households, friends, sync, passkeys, security, error reporting, accessibility pass, install metadata, privacy page, feedback, statistics, CSV import, label scan with a fake AI client, AI quotas).
 - Visual polish (#213 to #216, on the shared components of #217) is done and merged; preferences and finished setup are saved on the device (`StoredUserPreferences`).
-- Open: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (owner has to give the address), offline scan queue (needs #68), JS-level error reporting, Azure items (#25, #79, #84, #198, #199).
+- Open: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (owner has to give the address), offline scan queue (#68 is in: needs a label scan by photo id plus a "scans to review" list, see `docs/photo-uploads.md`), JS-level error reporting, Azure items (#25, #79, #84, #198, #199).

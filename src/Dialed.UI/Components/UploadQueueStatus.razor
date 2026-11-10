@@ -1,0 +1,25 @@
+@using Dialed.Client.Uploads
+@* Photo uploads for Settings (#68): how many wait (they are only on this device until then) and how many failed, with a retry. *@
+@implements IDisposable
+@inject IUploadQueue Uploads
+@inject IStringLocalizer<Strings> L
+
+@if (Uploads.PendingCount > 0)
+{
+    <p id="uploads-pending" class="dialed-muted" role="status">@L["Uploads_Pending", Uploads.PendingCount]</p>
+}
+@if (Uploads.FailedCount > 0)
+{
+    <div id="uploads-failed" class="dialed-uploads-failed">
+        <p role="alert">@L["Uploads_Failed", Uploads.FailedCount]</p>
+        <button id="uploads-retry" type="button" class="dialed-button" @onclick="() => Uploads.RetryAsync()">@L["Uploads_Retry"]</button>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Uploads.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Uploads.Changed -= OnChanged;
+}

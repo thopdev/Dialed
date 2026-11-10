@@ -803,4 +803,11 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>A setting on your grinder's scale, to adjust by taste.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Very fresh beans give off a lot of gas, so give it a little time.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>A usual ratio of coffee to liquid for this method.</value></data>
+  <data name="Uploads_Pending" xml:space="preserve"><value>Photos waiting to upload: {0}. Until then they are only on this device.</value></data>
+  <data name="Uploads_Failed" xml:space="preserve"><value>Photos that could not be uploaded: {0}</value></data>
+  <data name="Uploads_Retry" xml:space="preserve"><value>Try uploading again</value></data>
+  <data name="Photo_Upload_Waiting" xml:space="preserve"><value>Waiting to upload</value></data>
+  <data name="Photo_Upload_Uploading" xml:space="preserve"><value>Uploading…</value></data>
+  <data name="Photo_Upload_Failed" xml:space="preserve"><value>Upload failed</value></data>
+  <data name="Photo_Upload_Retry" xml:space="preserve"><value>Retry upload</value></data>
 </root>

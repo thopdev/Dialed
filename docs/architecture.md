@@ -206,6 +206,8 @@ sequenceDiagram
 3. Blob event → Function strips any remaining metadata and creates thumbnails (256 px, 768 px), updates `Photo.ThumbPath`.
 4. Reads use short-lived read SAS URLs from the API; the service worker / browser cache keeps images.
 
+Details, the local stand-in for Blob Storage and the steps to switch to Azure: [photo-uploads.md](photo-uploads.md).
+
 ## 7. Azure resources (per environment)
 
 | Resource | SKU / notes |

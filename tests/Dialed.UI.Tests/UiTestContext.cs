@@ -61,6 +61,9 @@ public abstract class UiTestContext : BunitContext
     /// <summary>The system share sheet: what was shared, and whether the platform has one.</summary>
     protected TestShare Shares { get; } = new();
 
+    /// <summary>The photo upload queue: what was queued; set <see cref="TestUploadQueue.Set"/> to show a photo waiting or failed.</summary>
+    protected TestUploadQueue Uploads { get; } = new();
+
     protected UiTestContext()
     {
         Services.AddSingleton<IAppEnvironment>(Environment);
@@ -75,6 +78,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<UnitFormatter>();
         Services.AddSingleton<BrewTimerHandoff>();
         Services.AddSingleton<ILocalFileStore, InMemoryLocalFileStore>();
+        Services.AddSingleton<Dialed.Client.Uploads.IUploadQueue>(Uploads);
         Services.AddSingleton<PhotoService>();
         Services.AddSingleton<IPhotoCapture>(Camera);
         Services.AddSingleton<Dialed.Client.Scan.ILabelScanner>(Scanner);

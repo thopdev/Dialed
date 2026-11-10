@@ -5,6 +5,7 @@ using Dialed.Api.Ai;
 using Dialed.Api.Friends;
 using Dialed.Api.Households;
 using Dialed.Api.Passkeys;
+using Dialed.Api.Photos;
 using Dialed.Api.Protection;
 using Dialed.Api.Seeding;
 using Dialed.Api.Sync;
@@ -30,6 +31,7 @@ builder.Services.AddDialedFriends();
 builder.Services.AddDialedAi(builder.Configuration);
 builder.Services.AddDialedBetaInvites(builder.Configuration);
 builder.Services.AddDialedAccount();
+builder.Services.AddDialedPhotos(builder.Configuration, builder.Environment);
 builder.Services.AddDevelopmentSeeding(builder.Configuration);
 
 var app = builder.Build();
@@ -53,5 +55,6 @@ app.MapDialedFriends();
 app.MapDialedAi();
 app.MapDialedBetaInvites();
 app.MapDialedAccount();
+app.MapDialedPhotos();
 
 app.Run();

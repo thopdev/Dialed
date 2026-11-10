@@ -42,6 +42,6 @@
         }
 
         loadedFor = PhotoId;
-        uri = PhotoId is null ? null : await Photos.GetDataUriAsync(PhotoId);
+        uri = PhotoId is null ? null : await Photos.GetImageSourceAsync(PhotoId);
     }
 }

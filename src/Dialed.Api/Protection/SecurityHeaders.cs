@@ -22,7 +22,9 @@ public static class SecurityHeaders
                 }
 
                 var path = context.Request.Path;
-                if (!(path == "/" || path.StartsWithSegments("/health") || path.StartsWithSegments("/alive")))
+                // Photo files from the local stand-in for Blob Storage set their own (private) caching.
+                var photoFile = path.StartsWithSegments(Photos.LocalSignedPhotoUrls.PathPrefix) && headers.CacheControl.Count > 0;
+                if (!(path == "/" || path.StartsWithSegments("/health") || path.StartsWithSegments("/alive") || photoFile))
                 {
                     headers["Cache-Control"] = "no-store";
                 }

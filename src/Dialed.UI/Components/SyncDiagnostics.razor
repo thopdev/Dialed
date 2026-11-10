@@ -10,6 +10,7 @@
 <div id="sync-diagnostics">
     <p id="sync-status">@L["Sync_Status", StatusText]</p>
     <p id="sync-pending" class="dialed-muted">@L["Sync_Pending", Sync.PendingCount]</p>
+    <UploadQueueStatus />
     @if (Sync.LastSyncedAt is { } at)
     {
         <p id="sync-last" class="dialed-muted">@L["Sync_LastSynced", at.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)]</p>

@@ -802,4 +802,11 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>Een stand op de schaal van je molen, om op smaak bij te stellen.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Heel verse bonen geven veel gas af, dus geef het wat tijd.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>Een gangbare verhouding koffie en vloeistof voor deze methode.</value></data>
+  <data name="Uploads_Pending" xml:space="preserve"><value>Foto's die nog moeten uploaden: {0}. Tot dan staan ze alleen op dit apparaat.</value></data>
+  <data name="Uploads_Failed" xml:space="preserve"><value>Foto's die niet konden worden geüpload: {0}</value></data>
+  <data name="Uploads_Retry" xml:space="preserve"><value>Opnieuw proberen te uploaden</value></data>
+  <data name="Photo_Upload_Waiting" xml:space="preserve"><value>Wacht op upload</value></data>
+  <data name="Photo_Upload_Uploading" xml:space="preserve"><value>Bezig met uploaden…</value></data>
+  <data name="Photo_Upload_Failed" xml:space="preserve"><value>Upload mislukt</value></data>
+  <data name="Photo_Upload_Retry" xml:space="preserve"><value>Opnieuw uploaden</value></data>
 </root>

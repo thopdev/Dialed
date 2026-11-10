@@ -42,6 +42,13 @@ public static class ProtectionExtensions
         app.Use(async (context, next) =>
         {
             var limit = context.RequestServices.GetRequiredService<ProtectionOptions>().MaxRequestBodyBytes;
+
+            // The local stand-in for Blob Storage takes whole photos (in Azure they never reach the API).
+            if (context.Request.Path.StartsWithSegments(Photos.LocalSignedPhotoUrls.PathPrefix)
+                && context.RequestServices.GetService<Photos.PhotoStorageOptions>() is { } photos)
+            {
+                limit = photos.MaxBytes;
+            }
             if (context.Request.ContentLength > limit)
             {
                 context.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;

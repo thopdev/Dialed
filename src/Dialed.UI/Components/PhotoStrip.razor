@@ -1,6 +1,9 @@
 @using Dialed.Client.Platform
+@using Dialed.Client.Uploads
+@implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject Dialed.Client.PhotoService Photos
+@inject IUploadQueue Uploads
 @inject IPhotoCapture Capture
 
 @* Photos of one item: thumbnails, and unless read-only, buttons to take or pick a photo and to remove one. *@
@@ -15,6 +18,19 @@
             else
             {
                 <span class="dialed-photo-missing">@L["Photo_Missing"]</span>
+            }
+            @switch (Uploads.StatusOf(id))
+            {
+                case UploadStatus.Waiting:
+                    <span class="dialed-photo-upload" data-upload="waiting">@L["Photo_Upload_Waiting"]</span>
+                    break;
+                case UploadStatus.Uploading:
+                    <span class="dialed-photo-upload" data-upload="uploading">@L["Photo_Upload_Uploading"]</span>
+                    break;
+                case UploadStatus.Failed:
+                    <span class="dialed-photo-upload dialed-photo-upload-failed" data-upload="failed">@L["Photo_Upload_Failed"]</span>
+                    <button type="button" class="dialed-button photo-upload-retry" @onclick="() => Uploads.RetryAsync(id)">@L["Photo_Upload_Retry"]</button>
+                    break;
             }
             @if (!ReadOnly)
             {
@@ -52,11 +68,18 @@
     [Parameter]
     public bool ReadOnly { get; set; }
 
+    protected override void OnInitialized() => Uploads.Changed += OnUploadsChanged;
+
+    // Status text changes while the queue works; the strip itself keeps its photos.
+    private void OnUploadsChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Uploads.Changed -= OnUploadsChanged;
+
     protected override async Task OnParametersSetAsync()
     {
         foreach (var id in PhotoIds.Where(id => !uris.ContainsKey(id)).ToList())
         {
-            uris[id] = await Photos.GetDataUriAsync(id);
+            uris[id] = await Photos.GetImageSourceAsync(id);
         }
     }
 

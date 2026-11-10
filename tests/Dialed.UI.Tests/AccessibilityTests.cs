@@ -94,6 +94,19 @@ public sealed class AccessibilityTests : UiTestContext
         Problems(panel).Distinct().ToList().ShouldBeEmpty();
     }
 
+    [Fact]
+    public void Upload_states_are_labeled()
+    {
+        Uploads.Set("p1", Dialed.Client.Uploads.UploadStatus.Waiting);
+        Uploads.Set("p2", Dialed.Client.Uploads.UploadStatus.Failed);
+        var strip = Render<PhotoStrip>(p => p.Add(x => x.PhotoIds, ["p1", "p2"]));
+        var status = Render<UploadQueueStatus>();
+
+        strip.FindAll("button.photo-upload-retry").ShouldHaveSingleItem();
+        status.FindAll("#uploads-retry").ShouldHaveSingleItem();
+        Problems(strip).Concat(Problems(status)).Distinct().ToList().ShouldBeEmpty();
+    }
+
     [Fact] public void Recipes_is_labeled() => Audit<Recipes>();
 
     [Fact] public void Equipment_is_labeled() => Audit<Gear>();

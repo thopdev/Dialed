@@ -53,6 +53,11 @@ public static class ClientServices
             loadables.Add(state);
         }
 
+        if (services.GetService<Uploads.IUploadQueue>() is ILoadable uploads)
+        {
+            loadables.Add(uploads);
+        }
+
         foreach (var loadable in loadables)
         {
             await loadable.LoadAsync(cancellationToken);
@@ -120,6 +125,30 @@ public static class ClientServices
         ArgumentNullException.ThrowIfNull(scanner);
 
         services.TryAddSingleton(scanner);
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the photo upload queue (#68). <paramref name="api"/> creates the API client, so the host decides the base address. The host
+    /// registers <see cref="Platform.IConnectivity"/>, <see cref="Platform.IAppLifecycle"/> and <see cref="ILocalFileStore"/>, and calls
+    /// <see cref="Uploads.PhotoUploadQueue.StartAsync"/> once after loading the local data.
+    /// </summary>
+    public static IServiceCollection AddDialedUploads(this IServiceCollection services, Func<IServiceProvider, Uploads.IPhotoUploadApi> api)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(api);
+
+        services.TryAddSingleton(api);
+        services.TryAddSingleton(sp => new Uploads.PhotoUploadQueue(
+            sp.GetRequiredService<ILocalStore>(),
+            sp.GetRequiredService<ILocalFileStore>(),
+            sp.GetRequiredService<IRepository<Photo>>(),
+            sp.GetRequiredService<Uploads.IPhotoUploadApi>(),
+            sp.GetRequiredService<IConnectivity>(),
+            sp.GetRequiredService<IAppLifecycle>(),
+            sp.GetService<TimeProvider>() ?? TimeProvider.System,
+            sp.GetService<SyncCoordinator>()));
+        services.TryAddSingleton<Uploads.IUploadQueue>(sp => sp.GetRequiredService<Uploads.PhotoUploadQueue>());
         return services;
     }
 
