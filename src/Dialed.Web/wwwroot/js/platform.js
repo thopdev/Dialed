@@ -417,6 +417,19 @@ export function reportError(report) {
     }
 }
 
+// Forwards JavaScript errors caught by js/errors.js (window errors, unhandled rejections, service worker errors) to .NET, which
+// scrubs, deduplicates and limits them like .NET errors. Returns whether the catcher was on the page.
+export function watchScriptErrors(dotNetRef) {
+    const catcher = window.dialedErrors;
+    if (!catcher) {
+        return false;
+    }
+    catcher.connect(report => {
+        dotNetRef.invokeMethodAsync('OnScriptError', report.kind, report.name, report.stack).catch(() => { });
+    });
+    return true;
+}
+
 // A short, anonymous description for feedback messages: device kind, OS and whether this is the installed app.
 export function describeDevice() {
     const ua = navigator.userAgent || '';

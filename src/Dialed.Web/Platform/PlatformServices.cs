@@ -21,6 +21,7 @@ internal static class PlatformServices
         services.AddSingleton<IErrorReportingSettings, BrowserErrorReportingSettings>();
         services.AddSingleton<IPreferenceStore, BrowserPreferenceStore>();
         services.AddSingleton<ILoggerProvider>(sp => new ErrorReportingLoggerProvider(sp));
+        services.AddSingleton<BrowserScriptErrors>();
         services.AddSingleton<IPasskeyClient, BrowserPasskeyClient>();
         services.AddSingleton<IStoragePersistence, BrowserStoragePersistence>();
         services.AddSingleton<IDeviceInfo, BrowserDeviceInfo>();
@@ -31,9 +32,10 @@ internal static class PlatformServices
         return services;
     }
 
-    /// <summary>Starts the services that listen to browser events (connectivity, visibility).</summary>
+    /// <summary>Starts the services that listen to browser events (JavaScript errors, connectivity, visibility).</summary>
     public static async Task StartBrowserPlatformAsync(this IServiceProvider services)
     {
+        await services.GetRequiredService<BrowserScriptErrors>().InitializeAsync();
         await services.GetRequiredService<BrowserConnectivity>().InitializeAsync();
         await services.GetRequiredService<BrowserAppLifecycle>().InitializeAsync();
     }
