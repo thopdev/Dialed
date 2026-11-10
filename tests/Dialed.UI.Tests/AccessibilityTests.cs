@@ -94,6 +94,8 @@ public sealed class AccessibilityTests : UiTestContext
 
     [Fact] public void People_is_labeled() => Audit<People>();
 
+    [Fact] public void Friends_activity_is_labeled() => Audit<Activity>();
+
     [Fact] public void Settings_is_labeled() => Audit<Settings>();
 
     [Fact] public void Statistics_is_labeled() => Audit<Statistics>();

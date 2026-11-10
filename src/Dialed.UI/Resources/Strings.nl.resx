@@ -756,6 +756,13 @@
   <data name="Household_RevokeNamed" xml:space="preserve"><value>Uitnodiging {0} intrekken</value></data>
   <data name="Household_InviteRevoked" xml:space="preserve"><value>Uitnodiging {0} ingetrokken.</value></data>
   <data name="Household_InviteCodeMany" xml:space="preserve"><value>Uitnodigingscode: {0} (geldig tot {1}, voor {2} personen)</value></data>
+  <data name="Feed_Title" xml:space="preserve"><value>Activiteit van vrienden</value></data>
+  <data name="Feed_Refresh" xml:space="preserve"><value>Vernieuwen</value></data>
+  <data name="Feed_EmptyTitle" xml:space="preserve"><value>Nog niets</value></data>
+  <data name="Feed_Empty" xml:space="preserve"><value>Als mensen die je volgt brews of bonen met vrienden delen, zie je ze hier.</value></data>
+  <data name="Feed_Brewed" xml:space="preserve"><value>{0} zette {1}</value></data>
+  <data name="Feed_BrewedUnknown" xml:space="preserve"><value>{0} zette een koffie</value></data>
+  <data name="Feed_AddedBean" xml:space="preserve"><value>{0} voegde {1} toe</value></data>
   <data name="People_Copy" xml:space="preserve"><value>Kopieer</value></data>
   <data name="People_CopyNamed" xml:space="preserve"><value>Kopieer {0} naar mijn huishouden</value></data>
   <data name="People_InYourHousehold" xml:space="preserve"><value>In je huishouden</value></data>

@@ -7,7 +7,17 @@
 @inject IStringLocalizer<Strings> L
 @inject Dialed.Client.Platform.IShareService Share
 
-<PageHeader Title="@L["Nav_People"]" />
+<PageHeader Title="@L["Nav_People"]">
+    <Actions>
+        @if (Session.IsSignedIn)
+        {
+            <a id="people-feed" class="dialed-button dialed-button-icon" href="feed">
+                <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size20.History())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                @L["Feed_Title"]
+            </a>
+        }
+    </Actions>
+</PageHeader>
 
 @if (!Session.IsSignedIn)
 {
