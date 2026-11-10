@@ -1,0 +1,22 @@
+@using Dialed.Client.Account
+@using Dialed.Client.Storage
+@implements IDisposable
+@inject StorageStatus Storage
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+
+@* The device could not save the last change (storage full or blocked, #114). Nothing is lost: it stays in memory and, when signed in, is sent to the account. *@
+@if (Storage.WriteFailed)
+{
+    <div id="storage-warning">
+        <ErrorBanner Severity="ErrorBanner.BannerSeverity.Warning" Message="@L[Session.IsSignedIn ? "Storage_WriteFailedSignedIn" : "Storage_WriteFailed"]" />
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Storage.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Storage.Changed -= OnChanged;
+}

@@ -39,7 +39,9 @@ builder.Services.AddBitBsqliteDbContext<LocalDbContext>();
 // Bit registers IDbContextFactory<LocalDbContext> as scoped, and our singletons (local store, photo service) use it. In the browser the
 // whole app is one scope, so that is safe at runtime, but the Development host validates scopes and refuses to start.
 builder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions { ValidateScopes = false, ValidateOnBuild = false }));
-builder.Services.AddSingleton<ILocalStore, BsqliteLocalStore>();
+builder.Services.AddSingleton<BsqliteLocalStore>();
+// A full or blocked disk must not break saving: failed writes are reported and the data stays in memory (#114).
+builder.Services.AddSingleton<ILocalStore>(sp => new ResilientLocalStore(sp.GetRequiredService<BsqliteLocalStore>(), sp.GetRequiredService<StorageStatus>()));
 builder.Services.AddDialedData();
 builder.Services.AddSingleton<ISyncTransport>(sp => new HttpSyncTransport(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddSingleton<ISessionStore, BrowserSessionStore>();

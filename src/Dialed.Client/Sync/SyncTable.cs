@@ -12,7 +12,8 @@ public interface ISyncTable
     Task<PushStep> PushAsync(OutboxEntry entry, CancellationToken cancellationToken);
 
     /// <summary>Pulls every page after the stored watermark and returns how many records were applied.</summary>
-    Task<int> PullAsync(int pageSize, CancellationToken cancellationToken);
+    /// <param name="onPage">Called after each page with how many records this table has applied so far.</param>
+    Task<int> PullAsync(int pageSize, CancellationToken cancellationToken, Action<int>? onPage = null);
 
     /// <summary>Hands records made before sign-in to the current household and queues them for pushing.</summary>
     Task<int> AdoptLocalRecordsAsync(CancellationToken cancellationToken);
@@ -102,7 +103,7 @@ public sealed class SyncTable<T>(string name, ISyncRepository<T> repository, ISy
 
     public Task<int> PurgeForeignRecordsAsync(CancellationToken cancellationToken) => repository.PurgeForeignAsync(cancellationToken);
 
-    public async Task<int> PullAsync(int pageSize, CancellationToken cancellationToken)
+    public async Task<int> PullAsync(int pageSize, CancellationToken cancellationToken, Action<int>? onPage = null)
     {
         var applied = 0;
         var watermark = await state.GetWatermarkAsync(Name, cancellationToken);
@@ -128,6 +129,7 @@ public sealed class SyncTable<T>(string name, ISyncRepository<T> repository, ISy
             if (page.Records.Count > 0)
             {
                 await state.SetWatermarkAsync(Name, watermark!, cancellationToken);
+                onPage?.Invoke(applied);
             }
 
             hasMore = page.HasMore && page.Records.Count > 0;

@@ -174,7 +174,35 @@ public abstract class UiTestContext : BunitContext
                 throw new SyncTransportException("offline");
             }
 
+            // Vendors the "server" holds: two on the first page, the rest after the gate opens (to look at the app mid-load).
+            if (typeof(T) == typeof(Vendor) && ServerVendors.Count > 0)
+            {
+                if (after is null)
+                {
+                    return Task.FromResult(new PullPage<T>([.. ServerVendors.Take(2).Select(v => new ServerRecord<T>((T)(object)v, "1"))], true));
+                }
+
+                return SecondPageAsync<T>(cancellationToken);
+            }
+
             return Task.FromResult(new PullPage<T>([], false));
+        }
+
+        /// <summary>Vendors the server holds for a first pull.</summary>
+        public List<Vendor> ServerVendors { get; } = [];
+
+        /// <summary>When set, the pull after the first page waits until this completes.</summary>
+        public TaskCompletionSource? HoldSecondPage { get; set; }
+
+        private async Task<PullPage<T>> SecondPageAsync<T>(CancellationToken cancellationToken)
+            where T : SyncEntity
+        {
+            if (HoldSecondPage is { } gate)
+            {
+                await gate.Task.WaitAsync(cancellationToken);
+            }
+
+            return new PullPage<T>([.. ServerVendors.Skip(2).Select(v => new ServerRecord<T>((T)(object)v, "1"))], false);
         }
     }
 

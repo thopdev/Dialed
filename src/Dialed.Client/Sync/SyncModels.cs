@@ -48,6 +48,9 @@ public enum SyncOutcome
     AlreadyRunning,
 }
 
+/// <summary>How far a pull has come. <paramref name="FirstPull"/>: nothing had been pulled before (new device, or the local database was cleared).</summary>
+public sealed record PullProgress(bool FirstPull, int Applied);
+
 public sealed record SyncResult(SyncOutcome Outcome, int Pushed = 0, int Pulled = 0, int Conflicts = 0, int Failed = 0)
 {
     public static SyncResult AlreadyRunning { get; } = new(SyncOutcome.AlreadyRunning);
