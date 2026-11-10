@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Dialed.AI.DialIn;
 using Dialed.AI.Labels;
 using Dialed.Telemetry;
 
@@ -19,6 +20,9 @@ public static class AiEndpoints
         services.Configure<AiLimits>(configuration.GetSection("Ai"));
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<AiGate>();
+
+        // The dial-in assistant answers with the offline rules until a Claude call for it has been verified against real brews (#86).
+        services.TryAddSingleton<IDialInRefiner, RulesDialInRefiner>();
 
         if (options.IsConfigured)
         {
@@ -83,6 +87,46 @@ public static class AiEndpoints
                 gate.Refund(userId, AiOperations.Label);
                 logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Label extraction failed");
                 return Results.Problem("The label could not be read right now. Enter the bean by hand, or try again later.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+        });
+
+        group.MapPost("/dial-in", async (DialInContext context, ClaimsPrincipal user, AiGate gate, IDialInRefiner refiner, ILoggerFactory logs, HttpContext http, CancellationToken ct) =>
+        {
+            if (Dialed.Domain.BrewMethods.BrewMethodCatalog.Default.Find(context.MethodCode ?? "") is null || context.Brew is null || context.Brew.DoseG <= 0m)
+            {
+                return Results.Problem("Send a known brew method and the dose of the brew.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
+            var entry = gate.TryEnter(userId, AiOperations.Suggestion);
+            if (entry.Status == AiGateStatus.Disabled)
+            {
+                return Results.Problem("AI is switched off for now. The built-in advice still works.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
+            }
+
+            if (entry.Status == AiGateStatus.QuotaExceeded)
+            {
+                http.Response.Headers.RetryAfter = ((int)Math.Ceiling(entry.RetryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return Results.Problem($"You have used all {entry.Limit} suggestions for today. The built-in advice still works.", statusCode: StatusCodes.Status429TooManyRequests, extensions: new Dictionary<string, object?> { ["code"] = "ai-quota" });
+            }
+
+            var started = Stopwatch.GetTimestamp();
+            try
+            {
+                var trimmed = context with { Recent = context.Recent?.Take(DialInContext.MaxRecent).ToList() };
+                var refinement = await refiner.RefineAsync(trimmed, ct);
+                var operation = new KeyValuePair<string, object?>("operation", "dialin");
+                DialedTelemetry.AiTokens.Add(refinement.InputTokens, operation, new KeyValuePair<string, object?>("direction", "input"));
+                DialedTelemetry.AiTokens.Add(refinement.OutputTokens, operation, new KeyValuePair<string, object?>("direction", "output"));
+                DialedTelemetry.AiLatency.Record(Stopwatch.GetElapsedTime(started).TotalMilliseconds, operation);
+                DialedTelemetry.AiEstimatedCost.Add((double)gate.EstimateCostUsd(refinement.InputTokens, refinement.OutputTokens), operation);
+                return Results.Ok(refinement);
+            }
+            catch (DialInRefinementException exception)
+            {
+                gate.Refund(userId, AiOperations.Suggestion);
+                logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Dial-in refinement failed");
+                return Results.Problem("No suggestion right now. The built-in advice still works.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
         });
 
