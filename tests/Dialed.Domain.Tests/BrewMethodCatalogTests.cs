@@ -9,7 +9,7 @@ public sealed class BrewMethodCatalogTests
     private static readonly string[] RequiredCodes =
     [
         "espresso", "v60", "kalita-wave", "chemex", "origami", "aeropress", "french-press",
-        "clever-dripper", "moka-pot", "cold-brew", "siphon", "cezve", "batch-brewer", "other",
+        "clever-dripper", "hario-switch", "moka-pot", "cold-brew", "siphon", "cezve", "batch-brewer", "other",
     ];
 
     [Fact]
@@ -34,6 +34,7 @@ public sealed class BrewMethodCatalogTests
     [InlineData("chemex", BrewMethodCategory.PourOver)]
     [InlineData("aeropress", BrewMethodCategory.Immersion)]
     [InlineData("french-press", BrewMethodCategory.Immersion)]
+    [InlineData("hario-switch", BrewMethodCategory.Immersion)]
     [InlineData("cold-brew", BrewMethodCategory.ColdBrew)]
     [InlineData("moka-pot", BrewMethodCategory.Other)]
     public void Methods_have_their_category(string code, BrewMethodCategory category)
