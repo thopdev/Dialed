@@ -28,4 +28,13 @@ public sealed record DialInFeedback : SyncEntity
     public string Source { get; init; } = "rules";
 
     public required string PromptVersion { get; init; }
+
+    /// <summary>The rating of the brew the advice was about, when the suggestion was applied (#89).</summary>
+    public int? RatingBefore { get; init; }
+
+    /// <summary>The brew made with the applied suggestion, once it is saved (#89).</summary>
+    public string? NextBrewId { get; init; }
+
+    /// <summary>That brew's rating, when it has one. The change from <see cref="RatingBefore"/> says whether the suggestion helped.</summary>
+    public int? RatingAfter { get; init; }
 }

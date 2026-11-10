@@ -29,4 +29,10 @@ public static class DialedTelemetry
 
     /// <summary>Estimated cost of AI requests in USD (tokens times the configured prices), for the dashboards and the daily spend alert.</summary>
     public static readonly Counter<double> AiEstimatedCost = Meter.CreateCounter<double>("dialed.ai.cost", unit: "USD", description: "Estimated AI spend.");
+
+    /// <summary>Dial-in suggestions that were applied or dismissed, by prompt version and source (#89). The acceptance rate per version is applied over both.</summary>
+    public static readonly Counter<long> AiSuggestionOutcomes = Meter.CreateCounter<long>("dialed.ai.suggestion.outcomes", description: "Suggestions applied or dismissed, by prompt version.");
+
+    /// <summary>Rating of the brew made with an applied suggestion minus the rating of the brew it was about (#89).</summary>
+    public static readonly Histogram<double> AiSuggestionRatingChange = Meter.CreateHistogram<double>("dialed.ai.suggestion.rating_change", unit: "{star}", description: "Rating change of the next brew after an applied suggestion.");
 }

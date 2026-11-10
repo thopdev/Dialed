@@ -1,5 +1,6 @@
 using Bunit;
 using Dialed.Client.Data;
+using Dialed.Domain.DialIn;
 using Dialed.Domain.Equipment;
 using Dialed.Domain.Inventory;
 using Dialed.Domain.Model;
@@ -268,6 +269,39 @@ public sealed class BrewLogTests : UiTestContext
         page.Find("form").Submit();
 
         (await Brews.ListAsync(Ct)).Single(b => b.Id != previous.Id).DoseG.ShouldBe(18.5m);
+    }
+
+    [Fact]
+    public async Task The_brew_made_with_an_applied_suggestion_is_linked_to_it_with_its_rating()
+    {
+        var (_, bag) = await SomeBag();
+        var previous = await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "espresso", DoseG = 18m, YieldG = 36m, Rating = 2, Taste = new Taste(Strength: -1), BrewedAt = DateTimeOffset.UtcNow.AddDays(-1) }, Ct);
+        var feedback = Services.GetRequiredService<IRepository<DialInFeedback>>();
+        var applied = await feedback.SaveAsync(new DialInFeedback { BrewId = previous.Id, Kind = SuggestionKind.IncreaseDose, Outcome = DialInOutcome.Applied, PromptVersion = "rules-1", RatingBefore = 2 }, Ct);
+        Services.GetRequiredService<NavigationManager>().NavigateTo($"/brew/{bag.Id}/log/again/{previous.Id}?apply=primary");
+        var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.BrewId, previous.Id));
+
+        page.Find("[aria-label='4 of 5 stars']").Click();
+        page.Find("form").Submit();
+
+        var next = (await Brews.ListAsync(Ct)).Single(b => b.Id != previous.Id);
+        var linked = (await feedback.ListAsync(Ct)).Single(f => f.Id == applied.Id);
+        linked.NextBrewId.ShouldBe(next.Id);
+        linked.RatingBefore.ShouldBe(2);
+        linked.RatingAfter.ShouldBe(4);
+    }
+
+    [Fact]
+    public async Task A_plain_brew_again_does_not_touch_the_feedback()
+    {
+        var (_, bag) = await SomeBag();
+        var previous = await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "espresso", DoseG = 18m, YieldG = 36m, BrewedAt = DateTimeOffset.UtcNow.AddDays(-1) }, Ct);
+        var feedback = Services.GetRequiredService<IRepository<DialInFeedback>>();
+        await feedback.SaveAsync(new DialInFeedback { BrewId = previous.Id, Kind = SuggestionKind.IncreaseDose, Outcome = DialInOutcome.Applied, PromptVersion = "rules-1" }, Ct);
+
+        Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.BrewId, previous.Id)).Find("form").Submit();
+
+        (await feedback.ListAsync(Ct)).Single().NextBrewId.ShouldBeNull();
     }
 
     [Fact]

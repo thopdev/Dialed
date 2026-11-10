@@ -73,6 +73,11 @@ public static class SyncEndpoints
                 _ => "invalid",
             };
             DialedTelemetry.SyncPushes.Add(1, new KeyValuePair<string, object?>("table", table), new KeyValuePair<string, object?>("outcome", outcome));
+            if (result.Outcome == StoreOutcome.Stored && table == "dialinfeedback")
+            {
+                SuggestionQualityTelemetry.Record(entity, isUpdate: !string.IsNullOrEmpty(ifMatch));
+            }
+
             if (result.Outcome == StoreOutcome.VersionMismatch)
             {
                 DialedTelemetry.SyncConflicts.Add(1, new KeyValuePair<string, object?>("table", table));

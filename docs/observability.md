@@ -9,6 +9,8 @@
 | `dialed.sync.conflicts` | `table` | Pushes that lost to a newer server version |
 | `dialed.ai.tokens` | `direction` | AI tokens used (recorded by the AI stories) |
 | `dialed.ai.latency` | none | AI request latency in ms |
+| `dialed.ai.suggestion.outcomes` | `prompt_version`, `source`, `outcome` | Dial-in suggestions applied or dismissed ([quality](ai-quality.md)) |
+| `dialed.ai.suggestion.rating_change` | `prompt_version`, `source` | Rating change of the next brew after an applied suggestion |
 
 Tags never hold personal data. Standard ASP.NET Core, HTTP client and runtime metrics come from OpenTelemetry instrumentation. Everything leaves through OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (Aspire locally).
 
