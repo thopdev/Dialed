@@ -44,6 +44,27 @@ public sealed partial class InstallMetadataTests
     }
 
     [Fact]
+    public void Manifest_meets_the_installability_checks_that_replace_the_Lighthouse_PWA_score()
+    {
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(Web, "manifest.webmanifest")));
+        var root = manifest.RootElement;
+
+        root.GetProperty("display").GetString().ShouldBe("standalone");
+        root.GetProperty("start_url").GetString().ShouldNotBeNullOrWhiteSpace();
+        root.GetProperty("scope").GetString().ShouldNotBeNullOrWhiteSpace();
+        root.GetProperty("id").GetString().ShouldNotBeNullOrWhiteSpace();
+        root.GetProperty("short_name").GetString()!.Length.ShouldBeLessThanOrEqualTo(12);
+        root.GetProperty("theme_color").GetString()!.ShouldMatch("^#[0-9A-Fa-f]{6}$");
+        root.GetProperty("background_color").GetString()!.ShouldMatch("^#[0-9A-Fa-f]{6}$");
+
+        var index = File.ReadAllText(Path.Combine(Web, "index.html"));
+        index.ShouldContain("rel=\"manifest\"");
+        File.ReadAllText(Path.Combine(Web, "js", "pwa.js")).ShouldContain("serviceWorker.register('service-worker.js'");
+        File.Exists(Path.Combine(Web, "service-worker.js")).ShouldBeTrue();
+        File.Exists(Path.Combine(Web, "service-worker.published.js")).ShouldBeTrue();
+    }
+
+    [Fact]
     public void The_page_has_an_apple_touch_icon_and_light_and_dark_theme_colours()
     {
         File.Exists(Path.Combine(Web, "icons", "apple-touch-icon.png")).ShouldBeTrue();
