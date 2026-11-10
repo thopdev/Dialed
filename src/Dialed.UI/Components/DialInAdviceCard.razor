@@ -97,6 +97,7 @@ else if (advice is not null)
             Outcome = outcome,
             Source = "rules",
             PromptVersion = DialInAdvisor.RulesVersion,
+            RatingBefore = outcome == DialInOutcome.Applied ? Brew.Rating : null,
         });
 
     private string Change(DialInSuggestion suggestion)

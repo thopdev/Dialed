@@ -57,7 +57,7 @@ public sealed class DialInAdviceCardTests : UiTestContext
     [Fact]
     public async Task Applying_a_suggestion_is_recorded_with_the_rules_version_and_opens_the_next_brew_with_it()
     {
-        var brew = Shot(new Taste(Acidity: -2));
+        var brew = Shot(new Taste(Acidity: -2)) with { Rating = 2 };
         var card = Card(brew, GrindScale.Clicks(40));
 
         card.Find("#dialin-apply-primary").GetAttribute("aria-label").ShouldBe("Apply to next brew: Grind finer");
@@ -68,6 +68,7 @@ public sealed class DialInAdviceCardTests : UiTestContext
         saved.Kind.ShouldBe(SuggestionKind.GrindFiner);
         saved.Outcome.ShouldBe(DialInOutcome.Applied);
         saved.PromptVersion.ShouldBe(DialInAdvisor.RulesVersion);
+        saved.RatingBefore.ShouldBe(brew.Rating);
         Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().Uri.ShouldEndWith($"brew/b/log/again/{brew.Id}?apply=primary");
     }
 

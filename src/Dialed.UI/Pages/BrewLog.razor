@@ -13,6 +13,7 @@
 @inject IRepository<Brew> BrewStore
 @inject IRepository<EquipmentItem> GearStore
 @inject IRepository<MethodDefault> DefaultStore
+@inject IRepository<DialInFeedback> FeedbackStore
 @inject NavigationManager Navigation
 @inject TimeProvider Time
 @inject BrewTimerHandoff TimerHandoff
@@ -114,7 +115,29 @@ else
 
     private async Task SaveAsync(Brew brew)
     {
-        await BrewStore.SaveAsync(brew with { BrewedAt = Time.GetUtcNow() });
+        var saved = await BrewStore.SaveAsync(brew with { BrewedAt = Time.GetUtcNow() });
+        await LinkAppliedSuggestionAsync(saved);
         Navigation.NavigateTo($"brew/{BagId}");
+    }
+
+    /// <summary>
+    /// When this brew was started from "Apply to next brew", remembers which brew followed the suggestion and how it was rated, so the
+    /// rating change after an accepted suggestion can be measured per prompt version (#89).
+    /// </summary>
+    private async Task LinkAppliedSuggestionAsync(Brew saved)
+    {
+        if (appliedKind is null || BrewId is null)
+        {
+            return;
+        }
+
+        var open = (await FeedbackStore.ListAsync())
+            .Where(f => !f.Deleted && f.BrewId == BrewId && f.Outcome == DialInOutcome.Applied && f.NextBrewId is null)
+            .OrderByDescending(f => f.CreatedAt)
+            .FirstOrDefault();
+        if (open is not null)
+        {
+            await FeedbackStore.SaveAsync(open with { NextBrewId = saved.Id, RatingAfter = saved.Rating });
+        }
     }
 }
