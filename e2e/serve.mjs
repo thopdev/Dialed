@@ -2,10 +2,15 @@
 // static files, and index.html for every route that is not a file (client-side routing).
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { extname, join, normalize, resolve } from 'node:path';
 
 const root = resolve(process.env.E2E_ROOT ?? '../publish/wwwroot');
 const port = Number(process.env.E2E_PORT ?? 5080);
+
+// The headers Static Web Apps sends (CSP, nosniff, ...), read from the same file the deployment uses, so the tests run under the real policy.
+const config = JSON.parse(await readFile(fileURLToPath(new URL('../src/Dialed.Web/wwwroot/staticwebapp.config.json', import.meta.url)), 'utf8'));
+const globalHeaders = Object.fromEntries(Object.entries(config.globalHeaders ?? {}).map(([name, value]) => [name.toLowerCase(), value]));
 
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -53,6 +58,7 @@ createServer(async (request, response) => {
   }
   const body = await readFile(file);
   response.writeHead(200, {
+    ...globalHeaders,
     'content-type': types[extname(file)] ?? 'application/octet-stream',
     'cache-control': 'no-cache',
   });
