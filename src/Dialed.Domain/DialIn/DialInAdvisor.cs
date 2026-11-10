@@ -11,6 +11,9 @@ namespace Dialed.Domain.DialIn;
 /// </summary>
 public static class DialInAdvisor
 {
+    /// <summary>Recorded with every accepted or dismissed suggestion; change it when the rules change.</summary>
+    public const string RulesVersion = "rules-1";
+
     /// <summary>A usual espresso shot time; faster is likely under-extracted, slower over-extracted.</summary>
     public const int EspressoFastBelowS = 25;
 

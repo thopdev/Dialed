@@ -186,6 +186,18 @@ public sealed class SyncApiTests(WebApplicationFactory<Program> factory) : IClas
     }
 
     [Fact]
+    public async Task Dial_in_feedback_syncs_like_other_tables()
+    {
+        using var alice = await ClientFor("alice");
+        var entity = new JsonObject { ["id"] = Id(), ["brewId"] = "b1", ["kind"] = 0, ["outcome"] = 0, ["source"] = "rules", ["promptVersion"] = "rules-1", ["deleted"] = false };
+
+        using var pushed = await Push(alice, "dialinfeedback", entity);
+
+        pushed.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await alice.GetAsync("/sync/dialinfeedback", Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task Method_defaults_sync_like_other_tables()
     {
         using var alice = await ClientFor("alice");

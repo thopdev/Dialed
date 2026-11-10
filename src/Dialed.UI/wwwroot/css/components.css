@@ -2353,3 +2353,9 @@ a.people-row-name {
 #storage-warning {
     margin-bottom: var(--dialed-space-3);
 }
+
+/* ---- Dial-in actions (#86) ------------------------------------------------------------------- */
+
+.dialed-dialin-actions {
+    margin: var(--dialed-space-2) 0 0;
+}

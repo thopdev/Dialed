@@ -776,4 +776,9 @@
   <data name="People_CopyUnavailable" xml:space="preserve"><value>Dit wordt niet meer met je gedeeld.</value></data>
   <data name="People_CopyOffline" xml:space="preserve"><value>De server is niet bereikbaar. Probeer het opnieuw als je online bent.</value></data>
   <data name="Item_CopiedFrom" xml:space="preserve"><value>Gekopieerd van {0}</value></data>
+  <data name="DialIn_Apply" xml:space="preserve"><value>Toepassen op volgende brew</value></data>
+  <data name="DialIn_ApplyLabel" xml:space="preserve"><value>Toepassen op volgende brew: {0}</value></data>
+  <data name="DialIn_Dismiss" xml:space="preserve"><value>Niet nuttig</value></data>
+  <data name="DialIn_Dismissed" xml:space="preserve"><value>Oké, dit advies is verborgen voor deze brew.</value></data>
+  <data name="DialIn_Applied" xml:space="preserve"><value>Overgenomen van je vorige brew: {0}.</value></data>
 </root>

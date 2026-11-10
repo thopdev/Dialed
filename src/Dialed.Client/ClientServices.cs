@@ -6,6 +6,7 @@ using Dialed.Client.Platform;
 using Dialed.Client.Storage;
 using Dialed.Client.Sync;
 using Dialed.Client.Telemetry;
+using Dialed.Domain.DialIn;
 using Dialed.Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -45,6 +46,7 @@ public static class ClientServices
             Loadable<Vendor>(services),
             Loadable<Photo>(services),
             Loadable<MethodDefault>(services),
+            Loadable<DialInFeedback>(services),
         ];
         if (services.GetService<ISyncState>() is ILoadable state)
         {
@@ -90,6 +92,7 @@ public static class ClientServices
                 Table<Vendor>(sp, "vendors"),
                 Table<Photo>(sp, "photos"),
                 Table<MethodDefault>(sp, "methoddefaults"),
+                Table<DialInFeedback>(sp, "dialinfeedback"),
             ],
             sp.GetRequiredService<ISyncState>()));
         services.TryAddSingleton<SyncCoordinator>();
