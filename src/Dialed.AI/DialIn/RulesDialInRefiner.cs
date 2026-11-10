@@ -13,8 +13,8 @@ public sealed class RulesDialInRefiner : IDialInRefiner
 {
     public const string ModelId = "rules";
 
-    /// <summary>The rules in <see cref="DialInAdvisor"/> have their own version; change it when they change.</summary>
-    public const string PromptVersion = "rules-1";
+    /// <summary>The version of the rules in <see cref="DialInAdvisor"/>, recorded with accepted and dismissed suggestions.</summary>
+    public const string PromptVersion = DialInAdvisor.RulesVersion;
 
     public Task<DialInRefinement> RefineAsync(DialInContext context, CancellationToken cancellationToken = default)
     {
