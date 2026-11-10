@@ -1,3 +1,4 @@
+@using Dialed.Client.Data
 @using Dialed.Client.Preferences
 @using Dialed.Domain.BrewMethods
 @using Dialed.Domain.DialIn
@@ -5,30 +6,44 @@
 @using Dialed.Domain.Model
 @inject IStringLocalizer<Strings> L
 @inject UnitFormatter Units
+@inject IRepository<DialInFeedback> Feedback
+@inject NavigationManager Navigation
+@inject TimeProvider Time
 
 @* What to try next, from the offline rules in Dialed.Domain (#85). *@
-@if (advice is not null)
+@if (dismissed)
+{
+    <p id="dialin-dismissed" class="dialed-muted" role="status">@L["DialIn_Dismissed"]</p>
+}
+else if (advice is not null)
 {
     <section id="dialin-advice" class="dialed-dialin" aria-labelledby="dialin-title">
         <h2 id="dialin-title">@L["DialIn_Title"]</h2>
         <ol class="dialed-dialin-list">
             <li id="dialin-primary">
                 <p class="dialed-dialin-label">@L["DialIn_Primary"]</p>
-                @Suggestion(advice.Primary)
+                @Suggestion(advice.Primary, "dialin-apply-primary", "primary")
             </li>
             @if (advice.Secondary is { } secondary)
             {
                 <li id="dialin-secondary">
                     <p class="dialed-dialin-label">@L["DialIn_Secondary"]</p>
-                    @Suggestion(secondary)
+                    @Suggestion(secondary, "dialin-apply-secondary", "secondary")
                 </li>
             }
         </ol>
+        @if (advice.Primary.Kind != SuggestionKind.Keep)
+        {
+            <p class="dialed-dialin-actions">
+                <button id="dialin-dismiss" type="button" class="dialed-button" @onclick="DismissAsync">@L["DialIn_Dismiss"]</button>
+            </p>
+        }
     </section>
 }
 
 @code {
     private DialInAdvice? advice;
+    private bool dismissed;
 
     [Parameter, EditorRequired]
     public Brew Brew { get; set; } = default!;
@@ -37,17 +52,52 @@
     [Parameter]
     public GrindScale? Scale { get; set; }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         var method = BrewMethodCatalog.Default.Find(Brew.MethodCode);
         advice = method is null ? null : DialInAdvisor.Advise(method, Brew, Scale);
+        dismissed = (await Feedback.ListAsync()).Any(f => !f.Deleted && f.BrewId == Brew.Id && f.Outcome == DialInOutcome.Dismissed);
     }
 
-    private RenderFragment Suggestion(DialInSuggestion suggestion) => __builder =>
+    private RenderFragment Suggestion(DialInSuggestion suggestion, string id, string which) => __builder =>
     {
         <p class="dialed-dialin-action"><strong>@L[$"DialIn_Kind_{suggestion.Kind}"]</strong>@Change(suggestion)</p>
         <p class="dialed-muted">@L[$"DialIn_Reason_{suggestion.Reason}"]</p>
+        @if (DialInApply.CanApply(suggestion))
+        {
+            <p class="dialed-dialin-actions">
+                <button id="@id" type="button" class="dialed-button dialed-button-primary" aria-label="@string.Format(L["DialIn_ApplyLabel"].Value, L[$"DialIn_Kind_{suggestion.Kind}"].Value)" @onclick="() => ApplyAsync(suggestion, which)">@L["DialIn_Apply"]</button>
+            </p>
+        }
     };
+
+    /// <summary>Records that the suggestion was used, then opens the brew form for the same bag with it filled in.</summary>
+    private async Task ApplyAsync(DialInSuggestion suggestion, string which)
+    {
+        await RecordAsync(suggestion, DialInOutcome.Applied);
+        Navigation.NavigateTo($"brew/{Brew.BagId}/log/again/{Brew.Id}?apply={which}");
+    }
+
+    private async Task DismissAsync()
+    {
+        if (advice is null)
+        {
+            return;
+        }
+
+        await RecordAsync(advice.Primary, DialInOutcome.Dismissed);
+        dismissed = true;
+    }
+
+    private Task RecordAsync(DialInSuggestion suggestion, DialInOutcome outcome) =>
+        Feedback.SaveAsync(new DialInFeedback
+        {
+            BrewId = Brew.Id,
+            Kind = suggestion.Kind,
+            Outcome = outcome,
+            Source = "rules",
+            PromptVersion = DialInAdvisor.RulesVersion,
+        });
 
     private string Change(DialInSuggestion suggestion)
     {

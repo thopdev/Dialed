@@ -16,7 +16,7 @@ public static class SyncEndpoints
     /// <summary>Tables the app may sync. Anything else is a 404, so typos and probing do not create data.</summary>
     public static readonly HashSet<string> Tables = new(StringComparer.Ordinal)
     {
-        "beans", "bags", "brews", "recipes", "equipment", "vendors", "photos", "methoddefaults",
+        "beans", "bags", "brews", "recipes", "equipment", "vendors", "photos", "methoddefaults", "dialinfeedback",
     };
 
     public static IServiceCollection AddDialedSync(this IServiceCollection services)

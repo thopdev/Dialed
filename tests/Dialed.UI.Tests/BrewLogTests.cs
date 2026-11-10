@@ -252,6 +252,37 @@ public sealed class BrewLogTests : UiTestContext
     }
 
     [Fact]
+    public async Task Applying_a_dial_in_suggestion_fills_the_next_brew_with_the_changed_value()
+    {
+        var (_, bag) = await SomeBag();
+        var previous = await Brews.SaveAsync(new Brew
+        {
+            BagId = bag.Id, MethodCode = "espresso", DoseG = 18m, YieldG = 36m, Rating = 2,
+            Taste = new Taste(Strength: -1), BrewedAt = DateTimeOffset.UtcNow.AddDays(-1),
+        }, Ct);
+        Services.GetRequiredService<NavigationManager>().NavigateTo($"/brew/{bag.Id}/log/again/{previous.Id}?apply=primary");
+        var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.BrewId, previous.Id));
+
+        page.Find("#brew-advice-applied").TextContent.ShouldBe("Applied from your last brew: Use more coffee.");
+        page.Find("#brew-dose").GetAttribute("value").ShouldBe("18.5");
+        page.Find("form").Submit();
+
+        (await Brews.ListAsync(Ct)).Single(b => b.Id != previous.Id).DoseG.ShouldBe(18.5m);
+    }
+
+    [Fact]
+    public async Task Brew_again_without_an_applied_suggestion_keeps_the_values_of_the_last_brew()
+    {
+        var (_, bag) = await SomeBag();
+        var previous = await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "espresso", DoseG = 18m, YieldG = 36m, Taste = new Taste(Strength: -1), BrewedAt = DateTimeOffset.UtcNow.AddDays(-1) }, Ct);
+
+        var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.BrewId, previous.Id));
+
+        page.FindAll("#brew-advice-applied").ShouldBeEmpty();
+        page.Find("#brew-dose").GetAttribute("value").ShouldBe("18");
+    }
+
+    [Fact]
     public async Task Brewing_the_bag_empty_offers_to_finish_it()
     {
         var (_, bag) = await SomeBag(weight: 30m);

@@ -3,6 +3,8 @@
 @page "/brew/{BagId}/log/again/{BrewId}"
 @using Dialed.Client
 @using Dialed.Client.Data
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.DialIn
 @using Dialed.Domain.Model
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Bag> BagStore
@@ -32,6 +34,11 @@ else
         <p class="dialed-muted">@beanName</p>
     }
 
+    @if (appliedKind is { } kind)
+    {
+        <p id="brew-advice-applied" class="dialed-muted" role="status">@string.Format(L["DialIn_Applied"].Value, L[$"DialIn_Kind_{kind}"].Value)</p>
+    }
+
     <BrewForm Initial="initial" Gear="gear" OnSubmit="SaveAsync" OnCancel="@(() => Navigation.NavigateTo($"brew/{BagId}"))" />
 }
 
@@ -49,6 +56,12 @@ else
 
     [Parameter]
     public string? BrewId { get; set; }
+
+    /// <summary><c>primary</c> or <c>secondary</c>: which dial-in suggestion of the earlier brew to put into this one (#86).</summary>
+    [SupplyParameterFromQuery(Name = "apply")]
+    public string? Apply { get; set; }
+
+    private SuggestionKind? appliedKind;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -71,6 +84,17 @@ else
         else if (BrewId is not null && await BrewStore.GetAsync(BrewId) is { } previous)
         {
             initial = BrewPrefill.Again(bag, previous, now);
+            appliedKind = null;
+            if (Apply is "primary" or "secondary" && BrewMethodCatalog.Default.Find(previous.MethodCode) is { } method)
+            {
+                var scale = gear.FirstOrDefault(g => g.Id == previous.GrinderId)?.GrindScale;
+                var advice = DialInAdvisor.Advise(method, previous, scale);
+                if ((Apply == "primary" ? advice.Primary : advice.Secondary) is { } suggestion && DialInApply.CanApply(suggestion))
+                {
+                    initial = DialInApply.Apply(initial, method, suggestion);
+                    appliedKind = suggestion.Kind;
+                }
+            }
         }
         else
         {
