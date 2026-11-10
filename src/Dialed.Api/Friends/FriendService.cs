@@ -17,6 +17,9 @@ public sealed record FollowRequest(string Code);
 
 public sealed record FriendProfileDto(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
 
+/// <summary>One shared bean or recipe with the names that make it understandable outside its household (#77).</summary>
+public sealed record SharedItemDto(System.Text.Json.Nodes.JsonObject Item, string OwnerName, string? RoasterName, string? BeanName);
+
 public sealed record SharedPageDto(IReadOnlyList<System.Text.Json.Nodes.JsonObject> Items, int Total, bool HasMore);
 
 public enum FriendOutcome { Ok, NotFound, Conflict }
@@ -387,6 +390,53 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         var (rows, total) = await sync.ListSharedAsync(scopes, ownerId, table, skip, pageSize, ct);
         return new SharedPageDto([.. rows.Select(r => r.Entity)], total, skip + rows.Count < total);
     }
+
+    /// <summary>
+    /// One bean or recipe the owner shares with the viewer, to copy it (#77). The roaster's or bean's name comes along, because the
+    /// vendor and bean records live in the owner's household. <c>null</c> when it does not exist or the viewer may not see it.
+    /// </summary>
+    public async Task<SharedItemDto?> SharedItemAsync(string viewerId, string ownerId, string table, string id, CancellationToken ct = default)
+    {
+        if (table is not ("beans" or "recipes"))
+        {
+            return null;
+        }
+
+        var (owner, scopes) = await ReaderAsync(viewerId, ownerId, ct);
+        if (owner is null || !MayBrowse(scopes))
+        {
+            return null;
+        }
+
+        foreach (var scope in scopes)
+        {
+            if (await sync.GetAsync(scope.HouseholdId, table, id, ct) is not { } row || !IsShared(row.Entity, ownerId, scope.Reader))
+            {
+                continue;
+            }
+
+            string? roaster = null;
+            string? bean = null;
+            if (table == "beans" && row.Entity["roasterId"]?.GetValue<string>() is { Length: > 0 } roasterId)
+            {
+                roaster = (await sync.GetAsync(scope.HouseholdId, "vendors", roasterId, ct))?.Entity["name"]?.GetValue<string>();
+            }
+            else if (table == "recipes" && row.Entity["beanId"]?.GetValue<string>() is { Length: > 0 } beanId
+                && await sync.GetAsync(scope.HouseholdId, "beans", beanId, ct) is { } beanRow && IsShared(beanRow.Entity, ownerId, scope.Reader))
+            {
+                bean = beanRow.Entity["name"]?.GetValue<string>();
+            }
+
+            return new SharedItemDto((System.Text.Json.Nodes.JsonObject)row.Entity.DeepClone(), owner.DisplayName, roaster, bean);
+        }
+
+        return null;
+    }
+
+    private static bool IsShared(System.Text.Json.Nodes.JsonObject entity, string ownerId, Relationship reader) =>
+        entity["createdBy"]?.GetValue<string>() == ownerId
+        && !(entity["deleted"] is System.Text.Json.Nodes.JsonValue d && d.TryGetValue<bool>(out var gone) && gone)
+        && VisibilityRules.CanRead(VisibilityRules.Of(entity), reader);
 
     /// <summary>How <paramref name="viewerId"/> relates to <paramref name="ownerId"/>, for <see cref="VisibilityRules"/>.</summary>
     public async Task<Relationship> RelationshipAsync(string viewerId, string ownerId, CancellationToken ct = default)

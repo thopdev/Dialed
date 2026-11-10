@@ -747,4 +747,13 @@
   <data name="Sync_Indicator_Stuck" xml:space="preserve"><value>{0} wijzigingen zijn al meer dan {1} minuten niet in je account aangekomen. Ze staan veilig op dit apparaat; controleer je verbinding.</value></data>
   <data name="Storage_WriteFailed" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard tot je de app sluit. Maak ruimte vrij op je apparaat.</value></data>
   <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard zolang de app open is en wordt naar je account gestuurd. Maak ruimte vrij op je apparaat.</value></data>
+  <data name="People_Copy" xml:space="preserve"><value>Kopieer</value></data>
+  <data name="People_CopyNamed" xml:space="preserve"><value>Kopieer {0} naar mijn huishouden</value></data>
+  <data name="People_InYourHousehold" xml:space="preserve"><value>In je huishouden</value></data>
+  <data name="People_Copied" xml:space="preserve"><value>“{0}” gekopieerd naar je huishouden.</value></data>
+  <data name="People_AlreadyCopied" xml:space="preserve"><value>“{0}” staat al in je huishouden.</value></data>
+  <data name="People_CopyOpen" xml:space="preserve"><value>Openen</value></data>
+  <data name="People_CopyUnavailable" xml:space="preserve"><value>Dit wordt niet meer met je gedeeld.</value></data>
+  <data name="People_CopyOffline" xml:space="preserve"><value>De server is niet bereikbaar. Probeer het opnieuw als je online bent.</value></data>
+  <data name="Item_CopiedFrom" xml:space="preserve"><value>Gekopieerd van {0}</value></data>
 </root>

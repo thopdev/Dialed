@@ -1,9 +1,28 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// Records are kept in the local database, but preferences (such as "setup skipped") are still in memory,
-// so after a page load the app shows the setup again.
+const cspViolations = new WeakMap<Page, string[]>();
+
+test.afterEach(({ page }) => {
+  expect(cspViolations.get(page) ?? [], 'Content-Security-Policy violations').toEqual([]);
+});
+
+// The PWA runs under its enforced Content-Security-Policy (e2e/serve.mjs sends the real headers). A blocked script, style,
+// image or request is a bug, so any violation fails the test.
+async function failOnCspViolations(page: Page) {
+  const violations: string[] = [];
+  await page.exposeFunction('reportCspViolation', (text: string) => violations.push(text));
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', event =>
+      (window as unknown as { reportCspViolation: (text: string) => void }).reportCspViolation(
+        `${event.violatedDirective} blocked ${event.blockedURI || 'inline'} (${event.sourceFile ?? ''}:${event.lineNumber})`));
+  });
+  return violations;
+}
 
 async function startApp(page: Page) {
+  const violations = await failOnCspViolations(page);
+  test.info().annotations.push({ type: 'csp', description: 'enforced' });
+  cspViolations.set(page, violations);
   // Show what the app reports while it starts, so a failed run explains itself in the CI log.
   page.on('console', message => {
     if (message.type() === 'error' || message.type() === 'warning') {
