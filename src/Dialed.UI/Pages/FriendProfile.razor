@@ -3,6 +3,7 @@
 @using Dialed.Client.Account
 @using Dialed.Client.Friends
 @inject FriendsApi Friends
+@inject FriendCopyService Copying
 @inject IStringLocalizer<Strings> L
 
 <PageHeader Title="@(profile?.DisplayName ?? L["Nav_People"].Value)" BackHref="people" />
@@ -58,10 +59,34 @@ else
     }
     else
     {
+        @if (message is not null)
+        {
+            <p id="friend-copy-message" class="dialed-banner dialed-banner-info" role="status">
+                @message
+                @if (messageHref is not null)
+                {
+                    <a class="dialed-section-link" href="@messageHref">@L["People_CopyOpen"]</a>
+                }
+            </p>
+        }
         <ul id="friend-items" class="dialed-list dialed-friend-items">
             @foreach (var item in items)
             {
-                <li class="friend-item">@Title(item)</li>
+                var id = IdOf(item);
+                <li class="friend-row">
+                    <span class="friend-item">@Title(item)</span>
+                    @if (Copyable)
+                    {
+                        @if (copies.TryGetValue(id, out var copy))
+                        {
+                            <a class="friend-copied dialed-chip dialed-chip-small dialed-chip-positive" href="@($"{current}/{copy.Id}")">@L["People_InYourHousehold"]</a>
+                        }
+                        else
+                        {
+                            <button type="button" class="dialed-button friend-copy" disabled="@(busy || copying == id)" aria-label="@string.Format(L["People_CopyNamed"].Value, Title(item))" @onclick="() => CopyAsync(item)">@L["People_Copy"]</button>
+                        }
+                    }
+                </li>
             }
         </ul>
         @if (page.HasMore)
@@ -84,6 +109,13 @@ else
     private bool loading = true;
     private bool offline;
     private bool busy;
+    private string? message;
+    private string? messageHref;
+    private string? copying;
+    private readonly Dictionary<string, CopyResult> copies = [];
+
+    /// <summary>Beans and recipes can be copied to my household; brews cannot.</summary>
+    private bool Copyable => current is "beans" or "recipes";
 
     protected override async Task OnParametersSetAsync() => await LoadAsync();
 
@@ -125,6 +157,54 @@ else
         }
 
         items.AddRange(page.Items);
+        message = null;
+        await MarkCopiesAsync(page.Items);
+    }
+
+    /// <summary>Items I already copied show "In your household" instead of a Copy button (no network needed).</summary>
+    private async Task MarkCopiesAsync(IEnumerable<JsonElement> shown)
+    {
+        if (!Copyable)
+        {
+            return;
+        }
+
+        foreach (var item in shown)
+        {
+            if (await Copying.ExistingAsync(UserId, current, IdOf(item)) is { } existing)
+            {
+                copies[IdOf(item)] = existing;
+            }
+        }
+    }
+
+    private async Task CopyAsync(JsonElement item)
+    {
+        var id = IdOf(item);
+        copying = id;
+        message = null;
+        messageHref = null;
+        try
+        {
+            var result = await Copying.CopyAsync(UserId, current, id);
+            switch (result.Outcome)
+            {
+                case CopyOutcome.Copied or CopyOutcome.AlreadyCopied:
+                    copies[id] = result;
+                    message = string.Format(L[result.Outcome == CopyOutcome.Copied ? "People_Copied" : "People_AlreadyCopied"].Value, result.Name);
+                    messageHref = $"{current}/{result.Id}";
+                    break;
+                default:
+                    message = L["People_CopyUnavailable"];
+                    break;
+            }
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            message = L["People_CopyOffline"];
+        }
+
+        copying = null;
     }
 
     private async Task MoreAsync()
@@ -136,6 +216,7 @@ else
             {
                 items.AddRange(next.Items);
                 page = next;
+                await MarkCopiesAsync(next.Items);
             }
         }
         catch (Exception e) when (e is AccountApiException or AccountRefusedException)
@@ -146,6 +227,8 @@ else
         busy = false;
     }
 
+
+    private static string IdOf(JsonElement item) => item.TryGetProperty("id", out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
 
     private static string Title(JsonElement item)
     {

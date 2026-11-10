@@ -2271,3 +2271,30 @@ a.people-row-name {
     flex: 1;
 }
 
+
+/* ---- Copy from a friend (#77) ----------------------------------------------------------------- */
+
+.dialed-copied-from {
+    margin: calc(-1 * var(--dialed-space-2)) 0 var(--dialed-space-3);
+    font-size: var(--dialed-text-s);
+}
+
+.friend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    padding: var(--dialed-space-2) var(--dialed-space-1);
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.friend-row .friend-item {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.friend-copied {
+    text-decoration: none;
+}

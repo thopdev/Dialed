@@ -751,4 +751,13 @@
   <data name="Feed_Brewed" xml:space="preserve"><value>{0} brewed {1}</value></data>
   <data name="Feed_BrewedUnknown" xml:space="preserve"><value>{0} brewed a coffee</value></data>
   <data name="Feed_AddedBean" xml:space="preserve"><value>{0} added {1}</value></data>
+  <data name="People_Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="People_CopyNamed" xml:space="preserve"><value>Copy {0} to my household</value></data>
+  <data name="People_InYourHousehold" xml:space="preserve"><value>In your household</value></data>
+  <data name="People_Copied" xml:space="preserve"><value>Copied “{0}” to your household.</value></data>
+  <data name="People_AlreadyCopied" xml:space="preserve"><value>“{0}” is already in your household.</value></data>
+  <data name="People_CopyOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="People_CopyUnavailable" xml:space="preserve"><value>This is no longer shared with you.</value></data>
+  <data name="People_CopyOffline" xml:space="preserve"><value>Could not reach the server. Try again when you are online.</value></data>
+  <data name="Item_CopiedFrom" xml:space="preserve"><value>Copied from {0}</value></data>
 </root>

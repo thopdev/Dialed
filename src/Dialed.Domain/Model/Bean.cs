@@ -52,4 +52,7 @@ public sealed record Bean : SyncEntity
 
     /// <summary>The label scan this bean was created from, if any (M3).</summary>
     public string? SourceScanId { get; init; }
+
+    /// <summary>Set when this was copied from a friend (#77).</summary>
+    public CopiedFrom? CopiedFrom { get; init; }
 }

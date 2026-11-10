@@ -51,6 +51,9 @@ public static class FriendEndpoints
         group.MapGet("/{ownerId}/shared/{table}", async (string ownerId, string table, int? skip, int? pageSize, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
             await service.SharedAsync(UserId(user), ownerId, table, skip ?? 0, pageSize ?? 20, ct) is { } page ? Results.Ok(page) : Results.NotFound());
 
+        group.MapGet("/{ownerId}/shared/{table}/{id}", async (string ownerId, string table, string id, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
+            await service.SharedItemAsync(UserId(user), ownerId, table, id, ct) is { } item ? Results.Ok(item) : Results.NotFound());
+
         return endpoints;
     }
 

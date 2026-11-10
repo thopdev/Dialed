@@ -10,7 +10,7 @@ Checklist from #93. Status as of 2026-11-09. "Needs Azure" items cannot be verif
 | Rate limits | Done | Per address on `/auth` (covers sign-up, sign-in, recovery), per user on `/friends`, `/ai` and the rest. |
 | CORS | Done | Only configured app origins (`App:Origins`, patterns for dev tunnels). |
 | API response headers | Done | `nosniff`, `Referrer-Policy: no-referrer`, a closed CSP, `Cache-Control: no-store` on everything personal, HSTS (off only in local development). |
-| CSP on the PWA | Partly | Delivered as `Content-Security-Policy-Report-Only` in `staticwebapp.config.json`. Enforce it after a pass on a real iPhone/Safari without violations (issue filed). |
+| CSP on the PWA | Done | Enforced as `Content-Security-Policy` in `staticwebapp.config.json` (#196). The e2e smoke tests (WebKit, iPhone and iPad profiles) run under the same header (`e2e/serve.mjs`) and fail on any violation; `ContentSecurityPolicyTests` keeps it closed (no eval, no foreign scripts, no framing). When the API moves to the custom domain (#111), add its origin to `connect-src`. |
 | HTTPS | Needs Azure | Container Apps ingress terminates TLS; verify HTTP is redirected once deployed. |
 | SAS scope and expiry, Key Vault, managed identities | Needs Azure | Photos are not stored yet (#68/#69); check when they are. |
 | Dependabot alerts | Open | #183 and the earlier ones are for the owner to merge. |
@@ -21,4 +21,3 @@ Checklist from #93. Status as of 2026-11-09. "Needs Azure" items cannot be verif
 
 - Recovery lockout and email cooldown are in memory per instance; they move to the database with Cosmos DB.
 - Recovery codes are 40 bits; with the lockout and rate limits guessing is not practical, but the length can grow if needed.
-- The CSP is report-only until verified on devices.

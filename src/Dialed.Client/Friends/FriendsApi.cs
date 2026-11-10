@@ -20,6 +20,8 @@ public sealed record SharedPage(IReadOnlyList<JsonElement> Items, int Total, boo
 public sealed record FeedEntry(string Kind, string OwnerId, string OwnerName, DateTimeOffset At, JsonElement Item, string? BeanName);
 
 public sealed record FeedPage(IReadOnlyList<FeedEntry> Entries, bool HasMore);
+/// <summary>One shared bean or recipe as the server sent it, with the names that live in the friend's household (#77).</summary>
+public sealed record SharedItem(JsonElement Item, string OwnerName, string? RoasterName, string? BeanName);
 
 /// <summary>
 /// The API's friend endpoints (see Dialed.Api): friend code, follow requests, followers and a friend's shared items.
@@ -121,6 +123,19 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
 
     /// <summary>The feed as last seen, if any.</summary>
     public FeedPage? CachedFeed => firstFeedPage;
+
+    /// <summary>One shared <c>beans</c> or <c>recipes</c> item to copy it; <c>null</c> when it is gone or not shared with you.</summary>
+    public async Task<SharedItem?> SharedItemAsync(string userId, string table, string itemId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await SendAsync<SharedItem>(HttpMethod.Get, $"friends/{Uri.EscapeDataString(userId)}/shared/{table}/{Uri.EscapeDataString(itemId)}", null, cancellationToken);
+        }
+        catch (AccountRefusedException e) when (e.Status == 404)
+        {
+            return null;
+        }
+    }
 
     /// <summary>What was last seen of this friend, for when the network is gone.</summary>
     public FriendProfileInfo? CachedProfile(string userId) => profiles.GetValueOrDefault(userId);
