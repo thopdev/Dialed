@@ -756,4 +756,13 @@
   <data name="Household_RevokeNamed" xml:space="preserve"><value>Uitnodiging {0} intrekken</value></data>
   <data name="Household_InviteRevoked" xml:space="preserve"><value>Uitnodiging {0} ingetrokken.</value></data>
   <data name="Household_InviteCodeMany" xml:space="preserve"><value>Uitnodigingscode: {0} (geldig tot {1}, voor {2} personen)</value></data>
+  <data name="People_Copy" xml:space="preserve"><value>Kopieer</value></data>
+  <data name="People_CopyNamed" xml:space="preserve"><value>Kopieer {0} naar mijn huishouden</value></data>
+  <data name="People_InYourHousehold" xml:space="preserve"><value>In je huishouden</value></data>
+  <data name="People_Copied" xml:space="preserve"><value>“{0}” gekopieerd naar je huishouden.</value></data>
+  <data name="People_AlreadyCopied" xml:space="preserve"><value>“{0}” staat al in je huishouden.</value></data>
+  <data name="People_CopyOpen" xml:space="preserve"><value>Openen</value></data>
+  <data name="People_CopyUnavailable" xml:space="preserve"><value>Dit wordt niet meer met je gedeeld.</value></data>
+  <data name="People_CopyOffline" xml:space="preserve"><value>De server is niet bereikbaar. Probeer het opnieuw als je online bent.</value></data>
+  <data name="Item_CopiedFrom" xml:space="preserve"><value>Gekopieerd van {0}</value></data>
 </root>

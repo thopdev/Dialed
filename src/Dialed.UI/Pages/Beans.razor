@@ -212,6 +212,11 @@
                 </div>
             </div>
 
+            @if (current.CopiedFrom is { } copiedFrom)
+            {
+                <p id="bean-copied-from" class="dialed-muted dialed-copied-from">@string.Format(L["Item_CopiedFrom"].Value, copiedFrom.OwnerName)</p>
+            }
+
             @if (KeyFacts(current) is { Count: > 0 } facts)
             {
                 <div class="dialed-stat-grid" id="bean-facts">
