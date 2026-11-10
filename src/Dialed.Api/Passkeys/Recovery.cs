@@ -57,11 +57,24 @@ public interface IEmailRecoveryStore
     Task RecordFailureAsync(string accountId, DateTimeOffset now, CancellationToken cancellationToken = default);
 }
 
+/// <summary>The limits every <see cref="IEmailRecoveryStore"/> keeps to.</summary>
+public static class EmailRecoveryLimits
+{
+    /// <summary>Wrong guesses one email code survives before it is burnt.</summary>
+    public const int MaxAttempts = 5;
+
+    /// <summary>Wrong codes per account inside <see cref="FailureWindow"/> before recovery is paused.</summary>
+    public const int MaxFailures = 10;
+
+    public static readonly TimeSpan FailureWindow = TimeSpan.FromMinutes(15);
+}
+
+/// <summary>Per-instance store for tests and runs without Cosmos DB; <see cref="CosmosEmailRecoveryStore"/> is the shared one.</summary>
 public sealed class InMemoryEmailRecoveryStore : IEmailRecoveryStore
 {
-    public const int MaxAttempts = 5;
-    public const int MaxFailures = 10;
-    public static readonly TimeSpan FailureWindow = TimeSpan.FromMinutes(15);
+    public const int MaxAttempts = EmailRecoveryLimits.MaxAttempts;
+    public const int MaxFailures = EmailRecoveryLimits.MaxFailures;
+    public static readonly TimeSpan FailureWindow = EmailRecoveryLimits.FailureWindow;
 
     private sealed record Entry(string Hash, DateTimeOffset ExpiresAt, int Attempts);
 

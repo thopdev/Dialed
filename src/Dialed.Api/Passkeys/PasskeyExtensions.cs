@@ -16,7 +16,18 @@ public static class PasskeyExtensions
         services.AddSingleton<ICeremonyNonces, InMemoryCeremonyNonces>();
         services.AddScoped<PasskeyCeremonies>();
         services.AddScoped<RecoveryService>();
-        services.AddSingleton<IEmailRecoveryStore, InMemoryEmailRecoveryStore>();
+        // Lockout, send cooldown and email codes must hold across restarts and instances (#197): Cosmos DB when it is configured.
+        if (CosmosConnection.From(configuration) is { } cosmos)
+        {
+            services.AddSingleton(_ => CosmosConnection.CreateClient(cosmos.ConnectionString));
+            services.AddSingleton(sp => new CosmosRecoveryContainer(sp.GetRequiredService<Microsoft.Azure.Cosmos.CosmosClient>(), cosmos.Database));
+            services.AddSingleton<IEmailRecoveryStore, CosmosEmailRecoveryStore>();
+        }
+        else
+        {
+            services.AddSingleton<IEmailRecoveryStore, InMemoryEmailRecoveryStore>();
+        }
+
         services.AddSingleton<OutboxEmailSender>();
         services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<OutboxEmailSender>());
 

@@ -70,6 +70,39 @@ jobs:
             coverage
           if-no-files-found: ignore
 
+  # Runs the stores that have a Cosmos DB implementation against the Linux (vNext) emulator, the one the AppHost runs.
+  # Without COSMOS_CONNECTION_STRING (as in build-test) those tests skip.
+  cosmos:
+    runs-on: ubuntu-latest
+    services:
+      cosmos:
+        image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest
+        ports:
+          - 8081:8081
+    env:
+      # The emulator's well-known, public key.
+      COSMOS_CONNECTION_STRING: "AccountEndpoint=http://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build tests/Dialed.Api.Tests --configuration Release
+
+      - name: Wait for the Cosmos DB emulator
+        run: |
+          for i in $(seq 1 60); do
+            if curl -s -o /dev/null http://localhost:8081/; then echo "emulator up"; exit 0; fi
+            sleep 5
+          done
+          echo "emulator did not start"; exit 1
+
+      - name: Test the Cosmos DB stores
+        run: dotnet test --project tests/Dialed.Api.Tests --configuration Release --no-build --filter-class "*Cosmos*" --output detailed
+
   # Compiles and lints the Bicep templates (no Azure login needed). Runs only when infrastructure changes.
   infra:
     runs-on: ubuntu-latest
