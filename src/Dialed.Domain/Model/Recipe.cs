@@ -61,6 +61,9 @@ public sealed record Recipe : SyncEntity
 
     public bool IsFavourite { get; init; }
 
+    /// <summary>The prompt version that suggested this recipe (#87), for example <c>recipe-rules-1</c>; <c>null</c> when a person wrote it.</summary>
+    public string? SuggestedBy { get; init; }
+
     /// <summary>Set when this was copied from a friend (#77).</summary>
     public CopiedFrom? CopiedFrom { get; init; }
 

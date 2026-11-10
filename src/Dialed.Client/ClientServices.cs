@@ -123,6 +123,16 @@ public static class ClientServices
         return services;
     }
 
+    /// <summary>Registers the recipe assistant (#87). <paramref name="assistant"/> creates the API client, so the host decides the base address.</summary>
+    public static IServiceCollection AddDialedRecipeAssistant(this IServiceCollection services, Func<IServiceProvider, Recipes.IRecipeAssistant> assistant)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(assistant);
+
+        services.TryAddSingleton(assistant);
+        return services;
+    }
+
     /// <summary>
     /// Accounts: the sign-in session, the API calls, the passkey flow and the access token for sync. Call after
     /// <see cref="AddDialedData"/> and <see cref="AddDialedSync"/>; the host registers <see cref="AccountApi"/>'s HttpClient through

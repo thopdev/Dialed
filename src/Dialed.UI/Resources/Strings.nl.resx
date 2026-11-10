@@ -781,4 +781,25 @@
   <data name="DialIn_Dismiss" xml:space="preserve"><value>Niet nuttig</value></data>
   <data name="DialIn_Dismissed" xml:space="preserve"><value>Oké, dit advies is verborgen voor deze brew.</value></data>
   <data name="DialIn_Applied" xml:space="preserve"><value>Overgenomen van je vorige brew: {0}.</value></data>
+  <data name="Suggest_Title" xml:space="preserve"><value>Recept voorstellen</value></data>
+  <data name="Suggest_Hint" xml:space="preserve"><value>Kies een methode en een molen en krijg een startrecept voor deze boon, met bij elk getal een reden.</value></data>
+  <data name="Suggest_NoGrinder" xml:space="preserve"><value>Geen molen</value></data>
+  <data name="Suggest_Go" xml:space="preserve"><value>Recept voorstellen</value></data>
+  <data name="Suggest_Again" xml:space="preserve"><value>Opnieuw voorstellen</value></data>
+  <data name="Suggest_Working" xml:space="preserve"><value>Recept uitwerken…</value></data>
+  <data name="Suggest_Save" xml:space="preserve"><value>Opslaan als recept</value></data>
+  <data name="Suggest_Saved" xml:space="preserve"><value>Opgeslagen als recept.</value></data>
+  <data name="Suggest_Open" xml:space="preserve"><value>Recept openen</value></data>
+  <data name="Suggest_Problem_SignedOut" xml:space="preserve"><value>Log in om een voorstel te krijgen.</value></data>
+  <data name="Suggest_Problem_Offline" xml:space="preserve"><value>Je bent offline. Voorstellen hebben een verbinding nodig; voer een recept zelf in of probeer het later opnieuw.</value></data>
+  <data name="Suggest_Problem_QuotaUsed" xml:space="preserve"><value>Je hebt alle voorstellen van vandaag gebruikt. Voer een recept zelf in of probeer het morgen opnieuw.</value></data>
+  <data name="Suggest_Problem_Disabled" xml:space="preserve"><value>Voorstellen staan voorlopig uit. Voer een recept zelf in.</value></data>
+  <data name="Suggest_Problem_Unavailable" xml:space="preserve"><value>Nu even geen voorstel. Voer een recept zelf in of probeer het later opnieuw.</value></data>
+  <data name="Suggest_Reason_Baseline" xml:space="preserve"><value>Een klassiek beginpunt voor deze methode.</value></data>
+  <data name="Suggest_Reason_LightRoast" xml:space="preserve"><value>Lichtere branding extraheert minder makkelijk, dus het water is wat heter.</value></data>
+  <data name="Suggest_Reason_DarkRoast" xml:space="preserve"><value>Donkere branding extraheert makkelijk, dus het water is wat koeler.</value></data>
+  <data name="Suggest_Reason_SimilarBest" xml:space="preserve"><value>Uit je beste recept voor een vergelijkbare boon.</value></data>
+  <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>Een stand op de schaal van je molen, om op smaak bij te stellen.</value></data>
+  <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Heel verse bonen geven veel gas af, dus geef het wat tijd.</value></data>
+  <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>Een gangbare verhouding koffie en vloeistof voor deze methode.</value></data>
 </root>

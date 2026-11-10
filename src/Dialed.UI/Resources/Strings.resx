@@ -782,4 +782,25 @@
   <data name="DialIn_Dismiss" xml:space="preserve"><value>Not useful</value></data>
   <data name="DialIn_Dismissed" xml:space="preserve"><value>Okay, this advice is hidden for this brew.</value></data>
   <data name="DialIn_Applied" xml:space="preserve"><value>Applied from your last brew: {0}.</value></data>
+  <data name="Suggest_Title" xml:space="preserve"><value>Suggest a recipe</value></data>
+  <data name="Suggest_Hint" xml:space="preserve"><value>Pick a method and a grinder and get a starting recipe for this bean, with a reason for each number.</value></data>
+  <data name="Suggest_NoGrinder" xml:space="preserve"><value>No grinder</value></data>
+  <data name="Suggest_Go" xml:space="preserve"><value>Suggest a recipe</value></data>
+  <data name="Suggest_Again" xml:space="preserve"><value>Suggest again</value></data>
+  <data name="Suggest_Working" xml:space="preserve"><value>Working out a recipe…</value></data>
+  <data name="Suggest_Save" xml:space="preserve"><value>Save as recipe</value></data>
+  <data name="Suggest_Saved" xml:space="preserve"><value>Saved as a recipe.</value></data>
+  <data name="Suggest_Open" xml:space="preserve"><value>Open recipe</value></data>
+  <data name="Suggest_Problem_SignedOut" xml:space="preserve"><value>Please sign in to get a suggestion.</value></data>
+  <data name="Suggest_Problem_Offline" xml:space="preserve"><value>You are offline. Suggestions need a connection; enter a recipe by hand or try again later.</value></data>
+  <data name="Suggest_Problem_QuotaUsed" xml:space="preserve"><value>You have used all suggestions for today. Enter a recipe by hand, or try again tomorrow.</value></data>
+  <data name="Suggest_Problem_Disabled" xml:space="preserve"><value>Suggestions are switched off for now. Enter a recipe by hand.</value></data>
+  <data name="Suggest_Problem_Unavailable" xml:space="preserve"><value>No suggestion right now. Enter a recipe by hand, or try again later.</value></data>
+  <data name="Suggest_Reason_Baseline" xml:space="preserve"><value>A classic starting point for this method.</value></data>
+  <data name="Suggest_Reason_LightRoast" xml:space="preserve"><value>Lighter roasts extract less easily, so the water is a little hotter.</value></data>
+  <data name="Suggest_Reason_DarkRoast" xml:space="preserve"><value>Darker roasts extract easily, so the water is a little cooler.</value></data>
+  <data name="Suggest_Reason_SimilarBest" xml:space="preserve"><value>From your best recipe for a similar bean.</value></data>
+  <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>A setting on your grinder's scale, to adjust by taste.</value></data>
+  <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Very fresh beans give off a lot of gas, so give it a little time.</value></data>
+  <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>A usual ratio of coffee to liquid for this method.</value></data>
 </root>

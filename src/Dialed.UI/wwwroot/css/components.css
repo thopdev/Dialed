@@ -2359,3 +2359,31 @@ a.people-row-name {
 .dialed-dialin-actions {
     margin: var(--dialed-space-2) 0 0;
 }
+
+/* ---- Suggest a recipe (#87) -------------------------------------------------------------------- */
+
+.dialed-suggest {
+    margin: var(--dialed-space-4) 0;
+}
+
+.dialed-suggest-list {
+    margin: 0;
+}
+
+.dialed-suggest-row {
+    display: flex;
+    flex-direction: column;
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-suggest-row dt {
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-suggest-row dd {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
