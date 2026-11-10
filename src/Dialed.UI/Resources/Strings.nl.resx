@@ -747,6 +747,13 @@
   <data name="Sync_Indicator_Stuck" xml:space="preserve"><value>{0} wijzigingen zijn al meer dan {1} minuten niet in je account aangekomen. Ze staan veilig op dit apparaat; controleer je verbinding.</value></data>
   <data name="Storage_WriteFailed" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard tot je de app sluit. Maak ruimte vrij op je apparaat.</value></data>
   <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard zolang de app open is en wordt naar je account gestuurd. Maak ruimte vrij op je apparaat.</value></data>
+  <data name="Feed_Title" xml:space="preserve"><value>Activiteit van vrienden</value></data>
+  <data name="Feed_Refresh" xml:space="preserve"><value>Vernieuwen</value></data>
+  <data name="Feed_EmptyTitle" xml:space="preserve"><value>Nog niets</value></data>
+  <data name="Feed_Empty" xml:space="preserve"><value>Als mensen die je volgt brews of bonen met vrienden delen, zie je ze hier.</value></data>
+  <data name="Feed_Brewed" xml:space="preserve"><value>{0} zette {1}</value></data>
+  <data name="Feed_BrewedUnknown" xml:space="preserve"><value>{0} zette een koffie</value></data>
+  <data name="Feed_AddedBean" xml:space="preserve"><value>{0} voegde {1} toe</value></data>
   <data name="People_Copy" xml:space="preserve"><value>Kopieer</value></data>
   <data name="People_CopyNamed" xml:space="preserve"><value>Kopieer {0} naar mijn huishouden</value></data>
   <data name="People_InYourHousehold" xml:space="preserve"><value>In je huishouden</value></data>

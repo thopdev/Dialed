@@ -748,6 +748,13 @@
   <data name="Sync_Indicator_Stuck" xml:space="preserve"><value>{0} changes have not reached your account for more than {1} minutes. They are safe on this device; check your connection.</value></data>
   <data name="Storage_WriteFailed" xml:space="preserve"><value>This device could not save your last change (storage may be full). It is kept until you close the app. Free up space on your device.</value></data>
   <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>This device could not save your last change (storage may be full). It is kept while the app is open and sent to your account. Free up space on your device.</value></data>
+  <data name="Feed_Title" xml:space="preserve"><value>Friends activity</value></data>
+  <data name="Feed_Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Feed_EmptyTitle" xml:space="preserve"><value>Nothing here yet</value></data>
+  <data name="Feed_Empty" xml:space="preserve"><value>When people you follow share brews or beans with friends, they show up here.</value></data>
+  <data name="Feed_Brewed" xml:space="preserve"><value>{0} brewed {1}</value></data>
+  <data name="Feed_BrewedUnknown" xml:space="preserve"><value>{0} brewed a coffee</value></data>
+  <data name="Feed_AddedBean" xml:space="preserve"><value>{0} added {1}</value></data>
   <data name="People_Copy" xml:space="preserve"><value>Copy</value></data>
   <data name="People_CopyNamed" xml:space="preserve"><value>Copy {0} to my household</value></data>
   <data name="People_InYourHousehold" xml:space="preserve"><value>In your household</value></data>

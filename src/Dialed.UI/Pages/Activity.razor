@@ -1,0 +1,179 @@
+@page "/feed"
+@using System.Globalization
+@using System.Text.Json
+@using Dialed.Client.Account
+@using Dialed.Client.Friends
+@using Dialed.Domain.BrewMethods
+@inject FriendsApi Friends
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+@inject TimeProvider Time
+
+<PageHeader Title="@L["Feed_Title"]" BackHref="people">
+    <Actions>
+        @if (Session.IsSignedIn)
+        {
+            <button type="button" id="feed-refresh" class="dialed-icon-button" aria-label="@L["Feed_Refresh"]" title="@L["Feed_Refresh"]" disabled="@loading" @onclick="LoadAsync">
+                <FluentIcon Value="@(new Icons.Regular.Size24.ArrowSync())" Color="Color.Custom" CustomColor="currentColor" />
+            </button>
+        }
+    </Actions>
+</PageHeader>
+
+@if (!Session.IsSignedIn)
+{
+    <EmptyState Icon="@(new Icons.Regular.Size24.People())" Message="@L["People_SignInFirst"]">
+        <a id="feed-sign-in" class="dialed-button dialed-button-primary" href="settings#group-account">@L["People_GoToAccount"]</a>
+    </EmptyState>
+}
+else if (loading && entries.Count == 0)
+{
+    <Loading IsLoading="true" />
+}
+else
+{
+    @if (offline)
+    {
+        <p id="feed-offline" class="dialed-banner dialed-banner-info" role="status">@L[entries.Count > 0 ? "People_ShowingSaved" : "People_Offline"]</p>
+    }
+
+    @if (entries.Count == 0 && !offline)
+    {
+        <EmptyState Icon="@(new Icons.Regular.Size24.People())" Title="@L["Feed_EmptyTitle"]" Message="@L["Feed_Empty"]">
+            <a id="feed-find-friends" class="dialed-button" href="people">@L["Nav_People"]</a>
+        </EmptyState>
+    }
+    else
+    {
+        <div id="feed-list" class="dialed-list">
+            @foreach (var entry in entries)
+            {
+                <ListRow Title="@Title(entry)" Subtitle="@Subtitle(entry)" Href="@($"people/{entry.OwnerId}")" data-kind="@entry.Kind">
+                    <Leading><Avatar Name="@entry.OwnerName" /></Leading>
+                    <Trailing>
+                        @if (entry.Kind == "brew" && Rating(entry) is { } rating)
+                        {
+                            <RatingBadge Value="rating" />
+                        }
+                    </Trailing>
+                </ListRow>
+            }
+        </div>
+        @if (hasMore)
+        {
+            <div class="dialed-form-actions">
+                <button type="button" id="feed-more" class="dialed-button" disabled="@loading" @onclick="MoreAsync">@L["People_LoadMore"]</button>
+            </div>
+        }
+    }
+}
+
+@code {
+    private readonly List<FeedEntry> entries = [];
+    private bool hasMore;
+    private bool loading = true;
+    private bool offline;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Session.IsSignedIn)
+        {
+            await LoadAsync();
+        }
+        else
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        loading = true;
+        offline = false;
+        try
+        {
+            var page = await Friends.FeedAsync(0);
+            entries.Clear();
+            entries.AddRange(page.Entries);
+            hasMore = page.HasMore;
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            // No network: show what was seen last time, if anything.
+            offline = true;
+            if (entries.Count == 0 && Friends.CachedFeed is { } saved)
+            {
+                entries.AddRange(saved.Entries);
+                hasMore = false;
+            }
+        }
+
+        loading = false;
+    }
+
+    private async Task MoreAsync()
+    {
+        loading = true;
+        try
+        {
+            var page = await Friends.FeedAsync(entries.Count);
+            entries.AddRange(page.Entries);
+            hasMore = page.HasMore;
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            offline = true;
+        }
+
+        loading = false;
+    }
+
+    private string Title(FeedEntry entry)
+    {
+        if (entry.Kind != "brew")
+        {
+            return string.Format(L["Feed_AddedBean"].Value, entry.OwnerName, Text(entry, "name") ?? "");
+        }
+
+        return entry.BeanName is { Length: > 0 } bean
+            ? string.Format(L["Feed_Brewed"].Value, entry.OwnerName, bean)
+            : string.Format(L["Feed_BrewedUnknown"].Value, entry.OwnerName);
+    }
+
+    private string Subtitle(FeedEntry entry)
+    {
+        var parts = new List<string>();
+        if (entry.Kind == "brew")
+        {
+            if (Text(entry, "methodCode") is { } code)
+            {
+                parts.Add(BrewMethodCatalog.Default.Find(code)?.Name ?? code);
+            }
+        }
+        else if (entry.Item.TryGetProperty("origin", out var origin) && origin.ValueKind == JsonValueKind.Object
+            && origin.TryGetProperty("country", out var country) && country.ValueKind == JsonValueKind.String)
+        {
+            parts.Add(country.GetString()!);
+        }
+
+        parts.Add(When(entry.At));
+        return string.Join(" · ", parts);
+    }
+
+    private string When(DateTimeOffset at)
+    {
+        var local = at.ToLocalTime();
+        var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        var day = DateOnly.FromDateTime(local.DateTime);
+        var clock = local.ToString("t", CultureInfo.CurrentCulture);
+        return day == today ? $"{L["Day_Today"].Value} {clock}"
+            : day == today.AddDays(-1) ? $"{L["Day_Yesterday"].Value} {clock}"
+            : day.ToString("d MMM", CultureInfo.CurrentCulture);
+    }
+
+    private static string? Text(FeedEntry entry, string name) =>
+        entry.Item.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    private static int? Rating(FeedEntry entry) =>
+        entry.Item.TryGetProperty("rating", out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) && n is >= 1 and <= 5 ? n : null;
+}
