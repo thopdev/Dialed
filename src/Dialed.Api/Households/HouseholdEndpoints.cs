@@ -35,8 +35,17 @@ public static class HouseholdEndpoints
         group.MapGet("", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.GetMineAsync(UserId(user), ct)));
 
-        group.MapPost("/invites", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
-            Map(await service.CreateInviteAsync(UserId(user), ct)));
+        group.MapPost("/invites", async (HouseholdInviteRequest? request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.CreateInviteAsync(UserId(user), request?.MaxUses, request?.DaysValid, ct)));
+
+        group.MapGet("/invites", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.ListInvitesAsync(UserId(user), ct)));
+
+        group.MapDelete("/invites/{code}", async (string code, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+        {
+            var result = await service.RevokeInviteAsync(UserId(user), code, ct);
+            return result.Succeeded ? Results.NoContent() : Map(result);
+        });
 
         group.MapPost("/join", async (JoinRequest request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.JoinAsync(UserId(user), request.Code, ct)));

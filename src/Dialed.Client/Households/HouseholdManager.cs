@@ -34,7 +34,14 @@ public sealed class HouseholdManager(HouseholdApi api, AccountService account, S
         return household;
     }
 
-    public Task<InviteInfo> CreateInviteAsync(CancellationToken cancellationToken = default) => api.CreateInviteAsync(cancellationToken);
+    public Task<InviteInfo> CreateInviteAsync(int maxUses = 1, int? daysValid = null, CancellationToken cancellationToken = default) =>
+        api.CreateInviteAsync(maxUses, daysValid, cancellationToken);
+
+    /// <summary>The owner's open invites (#71).</summary>
+    public Task<IReadOnlyList<InviteInfo>> ListInvitesAsync(CancellationToken cancellationToken = default) => api.ListInvitesAsync(cancellationToken);
+
+    /// <summary>The owner withdraws an open invite (#71).</summary>
+    public Task RevokeInviteAsync(string code, CancellationToken cancellationToken = default) => api.RevokeInviteAsync(code, cancellationToken);
 
     public async Task<HouseholdInfo> JoinAsync(string code, CancellationToken cancellationToken = default)
     {

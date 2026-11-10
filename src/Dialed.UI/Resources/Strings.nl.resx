@@ -747,6 +747,19 @@
   <data name="Sync_Indicator_Stuck" xml:space="preserve"><value>{0} wijzigingen zijn al meer dan {1} minuten niet in je account aangekomen. Ze staan veilig op dit apparaat; controleer je verbinding.</value></data>
   <data name="Storage_WriteFailed" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard tot je de app sluit. Maak ruimte vrij op je apparaat.</value></data>
   <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard zolang de app open is en wordt naar je account gestuurd. Maak ruimte vrij op je apparaat.</value></data>
+  <data name="Household_InviteUses" xml:space="preserve"><value>Wie er mee kan joinen</value></data>
+  <data name="Household_InviteUsesOne" xml:space="preserve"><value>1 persoon</value></data>
+  <data name="Household_InviteUsesMany" xml:space="preserve"><value>{0} personen</value></data>
+  <data name="Household_ShareInvite" xml:space="preserve"><value>Uitnodiging delen</value></data>
+  <data name="Household_ShareTitle" xml:space="preserve"><value>Join mijn Dialed-huishouden</value></data>
+  <data name="Household_ShareText" xml:space="preserve"><value>Join mijn huishouden op Dialed: open Instellingen, dan Huishouden, en vul de code {0} in.</value></data>
+  <data name="Household_OpenInvites" xml:space="preserve"><value>Openstaande uitnodigingen</value></data>
+  <data name="Household_InviteProgress" xml:space="preserve"><value>{0} van {1} gejoind</value></data>
+  <data name="Household_InviteExpires" xml:space="preserve"><value>verloopt {0}</value></data>
+  <data name="Household_Revoke" xml:space="preserve"><value>Intrekken</value></data>
+  <data name="Household_RevokeNamed" xml:space="preserve"><value>Uitnodiging {0} intrekken</value></data>
+  <data name="Household_InviteRevoked" xml:space="preserve"><value>Uitnodiging {0} ingetrokken.</value></data>
+  <data name="Household_InviteCodeMany" xml:space="preserve"><value>Uitnodigingscode: {0} (geldig tot {1}, voor {2} personen)</value></data>
   <data name="Feed_Title" xml:space="preserve"><value>Activiteit van vrienden</value></data>
   <data name="Feed_Refresh" xml:space="preserve"><value>Vernieuwen</value></data>
   <data name="Feed_EmptyTitle" xml:space="preserve"><value>Nog niets</value></data>
