@@ -2298,3 +2298,40 @@ a.people-row-name {
 .friend-copied {
     text-decoration: none;
 }
+
+/* ---- Household invites (#71) ------------------------------------------------------------------ */
+
+#household-open-invites-title {
+    margin: var(--dialed-space-4) 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+#household-open-invites {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.household-open-invite {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.household-invite-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-size: var(--dialed-text-s);
+}
+
+.household-invite-info .dialed-code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: var(--dialed-text-m);
+    letter-spacing: 0.08em;
+}

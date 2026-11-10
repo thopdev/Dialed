@@ -14,7 +14,9 @@ public sealed record HouseholdInfo(string Id, string Name, IReadOnlyList<Househo
 /// <summary>A household the person belongs to, for the picker.</summary>
 public sealed record HouseholdSummary(string Id, string Name, bool IsPersonal, bool IsActive, bool IsOwner, int MemberCount);
 
-public sealed record InviteInfo(string Code, DateTimeOffset ExpiresAt);
+/// <param name="MaxUses">How many people may join with this code.</param>
+/// <param name="Uses">How many already did.</param>
+public sealed record InviteInfo(string Code, DateTimeOffset ExpiresAt, int MaxUses = 1, int Uses = 0);
 
 /// <summary>The API's household endpoints (see Dialed.Api): view, invite, join, leave and remove.</summary>
 public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
@@ -30,8 +32,17 @@ public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
     public Task<HouseholdInfo> SwitchAsync(string householdId, CancellationToken cancellationToken = default) =>
         SendAsync<HouseholdInfo>(HttpMethod.Post, "households/mine/switch", new { householdId }, cancellationToken);
 
-    public Task<InviteInfo> CreateInviteAsync(CancellationToken cancellationToken = default) =>
-        SendAsync<InviteInfo>(HttpMethod.Post, "households/mine/invites", null, cancellationToken);
+    /// <param name="maxUses">How many people may join with the code (1 to 10).</param>
+    /// <param name="daysValid">1 to 30; the server's default (7) when <c>null</c>.</param>
+    public Task<InviteInfo> CreateInviteAsync(int maxUses = 1, int? daysValid = null, CancellationToken cancellationToken = default) =>
+        SendAsync<InviteInfo>(HttpMethod.Post, "households/mine/invites", new { maxUses, daysValid }, cancellationToken);
+
+    /// <summary>The owner's open invites, soonest to expire first.</summary>
+    public Task<IReadOnlyList<InviteInfo>> ListInvitesAsync(CancellationToken cancellationToken = default) =>
+        SendAsync<IReadOnlyList<InviteInfo>>(HttpMethod.Get, "households/mine/invites", null, cancellationToken);
+
+    public async Task RevokeInviteAsync(string code, CancellationToken cancellationToken = default) =>
+        await SendNoContentAsync(HttpMethod.Delete, $"households/mine/invites/{Uri.EscapeDataString(code)}", cancellationToken);
 
     public Task<HouseholdInfo> JoinAsync(string code, CancellationToken cancellationToken = default) =>
         SendAsync<HouseholdInfo>(HttpMethod.Post, "households/mine/join", new { code }, cancellationToken);
@@ -45,7 +56,13 @@ public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
     public Task<HouseholdInfo> RemoveMemberAsync(string userId, CancellationToken cancellationToken = default) =>
         SendAsync<HouseholdInfo>(HttpMethod.Delete, $"households/mine/members/{Uri.EscapeDataString(userId)}", null, cancellationToken);
 
-    private async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken cancellationToken)
+    private async Task SendNoContentAsync(HttpMethod method, string path, CancellationToken cancellationToken)
+    {
+        // The answer has no body: reuse the checks of SendAsync by asking for JSON of "nothing" only on success.
+        _ = await SendAsync<JsonElement?>(method, path, null, cancellationToken, allowEmpty: true);
+    }
+
+    private async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken cancellationToken, bool allowEmpty = false)
     {
         string token;
         try
@@ -87,6 +104,11 @@ public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
             }
 
             await ApiResponses.EnsureSuccessAsync(response, cancellationToken);
+            if (allowEmpty && response.StatusCode == HttpStatusCode.NoContent)
+            {
+                return default!;
+            }
+
             try
             {
                 return await response.Content.ReadFromJsonAsync<T>(Json, cancellationToken)
