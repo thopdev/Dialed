@@ -6,6 +6,7 @@
     <Project Path="src/Dialed.Client/Dialed.Client.csproj" />
     <Project Path="src/Dialed.Domain/Dialed.Domain.csproj" />
     <Project Path="src/Dialed.Functions/Dialed.Functions.csproj" />
+    <Project Path="src/Dialed.Images/Dialed.Images.csproj" />
     <Project Path="src/Dialed.ServiceDefaults/Dialed.ServiceDefaults.csproj" />
     <Project Path="src/Dialed.UI/Dialed.UI.csproj" />
     <Project Path="src/Dialed.Web/Dialed.Web.csproj" />
@@ -16,6 +17,7 @@
     <Project Path="tests/Dialed.ArchitectureTests/Dialed.ArchitectureTests.csproj" />
     <Project Path="tests/Dialed.Client.Tests/Dialed.Client.Tests.csproj" />
     <Project Path="tests/Dialed.Domain.Tests/Dialed.Domain.Tests.csproj" />
+    <Project Path="tests/Dialed.Images.Tests/Dialed.Images.Tests.csproj" />
     <Project Path="tests/Dialed.UI.Tests/Dialed.UI.Tests.csproj" />
   </Folder>
 </Solution>

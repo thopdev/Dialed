@@ -8,4 +8,8 @@
     <ProjectReference Include="..\..\src\Dialed.Api\Dialed.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Dialed.Images.Tests\TestPhotos.cs" Link="Photos\TestPhotos.cs" />
+  </ItemGroup>
+
 </Project>
