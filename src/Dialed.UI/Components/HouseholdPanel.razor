@@ -7,7 +7,7 @@
 @inject NavigationManager Navigation
 @inject IStringLocalizer<Strings> L
 
-@* Who is in the household, invite codes, joining, leaving and removing. Needs an account. *@
+@* Who is in the household, invite codes, joining, leaving and removing, and creating, renaming and deleting households. Needs an account. *@
 <div id="household-panel">
     <HouseholdPicker Id="household-picker-settings" />
     @if (!Session.IsSignedIn)
@@ -24,7 +24,29 @@
     }
     else
     {
-        <h3 id="household-name">@household.Name</h3>
+        @if (renaming)
+        {
+            <form class="dialed-form" id="household-rename-form" @onsubmit="RenameAsync" @onsubmit:preventDefault>
+                <div class="dialed-field">
+                    <label for="household-rename-input">@L["Household_Name"]</label>
+                    <input id="household-rename-input" type="text" maxlength="@MaxNameLength" autocomplete="off" @bind="newName" @bind:event="oninput" />
+                </div>
+                <div class="dialed-form-actions">
+                    <button id="household-rename-save" type="submit" class="dialed-button dialed-button-primary" disabled="@(busy || string.IsNullOrWhiteSpace(newName))">@L["Save"]</button>
+                    <button id="household-rename-cancel" type="button" class="dialed-button" @onclick="() => renaming = false">@L["Cancel"]</button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="household-heading">
+                <h3 id="household-name">@household.Name</h3>
+                @if (household.YouAreOwner)
+                {
+                    <button id="household-rename" type="button" class="dialed-button dialed-button-subtle" aria-label="@string.Format(L["Household_RenameNamed"].Value, household.Name)" @onclick="StartRename">@L["Household_Rename"]</button>
+                }
+            </div>
+        }
         <ul id="household-members" class="dialed-list">
             @foreach (var member in household.Members)
             {
@@ -119,6 +141,44 @@
                 }
             </div>
         }
+
+        <div id="household-manage" class="household-manage">
+            @if (creating)
+            {
+                <form class="dialed-form" id="household-create-form" @onsubmit="CreateAsync" @onsubmit:preventDefault>
+                    <div class="dialed-field">
+                        <label for="household-create-name">@L["Household_Name"]</label>
+                        <input id="household-create-name" type="text" maxlength="@MaxNameLength" autocomplete="off" aria-describedby="household-create-hint" @bind="newName" @bind:event="oninput" />
+                        <p id="household-create-hint" class="dialed-muted">@L["Household_CreateHint"]</p>
+                    </div>
+                    <div class="dialed-form-actions">
+                        <button id="household-create-save" type="submit" class="dialed-button dialed-button-primary" disabled="@(busy || string.IsNullOrWhiteSpace(newName))">@L["Household_Create"]</button>
+                        <button id="household-create-cancel" type="button" class="dialed-button" @onclick="() => creating = false">@L["Cancel"]</button>
+                    </div>
+                </form>
+            }
+            else if (confirmingDelete)
+            {
+                <div id="household-delete-confirmation" class="household-delete-confirmation" role="group" aria-labelledby="household-delete-warning">
+                    <p id="household-delete-warning">@string.Format(L["Household_DeleteWarning"].Value, household.Name)</p>
+                    <div class="dialed-form-actions">
+                        <button id="household-delete-confirm" type="button" class="dialed-button dialed-button-danger" disabled="@busy" @onclick="DeleteAsync">@L["Household_ConfirmDelete"]</button>
+                        <button id="household-delete-cancel" type="button" class="dialed-button" @onclick="() => confirmingDelete = false">@L["Cancel"]</button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="dialed-form-actions">
+                    <button id="household-create" type="button" class="dialed-button" @onclick="StartCreate">@L["Household_New"]</button>
+                    @if (household.YouAreOwner && householdCount > 1)
+                    {
+                        @* The last household a person has cannot be deleted, the same rule as leaving. *@
+                        <button id="household-delete" type="button" class="dialed-button" @onclick="() => { confirmingDelete = true; renaming = false; message = null; }">@L["Household_Delete"]</button>
+                    }
+                </div>
+            }
+        </div>
     }
 
     @if (message is not null)
@@ -139,6 +199,12 @@
     private string? removing;
     private string? transferring;
     private bool confirmingLeave;
+    private bool renaming;
+    private bool creating;
+    private bool confirmingDelete;
+    private string newName = "";
+    private int householdCount;
+    private const int MaxNameLength = 60;
     private bool busy;
     private bool failed;
 
@@ -190,6 +256,7 @@
         {
             household = await Households.GetAsync();
             await LoadInvitesAsync();
+            await LoadCountAsync();
         }
         catch (Exception exception) when (exception is AccountApiException or AccountRefusedException)
         {
@@ -215,6 +282,64 @@
             // Not fatal: the household itself is shown.
         }
     }
+
+    /// <summary>How many households the person is in: the last one cannot be deleted. Unknown (offline) hides the delete button.</summary>
+    private async Task LoadCountAsync()
+    {
+        try
+        {
+            householdCount = (await Households.ListAsync()).Count;
+        }
+        catch (Exception exception) when (exception is AccountApiException or AccountRefusedException)
+        {
+            householdCount = 0;
+        }
+    }
+
+    private void StartRename()
+    {
+        newName = household?.Name ?? "";
+        renaming = true;
+        creating = false;
+        confirmingDelete = false;
+        message = null;
+    }
+
+    private void StartCreate()
+    {
+        newName = "";
+        creating = true;
+        renaming = false;
+        confirmingDelete = false;
+        message = null;
+    }
+
+    private Task RenameAsync() => RunAsync(async () =>
+    {
+        household = await Households.RenameAsync(newName.Trim());
+        renaming = false;
+        message = L["Household_Renamed"];
+    });
+
+    private Task CreateAsync() => RunAsync(async () =>
+    {
+        household = await Households.CreateAsync(newName.Trim());
+        creating = false;
+        invite = null;
+        await LoadInvitesAsync();
+        await LoadCountAsync();
+        message = string.Format(L["Household_Created"].Value, household.Name);
+    });
+
+    private Task DeleteAsync() => RunAsync(async () =>
+    {
+        household = await Households.DeleteAsync();
+        confirmingDelete = false;
+        invite = null;
+        await LoadInvitesAsync();
+        await LoadCountAsync();
+        message = string.Format(L["Household_Deleted"].Value, household.Name);
+    });
 
     private Task InviteAsync() => RunAsync(async () =>
     {
@@ -249,6 +374,7 @@
     {
         household = await Households.LeaveAsync();
         confirmingLeave = false;
+        await LoadCountAsync();
     });
 
     private Task RemoveAsync(string userId) => RunAsync(async () =>
@@ -275,9 +401,10 @@
         {
             message = exception.Message;
         }
-        catch (AccountApiException)
+        catch (AccountApiException exception)
         {
-            message = L["Account_Unavailable"];
+            // Moving to another household (creating one) first sends what is waiting; say so when that did not work.
+            message = exception.Message.StartsWith("Some changes", StringComparison.Ordinal) ? L["Household_SwitchPending"] : L["Account_Unavailable"];
         }
         finally
         {

@@ -371,6 +371,9 @@ public abstract class UiTestContext : BunitContext
 
         public string ActiveId { get; set; } = "h1";
 
+        /// <summary>The name of the active household; create and rename change it.</summary>
+        public string Name { get; set; } = "Our household";
+
         public List<string> Calls { get; } = [];
 
         /// <summary>Overrides the answer for "METHOD path"; return <c>null</c> for the default answer.</summary>
@@ -428,6 +431,24 @@ public abstract class UiTestContext : BunitContext
                 Members = [("Owner", "owner"), ("You", "u1")];
                 YouAreOwner = false;
             }
+            else if (call is "POST households" or "PUT households/mine/name")
+            {
+                Name = System.Text.Json.JsonDocument.Parse(request.Content!.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult()).RootElement.GetProperty("name").GetString()!;
+                if (call == "POST households")
+                {
+                    ActiveId = "h-new";
+                    Households.Add((ActiveId, Name));
+                    Members = [("You", "u1")];
+                    YouAreOwner = true;
+                }
+            }
+            else if (call == "DELETE households/mine")
+            {
+                Households.RemoveAll(h => h.Id == ActiveId);
+                (ActiveId, Name) = Households[0];
+                Members = [("You", "u1")];
+                YouAreOwner = true;
+            }
             else if (call == "POST households/mine/leave")
             {
                 Members = [("You", "u1")];
@@ -435,7 +456,7 @@ public abstract class UiTestContext : BunitContext
             }
 
             var members = string.Join(",", Members.Select((m, i) => $"{{\"userId\":\"{m.Id}\",\"displayName\":\"{m.Name}\",\"isOwner\":{(YouAreOwner ? (m.Id == "u1" ? "true" : "false") : (m.Id == "owner" ? "true" : "false"))}}}"));
-            return Task.FromResult(Json($"{{\"id\":\"h1\",\"name\":\"Our household\",\"members\":[{members}],\"youAreOwner\":{(YouAreOwner ? "true" : "false")}}}"));
+            return Task.FromResult(Json($"{{\"id\":\"{ActiveId}\",\"name\":\"{Name}\",\"members\":[{members}],\"youAreOwner\":{(YouAreOwner ? "true" : "false")}}}"));
         }
 
         private static HttpResponseMessage Json(string json) =>

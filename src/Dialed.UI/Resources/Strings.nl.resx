@@ -802,4 +802,16 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>Een stand op de schaal van je molen, om op smaak bij te stellen.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Heel verse bonen geven veel gas af, dus geef het wat tijd.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>Een gangbare verhouding koffie en vloeistof voor deze methode.</value></data>
+  <data name="Household_Rename" xml:space="preserve"><value>Hernoemen</value></data>
+  <data name="Household_RenameNamed" xml:space="preserve"><value>{0} hernoemen</value></data>
+  <data name="Household_Name" xml:space="preserve"><value>Naam van het huishouden</value></data>
+  <data name="Household_Renamed" xml:space="preserve"><value>Huishouden hernoemd.</value></data>
+  <data name="Household_New" xml:space="preserve"><value>Nieuw huishouden</value></data>
+  <data name="Household_CreateHint" xml:space="preserve"><value>Je gaat naar het nieuwe huishouden. Je andere huishoudens blijven in de lijst.</value></data>
+  <data name="Household_Create" xml:space="preserve"><value>Huishouden maken</value></data>
+  <data name="Household_Created" xml:space="preserve"><value>{0} gemaakt. Je zit er nu in.</value></data>
+  <data name="Household_Delete" xml:space="preserve"><value>Huishouden verwijderen</value></data>
+  <data name="Household_DeleteWarning" xml:space="preserve"><value>{0} verwijderen voor iedereen erin? De bonen, zakken, recepten en brews gaan mee. Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="Household_ConfirmDelete" xml:space="preserve"><value>Verwijderen voor iedereen</value></data>
+  <data name="Household_Deleted" xml:space="preserve"><value>Huishouden verwijderd. Je zit nu in {0}.</value></data>
 </root>
