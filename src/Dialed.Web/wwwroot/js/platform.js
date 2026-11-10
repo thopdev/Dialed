@@ -425,3 +425,36 @@ export function describeDevice() {
     const installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
     return `${deviceType()}, ${os.trim()}, ${installed ? 'installed app' : 'browser tab'}`;
 }
+
+// Cross-tab lock (#39): Web Locks, so only one tab syncs at a time. The browser frees a lock when its tab closes.
+// Without Web Locks (old browsers, insecure origins) every tab gets the lock, as before.
+const crossTabLocks = new Map();
+
+export function crossTabLockAcquire(id, name, wait) {
+    if (!navigator.locks?.request) return Promise.resolve(true);
+    const entry = { abort: new AbortController(), release: null };
+    crossTabLocks.set(id, entry);
+    return new Promise((resolve, reject) => {
+        const options = wait ? { signal: entry.abort.signal } : { ifAvailable: true };
+        navigator.locks.request(name, options, lock => {
+            if (!lock) {
+                crossTabLocks.delete(id);
+                resolve(false);
+                return undefined;
+            }
+            resolve(true);
+            // Held until crossTabLockRelease resolves this promise.
+            return new Promise(release => { entry.release = release; });
+        }).catch(error => {
+            crossTabLocks.delete(id);
+            reject(error);
+        });
+    });
+}
+
+export function crossTabLockRelease(id) {
+    const entry = crossTabLocks.get(id);
+    crossTabLocks.delete(id);
+    if (entry?.release) entry.release();
+    else entry?.abort.abort();
+}
