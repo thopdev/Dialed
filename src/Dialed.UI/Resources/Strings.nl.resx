@@ -743,4 +743,13 @@
   <data name="Brew_Ratio" xml:space="preserve"><value>Verhouding</value></data>
   <data name="Timer_Progress" xml:space="preserve"><value>Voortgang</value></data>
   <data name="Timer_ProgressValue" xml:space="preserve"><value>{0} van {1}</value></data>
+  <data name="People_Copy" xml:space="preserve"><value>Kopieer</value></data>
+  <data name="People_CopyNamed" xml:space="preserve"><value>Kopieer {0} naar mijn huishouden</value></data>
+  <data name="People_InYourHousehold" xml:space="preserve"><value>In je huishouden</value></data>
+  <data name="People_Copied" xml:space="preserve"><value>“{0}” gekopieerd naar je huishouden.</value></data>
+  <data name="People_AlreadyCopied" xml:space="preserve"><value>“{0}” staat al in je huishouden.</value></data>
+  <data name="People_CopyOpen" xml:space="preserve"><value>Openen</value></data>
+  <data name="People_CopyUnavailable" xml:space="preserve"><value>Dit wordt niet meer met je gedeeld.</value></data>
+  <data name="People_CopyOffline" xml:space="preserve"><value>De server is niet bereikbaar. Probeer het opnieuw als je online bent.</value></data>
+  <data name="Item_CopiedFrom" xml:space="preserve"><value>Gekopieerd van {0}</value></data>
 </root>

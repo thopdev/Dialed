@@ -158,6 +158,7 @@ public static class ClientServices
         if (friends is not null)
         {
             services.TryAddSingleton(friends);
+            services.TryAddSingleton<Friends.FriendCopyService>();
         }
 
         services.TryAddSingleton<AccountService>();

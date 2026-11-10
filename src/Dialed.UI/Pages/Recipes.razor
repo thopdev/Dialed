@@ -216,6 +216,11 @@
                 </div>
             </div>
 
+            @if (current.CopiedFrom is { } copiedFrom)
+            {
+                <p id="recipe-copied-from" class="dialed-muted dialed-copied-from">@string.Format(L["Item_CopiedFrom"].Value, copiedFrom.OwnerName)</p>
+            }
+
             @if (Parameters(current) is { Count: > 0 } parameters)
             {
                 <div class="dialed-stat-grid dialed-recipe-parameters" id="recipe-parameters">

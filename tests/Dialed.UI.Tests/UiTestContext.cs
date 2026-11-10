@@ -93,6 +93,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<AccountDataService>();
         Services.AddSingleton<PasskeyManager>();
         Services.AddSingleton(new FriendsApi(new HttpClient(FriendsServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
+        Services.AddSingleton<FriendCopyService>();
         Services.AddSingleton(new HouseholdApi(new HttpClient(HouseholdServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<HouseholdManager>();
         JSInterop.Mode = JSRuntimeMode.Loose;
