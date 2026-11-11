@@ -988,4 +988,6 @@
   <data name="Admin_Unmerge" xml:space="preserve"><value>Samenvoegen ongedaan maken</value></data>
   <data name="Admin_UnmergeNamed" xml:space="preserve"><value>Maak het samenvoegen van {0} en {1} ongedaan</value></data>
   <data name="Admin_Unmerged" xml:space="preserve"><value>Het samenvoegen is ongedaan gemaakt.</value></data>
+  <data name="People_FindCount_One" xml:space="preserve"><value>{0} persoon gevonden</value></data>
+  <data name="People_FindCount_Other" xml:space="preserve"><value>{0} mensen gevonden</value></data>
 </root>

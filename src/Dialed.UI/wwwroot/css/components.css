@@ -2128,6 +2128,10 @@ button.dialed-chip::after {
     font-size: var(--dialed-text-l);
 }
 
+#people-find-count {
+    margin: var(--dialed-space-4) 0 var(--dialed-space-2);
+}
+
 .dialed-people-section ul {
     margin: 0;
     padding: 0;
