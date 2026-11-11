@@ -1,6 +1,7 @@
 @using Dialed.Domain.Model
 @inject IStringLocalizer<Strings> L
 @inject Dialed.Client.Preferences.IUserPreferences Preferences
+@inject Dialed.Client.Data.IRepository<Vendor> VendorStore
 
 @* Create/edit form for a bean. Offline-first: the parent saves the result. *@
 <form class="dialed-form dialed-sectioned-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault novalidate>
@@ -16,7 +17,12 @@
         }
     </div>
 
-    <VendorPicker Label="@L["Bean_Roaster"]" @bind-SelectedId="roasterId" Kind="VendorKinds.Roaster" />
+    <VendorPicker Label="@L["Bean_Roaster"]" @bind-SelectedId="roasterId" Kind="VendorKinds.Roaster" UseCatalog="@(Bean is null)" />
+
+    @if (Bean is null)
+    {
+        <CatalogSuggestions Query="@name" OnUse="UseCatalogAsync" />
+    }
     </section>
 
     <section class="dialed-form-section" aria-labelledby="bean-section-origin">
@@ -236,6 +242,46 @@
         notes = Bean?.Notes;
         visibility = Bean?.Visibility ?? Preferences.Profile.DefaultVisibility;
         photoIds = Bean?.PhotoIds ?? [];
+    }
+
+    /// <summary>
+    /// Copies a catalog entry into the form (#105): its fields fill what the entry knows, the roaster is the one I already have or a new
+    /// one made from its name. Nothing is linked and every field stays editable.
+    /// </summary>
+    private async Task UseCatalogAsync(Dialed.Client.Catalog.CatalogBean entry)
+    {
+        name = entry.Name;
+        country = entry.Country ?? country;
+        region = entry.Region ?? region;
+        if (!string.IsNullOrWhiteSpace(entry.Process))
+        {
+            if (BeanQuery.IsKnownProcess(entry.Process))
+            {
+                processChoice = BeanQuery.KnownProcesses.First(p => string.Equals(p, entry.Process, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                processChoice = OtherValue;
+                processOther = entry.Process;
+            }
+        }
+
+        if (entry.Varieties.Count > 0)
+        {
+            varieties = entry.Varieties;
+        }
+
+        roastLevel = entry.RoastLevel ?? roastLevel;
+        if (entry.TastingNotes.Count > 0)
+        {
+            tastingNotes = entry.TastingNotes;
+        }
+
+        if (!string.IsNullOrWhiteSpace(entry.RoasterName))
+        {
+            var known = Dialed.Domain.Text.LabelMatcher.Find(entry.RoasterName, null, null, await VendorStore.ListAsync(), []).BestRoaster?.Item;
+            roasterId = (known ?? await VendorStore.SaveAsync(new Vendor { Name = entry.RoasterName.Trim(), Kinds = VendorKinds.Roaster })).Id;
+        }
     }
 
     private void OnProcessChanged(ChangeEventArgs e) => processChoice = e.Value?.ToString() ?? "";

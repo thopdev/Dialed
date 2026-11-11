@@ -2624,3 +2624,45 @@ a.people-row-name {
     padding: 0;
     list-style: none;
 }
+
+/* The shared catalog (#105) */
+.dialed-catalog {
+    margin: 0 0 var(--dialed-space-3);
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2);
+    border-radius: var(--dialed-radius-m, 0.75rem);
+    background: var(--colorNeutralBackground2);
+}
+
+.dialed-catalog h3 {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.catalog-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+}
+
+.catalog-text {
+    display: grid;
+    min-width: 0;
+}
+
+.catalog-name,
+.catalog-detail {
+    overflow-wrap: anywhere;
+}
+
+.dialed-picker-catalog .dialed-picker-detail {
+    font-style: italic;
+}
+
+.catalog-use {
+    flex-shrink: 0;
+    white-space: nowrap;
+}

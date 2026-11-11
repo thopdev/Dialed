@@ -921,4 +921,13 @@
   <data name="Report_Failed" xml:space="preserve"><value>The report could not be sent. Try again.</value></data>
   <data name="Privacy_Public_Title" xml:space="preserve"><value>Public profile and public items</value></data>
   <data name="Privacy_Public" xml:space="preserve"><value>A public profile is off until you switch it on in Settings. When it is on, other Dialed users can find you by your name and see your name, your avatar and the beans and recipes you set to "Everyone on Dialed", and nothing else. They cannot see your brews, bags, friends or email address, and they have to be signed in: nothing is on the open web or in search engines. Switch it off and you disappear at once; your items keep their own setting. People can report a profile, bean or recipe; the report (who, what, why) goes to the developer of the beta, who can hide a profile without deleting anything. Deleting your account removes your profile and your public items.</value></data>
+  <data name="Catalog_Title" xml:space="preserve"><value>From the catalog</value></data>
+  <data name="Catalog_Hint" xml:space="preserve"><value>Beans other people chose to share. Using one copies it here; you can change everything.</value></data>
+  <data name="Catalog_Use" xml:space="preserve"><value>Use this</value></data>
+  <data name="Catalog_UseNamed" xml:space="preserve"><value>Use {0} from the catalog</value></data>
+  <data name="Catalog_People" xml:space="preserve"><value>shared by {0}</value></data>
+  <data name="Catalog_FromCatalog" xml:space="preserve"><value>from the catalog</value></data>
+  <data name="Scan_CatalogTitle" xml:space="preserve"><value>Not one of your beans. Is it one of these?</value></data>
+  <data name="Privacy_Catalog_Title" xml:space="preserve"><value>Shared catalog</value></data>
+  <data name="Privacy_Catalog" xml:space="preserve"><value>Dialed suggests beans and roasters from a catalog built from what people chose to share publicly. A bean or roaster only enters it when at least two different people made the same one public, and it holds no names, ids or anything that points back to a person. Nothing private ever enters it. If you un-share an item, switch your public profile off or delete your account, your contribution drops out at the next rebuild. Using a suggestion copies it into your own beans; nothing stays linked.</value></data>
 </root>

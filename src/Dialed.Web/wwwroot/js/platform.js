@@ -536,6 +536,8 @@ export async function pushUnsubscribe() {
     const endpoint = subscription.endpoint;
     await subscription.unsubscribe();
     return endpoint;
+}
+
 // ---- Barcode scan (#104) -----------------------------------------------------------------------
 // A live camera in the <video> element with the given id, read by a self-hosted zxing-wasm (wwwroot/lib/zxing). Nothing is loaded from a CDN.
 
