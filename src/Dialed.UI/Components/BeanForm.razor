@@ -44,6 +44,15 @@
 
     <ChipInput Label="@L["Bean_Varieties"]" @bind-Values="varieties" />
 
+    <div id="bean-barcodes">
+        <ChipInput Label="@L["Bean_Barcodes"]" @bind-Values="barcodes" />
+        <p class="dialed-muted">@L["Bean_BarcodesHint"]</p>
+        @if (barcodeError is not null)
+        {
+            <div id="bean-barcodes-error" class="dialed-field-error" role="alert">@barcodeError</div>
+        }
+    </div>
+
     <div class="dialed-field">
         <label for="bean-altitude">@L["Bean_Altitude"]</label>
         <input id="bean-altitude" type="number" inputmode="numeric" min="0" max="5000" step="1" @bind="altitude" @bind:event="onchange" @onblur="ValidateAltitude"
@@ -154,6 +163,8 @@
     private string? farm;
     private string? producer;
     private IReadOnlyList<string> varieties = [];
+    private IReadOnlyList<string> barcodes = [];
+    private string? barcodeError;
     private string processChoice = "";
     private string? processOther;
     private int? altitude;
@@ -196,6 +207,7 @@
         farm = Bean?.Origin.Farm;
         producer = Bean?.Origin.Producer;
         varieties = Bean?.Varieties ?? [];
+        barcodes = Bean?.Barcodes ?? [];
         var process = Bean?.Process;
         if (string.IsNullOrEmpty(process))
         {
@@ -230,11 +242,19 @@
 
     private void ValidateAltitude() => altitudeError = altitude is < 0 or > 5000 ? L["Bean_AltitudeRange"].Value : null;
 
+    /// <summary>A code that looks like a retail barcode must have the right check digit, so a mistyped one is caught here.</summary>
+    private void ValidateBarcodes()
+    {
+        var bad = barcodes.FirstOrDefault(code => Dialed.Domain.Barcodes.BarcodeMatcher.Normalize(code) is null);
+        barcodeError = bad is null ? null : string.Format(L["Bean_BarcodeInvalid"].Value, bad);
+    }
+
     private async Task SubmitAsync()
     {
         ValidateName();
         ValidateAltitude();
-        if (nameError is not null || altitudeError is not null)
+        ValidateBarcodes();
+        if (nameError is not null || altitudeError is not null || barcodeError is not null)
         {
             return;
         }
@@ -252,6 +272,7 @@
             RoasterId = roasterId,
             Origin = new BeanOrigin(Clean(country), Clean(region), Clean(farm), Clean(producer)),
             Varieties = varieties,
+            Barcodes = Dialed.Domain.Barcodes.BarcodeMatcher.NormalizeAll(barcodes),
             Process = process,
             AltitudeM = altitude is > 0 ? altitude : null,
             RoastLevel = roastLevel,

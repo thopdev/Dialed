@@ -849,4 +849,28 @@
   <data name="Scan_DiscardNamed" xml:space="preserve"><value>{0} weggooien</value></data>
   <data name="Scan_NoteReady" xml:space="preserve"><value>Scans om te controleren: {0}</value></data>
   <data name="Scan_NoteWaiting" xml:space="preserve"><value>Etiketscans die op een verbinding wachten: {0}</value></data>
+  <data name="Barcode_Title" xml:space="preserve"><value>Barcode scannen</value></data>
+  <data name="Barcode_Button" xml:space="preserve"><value>Barcode scannen</value></data>
+  <data name="Barcode_Hint" xml:space="preserve"><value>Houd de barcode voor de camera. Hij wordt op dit apparaat gelezen; er wordt niets verstuurd.</value></data>
+  <data name="Barcode_Preview" xml:space="preserve"><value>Camerabeeld</value></data>
+  <data name="Barcode_Type" xml:space="preserve"><value>Of typ het nummer</value></data>
+  <data name="Barcode_LookUp" xml:space="preserve"><value>Opzoeken</value></data>
+  <data name="Barcode_ScanAgain" xml:space="preserve"><value>Opnieuw scannen</value></data>
+  <data name="Barcode_Invalid" xml:space="preserve"><value>Dit nummer is geen geldige barcode. Controleer de cijfers en probeer het opnieuw.</value></data>
+  <data name="Barcode_Problem_PermissionDenied" xml:space="preserve"><value>De camera is niet toegestaan. Sta hem toe in je instellingen, of typ het nummer hieronder.</value></data>
+  <data name="Barcode_Problem_NoCamera" xml:space="preserve"><value>Er kon geen camera worden gestart. Typ het nummer hieronder.</value></data>
+  <data name="Barcode_Problem_Unsupported" xml:space="preserve"><value>Barcodes scannen kan hier niet. Typ het nummer hieronder.</value></data>
+  <data name="Barcode_SeveralBeans" xml:space="preserve"><value>Meerdere bonen hebben deze code</value></data>
+  <data name="Barcode_UnknownTitle" xml:space="preserve"><value>Nieuwe barcode</value></data>
+  <data name="Barcode_UnknownBody" xml:space="preserve"><value>Nog geen boon heeft de code {0}. Wat wil je doen?</value></data>
+  <data name="Barcode_NewBean" xml:space="preserve"><value>Toevoegen als nieuwe boon</value></data>
+  <data name="Barcode_AttachBean" xml:space="preserve"><value>Code toevoegen aan een boon die ik heb</value></data>
+  <data name="Barcode_ScanLabel" xml:space="preserve"><value>In plaats daarvan het etiket scannen</value></data>
+  <data name="Barcode_ScanAnother" xml:space="preserve"><value>Andere code scannen</value></data>
+  <data name="Barcode_AttachTitle" xml:space="preserve"><value>Welke boon heeft de code {0}?</value></data>
+  <data name="Barcode_Search" xml:space="preserve"><value>Zoek in mijn bonen</value></data>
+  <data name="Barcode_NoBeans" xml:space="preserve"><value>Geen bonen gevonden.</value></data>
+  <data name="Bean_Barcodes" xml:space="preserve"><value>Barcodes</value></data>
+  <data name="Bean_BarcodesHint" xml:space="preserve"><value>Het nummer onder de barcode op de zak. Een boon kan er meer hebben, één per zakgrootte.</value></data>
+  <data name="Bean_BarcodeInvalid" xml:space="preserve"><value>“{0}” is geen geldige barcode (controleer de cijfers).</value></data>
 </root>

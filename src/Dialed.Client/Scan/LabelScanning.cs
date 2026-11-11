@@ -177,7 +177,8 @@ public sealed record ScanReview(
     decimal? WeightG,
     DateOnly? RoastDate,
     string? ExistingBeanId,
-    string? PhotoId);
+    string? PhotoId,
+    string? Barcode = null);
 
 public sealed record ScanSaved(Bean Bean, Bag? Bag, bool CreatedBean, bool CreatedRoaster);
 
@@ -211,8 +212,14 @@ public static class ScanSaver
                 RoastLevel = Domain.Import.BeanImport.ParseRoast(review.RoastLevel),
                 Notes = Clean(review.Notes),
                 PhotoIds = review.PhotoId is null ? [] : [review.PhotoId],
+                Barcodes = Domain.Barcodes.BarcodeMatcher.NormalizeAll(review.Barcode is null ? [] : [review.Barcode]),
             }, cancellationToken);
             createdBean = true;
+        }
+        else if (Domain.Barcodes.BarcodeMatcher.Normalize(review.Barcode) is { } code && !bean.Barcodes.Contains(code))
+        {
+            // The code that started this scan now belongs to the bean the label was matched to.
+            bean = await beans.SaveAsync(bean with { Barcodes = [.. bean.Barcodes, code] }, cancellationToken);
         }
 
         Bag? bag = null;

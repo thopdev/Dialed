@@ -179,6 +179,10 @@ else
     private CapturedPhoto? offlineCapture;
     private string? queuedPhotoId;
     private bool queuedNote;
+
+    /// <summary>A barcode scanned first (#104): the bean made or matched here gets it.</summary>
+    [SupplyParameterFromQuery(Name = "barcode")]
+    public string? Barcode { get; set; }
     private LabelMatch? match;
     private ScanProblem? problem;
     private bool busy;
@@ -337,7 +341,7 @@ else
             var photoId = existingBean is not null ? null : queuedPhotoId ?? (photo is not null ? (await Photos.AddAsync(photo)).Id : null);
             var grams = BeanImport.ParseWeightG(weight);
             var saved = await ScanSaver.SaveAsync(
-                new ScanReview(name, roaster, existingRoaster, country, region, process, varieties, roastLevel, notes, grams, BeanImport.ParseDate(roastDate), existingBean, photoId),
+                new ScanReview(name, roaster, existingRoaster, country, region, process, varieties, roastLevel, notes, grams, BeanImport.ParseDate(roastDate), existingBean, photoId, Barcode),
                 BeanStore, BagStore, VendorStore);
             if (queuedPhotoId is not null)
             {

@@ -162,6 +162,7 @@ public sealed class AccessibilityTests : UiTestContext
     [Fact] public void Import_is_labeled() => Audit<Import>();
 
     [Fact] public void Scan_is_labeled() => Audit<Scan>();
+    [Fact] public void BarcodeScan_is_labeled() => Audit<BarcodeScan>();
 
     [Fact] public void Onboarding_is_labeled() => Audit<Onboarding>();
 

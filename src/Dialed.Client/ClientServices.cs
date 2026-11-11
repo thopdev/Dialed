@@ -106,6 +106,7 @@ public static class ClientServices
             ],
             sp.GetRequiredService<ISyncState>()));
         services.TryAddSingleton<ICrossTabLock>(SingleWindowLock.Instance);
+        services.TryAddSingleton<IBarcodeScanner>(UnsupportedBarcodeScanner.Instance);
         services.TryAddSingleton<SyncCoordinator>();
         return services;
     }

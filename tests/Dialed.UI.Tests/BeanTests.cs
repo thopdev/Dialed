@@ -65,6 +65,35 @@ public sealed class BeanTests : UiTestContext
     }
 
     [Fact]
+    public void Form_saves_barcodes_normalised()
+    {
+        Bean? submitted = null;
+        var form = Render<BeanForm>(p => p.Add(x => x.OnSubmit, EventCallback.Factory.Create<Bean>(this, b => submitted = b)));
+        form.Find("#bean-name").Input("Guji");
+        form.Find("#bean-barcodes input").Input("036000 291452");
+        form.Find("#bean-barcodes button.dialed-button").Click();
+
+        form.Find("form").Submit();
+
+        submitted!.Barcodes.ShouldBe(["0036000291452"]);
+    }
+
+    [Fact]
+    public void Form_refuses_a_barcode_with_a_wrong_check_digit()
+    {
+        Bean? submitted = null;
+        var form = Render<BeanForm>(p => p.Add(x => x.OnSubmit, EventCallback.Factory.Create<Bean>(this, b => submitted = b)));
+        form.Find("#bean-name").Input("Guji");
+        form.Find("#bean-barcodes input").Input("4006381333932");
+        form.Find("#bean-barcodes button.dialed-button").Click();
+
+        form.Find("form").Submit();
+
+        form.Find("#bean-barcodes-error").TextContent.ShouldContain("4006381333932");
+        submitted.ShouldBeNull();
+    }
+
+    [Fact]
     public void Form_submits_all_fields()
     {
         Bean? submitted = null;

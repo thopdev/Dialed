@@ -257,14 +257,14 @@ CI/CD: GitHub Actions with **OIDC federated credentials** to Azure (no stored Az
 ## 10. MAUI readiness
 What keeps a future native app (MAUI Blazor Hybrid) cheap:
 - All UI in `Dialed.UI`, all data/sync logic in `Dialed.Client`; both free of browser APIs (architecture test).
-- Platform services behind interfaces with web implementations today: `IPhotoCapture`, `ILocalFileStore`, `IConnectivity`, `IShareService`, `IPasskeyClient`, `IStoragePersistence`, `IWakeLock`, `ISoundCue`, `IAppLifecycle`, `ICrossTabLock`.
+- Platform services behind interfaces with web implementations today: `IPhotoCapture`, `ILocalFileStore`, `IConnectivity`, `IShareService`, `IPasskeyClient`, `IStoragePersistence`, `IWakeLock`, `ISoundCue`, `IAppLifecycle`, `ICrossTabLock`, `IBarcodeScanner`.
 - Local `DbContext` is provider-agnostic (SQLite-WASM now, native SQLite in MAUI).
 - API is token-based (no cookies needed after sign-in).
 - Fluent UI Blazor works in MAUI Blazor Hybrid.
 
 ### Adding a MAUI host
 1. New project `Dialed.Maui` (MAUI Blazor Hybrid) that references `Dialed.UI` and `Dialed.Client`, never `Dialed.Web`. `Routes` and `MainLayout` are reused as they are.
-2. Implement the nine interfaces in `Dialed.Client.Platform` natively and register them in `MauiProgram`:
+2. Implement the interfaces in `Dialed.Client.Platform` natively and register them in `MauiProgram`:
 
    | Interface | Web today (`Dialed.Web/Platform`, `wwwroot/js/platform.js`) | MAUI |
    |---|---|---|
@@ -278,10 +278,11 @@ What keeps a future native app (MAUI Blazor Hybrid) cheap:
    | `ISoundCue` | Web Audio | platform audio player |
    | `IAppLifecycle` | page visibility | window `Activated`/`Deactivated` |
    | `ICrossTabLock` | Web Locks (`navigator.locks`): one tab syncs at a time | one window: `SingleWindowLock` |
+   | `IBarcodeScanner` | `getUserMedia` live camera + self-hosted zxing-wasm reader (`wwwroot/lib/zxing`) | a native scanner (VisionKit `DataScannerViewController` on iOS) |
 
 3. Also implement `IAppEnvironment` and `IPwaState` (no updates, always installed) and swap the SQLite provider.
 4. Passkeys need Associated Domains (`webcredentials:`) for the API's domain.
 
-The architecture tests (`Dialed.ArchitectureTests`) fail the build if `Dialed.UI` or `Dialed.Client` reference `Microsoft.JSInterop` or the WebAssembly packages, or if one of the nine interfaces goes missing.
+The architecture tests (`Dialed.ArchitectureTests`) fail the build if `Dialed.UI` or `Dialed.Client` reference `Microsoft.JSInterop` or the WebAssembly packages, or if one of the platform interfaces goes missing.
 
 What a switch would still need: the Apple Developer Program, a Mac (or cloud Mac) for builds, native implementations of the interfaces, Associated Domains for passkeys, App Store/TestFlight setup.

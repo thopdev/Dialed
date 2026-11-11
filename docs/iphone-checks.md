@@ -35,6 +35,9 @@ Setup: one iPhone, ideally an iPad too, two accounts that follow each other (Ali
 - [ ] After a sour or bitter brew, **Apply to next brew** opens the form with the change filled in (#237).
 - [ ] **Suggest a recipe** on a bean page with a grinder that has a grind scale: the numbers have reasons; **Save as recipe** works and opens the recipe (#240).
 - [ ] **Ask the assistant** after a 2-star sour shot answers; in airplane mode it says so and the built-in advice stays (#250).
+- [ ] **Scan a barcode** (Home or Beans): the camera asks once, the live view shows, and a retail bag (EAN-13) is read within a few seconds in normal light; a bean you saved with that code opens, an unknown code offers the three choices (#104).
+- [ ] Barcode scan after denying the camera: the message says how to allow it and typing the number still works; leaving the screen turns the camera light off.
+- [ ] Barcode scan works when the app is installed to the Home Screen (standalone), not only in Safari.
 
 ## People
 - [ ] Household invite: **Share invite** opens the share sheet with the code and a link; a 2-person invite works for two people and the third gets "not valid" (#234).
