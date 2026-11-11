@@ -999,4 +999,7 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} mensen</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>gedeeld door {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Kaart met een markering voor elke herkomst: {0}</value></data>
+  <data name="Card_Share" xml:space="preserve"><value>Deel een plaatje van deze zetting</value></data>
+  <data name="Card_Failed" xml:space="preserve"><value>Het plaatje kon op dit apparaat niet worden gemaakt.</value></data>
+  <data name="Card_Footer" xml:space="preserve"><value>Gezet op {0} met Dialed</value></data>
 </root>

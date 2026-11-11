@@ -1000,4 +1000,7 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} people</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>shared by {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Map with a marker for each origin: {0}</value></data>
+  <data name="Card_Share" xml:space="preserve"><value>Share a picture of this brew</value></data>
+  <data name="Card_Failed" xml:space="preserve"><value>The picture could not be made on this device.</value></data>
+  <data name="Card_Footer" xml:space="preserve"><value>Brewed {0} with Dialed</value></data>
 </root>
