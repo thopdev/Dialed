@@ -128,13 +128,17 @@
     <h2 id="bean-section-sharing" class="dialed-form-section-title">@L["BeanForm_SectionSharing"]</h2>
     <div class="dialed-field">
         <label for="bean-visibility">@L["Bean_Visibility"]</label>
-        <select id="bean-visibility" @bind="visibility">
+        <select id="bean-visibility" @bind="visibility" aria-describedby="@(visibility == Visibility.Public ? "bean-visibility-hint" : null)">
             @foreach (var option in Enum.GetValues<Visibility>())
             {
                 <option value="@option">@L[$"Visibility_{option}"]</option>
             }
         </select>
     </div>
+    @if (visibility == Visibility.Public)
+    {
+        <p id="bean-visibility-hint" class="dialed-muted" role="note">@L["Visibility_PublicHint"]</p>
+    }
 
     </section>
 

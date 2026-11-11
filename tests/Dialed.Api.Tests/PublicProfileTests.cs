@@ -401,6 +401,38 @@ public sealed class PublicProfileTests(ModeratedApp app) : IClassFixture<Moderat
         (await open.GetAsync("/admin/reports", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
+    // ---- Following from a public profile ------------------------------------------------------
+
+    [Fact]
+    public async Task A_stranger_can_ask_to_follow_a_public_profile_without_a_code_and_the_profile_says_where_they_stand()
+    {
+        var owner = await NewPerson("Olga");
+        var stranger = await NewPerson("Sam");
+        await SetProfile(owner, true);
+        (await (await Profile(stranger, owner)).Content.ReadFromJsonAsync<FriendProfileDto>(Ct))!.Relation.ShouldBe("none");
+
+        (await stranger.Client.PostAsync($"/friends/{owner.User.Id}/follow", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        (await (await Profile(stranger, owner)).Content.ReadFromJsonAsync<FriendProfileDto>(Ct))!.Relation.ShouldBe("requested");
+        (await owner.Client.GetFromJsonAsync<PersonDto[]>("/friends/requests", Ct))!.Select(p => p.DisplayName).ShouldBe(["Sam"]);
+        await owner.Client.PostAsync($"/friends/requests/{stranger.User.Id}/accept", null, Ct);
+        (await (await Profile(stranger, owner)).Content.ReadFromJsonAsync<FriendProfileDto>(Ct))!.Relation.ShouldBe("following");
+    }
+
+    [Fact]
+    public async Task Following_without_a_code_does_not_work_for_a_profile_that_is_off_or_a_person_who_blocked_you()
+    {
+        var off = await NewPerson("Off");
+        var blocker = await NewPerson("Blocker");
+        var stranger = await NewPerson("Sam");
+        await SetProfile(blocker, true);
+        await blocker.Client.PostAsync($"/friends/blocks/{stranger.User.Id}", null, Ct);
+
+        (await stranger.Client.PostAsync($"/friends/{off.User.Id}/follow", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await stranger.Client.PostAsync($"/friends/{blocker.User.Id}/follow", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await stranger.Client.PostAsync("/friends/nobody/follow", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
     // ---- Deletion and export ------------------------------------------------------------------
 
     [Fact]

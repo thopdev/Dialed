@@ -15,7 +15,8 @@ public sealed record FriendCodeDto(string Code);
 
 public sealed record FollowRequest(string Code);
 
-public sealed record FriendProfileDto(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
+/// <param name="Relation"><c>self</c>, <c>household</c>, <c>following</c>, <c>requested</c> (asked, not answered) or <c>none</c> (a stranger looking at a public profile, #106).</param>
+public sealed record FriendProfileDto(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers, string Relation = "following");
 
 /// <summary>One line of the friends feed (#78): a brew or a new bean someone I follow shares with me.</summary>
 /// <param name="Kind"><c>brew</c> or <c>bean</c>.</param>
@@ -227,9 +228,15 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
     public async Task<FriendCodeDto> RotateCodeAsync(string userId, CancellationToken ct = default) =>
         new(await store.RotateCodeAsync(userId, NewCode, ct));
 
-    public async Task<FriendResult<PersonDto>> FollowAsync(string userId, string code, CancellationToken ct = default)
+    public async Task<FriendResult<PersonDto>> FollowAsync(string userId, string code, CancellationToken ct = default) =>
+        await RequestFollowAsync(userId, string.IsNullOrWhiteSpace(code) ? null : await store.FindUserByCodeAsync(code, ct), ct);
+
+    /// <summary>Asks to follow someone whose public profile is on, without their friend code (#106). Anyone else answers like an unknown code.</summary>
+    public async Task<FriendResult<PersonDto>> FollowPublicAsync(string userId, string targetId, CancellationToken ct = default) =>
+        await RequestFollowAsync(userId, (await profiles.GetAsync(targetId, ct)).IsOpen ? targetId : null, ct);
+
+    private async Task<FriendResult<PersonDto>> RequestFollowAsync(string userId, string? targetId, CancellationToken ct)
     {
-        var targetId = string.IsNullOrWhiteSpace(code) ? null : await store.FindUserByCodeAsync(code, ct);
         if (targetId is null || await users.FindByIdAsync(targetId, ct) is not { } target)
         {
             return new(FriendOutcome.NotFound, Message: "That friend code is not valid.");
@@ -389,7 +396,15 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         }
 
         var followers = publicOnly ? 0 : (await store.FollowsAsync(ownerId, asFollowee: true, ct)).Count(f => f.Status == FollowStatus.Accepted);
-        return new FriendProfileDto(owner.Id, owner.DisplayName, counts["beans"], counts["recipes"], counts["brews"], followers);
+        var relation = viewerId == ownerId ? "self"
+            : !publicOnly && scopes.Any(s => s.Reader == Relationship.HouseholdMember) ? "household"
+            : (await store.FindFollowAsync(viewerId, ownerId, ct))?.Status switch
+            {
+                FollowStatus.Accepted => "following",
+                FollowStatus.Pending => "requested",
+                _ => "none",
+            };
+        return new FriendProfileDto(owner.Id, owner.DisplayName, counts["beans"], counts["recipes"], counts["brews"], followers, relation);
     }
 
     /// <summary>One page of what the owner shares with the viewer, newest first. <c>null</c> when the viewer may not browse or the table is not shareable.</summary>
