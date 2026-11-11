@@ -19,7 +19,7 @@ public sealed class StatisticsTests : UiTestContext
     [Fact]
     public async Task Brews_show_up_in_consumption_origins_and_spend()
     {
-        var bean = await Services.GetRequiredService<IRepository<Bean>>().SaveAsync(new Bean { Name = "Guji", Origin = new BeanOrigin(Country: "Ethiopia"), Process = "Washed" }, Ct);
+        var bean = await Services.GetRequiredService<IRepository<Bean>>().SaveAsync(new Bean { Name = "Guji", Origin = new BeanOrigin(Country: "Ethiopia"), Process = "Washed", TastingNotes = ["blueberry", "jasmine"] }, Ct);
         var bag = await Services.GetRequiredService<IRepository<Bag>>().SaveAsync(
             new Bag { BeanId = bean.Id, WeightG = 250m, PriceCents = 1450, Currency = "EUR", PurchasedOn = DateOnly.FromDateTime(DateTime.Now) }, Ct);
         await Services.GetRequiredService<IRepository<Brew>>().SaveAsync(
@@ -30,6 +30,7 @@ public sealed class StatisticsTests : UiTestContext
         page.WaitForAssertion(() => page.Find("#stats-weekly").TextContent.ShouldContain("18 g"));
         page.Find("#stats-origins").TextContent.ShouldContain("Ethiopia");
         page.Find("#stats-origin-map svg").GetAttribute("aria-label")!.ShouldContain("Ethiopia");
+        page.Find("#stats-flavor-wheel").TextContent.ShouldContain("Fruity · 1");
         page.Find("#stats-processes").TextContent.ShouldContain("Washed");
         page.Find("#stats-spend").TextContent.ShouldContain("14");
     }

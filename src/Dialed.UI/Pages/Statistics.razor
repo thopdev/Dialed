@@ -66,6 +66,14 @@ else
     <Favourites Id="stats-roasters" Title="@L["Stats_Roasters"]" Items="stats.Roasters" />
     <Favourites Id="stats-processes" Title="@L["Stats_Processes"]" Items="stats.Processes" />
 
+    @if (stats.Flavours.Count > 0)
+    {
+        <section id="stats-flavours">
+            <h2>@L["Flavor_Title"]</h2>
+            <FlavorWheelChart Id="stats-flavor-wheel" Shares="stats.Flavours" />
+        </section>
+    }
+
     <section id="stats-grind">
         <h2>@L["Stats_Grind"]</h2>
         @if (stats.GrindTrends.Count == 0)
