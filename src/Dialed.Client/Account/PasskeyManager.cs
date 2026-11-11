@@ -16,6 +16,10 @@ public sealed class PasskeyManager(AccountDataApi api, IPasskeyClient passkeys, 
             var status = await api.RecoveryStatusAsync(cancellationToken);
             return (list, status, AccountResult.Ok);
         }
+        catch (AccountRefusedException exception) when (exception.Status == 404)
+        {
+            return ([], null, new AccountResult(AccountOutcome.NoAccount));
+        }
         catch (Exception exception) when (exception is AccountApiException or AccountRefusedException)
         {
             return ([], null, Failed(exception));

@@ -4,6 +4,8 @@
 
   <PropertyGroup>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <!-- Generates service-worker-assets.js (the list of files to cache) on publish; service-worker.published.js imports it. -->
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
     <!-- Dutch (and other languages beyond the default ICU subset) need the full globalization data for dates, sorting and number formats. -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>

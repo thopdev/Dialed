@@ -1252,6 +1252,11 @@ button.dialed-chip::after {
     min-height: 3.25rem;
 }
 
+/* Three actions: the main one takes the full width, the two scans share the row below. */
+.dialed-home-actions > :first-child {
+    grid-column: 1 / -1;
+}
+
 .dialed-home-hint {
     margin: var(--dialed-space-2) 0 0;
     color: var(--colorNeutralForeground3, #616161);
@@ -1266,12 +1271,14 @@ button.dialed-chip::after {
 
 .dialed-bag-card-top {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--dialed-space-3);
 }
 
+/* On a narrow screen (or in a longer language) the chips drop below instead of squeezing the name into one letter per line. */
 .dialed-bag-card-text {
-    flex: 1;
+    flex: 1 1 8rem;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -1280,7 +1287,7 @@ button.dialed-chip::after {
 .dialed-bag-card-title {
     font-size: var(--dialed-text-l);
     font-weight: var(--dialed-weight-semibold);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 .dialed-bag-card-subtitle,

@@ -31,6 +31,9 @@ public enum AccountOutcome
 
     /// <summary>The server or the network failed; trying again later may work.</summary>
     Unavailable,
+
+    /// <summary>Nothing is behind this sign-in on the server (a development login has no account), so there are no passkeys to show.</summary>
+    NoAccount,
 }
 
 public sealed record AccountResult(AccountOutcome Outcome, string? Message = null)
