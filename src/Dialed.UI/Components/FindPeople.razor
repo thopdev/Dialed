@@ -29,6 +29,7 @@
         }
         else
         {
+            <p id="people-find-count" class="dialed-muted" role="status" tabindex="-1" @ref="countLine">@string.Format(L[results.Count == 1 ? "People_FindCount_One" : "People_FindCount_Other"].Value, results.Count)</p>
             <ul id="people-find-results" class="dialed-list">
                 @foreach (var person in results)
                 {
@@ -44,6 +45,8 @@
     private bool busy;
     private bool failed;
     private IReadOnlyList<Person>? results;
+    private ElementReference countLine;
+    private bool focusResults;
 
     private async Task SearchAsync()
     {
@@ -65,6 +68,18 @@
         finally
         {
             busy = false;
+        }
+
+        focusResults = results is { Count: > 0 } && !failed;
+    }
+
+    // After a search, move focus to the result count: it scrolls the results into view on a small screen and a screen reader announces how many people were found.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (focusResults)
+        {
+            focusResults = false;
+            await countLine.FocusAsync(preventScroll: false);
         }
     }
 }
