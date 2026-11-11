@@ -2767,36 +2767,6 @@ a.people-row-name {
     fill-opacity: 0.8;
 }
 
-.dialed-passport-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--dialed-space-2);
-    margin: var(--dialed-space-3) 0;
-    padding: 0;
-    list-style: none;
-}
-
-.dialed-passport-stamp {
-    padding: var(--dialed-space-1) var(--dialed-space-3);
-    border: 1px dashed var(--colorNeutralStroke1);
-    border-radius: var(--borderRadiusCircular);
-    color: var(--colorNeutralForeground3);
-    font-size: var(--dialed-text-s);
-}
-
-.dialed-passport-tried {
-    border: 1px solid var(--colorBrandStroke1);
-    background: var(--colorBrandBackground2);
-    color: var(--colorNeutralForeground1);
-}
-
-.dialed-passport-more summary {
-    min-height: 2.75rem;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
 .dialed-flavor {
     display: flex;
     flex-wrap: wrap;
@@ -2905,4 +2875,34 @@ a.people-row-name {
 
 .dialed-flavor-swatch.dialed-flavor-roasted {
     background: var(--colorPalettePlatinumBackground2);
+}
+
+.dialed-passport-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-passport-stamp {
+    padding: var(--dialed-space-1) var(--dialed-space-3);
+    border: 1px dashed var(--colorNeutralStroke1);
+    border-radius: var(--borderRadiusCircular);
+    color: var(--colorNeutralForeground3);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-passport-tried {
+    border: 1px solid var(--colorBrandStroke1);
+    background: var(--colorBrandBackground2);
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-passport-more summary {
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
 }
