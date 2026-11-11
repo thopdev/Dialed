@@ -163,6 +163,32 @@ public sealed class PublicProfileUiTests : UiTestContext
     }
 
     [Fact]
+    public async Task The_beans_tab_shows_where_their_coffee_comes_from()
+    {
+        FriendsServer.Respond = call => call switch
+        {
+            "GET friends/u3/profile" => Json(StrangerView),
+            "GET friends/u3/shared/beans?skip=0&pageSize=20" => Json("{\"items\":[{\"id\":\"b1\",\"name\":\"S1\",\"origin\":{\"country\":\"Kenya\"}},{\"id\":\"b2\",\"name\":\"S2\",\"origin\":{\"country\":\"Ethiopia\"}},{\"id\":\"b3\",\"name\":\"S3\",\"origin\":{}},{\"id\":\"b4\",\"name\":\"S4\"}],\"total\":4,\"hasMore\":false}"),
+            _ => null,
+        };
+        await SignIn();
+        var page = Render<FriendProfile>(p => p.Add(x => x.UserId, "u3"));
+
+        page.WaitForAssertion(() => page.Find("#friend-origin-map circle"));
+
+        page.FindAll("#friend-origin-map circle").Count.ShouldBe(2);
+        page.Find("#friend-origin-map svg").GetAttribute("aria-label")!.ShouldContain("Kenya");
+    }
+
+    [Fact]
+    public async Task A_profile_without_known_origins_shows_no_map()
+    {
+        var page = await PublicProfile();
+
+        page.FindAll("#friend-origin-map").ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task A_friends_counts_say_one_in_the_singular()
     {
         var page = await PublicProfile("{\"userId\":\"u3\",\"displayName\":\"Olga\",\"beans\":1,\"recipes\":1,\"brews\":1,\"followers\":1,\"relation\":\"following\"}");
