@@ -209,4 +209,79 @@ public sealed class BarcodeScanTests : UiTestContext
     {
         Render<Beans>().Find("#beans-scan-code").GetAttribute("href").ShouldBe("scan-code");
     }
+
+    // ---- The catalog knows the code (#105) ----------------------------------------------------
+
+    private static Dialed.Client.Catalog.CatalogBean Coded() => new(
+        "b-1", "Ethiopia Guji Natural", "r-1", "Friedhats", "Ethiopia", "Guji", "Natural", ["Heirloom"], RoastLevel.Light, ["Jasmine"], 6, [Ean]);
+
+    [Fact]
+    public async Task An_unknown_code_the_catalog_knows_offers_to_add_that_bean()
+    {
+        Catalog.Beans.Add(Coded());
+
+        var page = Unknown();
+
+        page.WaitForAssertion(() => page.Find("#barcode-catalog .catalog-row").TextContent.ShouldContain("Ethiopia Guji Natural"));
+        page.Find(".catalog-use").GetAttribute("aria-label").ShouldBe("Add Ethiopia Guji Natural from the catalog with this code");
+        Catalog.Asked.ShouldContain($"barcode:{Ean}");
+        (await Beans.ListAsync(Ct)).ShouldBeEmpty(); // nothing is made until asked
+    }
+
+    [Fact]
+    public async Task Adding_it_makes_a_bean_of_my_own_with_the_code_and_opens_it()
+    {
+        Catalog.Beans.Add(Coded());
+        var roaster = await Services.GetRequiredService<IRepository<Vendor>>().SaveAsync(new Vendor { Name = "Friedhats Coffee Roasters" }, Ct);
+        var page = Unknown();
+        page.WaitForElement("#barcode-catalog .catalog-use");
+
+        page.Find("#barcode-catalog .catalog-use").Click();
+
+        var bean = (await Beans.ListAsync(Ct)).ShouldHaveSingleItem();
+        bean.Name.ShouldBe("Ethiopia Guji Natural");
+        bean.Barcodes.ShouldBe([Ean]);
+        bean.RoasterId.ShouldBe(roaster.Id); // the roaster I already have, not a second one
+        (bean.Origin.Country, bean.Origin.Region, bean.Process, bean.RoastLevel).ShouldBe(("Ethiopia", "Guji", "Natural", RoastLevel.Light));
+        bean.Id.ShouldNotBe("b-1");
+        Uri.ShouldEndWith($"beans/{bean.Id}");
+        (await Services.GetRequiredService<IRepository<Vendor>>().ListAsync(Ct)).Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task A_roaster_I_do_not_have_is_made_from_the_name()
+    {
+        Catalog.Beans.Add(Coded());
+        var page = Unknown();
+        page.WaitForElement("#barcode-catalog .catalog-use");
+
+        page.Find("#barcode-catalog .catalog-use").Click();
+
+        (await Services.GetRequiredService<IRepository<Vendor>>().ListAsync(Ct)).ShouldHaveSingleItem().Name.ShouldBe("Friedhats");
+    }
+
+    [Fact]
+    public void Without_a_catalog_match_or_without_a_network_the_three_choices_are_all_there_is()
+    {
+        Catalog.Beans.Add(Coded() with { Barcodes = ["96385074"] });
+        var page = Unknown();
+        page.FindAll("#barcode-catalog").ShouldBeEmpty();
+
+        Catalog.Beans.Clear();
+        Catalog.Beans.Add(Coded());
+        Catalog.Down = true;
+        var offline = Unknown();
+        offline.FindAll("#barcode-catalog").ShouldBeEmpty();
+        offline.FindAll("#barcode-new, #barcode-attach, #barcode-label").Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task A_code_I_have_never_asks_the_catalog()
+    {
+        await BeanWith("Guji", Ean);
+
+        Page(BarcodeResult.Read(Ean)).WaitForAssertion(() => Uri.ShouldEndWith("beans/" + Beans.ListAsync(Ct).Result.Single().Id));
+
+        Catalog.Asked.ShouldBeEmpty();
+    }
 }

@@ -657,6 +657,12 @@ public abstract class UiTestContext : BunitContext
             return Task.FromResult<IReadOnlyList<Dialed.Client.Catalog.CatalogRoaster>>(Down ? [] : [.. Roasters.Where(r => r.Name.Contains(query, StringComparison.OrdinalIgnoreCase))]);
         }
 
+        public Task<IReadOnlyList<Dialed.Client.Catalog.CatalogBean>> FindByBarcodeAsync(string code, CancellationToken cancellationToken = default)
+        {
+            Asked.Add($"barcode:{code}");
+            return Task.FromResult<IReadOnlyList<Dialed.Client.Catalog.CatalogBean>>(Down ? [] : [.. Beans.Where(b => (b.Barcodes ?? []).Contains(code))]);
+        }
+
         public Task<IReadOnlyList<Dialed.Client.Catalog.CatalogBean>> SearchBeansAsync(string? query, string? roaster, CancellationToken cancellationToken = default)
         {
             Asked.Add($"beans:{query}|{roaster}");

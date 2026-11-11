@@ -15,7 +15,8 @@ public sealed record CatalogBeanInput(
     string? Process,
     IReadOnlyList<string> Varieties,
     RoastLevel? RoastLevel,
-    IReadOnlyList<string> TastingNotes);
+    IReadOnlyList<string> TastingNotes,
+    IReadOnlyList<string>? Barcodes = null);
 
 /// <summary>One roaster that a public bean (or a public vendor) names.</summary>
 public sealed record CatalogRoasterInput(string ContributorId, string Name, string? Country, string? City, string? Website);
@@ -47,7 +48,8 @@ public sealed record CatalogBean(
     RoastLevel? RoastLevel,
     IReadOnlyList<string> TastingNotes,
     int People,
-    IReadOnlyList<string> Keys);
+    IReadOnlyList<string> Keys,
+    IReadOnlyList<string>? Barcodes = null);
 
 public sealed record BeanCatalog(IReadOnlyList<CatalogRoaster> Roasters, IReadOnlyList<CatalogBean> Beans)
 {
@@ -331,7 +333,9 @@ public static class CatalogBuilder
             roastLevels,
             Terms(members.Select(m => (m.ContributorId, m.TastingNotes)), threshold),
             people,
-            keys);
+            keys,
+            // A barcode is printed on the bag, but it follows the same rule as everything else: only codes at least two people entered.
+            Terms(members.Select(m => (m.ContributorId, m.Barcodes ?? [])), threshold));
     }
 
     /// <summary>

@@ -8,8 +8,8 @@ namespace Dialed.Domain.Tests;
 public sealed class CatalogBuilderTests
 {
     private static CatalogBeanInput Bean(string who, string name, string? roaster = "Friedhats", string? country = "Ethiopia", string? region = null, string? process = null,
-        string[]? varieties = null, RoastLevel? roast = null, string[]? notes = null) =>
-        new(who, name, roaster, country, region, process, varieties ?? [], roast, notes ?? []);
+        string[]? varieties = null, RoastLevel? roast = null, string[]? notes = null, string[]? barcodes = null) =>
+        new(who, name, roaster, country, region, process, varieties ?? [], roast, notes ?? [], barcodes);
 
     private static BeanCatalog Build(IEnumerable<CatalogBeanInput> beans, IEnumerable<CatalogRoasterInput>? roasters = null, int min = 2, CatalogRules? rules = null) =>
         CatalogBuilder.Build(beans, roasters ?? [], min, rules);
@@ -288,6 +288,24 @@ public sealed class CatalogBuilderTests
     {
         Build([]).ShouldBe(BeanCatalog.Empty, new CatalogComparer());
         Build([Bean("a", " "), Bean("", "Guji"), Bean("b", "Guji")]).Beans.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Barcodes_follow_the_same_rule_as_free_text_and_need_two_people()
+    {
+        var catalog = Build(
+        [
+            Bean("a", "Guji", barcodes: ["4006381333931", "96385074"]),
+            Bean("b", "Guji", barcodes: ["4006381333931"]),
+        ]);
+
+        catalog.Beans.Single().Barcodes.ShouldBe(["4006381333931"]);
+    }
+
+    [Fact]
+    public void Beans_without_barcodes_have_an_empty_list()
+    {
+        Build([Bean("a", "Guji"), Bean("b", "Guji")]).Beans.Single().Barcodes.ShouldBeEmpty();
     }
 
     private sealed class CatalogComparer : IEqualityComparer<BeanCatalog>

@@ -37,7 +37,8 @@ public sealed record CatalogBeanDto(
     IReadOnlyList<string> Varieties,
     RoastLevel? RoastLevel,
     IReadOnlyList<string> TastingNotes,
-    int People);
+    int People,
+    IReadOnlyList<string> Barcodes);
 
 /// <summary>What the owner of the service sees when moderating: includes the keys the rules are made of, still no contributors.</summary>
 public sealed record CatalogEntryAdminDto(string Kind, string Id, string Name, int People, IReadOnlyList<string> Keys);
@@ -241,7 +242,8 @@ public sealed class CatalogSource(ISyncStore sync, IPublicProfileStore profiles,
                 bean.Process,
                 bean.Varieties,
                 bean.RoastLevel,
-                bean.TastingNotes));
+                bean.TastingNotes,
+                bean.Barcodes));
         }
 
         return (beans, roasters);
@@ -327,8 +329,22 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
             .Take(MaxResults).Select(x => ToDto(x.Entry))];
     }
 
+    /// <summary>Beans that carry this barcode (any spelling of it: UPC-A or EAN-13), most popular first.</summary>
+    public IReadOnlyList<CatalogBeanDto> FindByBarcode(string? code)
+    {
+        if (Dialed.Domain.Barcodes.BarcodeMatcher.Normalize(code) is not { } normalized)
+        {
+            return [];
+        }
+
+        return [.. store.Current.Beans
+            .Where(b => (b.Barcodes ?? []).Any(c => Dialed.Domain.Barcodes.BarcodeMatcher.Normalize(c) == normalized))
+            .OrderByDescending(b => b.People).ThenBy(b => b.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Take(MaxResults).Select(ToDto)];
+    }
+
     private static CatalogBeanDto ToDto(CatalogBean b) =>
-        new(b.Id, b.Name, b.RoasterId, b.RoasterName, b.Country, b.Region, b.Process, b.Varieties, b.RoastLevel, b.TastingNotes, b.People);
+        new(b.Id, b.Name, b.RoasterId, b.RoasterName, b.Country, b.Region, b.Process, b.Varieties, b.RoastLevel, b.TastingNotes, b.People, b.Barcodes ?? []);
 
     // ---- Moderation (the owner of the service, with the admin key) ----------------------------
 
