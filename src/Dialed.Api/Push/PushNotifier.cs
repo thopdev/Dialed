@@ -127,6 +127,15 @@ public static class PushText
     {
         var nl = string.Equals(language, "nl", StringComparison.OrdinalIgnoreCase);
         var many = beanNames.Count > 1;
+        if (kind == PushKind.PeakSoon)
+        {
+            return new(
+                nl ? "Bijna op zijn best" : "Almost at its peak",
+                many ? (nl ? $"Morgen zijn {beanNames.Count} zakken op hun best." : $"{beanNames.Count} bags reach their peak tomorrow.") : (nl ? $"{beanNames[0]} is morgen op zijn best." : $"{beanNames[0]} reaches its peak tomorrow."),
+                "inventory",
+                "peak-soon");
+        }
+
         return kind == PushKind.LowStock
             ? new(
                 nl ? "Bijna op" : "Running low",
