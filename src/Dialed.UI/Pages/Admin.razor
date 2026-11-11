@@ -1,0 +1,310 @@
+@page "/admin"
+@implements IDisposable
+@using Dialed.Client.Admin
+@inject AdminApi Api
+@inject IStringLocalizer<Strings> L
+
+@* The owner's moderation screen (#106, #105): reports, suspended people and the catalog. It is not in the navigation and does nothing without the
+   admin key, which is typed in, kept in memory only and never stored. *@
+<PageHeader Title="@L["Admin_Title"]" BackHref="more" />
+
+@if (!unlocked)
+{
+    <form id="admin-unlock-form" class="dialed-form" @onsubmit="UnlockAsync" @onsubmit:preventDefault>
+        <p class="dialed-muted">@L["Admin_Intro"]</p>
+        <div class="dialed-field">
+            <label for="admin-key">@L["Admin_Key"]</label>
+            <input id="admin-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" @bind="keyText" @bind:event="oninput" />
+        </div>
+        @if (problem is not null)
+        {
+            <p id="admin-problem" class="dialed-field-error" role="alert">@L[$"Admin_Problem_{problem}"]</p>
+        }
+        <div class="dialed-form-actions">
+            <button id="admin-unlock" type="submit" class="dialed-button dialed-button-primary" disabled="@(busy || string.IsNullOrWhiteSpace(keyText))">@L["Admin_Unlock"]</button>
+        </div>
+    </form>
+}
+else
+{
+    <div class="dialed-form-actions">
+        <button id="admin-lock" type="button" class="dialed-button" @onclick="LockAsync">@L["Admin_Lock"]</button>
+    </div>
+
+    <div role="tablist" class="dialed-segmented" aria-label="@L["Admin_Title"]">
+        @foreach (var name in Tabs)
+        {
+            <button type="button" role="tab" id="admin-tab-@name" class="dialed-segment @(name == tab ? "selected" : "")" aria-selected="@(name == tab)" @onclick="() => SelectAsync(name)">@L[$"Admin_Tab_{name}"]</button>
+        }
+    </div>
+
+    @if (problem is not null)
+    {
+        <p id="admin-problem" class="dialed-field-error" role="alert">@L[$"Admin_Problem_{problem}"]</p>
+    }
+
+    @if (message is not null)
+    {
+        <p id="admin-message" class="dialed-banner dialed-banner-info" role="status">@message</p>
+    }
+
+    @if (busy)
+    {
+        <Loading IsLoading="true" />
+    }
+    else if (tab == "reports")
+    {
+        @if (reports.Count == 0)
+        {
+            <p id="admin-reports-empty" class="dialed-muted">@L["Admin_NoReports"]</p>
+        }
+        <ul id="admin-reports" class="dialed-list">
+            @foreach (var report in reports)
+            {
+                <li class="admin-report" data-report="@report.Id">
+                    <span class="admin-text">
+                        <strong>@L[$"Report_Reason_{report.Reason}"]</strong>
+                        <span class="dialed-muted">@string.Format(L["Admin_ReportLine"].Value, L[$"Admin_Target_{report.Target}"].Value, report.OwnerName, report.CreatedAt.ToLocalTime().ToString("g"))</span>
+                        @if (!string.IsNullOrWhiteSpace(report.Note))
+                        {
+                            <span class="admin-note">@report.Note</span>
+                        }
+                    </span>
+                    <button type="button" class="dialed-button admin-suspend" aria-label="@string.Format(L["Admin_SuspendNamed"].Value, report.OwnerName)" @onclick="() => SuspendAsync(report.OwnerId, report.OwnerName)">@L["Admin_Suspend"]</button>
+                </li>
+            }
+        </ul>
+    }
+    else if (tab == "people")
+    {
+        <form id="admin-suspend-form" class="dialed-form" @onsubmit="SuspendTypedAsync" @onsubmit:preventDefault>
+            <div class="dialed-field">
+                <label for="admin-user-id">@L["Admin_UserId"]</label>
+                <input id="admin-user-id" type="text" autocomplete="off" @bind="userId" @bind:event="oninput" />
+            </div>
+            <div class="dialed-form-actions">
+                <button id="admin-suspend-typed" type="submit" class="dialed-button" disabled="@string.IsNullOrWhiteSpace(userId)">@L["Admin_Suspend"]</button>
+            </div>
+        </form>
+        @if (suspended.Count == 0)
+        {
+            <p id="admin-suspended-empty" class="dialed-muted">@L["Admin_NoSuspended"]</p>
+        }
+        <ul id="admin-suspended" class="dialed-list">
+            @foreach (var person in suspended)
+            {
+                <li class="admin-person" data-user="@person.UserId">
+                    <span class="admin-text"><strong>@(string.IsNullOrEmpty(person.DisplayName) ? person.UserId : person.DisplayName)</strong></span>
+                    <button type="button" class="dialed-button admin-restore" aria-label="@string.Format(L["Admin_RestoreNamed"].Value, string.IsNullOrEmpty(person.DisplayName) ? person.UserId : person.DisplayName)" @onclick="() => RestoreAsync(person.UserId)">@L["Admin_Restore"]</button>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="dialed-form-actions">
+            <button id="admin-rebuild" type="button" class="dialed-button" @onclick="RebuildAsync">@L["Admin_Rebuild"]</button>
+        </div>
+        @if (mergeFrom is not null)
+        {
+            <p id="admin-merging" class="dialed-banner dialed-banner-info" role="status">
+                @string.Format(L["Admin_Merging"].Value, mergeFrom.Name)
+                <button id="admin-merge-cancel" type="button" class="dialed-section-link" @onclick="() => mergeFrom = null">@L["Cancel"]</button>
+            </p>
+        }
+        @if (entries.Count == 0)
+        {
+            <p id="admin-entries-empty" class="dialed-muted">@L["Admin_NoEntries"]</p>
+        }
+        <ul id="admin-entries" class="dialed-list">
+            @foreach (var entry in entries)
+            {
+                <li class="admin-entry" data-entry="@entry.Id">
+                    <span class="admin-text">
+                        <strong>@entry.Name</strong>
+                        <span class="dialed-muted">@string.Format(L["Admin_EntryLine"].Value, L[$"Admin_Kind_{entry.Kind}"].Value, entry.People)</span>
+                    </span>
+                    <span class="admin-actions">
+                        @if (mergeFrom is { } from && from.Id != entry.Id && from.Kind == entry.Kind)
+                        {
+                            <button type="button" class="dialed-button dialed-button-primary admin-merge-into" aria-label="@string.Format(L["Admin_MergeIntoNamed"].Value, from.Name, entry.Name)" @onclick="() => MergeAsync(from, entry)">@L["Admin_MergeHere"]</button>
+                        }
+                        else if (mergeFrom is null)
+                        {
+                            <button type="button" class="dialed-button admin-merge" aria-label="@string.Format(L["Admin_MergeNamed"].Value, entry.Name)" @onclick="() => mergeFrom = entry">@L["Admin_Merge"]</button>
+                        }
+
+                        <button type="button" class="dialed-button admin-hide" aria-label="@string.Format(L["Admin_HideNamed"].Value, entry.Name)" @onclick="() => HideAsync(entry)">@L["Admin_Hide"]</button>
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    private static readonly string[] Tabs = ["reports", "people", "catalog"];
+
+    private bool unlocked;
+    private bool busy;
+    private string keyText = "";
+    private string userId = "";
+    private string tab = "reports";
+    private AdminProblem? problem;
+    private string? message;
+    private IReadOnlyList<AdminReport> reports = [];
+    private IReadOnlyList<AdminSuspended> suspended = [];
+    private IReadOnlyList<AdminEntry> entries = [];
+    private AdminEntry? mergeFrom;
+
+    protected override void OnInitialized() => unlocked = Api.IsUnlocked;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (unlocked)
+        {
+            await SelectAsync(tab);
+        }
+    }
+
+    private async Task UnlockAsync()
+    {
+        busy = true;
+        problem = null;
+        try
+        {
+            await Api.UnlockAsync(keyText.Trim());
+            keyText = "";
+            unlocked = true;
+            await LoadAsync();
+        }
+        catch (AdminException e)
+        {
+            problem = e.Problem;
+            keyText = "";
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private Task LockAsync()
+    {
+        Api.Lock();
+        unlocked = false;
+        reports = [];
+        suspended = [];
+        entries = [];
+        problem = null;
+        message = null;
+        return Task.CompletedTask;
+    }
+
+    private async Task SelectAsync(string name)
+    {
+        tab = name;
+        message = null;
+        mergeFrom = null;
+        await RunAsync(LoadAsync);
+    }
+
+    private async Task LoadAsync()
+    {
+        switch (tab)
+        {
+            case "reports":
+                reports = await Api.ReportsAsync();
+                break;
+            case "people":
+                suspended = await Api.SuspendedAsync();
+                break;
+            default:
+                entries = await Api.EntriesAsync();
+                break;
+        }
+    }
+
+    /// <summary>Runs one call: a refused key locks again, any other problem is shown and the screen stays as it was.</summary>
+    private async Task RunAsync(Func<Task> action, string? done = null)
+    {
+        busy = true;
+        problem = null;
+        message = null;
+        try
+        {
+            await action();
+            if (done is not null)
+            {
+                message = done;
+            }
+        }
+        catch (AdminException e)
+        {
+            problem = e.Problem;
+            if (e.Problem == AdminProblem.WrongKey)
+            {
+                Api.Lock();
+                unlocked = false;
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private Task SuspendAsync(string ownerId, string name) =>
+        RunAsync(async () =>
+        {
+            await Api.SuspendAsync(ownerId);
+            await LoadAsync();
+        }, string.Format(L["Admin_Suspended"].Value, name));
+
+    private async Task SuspendTypedAsync()
+    {
+        var id = userId.Trim();
+        await RunAsync(async () =>
+        {
+            await Api.SuspendAsync(id);
+            suspended = await Api.SuspendedAsync();
+        }, string.Format(L["Admin_Suspended"].Value, id));
+        userId = "";
+    }
+
+    private Task RestoreAsync(string id) =>
+        RunAsync(async () =>
+        {
+            await Api.RestoreAsync(id);
+            await LoadAsync();
+        }, L["Admin_Restored"].Value);
+
+    private Task HideAsync(AdminEntry entry) =>
+        RunAsync(async () =>
+        {
+            await Api.HideAsync(entry.Id);
+            await LoadAsync();
+        }, string.Format(L["Admin_Hidden"].Value, entry.Name));
+
+    private Task MergeAsync(AdminEntry from, AdminEntry into)
+    {
+        mergeFrom = null;
+        return RunAsync(async () =>
+        {
+            await Api.MergeAsync(from.Id, into.Id);
+            await LoadAsync();
+        }, string.Format(L["Admin_Merged"].Value, from.Name, into.Name));
+    }
+
+    private Task RebuildAsync() =>
+        RunAsync(async () =>
+        {
+            var built = await Api.RebuildAsync();
+            await LoadAsync();
+            message = string.Format(L["Admin_Rebuilt"].Value, built.Roasters, built.Beans);
+        });
+
+    public void Dispose()
+    {
+    }
+}

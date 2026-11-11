@@ -939,4 +939,45 @@
   <data name="Barcode_CatalogTitle" xml:space="preserve"><value>De catalogus kent deze code</value></data>
   <data name="Barcode_CatalogAdd" xml:space="preserve"><value>Voeg deze boon toe</value></data>
   <data name="Barcode_CatalogAddNamed" xml:space="preserve"><value>Voeg {0} uit de catalogus toe met deze code</value></data>
+  <data name="Admin_Title" xml:space="preserve"><value>Beheer</value></data>
+  <data name="Admin_Intro" xml:space="preserve"><value>Meldingen, geschorste mensen en de catalogus. Voer de beheersleutel van deze server in. Die blijft alleen in het geheugen en is weg als je vergrendelt of weggaat.</value></data>
+  <data name="Admin_Key" xml:space="preserve"><value>Beheersleutel</value></data>
+  <data name="Admin_Unlock" xml:space="preserve"><value>Ontgrendelen</value></data>
+  <data name="Admin_Lock" xml:space="preserve"><value>Vergrendelen</value></data>
+  <data name="Admin_Tab_reports" xml:space="preserve"><value>Meldingen</value></data>
+  <data name="Admin_Tab_people" xml:space="preserve"><value>Mensen</value></data>
+  <data name="Admin_Tab_catalog" xml:space="preserve"><value>Catalogus</value></data>
+  <data name="Admin_Problem_WrongKey" xml:space="preserve"><value>Die sleutel klopt niet.</value></data>
+  <data name="Admin_Problem_NotEnabled" xml:space="preserve"><value>Beheer staat niet aan op deze server.</value></data>
+  <data name="Admin_Problem_NotFound" xml:space="preserve"><value>Dat bestaat niet meer.</value></data>
+  <data name="Admin_Problem_TooManyTries" xml:space="preserve"><value>Te vaak geprobeerd. Wacht een minuut.</value></data>
+  <data name="Admin_Problem_Unreachable" xml:space="preserve"><value>De server is niet bereikbaar.</value></data>
+  <data name="Admin_NoReports" xml:space="preserve"><value>Geen meldingen.</value></data>
+  <data name="Admin_ReportLine" xml:space="preserve"><value>{0} van {1} · {2}</value></data>
+  <data name="Admin_Target_profile" xml:space="preserve"><value>Profiel</value></data>
+  <data name="Admin_Target_bean" xml:space="preserve"><value>Boon</value></data>
+  <data name="Admin_Target_recipe" xml:space="preserve"><value>Recept</value></data>
+  <data name="Admin_Suspend" xml:space="preserve"><value>Schorsen</value></data>
+  <data name="Admin_SuspendNamed" xml:space="preserve"><value>Schors {0}</value></data>
+  <data name="Admin_UserId" xml:space="preserve"><value>Id van de persoon om te schorsen</value></data>
+  <data name="Admin_NoSuspended" xml:space="preserve"><value>Niemand is geschorst.</value></data>
+  <data name="Admin_Restore" xml:space="preserve"><value>Herstellen</value></data>
+  <data name="Admin_RestoreNamed" xml:space="preserve"><value>Herstel {0}</value></data>
+  <data name="Admin_Suspended" xml:space="preserve"><value>{0} is geschorst en verborgen voor iedereen.</value></data>
+  <data name="Admin_Restored" xml:space="preserve"><value>Hersteld.</value></data>
+  <data name="Admin_Rebuild" xml:space="preserve"><value>Catalogus nu opnieuw opbouwen</value></data>
+  <data name="Admin_Rebuilt" xml:space="preserve"><value>Opnieuw opgebouwd: {0} branders, {1} bonen.</value></data>
+  <data name="Admin_NoEntries" xml:space="preserve"><value>De catalogus is leeg.</value></data>
+  <data name="Admin_EntryLine" xml:space="preserve"><value>{0} · {1} mensen</value></data>
+  <data name="Admin_Kind_bean" xml:space="preserve"><value>Boon</value></data>
+  <data name="Admin_Kind_roaster" xml:space="preserve"><value>Brander</value></data>
+  <data name="Admin_Merge" xml:space="preserve"><value>Samenvoegen</value></data>
+  <data name="Admin_MergeNamed" xml:space="preserve"><value>Voeg {0} samen met een andere vermelding</value></data>
+  <data name="Admin_Merging" xml:space="preserve"><value>Samenvoegen van {0}: kies de vermelding om mee samen te voegen.</value></data>
+  <data name="Admin_MergeHere" xml:space="preserve"><value>Hierin samenvoegen</value></data>
+  <data name="Admin_MergeIntoNamed" xml:space="preserve"><value>Voeg {0} samen met {1}</value></data>
+  <data name="Admin_Merged" xml:space="preserve"><value>{0} is samengevoegd met {1}.</value></data>
+  <data name="Admin_Hide" xml:space="preserve"><value>Verbergen</value></data>
+  <data name="Admin_HideNamed" xml:space="preserve"><value>Verberg {0} uit de catalogus</value></data>
+  <data name="Admin_Hidden" xml:space="preserve"><value>{0} is verborgen.</value></data>
 </root>

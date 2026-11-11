@@ -28,6 +28,8 @@ Suggestions from a shared catalog of roasters and beans, **built from what peopl
 
 Results are ranked by how well the name matches, then by popularity, at most 20, rate limited like the friend endpoints (`Protection:FriendsRequestsPerMinute`). The admin endpoints need the `X-Admin-Key` header (`Beta:AdminKey`); without a configured key they do not exist.
 
+The `/admin` screen in the app (*Catalog* tab, see `public-profiles.md`) does rebuild, hide and merge without `curl`.
+
 Hide and merge are kept as **rules on the entries' keys** (normalised names), not on ids, so they survive rebuilds and new contributors. Hidden entries no longer show in the entry list, so there is no un-hide yet.
 
 ## In the app

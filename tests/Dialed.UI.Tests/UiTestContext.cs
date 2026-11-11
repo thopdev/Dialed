@@ -29,6 +29,8 @@ public abstract class UiTestContext : BunitContext
 
     protected TestScanQueue ScanQueue { get; } = new();
 
+    protected TestAdminServer AdminServer { get; } = new();
+
     protected TestCatalog Catalog { get; } = new();
 
     protected TestPushDevice PushDevice { get; } = new();
@@ -105,6 +107,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IErrorSink>(ErrorSink);
         Services.AddSingleton<IShareService>(Shares);
         Services.AddDialedSync();
+        Services.AddSingleton(new Dialed.Client.Admin.AdminApi(new HttpClient(AdminServer) { BaseAddress = new Uri("https://api.test/") }));
         Services.AddSingleton<Dialed.Client.Catalog.ICatalogApi>(Catalog);
         Services.AddSingleton<IPushNotifications>(PushDevice);
         Services.AddSingleton<Dialed.Client.Push.IPushApi>(PushServer);
@@ -664,6 +667,59 @@ public abstract class UiTestContext : BunitContext
         {
             Asked.Add($"beans:{query}|{roaster}");
             return Task.FromResult<IReadOnlyList<Dialed.Client.Catalog.CatalogBean>>(Down ? [] : [.. Beans.Where(b => string.IsNullOrEmpty(query) || b.Name.Contains(query, StringComparison.OrdinalIgnoreCase))]);
+        }
+    }
+
+    /// <summary>The owner's moderation endpoints: accepts one key, records every call and the key it came with.</summary>
+    protected sealed class TestAdminServer : HttpMessageHandler
+    {
+        public const string Key = "owner-key";
+
+        public List<string> Calls { get; } = [];
+
+        public List<string?> KeysSent { get; } = [];
+
+        public bool NotEnabled { get; set; }
+
+        /// <summary>Answers a call with the given status instead of the normal answer: set to simulate a refused key, a gone entry or no network.</summary>
+        public Func<string, System.Net.HttpStatusCode?>? Fail { get; set; }
+
+        public string ReportsJson { get; set; } = "[{\"id\":\"r1\",\"reporterId\":\"u2\",\"ownerId\":\"u9\",\"ownerName\":\"Spammy\",\"target\":\"bean\",\"itemId\":\"b1\",\"reason\":\"spam\",\"note\":\"ads everywhere\",\"createdAt\":\"2026-11-11T09:00:00+00:00\"}]";
+
+        public string SuspendedJson { get; set; } = "[{\"userId\":\"u7\",\"displayName\":\"Banned\"}]";
+
+        public string EntriesJson { get; set; } = "[{\"kind\":\"bean\",\"id\":\"b-1\",\"name\":\"Thin Bean\",\"people\":2,\"keys\":[\"k1\"]},{\"kind\":\"bean\",\"id\":\"b-2\",\"name\":\"Other Bean\",\"people\":3,\"keys\":[\"k2\"]},{\"kind\":\"roaster\",\"id\":\"r-1\",\"name\":\"Some Roaster\",\"people\":4,\"keys\":[\"k3\"]}]";
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var call = $"{request.Method} {request.RequestUri!.PathAndQuery.TrimStart('/')}";
+            Calls.Add(call);
+            var key = request.Headers.TryGetValues("X-Admin-Key", out var values) ? values.FirstOrDefault() : null;
+            KeysSent.Add(key);
+            if (NotEnabled)
+            {
+                return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+            }
+
+            if (key != Key)
+            {
+                return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized));
+            }
+
+            if (Fail?.Invoke(call) is { } status)
+            {
+                return Task.FromResult(new HttpResponseMessage(status));
+            }
+
+            var path = request.RequestUri.AbsolutePath.TrimStart('/');
+            return Task.FromResult(path switch
+            {
+                "admin/reports" => TestFriendsServer.Json(ReportsJson),
+                "admin/users/suspended" => TestFriendsServer.Json(SuspendedJson),
+                "admin/catalog/entries" => TestFriendsServer.Json(EntriesJson),
+                "admin/catalog/rebuild" => TestFriendsServer.Json("{\"roasters\":3,\"beans\":8}"),
+                _ => new HttpResponseMessage(System.Net.HttpStatusCode.NoContent),
+            });
         }
     }
 

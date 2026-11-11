@@ -43,6 +43,9 @@ public interface IPublicProfileStore
     /// <summary>Everyone whose profile is on and not suspended (the index people are found in).</summary>
     Task<IReadOnlyList<string>> OpenUserIdsAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Everyone who is suspended now (for the owner's moderation screen).</summary>
+    Task<IReadOnlyList<string>> SuspendedUserIdsAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Saves the report unless this reporter already reported this target. <c>false</c> for a duplicate.</summary>
     Task<bool> AddReportAsync(Report report, CancellationToken cancellationToken = default);
 
@@ -81,6 +84,14 @@ public sealed class InMemoryPublicProfileStore : IPublicProfileStore
         lock (gate)
         {
             return Task.FromResult<IReadOnlyList<string>>([.. profiles.Values.Where(p => p.IsOpen).Select(p => p.UserId)]);
+        }
+    }
+
+    public Task<IReadOnlyList<string>> SuspendedUserIdsAsync(CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<string>>([.. profiles.Values.Where(p => p.Suspended).Select(p => p.UserId).Order(StringComparer.Ordinal)]);
         }
     }
 
