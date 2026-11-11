@@ -1039,4 +1039,13 @@
   <data name="Flavor_Roasted" xml:space="preserve"><value>Roasted</value></data>
   <data name="Flavor_GreenVegetative" xml:space="preserve"><value>Green and herbal</value></data>
   <data name="Flavor_SourFermented" xml:space="preserve"><value>Sour and fermented</value></data>
+  <data name="Compare_Title" xml:space="preserve"><value>Compare brews</value></data>
+  <data name="Compare_With" xml:space="preserve"><value>Compare with another brew of this bean</value></data>
+  <data name="Compare_Go" xml:space="preserve"><value>Compare</value></data>
+  <data name="Compare_Change" xml:space="preserve"><value>Change</value></data>
+  <data name="Compare_Method" xml:space="preserve"><value>Method</value></data>
+  <data name="Compare_Different" xml:space="preserve"><value>Different</value></data>
+  <data name="Compare_Rating" xml:space="preserve"><value>Rating</value></data>
+  <data name="Compare_NotFound" xml:space="preserve"><value>One of these brews no longer exists.</value></data>
+  <data name="Compare_Pick" xml:space="preserve"><value>Choose a brew</value></data>
 </root>

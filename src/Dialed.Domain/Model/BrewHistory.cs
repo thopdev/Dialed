@@ -9,6 +9,9 @@ public sealed record BrewFilter(string? BeanId = null, string? MethodCode = null
 public sealed record ParameterDelta(BrewParameter Parameter, decimal? Planned, decimal? Actual)
 {
     public bool Differs => Planned is not null && Actual is not null && Planned != Actual;
+
+    /// <summary>The second value minus the first (what moved), when both are known.</summary>
+    public decimal? Change => Planned is not null && Actual is not null ? Actual - Planned : null;
 }
 
 public static class BrewHistory
@@ -65,5 +68,43 @@ public static class BrewHistory
         };
 
         return [.. rows.Where(row => row.Planned is not null || row.Actual is not null)];
+    }
+
+    /// <summary>
+    /// Two brews side by side: the first brew's values as <see cref="ParameterDelta.Planned"/> and the second's as <see cref="ParameterDelta.Actual"/>,
+    /// for the parameters either of them used (dose, water, yield, grind, temperature, time).
+    /// </summary>
+    public static IReadOnlyList<ParameterDelta> CompareBrews(Brew first, Brew second)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+
+        ParameterDelta[] rows =
+        [
+            new(BrewParameter.Dose, first.DoseG, second.DoseG),
+            new(BrewParameter.Water, first.WaterG, second.WaterG),
+            new(BrewParameter.Yield, first.YieldG, second.YieldG),
+            new(BrewParameter.Grind, first.GrindSetting, second.GrindSetting),
+            new(BrewParameter.Temperature, first.TempC, second.TempC),
+            new(BrewParameter.Time, first.TimeS, second.TimeS),
+        ];
+        return [.. rows.Where(row => row.Planned is not null || row.Actual is not null)];
+    }
+
+    /// <summary>The other brews of the same bean as <paramref name="brew"/> (through the bag), newest first: what a brew can be compared with.</summary>
+    public static IReadOnlyList<Brew> SameBean(Brew brew, IEnumerable<Brew> brews, IEnumerable<Bag> bags, int max = 20)
+    {
+        ArgumentNullException.ThrowIfNull(brew);
+        ArgumentNullException.ThrowIfNull(brews);
+        ArgumentNullException.ThrowIfNull(bags);
+
+        var bagToBean = bags.ToDictionary(b => b.Id, b => b.BeanId);
+        if (!bagToBean.TryGetValue(brew.BagId, out var beanId))
+        {
+            return [];
+        }
+
+        return [.. brews.Where(b => !b.Deleted && b.Id != brew.Id && bagToBean.TryGetValue(b.BagId, out var other) && other == beanId)
+            .OrderByDescending(b => b.BrewedAt).Take(max)];
     }
 }

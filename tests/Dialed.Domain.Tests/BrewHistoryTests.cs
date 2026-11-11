@@ -65,4 +65,30 @@ public sealed class BrewHistoryTests
         rows.Select(r => r.Parameter).ShouldBe([BrewParameter.Dose, BrewParameter.Water]);
         rows.ShouldAllBe(r => r.Planned == null && !r.Differs);
     }
+
+    [Fact]
+    public void Two_brews_are_compared_value_by_value_with_what_moved()
+    {
+        var first = B("1", "bag1", "v60", "me", -2) with { DoseG = 15m, WaterG = 240m, GrindSetting = 20m, TimeS = 170 };
+        var second = B("2", "bag1", "v60", "me", -1) with { DoseG = 16m, WaterG = 240m, GrindSetting = 18m, TempC = 94m };
+
+        var rows = BrewHistory.CompareBrews(first, second);
+
+        rows.Select(r => r.Parameter).ShouldBe([BrewParameter.Dose, BrewParameter.Water, BrewParameter.Grind, BrewParameter.Temperature, BrewParameter.Time]);
+        rows.Single(r => r.Parameter == BrewParameter.Dose).Change.ShouldBe(1m);
+        rows.Single(r => r.Parameter == BrewParameter.Grind).Change.ShouldBe(-2m);
+        rows.Single(r => r.Parameter == BrewParameter.Water).Differs.ShouldBeFalse();
+        rows.Single(r => r.Parameter == BrewParameter.Temperature).Change.ShouldBeNull(); // only one of them knows it
+        rows.Single(r => r.Parameter == BrewParameter.Time).Change.ShouldBeNull();
+    }
+
+    [Fact]
+    public void A_brew_can_be_compared_with_the_newest_other_brews_of_the_same_bean()
+    {
+        var brews = new[] { B("1", "bag1", "v60", "me", -3), B("2", "bag2", "v60", "me", -2), B("3", "bag1", "v60", "me", -1), B("4", "bag1", "v60", "me", -5) with { Deleted = true } };
+
+        BrewHistory.SameBean(brews[0], brews, Bags).Select(b => b.Id).ShouldBe(["3"]); // not itself, not another bean, not a deleted one
+        BrewHistory.SameBean(brews[0], brews, Bags, max: 0).ShouldBeEmpty();
+        BrewHistory.SameBean(brews[0], brews, []).ShouldBeEmpty();
+    }
 }
