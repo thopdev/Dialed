@@ -1010,6 +1010,7 @@
   <data name="Count_Days_One" xml:space="preserve"><value>{0} day</value></data>
   <data name="Count_Days_Other" xml:space="preserve"><value>{0} days</value></data>
   <data name="Milestone_CurrentStreak" xml:space="preserve"><value>Current streak: {0}</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: show beans</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Flavour wheel</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Tasting notes by flavour: {0}</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruity</value></data>

@@ -1009,6 +1009,7 @@
   <data name="Count_Days_One" xml:space="preserve"><value>{0} dag</value></data>
   <data name="Count_Days_Other" xml:space="preserve"><value>{0} dagen</value></data>
   <data name="Milestone_CurrentStreak" xml:space="preserve"><value>Huidige reeks: {0}</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: toon bonen</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Smaakwiel</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Smaaknoten per smaak: {0}</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruitig</value></data>

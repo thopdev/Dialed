@@ -17,7 +17,17 @@
                 <path class="dialed-origin-map-land" d="@WorldMapLand.Path" />
                 @foreach (var pin in pins)
                 {
-                    <circle class="dialed-origin-map-pin" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(pin.Radius)"><title>@pin.Label</title></circle>
+                    @if (LinkToBeans)
+                    {
+                        <a class="dialed-origin-map-link" href="@($"beans?country={pin.Iso2}")" aria-label="@string.Format(L["Map_ShowBeans"].Value, pin.Label)">
+                            <circle class="dialed-origin-map-hit" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(Math.Max(pin.Radius, 40))" />
+                            <circle class="dialed-origin-map-pin" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(pin.Radius)"><title>@pin.Label</title></circle>
+                        </a>
+                    }
+                    else
+                    {
+                        <circle class="dialed-origin-map-pin" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(pin.Radius)"><title>@pin.Label</title></circle>
+                    }
                 }
             }
         </svg>
@@ -25,7 +35,7 @@
 }
 
 @code {
-    private sealed record Pin(double X, double Y, double Radius, string Label);
+    private sealed record Pin(double X, double Y, double Radius, string Label, string Iso2);
 
     private List<Pin> pins = [];
     private CountryShapes.Shape? zoomed;
@@ -36,6 +46,10 @@
     public IReadOnlyList<(string Country, int Count)> Origins { get; set; } = [];
 
     /// <summary>With a single country: zoom in on it and outline the country instead of dropping a marker on the world.</summary>
+    /// <summary>Makes each marker a link to the bean list narrowed to that country.</summary>
+    [Parameter]
+    public bool LinkToBeans { get; set; }
+
     [Parameter]
     public bool Zoom { get; set; }
 
@@ -71,7 +85,7 @@
         pins = [.. byCountry.OrderByDescending(p => p.Value.Count).Select(p =>
         {
             var (x, y) = WorldMapProjection.Project(p.Key.Latitude, p.Key.Longitude);
-            return new Pin(x, y, 7 + 9.0 * p.Value.Count / max, p.Value.Typed);
+            return new Pin(x, y, 7 + 9.0 * p.Value.Count / max, p.Value.Typed, p.Key.Iso2);
         })];
     }
 

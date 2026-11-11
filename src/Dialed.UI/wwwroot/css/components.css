@@ -2876,3 +2876,16 @@ a.people-row-name {
 .dialed-flavor-swatch.dialed-flavor-roasted {
     background: var(--colorPalettePlatinumBackground2);
 }
+
+.dialed-origin-map-hit {
+    fill: transparent;
+}
+
+.dialed-origin-map-link {
+    cursor: pointer;
+}
+
+.dialed-origin-map-link:focus-visible .dialed-origin-map-pin {
+    stroke: var(--colorStrokeFocus2);
+    stroke-width: 4;
+}
