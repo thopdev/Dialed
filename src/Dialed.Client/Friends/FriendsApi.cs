@@ -10,7 +10,18 @@ namespace Dialed.Client.Friends;
 
 public sealed record Person(string UserId, string DisplayName);
 
-public sealed record FriendProfileInfo(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
+/// <param name="Relation"><c>self</c>, <c>household</c>, <c>following</c>, <c>requested</c> or <c>none</c> (a stranger looking at a public profile, #106).</param>
+public sealed record FriendProfileInfo(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers, string Relation = "following")
+{
+    /// <summary>A stranger sees only what is public: beans and recipes, no brews and no follower count.</summary>
+    public bool IsPublicView => Relation == "none" || Relation == "requested";
+}
+
+/// <summary>Why something is reported (#106).</summary>
+public static class ReportReasons
+{
+    public static readonly string[] All = ["spam", "offensive", "wrong", "other"];
+}
 
 /// <summary>One page of what a friend shares: the records as the server sent them, so any field can be shown.</summary>
 public sealed record SharedPage(IReadOnlyList<JsonElement> Items, int Total, bool HasMore);
@@ -45,6 +56,27 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
 
     public Task<Person> FollowAsync(string code, CancellationToken cancellationToken = default) =>
         SendAsync<Person>(HttpMethod.Post, "friends/follow", new { code }, cancellationToken);
+
+    /// <summary>Whether this person's public profile is on (#106).</summary>
+    public async Task<bool> GetPublicProfileAsync(CancellationToken cancellationToken = default) =>
+        (await SendAsync<PublicProfileState>(HttpMethod.Get, "profile/public", null, cancellationToken)).Enabled;
+
+    public async Task<bool> SetPublicProfileAsync(bool enabled, CancellationToken cancellationToken = default) =>
+        (await SendAsync<PublicProfileState>(HttpMethod.Put, "profile/public", new { enabled }, cancellationToken)).Enabled;
+
+    private sealed record PublicProfileState(bool Enabled);
+
+    /// <summary>Public profiles whose name matches; at least two characters, at most 20 results.</summary>
+    public Task<IReadOnlyList<Person>> SearchPeopleAsync(string query, CancellationToken cancellationToken = default) =>
+        ListAsync($"people/search?q={Uri.EscapeDataString(query)}", cancellationToken);
+
+    /// <summary>Asks to follow someone with a public profile, without their friend code.</summary>
+    public Task<Person> FollowPublicAsync(string userId, CancellationToken cancellationToken = default) =>
+        SendAsync<Person>(HttpMethod.Post, $"friends/{Uri.EscapeDataString(userId)}/follow", null, cancellationToken);
+
+    /// <summary>Reports a profile (<paramref name="itemId"/> null) or one of its beans or recipes. The answer is always a plain confirmation.</summary>
+    public Task ReportAsync(string ownerId, string target, string? itemId, string reason, string? note, CancellationToken cancellationToken = default) =>
+        SendNoContentAsync(HttpMethod.Post, "reports", new { ownerId, target, itemId, reason, note }, cancellationToken);
 
     public Task<IReadOnlyList<Person>> RequestsAsync(CancellationToken cancellationToken = default) => ListAsync("friends/requests", cancellationToken);
 
@@ -148,6 +180,11 @@ public sealed class FriendsApi(HttpClient http, IAccessTokenProvider tokens)
     private async Task SendNoContentAsync(HttpMethod method, string path, CancellationToken cancellationToken)
     {
         using var response = await SendRawAsync(method, path, null, cancellationToken);
+    }
+
+    private async Task SendNoContentAsync(HttpMethod method, string path, object? body, CancellationToken cancellationToken)
+    {
+        using var response = await SendRawAsync(method, path, body, cancellationToken);
     }
 
     private async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken cancellationToken)

@@ -1,0 +1,90 @@
+@using Dialed.Client.Account
+@using Dialed.Client.Friends
+@inject FriendsApi Friends
+@inject IStringLocalizer<Strings> L
+
+@* Report a profile, bean or recipe (#106): a reason and an optional note. The reporter gets a confirmation and never a reply about the outcome. *@
+<span class="report">
+    @if (sent)
+    {
+        <span class="report-sent dialed-muted" role="status">@L["Report_Sent"]</span>
+    }
+    else if (!open)
+    {
+        <button type="button" class="dialed-button report-open" aria-label="@string.Format(L["Report_Named"].Value, Name)" @onclick="() => open = true">@L["Report_Button"]</button>
+    }
+    else
+    {
+        <form class="dialed-form report-form" aria-label="@string.Format(L["Report_Title"].Value, Name)" @onsubmit="SendAsync" @onsubmit:preventDefault>
+            <p><strong>@string.Format(L["Report_Title"].Value, Name)</strong></p>
+            <div class="dialed-field">
+                <label for="@IdFor("reason")">@L["Report_Reason"]</label>
+                <select id="@IdFor("reason")" class="report-reason" @bind="reason">
+                    @foreach (var option in ReportReasons.All)
+                    {
+                        <option value="@option">@L[$"Report_Reason_{option}"]</option>
+                    }
+                </select>
+            </div>
+            <div class="dialed-field">
+                <label for="@IdFor("note")">@L["Report_Note"]</label>
+                <textarea id="@IdFor("note")" class="report-note" maxlength="500" rows="3" @bind="note"></textarea>
+            </div>
+            @if (failed)
+            {
+                <p class="report-failed dialed-field-error" role="alert">@L["Report_Failed"]</p>
+            }
+            <div class="dialed-form-actions">
+                <button type="submit" class="dialed-button dialed-button-primary report-send" disabled="@busy">@L["Report_Send"]</button>
+                <button type="button" class="dialed-button report-cancel" @onclick="() => open = false">@L["Cancel"]</button>
+            </div>
+        </form>
+    }
+</span>
+
+@code {
+    private static int counter;
+    private readonly int instance = Interlocked.Increment(ref counter);
+    private string reason = "spam";
+    private string note = "";
+    private bool open;
+    private bool sent;
+    private bool busy;
+    private bool failed;
+
+    /// <summary>Whose profile it is.</summary>
+    [Parameter, EditorRequired]
+    public string OwnerId { get; set; } = "";
+
+    /// <summary><c>profile</c>, <c>bean</c> or <c>recipe</c>.</summary>
+    [Parameter]
+    public string Target { get; set; } = "profile";
+
+    [Parameter]
+    public string? ItemId { get; set; }
+
+    /// <summary>The person's or item's name, for the labels.</summary>
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = "";
+
+    private string IdFor(string part) => $"report-{part}-{instance}";
+
+    private async Task SendAsync()
+    {
+        busy = true;
+        failed = false;
+        try
+        {
+            await Friends.ReportAsync(OwnerId, Target, ItemId, reason, string.IsNullOrWhiteSpace(note) ? null : note.Trim());
+            sent = true;
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            failed = true;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

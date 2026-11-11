@@ -61,6 +61,12 @@ public static class SyncEndpoints
                 return Results.ValidationProblem(problems);
             }
 
+            if (VisibilityRules.Of(entity) == VisibilityRules.Public && !VisibilityRules.AllowsPublic(table))
+            {
+                DialedTelemetry.SyncPushes.Add(1, new KeyValuePair<string, object?>("table", table), new KeyValuePair<string, object?>("outcome", "invalid"));
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["visibility"] = ["Only beans, recipes and vendors can be public."] });
+            }
+
             var ifMatch = request.Headers.IfMatch.ToString().Trim('"');
             var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
             var result = await store.PushAsync(household, userId, table, id, entity, string.IsNullOrEmpty(ifMatch) ? null : ifMatch, ct);

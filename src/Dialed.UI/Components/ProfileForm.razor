@@ -15,7 +15,7 @@
     <div class="dialed-field">
         <label for="profile-visibility">@L["Profile_DefaultVisibility"]</label>
         <select id="profile-visibility" @bind="visibility">
-            @foreach (var option in Enum.GetValues<Visibility>())
+            @foreach (var option in Enum.GetValues<Visibility>().Where(v => v != Visibility.Public))
             {
                 <option value="@option">@L[$"Visibility_{option}"]</option>
             }

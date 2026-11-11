@@ -68,6 +68,25 @@ public sealed class InMemoryBetaInviteStore : IBetaInviteStore
     }
 }
 
+/// <summary>The secret that guards the <c>/admin</c> endpoints (the <c>X-Admin-Key</c> header). When none is configured they do not exist.</summary>
+public static class AdminKey
+{
+    /// <summary><c>null</c> when the key is right; otherwise the answer to send (404 without a configured key, 401 for a wrong one).</summary>
+    public static IResult? Check(HttpContext http, BetaOptions options)
+    {
+        var key = options.AdminKey;
+        if (string.IsNullOrEmpty(key))
+        {
+            return Results.NotFound();
+        }
+
+        var given = http.Request.Headers["X-Admin-Key"].ToString();
+        return CryptographicOperations.FixedTimeEquals(System.Text.Encoding.UTF8.GetBytes(given), System.Text.Encoding.UTF8.GetBytes(key))
+            ? null
+            : Results.Unauthorized();
+    }
+}
+
 public static class BetaInviteExtensions
 {
     private const string Alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -84,16 +103,9 @@ public static class BetaInviteExtensions
     {
         endpoints.MapPost("/admin/invites", async (HttpContext http, CreateInviteRequest request, IBetaInviteStore store, IOptions<BetaOptions> options, TimeProvider time) =>
         {
-            var key = options.Value.AdminKey;
-            if (string.IsNullOrEmpty(key))
+            if (AdminKey.Check(http, options.Value) is { } refused)
             {
-                return Results.NotFound();
-            }
-
-            var given = http.Request.Headers["X-Admin-Key"].ToString();
-            if (!CryptographicOperations.FixedTimeEquals(System.Text.Encoding.UTF8.GetBytes(given), System.Text.Encoding.UTF8.GetBytes(key)))
-            {
-                return Results.Unauthorized();
+                return refused;
             }
 
             var uses = Math.Clamp(request.MaxUses ?? 1, 1, 1000);

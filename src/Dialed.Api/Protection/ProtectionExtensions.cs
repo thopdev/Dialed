@@ -86,7 +86,12 @@ public static class ProtectionExtensions
             return Window($"auth:{address}", options.AuthRequestsPerMinute);
         }
 
-        if (path.StartsWithSegments("/friends"))
+        if (path.StartsWithSegments("/reports"))
+        {
+            return Window($"reports:{user ?? address}", options.ReportsPerMinute);
+        }
+
+        if (path.StartsWithSegments("/friends") || path.StartsWithSegments("/people"))
         {
             return Window($"friends:{user ?? address}", options.FriendsRequestsPerMinute);
         }

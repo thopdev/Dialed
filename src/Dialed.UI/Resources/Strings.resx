@@ -874,4 +874,35 @@
   <data name="Bean_Barcodes" xml:space="preserve"><value>Barcodes</value></data>
   <data name="Bean_BarcodesHint" xml:space="preserve"><value>The number under the barcode on the bag. A bean can have several, one for each bag size.</value></data>
   <data name="Bean_BarcodeInvalid" xml:space="preserve"><value>“{0}” is not a valid barcode (check the digits).</value></data>
+  <data name="Visibility_Public" xml:space="preserve"><value>Everyone on Dialed</value></data>
+  <data name="Visibility_PublicHint" xml:space="preserve"><value>Everyone who uses Dialed can find and see this, as long as your public profile is switched on in Settings. Brews and bags can never be public.</value></data>
+  <data name="PublicProfile_Title" xml:space="preserve"><value>Public profile</value></data>
+  <data name="PublicProfile_Explain" xml:space="preserve"><value>Switch it on so other Dialed users can find you by name and see the beans and recipes you set to "Everyone on Dialed". They see your name and avatar and nothing else: no brews, bags, friends or email address.</value></data>
+  <data name="PublicProfile_Switch" xml:space="preserve"><value>Show my profile to everyone on Dialed</value></data>
+  <data name="PublicProfile_On" xml:space="preserve"><value>Your profile is public. Switch it off to hide it at once; your items keep their own setting.</value></data>
+  <data name="PublicProfile_Off" xml:space="preserve"><value>Your profile is private. Nobody can find it.</value></data>
+  <data name="PublicProfile_SignIn" xml:space="preserve"><value>Sign in to make your profile public.</value></data>
+  <data name="PublicProfile_Offline" xml:space="preserve"><value>The server could not be reached. Try again later.</value></data>
+  <data name="People_FindTitle" xml:space="preserve"><value>Find people</value></data>
+  <data name="People_FindLabel" xml:space="preserve"><value>Search by name</value></data>
+  <data name="People_FindHint" xml:space="preserve"><value>Only people who switched on their public profile can be found. Type at least two letters.</value></data>
+  <data name="People_FindSearch" xml:space="preserve"><value>Search</value></data>
+  <data name="People_FindNone" xml:space="preserve"><value>Nobody found.</value></data>
+  <data name="People_PublicCounts" xml:space="preserve"><value>{0} beans · {1} recipes</value></data>
+  <data name="People_FollowPublic" xml:space="preserve"><value>Follow</value></data>
+  <data name="People_FollowFailed" xml:space="preserve"><value>The request could not be sent. Try again.</value></data>
+  <data name="Report_Button" xml:space="preserve"><value>Report</value></data>
+  <data name="Report_Named" xml:space="preserve"><value>Report {0}</value></data>
+  <data name="Report_Title" xml:space="preserve"><value>Report {0}</value></data>
+  <data name="Report_Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Report_Reason_spam" xml:space="preserve"><value>Spam</value></data>
+  <data name="Report_Reason_offensive" xml:space="preserve"><value>Offensive</value></data>
+  <data name="Report_Reason_wrong" xml:space="preserve"><value>Wrong or misleading</value></data>
+  <data name="Report_Reason_other" xml:space="preserve"><value>Something else</value></data>
+  <data name="Report_Note" xml:space="preserve"><value>Anything we should know? (optional)</value></data>
+  <data name="Report_Send" xml:space="preserve"><value>Send report</value></data>
+  <data name="Report_Sent" xml:space="preserve"><value>Thank you. We received your report and will look at it. We do not reply about the outcome.</value></data>
+  <data name="Report_Failed" xml:space="preserve"><value>The report could not be sent. Try again.</value></data>
+  <data name="Privacy_Public_Title" xml:space="preserve"><value>Public profile and public items</value></data>
+  <data name="Privacy_Public" xml:space="preserve"><value>A public profile is off until you switch it on in Settings. When it is on, other Dialed users can find you by your name and see your name, your avatar and the beans and recipes you set to "Everyone on Dialed", and nothing else. They cannot see your brews, bags, friends or email address, and they have to be signed in: nothing is on the open web or in search engines. Switch it off and you disappear at once; your items keep their own setting. People can report a profile, bean or recipe; the report (who, what, why) goes to the developer of the beta, who can hide a profile without deleting anything. Deleting your account removes your profile and your public items.</value></data>
 </root>

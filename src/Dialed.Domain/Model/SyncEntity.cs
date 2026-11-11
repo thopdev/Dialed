@@ -1,11 +1,15 @@
 namespace Dialed.Domain.Model;
 
-/// <summary>Who can read an item: only its creator, the household, or accepted followers of the creator too.</summary>
+/// <summary>
+/// Who can read an item: only its creator, the household, accepted followers of the creator too, or everyone who uses Dialed (#106).
+/// <see cref="Public"/> is only for beans, recipes and vendors, and only counts while the creator's public profile is switched on.
+/// </summary>
 public enum Visibility
 {
     Private,
     Household,
     Friends,
+    Public,
 }
 
 /// <summary>
