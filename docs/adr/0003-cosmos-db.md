@@ -17,6 +17,7 @@ The data is small per household, mostly read/written within one household, and n
 - Relational-style queries (e.g. "all beans from roasters in Ethiopia used by my friends") must be designed per query or denormalised by change-feed Functions.
 - Throughput is capped at 1000 RU/s to stay free; add an alert on throttled (429) requests.
 - If `dev` and `prod` share a subscription, only one of them can be the free-tier account. Default for now: one subscription, with `dev` and `prod` as separate databases inside the single free-tier account (they share the 1000 RU/s).
+- The API reaches Cosmos DB through one shared client and lazily created containers (`DialedCosmos`, see `docs/cosmos-stores.md`); stores fall back to memory when no connection string is set.
 - ASP.NET Core Identity (ADR-0010) needs a user store on Cosmos DB (custom stores or the EF Core Cosmos provider, decided in the passkey spike).
 
 ## Alternatives considered

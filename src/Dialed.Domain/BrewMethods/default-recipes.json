@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "recipes": [
     { "methodCode": "espresso", "name": "Classic espresso 1:2", "doseG": 18, "yieldG": 36, "tempC": 93, "timeS": 28, "preinfusionS": 5,
       "notes": "Aim for 25-30 seconds. Sour and thin: grind finer. Bitter and harsh: grind coarser." },
@@ -36,6 +36,13 @@
     { "methodCode": "french-press", "name": "Classic French press", "doseG": 30, "waterG": 500, "tempC": 95, "timeS": 240,
       "notes": "Break the crust at four minutes and press gently." },
     { "methodCode": "clever-dripper", "name": "Easy Clever Dripper", "doseG": 20, "waterG": 300, "tempC": 95, "timeS": 180, "filter": "Paper" },
+    { "methodCode": "hario-switch", "name": "Hybrid Hario Switch", "doseG": 15, "waterG": 250, "tempC": 94, "timeS": 180, "filter": "Paper",
+      "notes": "Pour with the valve closed, steep, then open the valve at two minutes and let it drain. Sour: grind finer or steep longer.",
+      "steps": [
+        { "kind": "pour", "atS": 0, "durationS": 15, "waterG": 250, "note": "Valve closed" },
+        { "kind": "swirl", "atS": 30, "durationS": 5 },
+        { "kind": "wait", "atS": 120, "durationS": 60, "note": "Open the valve" }
+      ] },
     { "methodCode": "moka-pot", "name": "Moka pot", "doseG": 16, "waterG": 150,
       "notes": "Fill the base with hot water to just below the valve and remove from the heat when it starts to sputter." },
     { "methodCode": "cold-brew", "name": "Cold brew concentrate 1:10", "doseG": 100, "waterG": 1000, "timeS": 43200, "filter": "Paper",

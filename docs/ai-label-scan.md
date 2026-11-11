@@ -16,7 +16,7 @@
 - Reading the photo by id from Blob Storage (#68, SAS upload queue); the endpoint takes the bytes for now.
 - Storing a `LabelScan` with prompt version and model id (comes with the app side, #83).
 - Per-user daily quota, cost estimate and global kill switch (#88).
-- Real model validation against Claude in Foundry (#79) and the golden test set (#84). Neither can be done without the Azure resource.
+- Real model validation against Claude in Foundry (#79) and the baseline run of the golden test set (#84, harness and synthetic starter set: [ai-label-golden-set.md](ai-label-golden-set.md)). Both need the Azure resource.
 
 ## Quotas, cost and kill switch (#88)
 Configuration under `Ai` (reloadable, so the switch works without a deploy):

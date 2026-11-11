@@ -27,6 +27,10 @@ public static class HouseholdEndpoints
         endpoints.MapGet("/households", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.ListMineAsync(UserId(user), ct))).RequireAuthorization();
 
+        // A new household owned by the person; it becomes the active one, so refresh the token afterwards.
+        endpoints.MapPost("/households", async (HouseholdNameRequest request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.CreateAsync(UserId(user), request.Name, ct))).RequireAuthorization();
+
         var group = endpoints.MapGroup("/households/mine").RequireAuthorization();
 
         group.MapPost("/switch", async (SwitchRequest request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
@@ -34,6 +38,13 @@ public static class HouseholdEndpoints
 
         group.MapGet("", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.GetMineAsync(UserId(user), ct)));
+
+        group.MapPut("/name", async (HouseholdNameRequest request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.RenameAsync(UserId(user), request.Name, ct)));
+
+        // Deletes the active household and its data; the owner's (and members') next token carries another household.
+        group.MapDelete("", async (ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
+            Map(await service.DeleteAsync(UserId(user), ct)));
 
         group.MapPost("/invites", async (HouseholdInviteRequest? request, ClaimsPrincipal user, HouseholdService service, CancellationToken ct) =>
             Map(await service.CreateInviteAsync(UserId(user), request?.MaxUses, request?.DaysValid, ct)));
@@ -70,6 +81,7 @@ public static class HouseholdEndpoints
         HouseholdOutcome.NotOwner => Results.Problem(detail: "Only the household owner can do that.", statusCode: StatusCodes.Status403Forbidden),
         HouseholdOutcome.InvalidInvite => Results.Problem(detail: "That invite code is not valid. Ask for a new one.", statusCode: StatusCodes.Status400BadRequest),
         HouseholdOutcome.Conflict => Results.Problem(detail: result.Message, statusCode: StatusCodes.Status409Conflict),
+        HouseholdOutcome.Invalid => Results.Problem(detail: result.Message, statusCode: StatusCodes.Status400BadRequest),
         _ => Results.NotFound(),
     };
 }

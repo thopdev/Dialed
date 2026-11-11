@@ -18,7 +18,7 @@ public sealed record HouseholdSummary(string Id, string Name, bool IsPersonal, b
 /// <param name="Uses">How many already did.</param>
 public sealed record InviteInfo(string Code, DateTimeOffset ExpiresAt, int MaxUses = 1, int Uses = 0);
 
-/// <summary>The API's household endpoints (see Dialed.Api): view, invite, join, leave and remove.</summary>
+/// <summary>The API's household endpoints (see Dialed.Api): view, create, rename, delete, invite, join, leave and remove.</summary>
 public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -31,6 +31,18 @@ public sealed class HouseholdApi(HttpClient http, IAccessTokenProvider tokens)
 
     public Task<HouseholdInfo> SwitchAsync(string householdId, CancellationToken cancellationToken = default) =>
         SendAsync<HouseholdInfo>(HttpMethod.Post, "households/mine/switch", new { householdId }, cancellationToken);
+
+    /// <summary>A new household owned by the person, which becomes the active one.</summary>
+    public Task<HouseholdInfo> CreateAsync(string name, CancellationToken cancellationToken = default) =>
+        SendAsync<HouseholdInfo>(HttpMethod.Post, "households", new { name }, cancellationToken);
+
+    /// <summary>The owner renames the active household.</summary>
+    public Task<HouseholdInfo> RenameAsync(string name, CancellationToken cancellationToken = default) =>
+        SendAsync<HouseholdInfo>(HttpMethod.Put, "households/mine/name", new { name }, cancellationToken);
+
+    /// <summary>The owner deletes the active household and its data; returns the household that is active now.</summary>
+    public Task<HouseholdInfo> DeleteAsync(CancellationToken cancellationToken = default) =>
+        SendAsync<HouseholdInfo>(HttpMethod.Delete, "households/mine", null, cancellationToken);
 
     /// <param name="maxUses">How many people may join with the code (1 to 10).</param>
     /// <param name="daysValid">1 to 30; the server's default (7) when <c>null</c>.</param>
