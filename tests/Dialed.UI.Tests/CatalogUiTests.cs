@@ -67,6 +67,7 @@ public sealed class CatalogUiTests : UiTestContext
         form.Find(".catalog-use").Click();
 
         form.WaitForAssertion(() => form.Find("#bean-name").GetAttribute("value").ShouldBe("Ethiopia Guji Natural"));
+        form.FindAll("#bean-catalog").ShouldBeEmpty(); // the suggestion that was used goes away
         form.Find("#bean-country").GetAttribute("value").ShouldBe("Ethiopia");
         form.Find("#bean-region").GetAttribute("value").ShouldBe("Guji");
         form.Find("#bean-process").GetAttribute("value").ShouldBe("Natural");

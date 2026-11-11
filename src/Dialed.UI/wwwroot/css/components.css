@@ -2661,3 +2661,8 @@ a.people-row-name {
 .dialed-picker-catalog .dialed-picker-detail {
     font-style: italic;
 }
+
+.catalog-use {
+    flex-shrink: 0;
+    white-space: nowrap;
+}

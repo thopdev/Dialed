@@ -62,6 +62,12 @@ Needs a deployed API with real VAPID keys (#260), or the API run locally and rea
 - [ ] A stranger's profile shows name, beans and recipes only (no brews tab), **Follow** sends a request, **Report** opens the form and confirms.
 - [ ] Switching the profile off hides it from search and from a stranger's phone at once.
 
+## Catalog (#105)
+- [ ] New bean: typing two letters of a coffee other people share shows **From the catalog** a moment later; **Use this** fills the form and the keyboard stays usable.
+- [ ] The roaster field offers catalog roasters below my own; choosing one adds it to my roasters.
+- [ ] Scan a label of a bean I do not have: catalog candidates appear under the match section and **Use this** fills the origin fields.
+- [ ] In airplane mode none of this shows and adding a bean works as before.
+
 ## Accessibility (#49)
 - [ ] VoiceOver reads every control with a name, in light and dark mode: Home, Brew, Beans, Recipes, History, Settings, People, Scan.
 - [ ] The Copy button reads the item's name; feed rows read as one sentence; the rating reads "4 of 5 stars".
