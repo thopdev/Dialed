@@ -2,6 +2,7 @@ using System.Reflection;
 using Dialed.AI;
 using Dialed.Client;
 using Dialed.Domain;
+using Dialed.Images;
 using Dialed.UI;
 
 namespace Dialed.ArchitectureTests;
@@ -71,6 +72,16 @@ public sealed class DependencyRulesTests
         string[] forbidden = ["Dialed.UI", "Dialed.Client", .. HostsAndServer];
 
         references.ShouldNotContain(name => name.StartsWith("Microsoft.AspNetCore.Components", StringComparison.Ordinal));
+        references.ShouldNotContain(name => StartsWithAny(name, forbidden));
+    }
+
+    [Fact]
+    public void Images_references_only_Domain_so_the_API_and_a_Function_can_both_host_it()
+    {
+        var references = ReferencedAssemblyNames(typeof(ImagesAssembly));
+        string[] forbidden = ["Dialed.UI", "Dialed.Client", "Dialed.AI", .. HostsAndServer];
+
+        references.ShouldNotContain(name => name.StartsWith("Microsoft.AspNetCore", StringComparison.Ordinal));
         references.ShouldNotContain(name => StartsWithAny(name, forbidden));
     }
 

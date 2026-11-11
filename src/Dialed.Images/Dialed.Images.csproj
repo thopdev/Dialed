@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Photo processing on the server (#69, ADR-0008): strips metadata and makes thumbnails. Hosted in-process by the API for now;
+    the blob-triggered Azure Function hosts the same handler later. SkiaSharp (MIT); the Linux native assets are for CI and Functions.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dialed.Domain\Dialed.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

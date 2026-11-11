@@ -26,6 +26,7 @@ builder.Services.AddDialedProtection(builder.Configuration);
 builder.Services.AddDialedAuth(builder.Configuration, builder.Environment);
 builder.Services.AddDialedPasskeys(builder.Configuration);
 builder.Services.AddDialedSync();
+builder.Services.AddDialedPhotoProcessing();
 builder.Services.AddDialedHouseholds(builder.Environment);
 builder.Services.AddDialedFriends();
 builder.Services.AddDialedAi(builder.Configuration);
