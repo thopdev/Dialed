@@ -468,4 +468,38 @@ public sealed class PublicProfileTests(ModeratedApp app) : IClassFixture<Moderat
         export["profile"]!["publicProfile"]!.GetValue<bool>().ShouldBeTrue();
         export["items"]!["beans"]!.AsArray().Single()!["visibility"]!.GetValue<int>().ShouldBe(VisibilityRules.Public);
     }
+
+    [Fact]
+    public async Task The_owner_can_list_who_is_suspended()
+    {
+        var one = await NewPerson(Unique("Susp"));
+        var two = await NewPerson(Unique("Fine"));
+        await Admin().PostAsync($"/admin/users/{one.User.Id}/suspend", null, Ct);
+
+        var list = (await Admin().GetFromJsonAsync<SuspendedDto[]>("/admin/users/suspended", Ct))!;
+        list.ShouldContain(s => s.UserId == one.User.Id && s.DisplayName == one.User.DisplayName);
+        list.ShouldNotContain(s => s.UserId == two.User.Id);
+
+        await Admin().PostAsync($"/admin/users/{one.User.Id}/restore", null, Ct);
+        (await Admin().GetFromJsonAsync<SuspendedDto[]>("/admin/users/suspended", Ct))!.ShouldNotContain(s => s.UserId == one.User.Id);
+        (await Admin(key: null).GetAsync("/admin/users/suspended", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task The_admin_endpoints_are_rate_limited_so_the_key_cannot_be_guessed()
+    {
+        await using var limited = app.WithWebHostBuilder(b => b.UseSetting("Protection:AdminRequestsPerMinute", "3"));
+        using var client = limited.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Admin-Key", "wrong");
+        var statuses = new List<HttpStatusCode>();
+
+        for (var i = 0; i < 8; i++)
+        {
+            using var response = await client.GetAsync("/admin/reports", Ct);
+            statuses.Add(response.StatusCode);
+        }
+
+        statuses.Take(3).ShouldAllBe(s => s == HttpStatusCode.Unauthorized);
+        statuses.ShouldContain(HttpStatusCode.TooManyRequests);
+    }
 }

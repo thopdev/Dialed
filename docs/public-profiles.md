@@ -28,9 +28,11 @@ Opt-in public profiles: share recipes and beans with everyone who uses Dialed, f
 | `POST /friends/{userId}/follow` | signed in | request to follow an open public profile |
 | `GET /friends/{userId}/profile`, `/shared/{table}`, `/shared/{table}/{id}` | signed in | as for friends; strangers get the public view; the profile has `relation` (`self`, `household`, `following`, `requested`, `none`) |
 | `POST /reports` | signed in | report; 5 per minute per person (`Protection:ReportsPerMinute`) |
-| `POST /admin/users/{id}/suspend`, `/restore`, `GET /admin/reports` | owner of the service | header `X-Admin-Key` (`Beta:AdminKey`); without a configured key they answer 404 |
+| `POST /admin/users/{id}/suspend`, `/restore`, `GET /admin/users/suspended`, `GET /admin/reports` | owner of the service | header `X-Admin-Key` (`Beta:AdminKey`); without a configured key they answer 404 |
 
 ## Moderating (for the owner of the service)
+
+**The screen**: open `/admin` in the app (it is not in the navigation), type the admin key, and use the tabs *Reports* (suspend the owner of a report), *People* (who is suspended, restore, or suspend by id) and *Catalog* (see `catalog.md`). The key is kept in memory only: never stored on the device, forgotten on *Lock* or when the page closes, and the `/admin` endpoints are rate limited per address (`Protection:AdminRequestsPerMinute`, 20 a minute) so it cannot be guessed. The steps below do the same with `curl`.
 
 1. Reports arrive by email at `Reports:OwnerEmail` (through `IEmailSender`, the outbox stand-in until email exists, #199) and are listed at `GET /admin/reports` (newest first: reporter, owner, what, reason, note).
 2. To hide someone: `curl -X POST -H "X-Admin-Key: <key>" https://<api>/admin/users/<ownerId>/suspend`. To bring them back: `/restore`.

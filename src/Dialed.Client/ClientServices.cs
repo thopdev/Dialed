@@ -138,6 +138,16 @@ public static class ClientServices
         return services;
     }
 
+    /// <summary>Registers the owner's moderation tools (#106, #105). <paramref name="admin"/> creates the API client, so the host decides the base address.</summary>
+    public static IServiceCollection AddDialedAdmin(this IServiceCollection services, Func<IServiceProvider, Admin.AdminApi> admin)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(admin);
+
+        services.TryAddSingleton(admin);
+        return services;
+    }
+
     /// <summary>Registers the shared bean and roaster catalog (#105). <paramref name="catalog"/> creates the API client, so the host decides the base address.</summary>
     public static IServiceCollection AddDialedCatalog(this IServiceCollection services, Func<IServiceProvider, Catalog.ICatalogApi> catalog)
     {
