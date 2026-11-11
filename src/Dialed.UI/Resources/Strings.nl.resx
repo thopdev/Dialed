@@ -1002,4 +1002,14 @@
   <data name="Card_Share" xml:space="preserve"><value>Deel een plaatje van deze zetting</value></data>
   <data name="Card_Failed" xml:space="preserve"><value>Het plaatje kon op dit apparaat niet worden gemaakt.</value></data>
   <data name="Card_Footer" xml:space="preserve"><value>Gezet op {0} met Dialed</value></data>
+  <data name="Flavor_Title" xml:space="preserve"><value>Smaakwiel</value></data>
+  <data name="Flavor_Description" xml:space="preserve"><value>Smaaknoten per smaak: {0}</value></data>
+  <data name="Flavor_Fruity" xml:space="preserve"><value>Fruitig</value></data>
+  <data name="Flavor_Floral" xml:space="preserve"><value>Bloemig</value></data>
+  <data name="Flavor_Sweet" xml:space="preserve"><value>Zoet</value></data>
+  <data name="Flavor_NuttyCocoa" xml:space="preserve"><value>Noten en cacao</value></data>
+  <data name="Flavor_Spices" xml:space="preserve"><value>Kruiden</value></data>
+  <data name="Flavor_Roasted" xml:space="preserve"><value>Gebrand</value></data>
+  <data name="Flavor_GreenVegetative" xml:space="preserve"><value>Groen en kruidig</value></data>
+  <data name="Flavor_SourFermented" xml:space="preserve"><value>Zuur en gefermenteerd</value></data>
 </root>
