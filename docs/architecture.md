@@ -208,6 +208,12 @@ sequenceDiagram
 3. Blob event → Function strips any remaining metadata and creates thumbnails (256 px, 768 px), updates `Photo.ThumbPath`.
 4. Reads use short-lived read SAS URLs from the API; the service worker / browser cache keeps images.
 
+Processing today (#69): `Dialed.Images` holds the work behind interfaces, so the API hosts it now and a Function can host it later.
+- `PhotoProcessingHandler` runs per original (`photos/{householdId}/{photoId}.jpg`). It strips EXIF, GPS, XMP, IPTC and comments after applying the EXIF orientation, writes `thumbnails/{householdId}/{photoId}-256.jpg` and `-768.jpg` (longest side, never scaled up), and sets `Photo.ThumbPath` to `thumbnails/{householdId}/{photoId}`. Thumbnails live outside `photos/`, so they never fire the trigger. Running it twice changes nothing.
+- `IPhotoBlobStore` is in memory (`InMemoryPhotoBlobStore`). Each write under `photos/` raises `BlobWritten`, and the API's `InMemoryPhotoTrigger` runs the handler in the background. It retries five times with backoff and then puts the event on its poison list; a file that is not a JPEG goes there at once. Whatever stores uploads (the upload queue, #68) only has to write to `IPhotoBlobStore`.
+- Images are handled with SkiaSharp (MIT).
+- Azure (not done): a blob-triggered Function on `photos/{householdId}/{name}.jpg` calls the same handler, with a Blob Storage `IPhotoBlobStore` and an `IPhotoRecords` on Cosmos DB. The Functions runtime gives the retries and the `webjobs-blobtrigger-poison` queue.
+
 ## 7. Azure resources (per environment)
 
 | Resource | SKU / notes |
