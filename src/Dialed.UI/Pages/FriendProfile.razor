@@ -91,6 +91,10 @@ else
                 }
             </p>
         }
+        @if (current == "beans")
+        {
+            <OriginMap Id="friend-origin-map" Origins="@OriginsOf(items)" />
+        }
         <ul id="friend-items" class="dialed-list dialed-friend-items">
             @foreach (var item in items)
             {
@@ -273,6 +277,15 @@ else
 
 
     private static string IdOf(JsonElement item) => item.TryGetProperty("id", out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
+
+    /// <summary>The origin countries of the beans shown so far, one entry per bean, for the map.</summary>
+    private static IReadOnlyList<(string Country, int Count)> OriginsOf(IEnumerable<JsonElement> beans) =>
+    [
+        .. beans.Select(bean => bean.TryGetProperty("origin", out var origin) && origin.ValueKind == JsonValueKind.Object
+                && origin.TryGetProperty("country", out var country) && country.ValueKind == JsonValueKind.String ? country.GetString() : null)
+            .Where(country => !string.IsNullOrWhiteSpace(country))
+            .Select(country => (country!, 1)),
+    ];
 
     private static string Title(JsonElement item)
     {
