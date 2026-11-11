@@ -999,4 +999,14 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} mensen</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>gedeeld door {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Kaart met een markering voor elke herkomst: {0}</value></data>
+  <data name="Milestone_Title" xml:space="preserve"><value>Mijlpalen</value></data>
+  <data name="Milestone_None" xml:space="preserve"><value>Zet een paar koffies en je eerste mijlpaal verschijnt hier.</value></data>
+  <data name="Milestone_Brews" xml:space="preserve"><value>{0} zettingen</value></data>
+  <data name="Milestone_Origins" xml:space="preserve"><value>{0} herkomsten</value></data>
+  <data name="Milestone_Roasters" xml:space="preserve"><value>{0} branderijen</value></data>
+  <data name="Milestone_Streak" xml:space="preserve"><value>{0} dagen op rij</value></data>
+  <data name="Milestone_Next" xml:space="preserve"><value>Volgende: {0} (nog {1})</value></data>
+  <data name="Count_Days_One" xml:space="preserve"><value>{0} dag</value></data>
+  <data name="Count_Days_Other" xml:space="preserve"><value>{0} dagen</value></data>
+  <data name="Milestone_CurrentStreak" xml:space="preserve"><value>Huidige reeks: {0}</value></data>
 </root>

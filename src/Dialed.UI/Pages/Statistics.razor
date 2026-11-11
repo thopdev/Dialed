@@ -39,6 +39,8 @@ else
         </ul>
     </section>
 
+    <MilestoneBadges Summary="milestones" />
+
     <section id="stats-spend">
         <h2>@L["Stats_Spend"]</h2>
         @if (stats.Spend.Count == 0)
@@ -88,6 +90,7 @@ else
 
 @code {
     private CoffeeStatistics? stats;
+    private MilestoneSummary milestones = MilestoneSummary.Calculate([], [], [], DateOnly.FromDateTime(DateTime.Today));
 
     private decimal BarWidth(decimal grams)
     {
@@ -102,14 +105,15 @@ else
         await LoadAsync();
     }
 
-    private async Task LoadAsync() =>
-        stats = CoffeeStatistics.Calculate(
-            await BrewStore.ListAsync(),
-            await BagStore.ListAsync(),
-            await BeanStore.ListAsync(),
-            await VendorStore.ListAsync(),
-            await EquipmentStore.ListAsync(),
-            DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
+    private async Task LoadAsync()
+    {
+        var brews = await BrewStore.ListAsync();
+        var bags = await BagStore.ListAsync();
+        var beans = await BeanStore.ListAsync();
+        var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        milestones = MilestoneSummary.Calculate(brews, bags, beans, today);
+        stats = CoffeeStatistics.Calculate(brews, bags, beans, await VendorStore.ListAsync(), await EquipmentStore.ListAsync(), today);
+    }
 
     private void OnChanged() => _ = InvokeAsync(async () =>
     {
