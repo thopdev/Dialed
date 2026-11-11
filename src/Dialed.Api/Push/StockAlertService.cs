@@ -53,6 +53,7 @@ public sealed class StockAlertService(IPushStore store, ISyncStore sync, IUserDi
         var memory = state.Memory;
         List<string> low = [];
         List<string> peak = [];
+        List<string> peakSoon = [];
         foreach (var household in user.AllHouseholdIds)
         {
             var stock = InventoryOverview.Build(
@@ -64,6 +65,7 @@ public sealed class StockAlertService(IPushStore store, ISyncStore sync, IUserDi
             var result = StockAlerts.Evaluate(household, stock, memory, settings.LowStock, settings.Peak);
             low.AddRange(result.LowStock);
             peak.AddRange(result.Peak);
+            peakSoon.AddRange(result.PeakSoon);
             memory = result.Memory;
         }
 
@@ -74,6 +76,11 @@ public sealed class StockAlertService(IPushStore store, ISyncStore sync, IUserDi
         if (low.Count > 0)
         {
             await SendAsync(userId, devices, PushKind.LowStock, low, ct);
+        }
+
+        if (peakSoon.Count > 0)
+        {
+            await SendAsync(userId, devices, PushKind.PeakSoon, peakSoon, ct);
         }
 
         if (peak.Count > 0)

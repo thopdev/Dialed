@@ -11,7 +11,7 @@ public sealed record InventorySettings(decimal LowStockG, RestWindows RestWindow
 }
 
 /// <summary>One bag with everything the inventory shows, calculated from the bag and its brews.</summary>
-public sealed record BagStock(Bag Bag, string BeanName, decimal RemainingG, int? Cups, int? AgeDays, Freshness Freshness, bool IsLow);
+public sealed record BagStock(Bag Bag, string BeanName, decimal RemainingG, int? Cups, int? AgeDays, Freshness Freshness, bool IsLow, bool PeakTomorrow = false);
 
 public static class InventoryOverview
 {
@@ -42,7 +42,9 @@ public static class InventoryOverview
                 var age = BagLifecycle.AgeDays(bag, today);
                 var freshness = FreshnessRules.Classify(age, settings.RestWindows.For(bean?.RoastLevel), bag.RestDaysOverride);
                 var low = bag.Status == BagStatus.Open && remaining < settings.LowStockG;
-                return new BagStock(bag, bean?.Name ?? "", remaining, cups, age, freshness, low);
+                var peakTomorrow = age is { } days && freshness == Freshness.Resting
+                    && FreshnessRules.Classify(days + 1, settings.RestWindows.For(bean?.RoastLevel), bag.RestDaysOverride) == Freshness.Peak;
+                return new BagStock(bag, bean?.Name ?? "", remaining, cups, age, freshness, low, peakTomorrow);
             }),
         ];
     }
