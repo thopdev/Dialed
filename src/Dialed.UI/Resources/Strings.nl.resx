@@ -1002,6 +1002,10 @@
   <data name="Card_Share" xml:space="preserve"><value>Deel een plaatje van deze zetting</value></data>
   <data name="Card_Failed" xml:space="preserve"><value>Het plaatje kon op dit apparaat niet worden gemaakt.</value></data>
   <data name="Card_Footer" xml:space="preserve"><value>Gezet op {0} met Dialed</value></data>
+  <data name="Passport_Title" xml:space="preserve"><value>Landen geprobeerd</value></data>
+  <data name="Passport_Progress" xml:space="preserve"><value>{0} van {1} koffielanden</value></data>
+  <data name="Passport_ToTry" xml:space="preserve"><value>Nog te proberen ({0})</value></data>
+  <data name="Passport_None" xml:space="preserve"><value>Zet koffie uit een nieuw land om je paspoort te beginnen.</value></data>
   <data name="Milestone_Title" xml:space="preserve"><value>Mijlpalen</value></data>
   <data name="Milestone_None" xml:space="preserve"><value>Zet een paar koffies en je eerste mijlpaal verschijnt hier.</value></data>
   <data name="Milestone_Brews" xml:space="preserve"><value>{0} zettingen</value></data>
