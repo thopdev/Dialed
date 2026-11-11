@@ -127,6 +127,27 @@ test('keeps working offline and when the connection returns', async ({ page, con
   await expect(page.getByRole('heading', { level: 1, name: homeGreeting })).toBeVisible();
 });
 
+test('the service worker caches the app shell and the barcode reader for offline use', async ({ page }) => {
+  await skipSetup(page);
+
+  // The published worker precaches every file in service-worker-assets.js (generated on publish); the zxing reader must be among them,
+  // or a barcode scan without a connection fails.
+  const cached = await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    const names = (await caches.keys()).filter(name => name.startsWith('offline-cache-'));
+    const urls: string[] = [];
+    for (const name of names) {
+      for (const request of await (await caches.open(name)).keys()) {
+        urls.push(new URL(request.url).pathname);
+      }
+    }
+    return urls;
+  });
+  expect(cached).toContain('/lib/zxing/reader/zxing_reader.wasm');
+  expect(cached).toContain('/lib/zxing/reader/index.js');
+  expect(cached).toContain('/index.html');
+});
+
 test('settings page opens with every section', async ({ page }) => {
   await skipSetup(page);
 
