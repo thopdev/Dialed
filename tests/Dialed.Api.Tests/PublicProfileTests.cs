@@ -192,9 +192,10 @@ public sealed class PublicProfileTests(ModeratedApp app) : IClassFixture<Moderat
     {
         var owner = await NewPerson("Olga");
         var asked = await NewPerson(Unique("Blocky"));
-        var blocker = await NewPerson("Bea");
+        var blocker = await NewPerson(Unique("Blocker")); // a unique name: a short one would also match other tests' people in the search below
         await SetProfile(owner, true);
         await SetProfile(asked, true);
+        await SetProfile(blocker, true);
         await Put(owner, "beans", "Public bean", VisibilityRules.Public);
 
         await owner.Client.PostAsync($"/friends/blocks/{blocker.User.Id}", null, Ct);
