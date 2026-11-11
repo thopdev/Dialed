@@ -54,4 +54,14 @@ public sealed class OriginMapTests : UiTestContext
             CountryShapes.ByIso2.ContainsKey(place.Iso2).ShouldBeTrue(place.Name);
         }
     }
+
+    [Fact]
+    public void Markers_can_link_to_the_beans_of_that_country()
+    {
+        var map = Render<OriginMap>(p => p.Add(m => m.Origins, [("Ethiopia", 3)]).Add(m => m.LinkToBeans, true));
+
+        var link = map.Find("a.dialed-origin-map-link");
+        link.GetAttribute("href").ShouldBe("beans?country=ET");
+        link.GetAttribute("aria-label").ShouldBe("Ethiopia: show beans");
+    }
 }

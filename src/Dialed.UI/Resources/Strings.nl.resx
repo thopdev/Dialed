@@ -999,4 +999,5 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} mensen</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>gedeeld door {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Kaart met een markering voor elke herkomst: {0}</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: toon bonen</value></data>
 </root>
