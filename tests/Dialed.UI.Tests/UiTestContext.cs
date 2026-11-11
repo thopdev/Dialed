@@ -29,6 +29,8 @@ public abstract class UiTestContext : BunitContext
 
     protected TestScanQueue ScanQueue { get; } = new();
 
+    protected TestCatalog Catalog { get; } = new();
+
     protected TestPushDevice PushDevice { get; } = new();
 
     protected TestPushServer PushServer { get; } = new();
@@ -103,6 +105,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IErrorSink>(ErrorSink);
         Services.AddSingleton<IShareService>(Shares);
         Services.AddDialedSync();
+        Services.AddSingleton<Dialed.Client.Catalog.ICatalogApi>(Catalog);
         Services.AddSingleton<IPushNotifications>(PushDevice);
         Services.AddSingleton<Dialed.Client.Push.IPushApi>(PushServer);
         Services.AddSingleton<Dialed.Client.Push.PushNotificationService>();
@@ -631,6 +634,30 @@ public abstract class UiTestContext : BunitContext
             Inventory = inventory;
             SentTimeZone = timeZone;
             return GetSettingsAsync(cancellationToken);
+        }
+    }
+
+    /// <summary>The shared catalog: set <see cref="Beans"/> and <see cref="Roasters"/>; <see cref="Down"/> stands in for no network.</summary>
+    protected sealed class TestCatalog : Dialed.Client.Catalog.ICatalogApi
+    {
+        public List<Dialed.Client.Catalog.CatalogBean> Beans { get; } = [];
+
+        public List<Dialed.Client.Catalog.CatalogRoaster> Roasters { get; } = [];
+
+        public List<string> Asked { get; } = [];
+
+        public bool Down { get; set; }
+
+        public Task<IReadOnlyList<Dialed.Client.Catalog.CatalogRoaster>> SearchRoastersAsync(string query, CancellationToken cancellationToken = default)
+        {
+            Asked.Add($"roasters:{query}");
+            return Task.FromResult<IReadOnlyList<Dialed.Client.Catalog.CatalogRoaster>>(Down ? [] : [.. Roasters.Where(r => r.Name.Contains(query, StringComparison.OrdinalIgnoreCase))]);
+        }
+
+        public Task<IReadOnlyList<Dialed.Client.Catalog.CatalogBean>> SearchBeansAsync(string? query, string? roaster, CancellationToken cancellationToken = default)
+        {
+            Asked.Add($"beans:{query}|{roaster}");
+            return Task.FromResult<IReadOnlyList<Dialed.Client.Catalog.CatalogBean>>(Down ? [] : [.. Beans.Where(b => string.IsNullOrEmpty(query) || b.Name.Contains(query, StringComparison.OrdinalIgnoreCase))]);
         }
     }
 

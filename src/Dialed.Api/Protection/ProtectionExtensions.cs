@@ -91,7 +91,7 @@ public static class ProtectionExtensions
             return Window($"reports:{user ?? address}", options.ReportsPerMinute);
         }
 
-        if (path.StartsWithSegments("/friends") || path.StartsWithSegments("/people"))
+        if (path.StartsWithSegments("/friends") || path.StartsWithSegments("/people") || path.StartsWithSegments("/catalog"))
         {
             return Window($"friends:{user ?? address}", options.FriendsRequestsPerMinute);
         }
