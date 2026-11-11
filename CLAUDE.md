@@ -35,4 +35,4 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 - Open, no Azure needed: nothing planned. Docs for the beta are in `docs/beta-testing.md`, the real-device list is `docs/iphone-checks.md`, the native app estimate is `docs/native-app.md`.
 - Open, owner: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (needs the address), #99 beta testers, real-device checks (#37, #49), the 30 real label photos for #84, and whether to close #110 (its sign-in test is merged; running against preview environments needs #22).
 - Open, Azure: #22, #24 to #28, #38 (Cosmos), #43 (timer Function), #79, #81, #88 and #90 (Application Insights), #111, #112 (email via #199), #198, #199.
-- Post-MVP (P2): #100, #102 to #106.
+- Post-MVP (P2), refined on 2026-11-11 and ready to build: #104 (barcode scan), #106 (public profiles) then #105 (bean catalog, needs #106), #100 (push part 1) then #259 (low stock and peak alerts). Azure part of push: #260. #261 (native extras: widgets, Shortcuts, Watch) waits for a native app (`docs/native-app.md`); it replaces #102 and #103.
