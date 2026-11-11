@@ -205,7 +205,7 @@ public sealed class InMemoryFriendStore : IFriendStore
 /// Following with approval. There is no search for people: you follow someone by their friend code, they accept or decline, and
 /// either side can end it. A blocked person cannot ask again and never learns that they are blocked.
 /// </summary>
-public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyncStore sync, TimeProvider time)
+public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyncStore sync, TimeProvider time, Push.INotifier notifier)
 {
     private const string CodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -252,6 +252,7 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         }
 
         await store.SaveFollowAsync(new Follow(userId, targetId, FollowStatus.Pending, time.GetUtcNow()), ct);
+        notifier.FollowRequested(userId, targetId);
         return new(FriendOutcome.Ok, new PersonDto(target.Id, target.DisplayName));
     }
 
@@ -292,6 +293,7 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         }
 
         await store.SaveFollowAsync(pending with { Status = FollowStatus.Accepted }, ct);
+        notifier.FollowAccepted(userId, followerId);
         return new(FriendOutcome.Ok, new PersonDto(follower.Id, follower.DisplayName));
     }
 

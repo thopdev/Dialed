@@ -63,6 +63,7 @@ public sealed class AccountDeleter(
     UserManager<AccountUser> accounts,
     IHouseholdStore households,
     IFriendStore friends,
+    Push.IPushStore push,
     IRefreshTokenStore sessions,
     ISyncStore sync)
 {
@@ -96,6 +97,7 @@ public sealed class AccountDeleter(
         }
 
         await friends.RemoveUserAsync(userId, ct);
+        await push.RemoveUserAsync(userId, ct);
         await sessions.RevokeUserAsync(userId, ct);
         if (await accounts.FindByIdAsync(userId) is { } account)
         {

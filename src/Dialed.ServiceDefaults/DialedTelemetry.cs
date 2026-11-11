@@ -35,4 +35,7 @@ public static class DialedTelemetry
 
     /// <summary>Rating of the brew made with an applied suggestion minus the rating of the brew it was about (#89).</summary>
     public static readonly Histogram<double> AiSuggestionRatingChange = Meter.CreateHistogram<double>("dialed.ai.suggestion.rating_change", unit: "{star}", description: "Rating change of the next brew after an applied suggestion.");
+
+    /// <summary>Push notifications by event type and outcome (sent, gone, failed, skipped), see #100. Never carries a user id or endpoint.</summary>
+    public static readonly Counter<long> PushSent = Meter.CreateCounter<long>("dialed.push.sent", description: "Push notifications, by type and outcome.");
 }
