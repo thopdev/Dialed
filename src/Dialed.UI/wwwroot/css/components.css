@@ -2778,6 +2778,8 @@ a.people-row-name {
 .dialed-origin-map-link:focus-visible .dialed-origin-map-pin {
     stroke: var(--colorStrokeFocus2);
     stroke-width: 4;
+}
+
 .dialed-flavor {
     display: flex;
     flex-wrap: wrap;
