@@ -1,7 +1,11 @@
 namespace Dialed.Domain.Geography;
 
 /// <summary>A country the origin map can place: its English name, ISO 3166 code, a point near its middle (or its coffee growing area) and other names people type for it.</summary>
-public sealed record CountryPlace(string Name, string Iso2, double Latitude, double Longitude, IReadOnlyList<string> Aliases);
+public sealed record CountryPlace(string Name, string Iso2, double Latitude, double Longitude, IReadOnlyList<string> Aliases)
+{
+    /// <summary>The flag as an emoji (two regional indicator letters). Some systems (Windows) show the letters instead, so show the name next to it.</summary>
+    public string Flag => string.Concat(Iso2.ToUpperInvariant().Select(c => char.ConvertFromUtf32(0x1F1E6 + (c - 'A'))));
+}
 
 /// <summary>
 /// Finds the country behind the free text in a bean's origin ("Ethiopia", "ethiopië", "Costa Rica ", "Hawaii"). Matching ignores case, accents and
@@ -86,6 +90,12 @@ public static class CountryCatalog
         new("Trinidad and Tobago", "TT", 10.7, -61.2, []),
         new("Congo (Republic)", "CG", -0.7, 15.2, ["Republic of the Congo", "Congo-Brazzaville"]),
     ];
+
+    /// <summary>Countries on the map where coffee is not grown for sale, only drunk: the rest is the passport's list of coffee countries.</summary>
+    private static readonly HashSet<string> NotGrowing = ["NL", "DE", "IT", "FR", "ES", "GB", "JP", "KR", "SA", "NZ"];
+
+    /// <summary>The coffee growing countries the origin passport lists, sorted by name.</summary>
+    public static IReadOnlyList<CountryPlace> Producers { get; } = [.. All.Where(p => !NotGrowing.Contains(p.Iso2)).OrderBy(p => p.Name, StringComparer.Ordinal)];
 
     private static readonly Dictionary<string, CountryPlace> ByName = Build();
 

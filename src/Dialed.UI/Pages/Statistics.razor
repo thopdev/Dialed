@@ -68,6 +68,7 @@ else
 
     <Favourites Id="stats-origins" Title="@L["Stats_Origins"]" Items="stats.Origins" Href="@(o => $"beans?country={Uri.EscapeDataString(o.Name)}")" />
     <OriginMap Id="stats-origin-map" LinkToBeans="true" Origins="@([.. stats.Origins.Select(o => (o.Name, o.Brews))])" />
+    <OriginPassport Countries="@([.. stats.Origins.Select(o => o.Name)])" />
     <Favourites Id="stats-roasters" Title="@L["Stats_Roasters"]" Items="stats.Roasters" />
     <Favourites Id="stats-processes" Title="@L["Stats_Processes"]" Items="stats.Processes" />
 
