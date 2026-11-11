@@ -70,6 +70,10 @@ Needs a deployed API with real VAPID keys (#260), or the API run locally and rea
 - [ ] Scan a label of a bean I do not have: catalog candidates appear under the match section and **Use this** fills the origin fields.
 - [ ] In airplane mode none of this shows and adding a bean works as before.
 
+## Brew card
+- [ ] Brew history > a brew of mine > **Share a picture of this brew**: the iOS share sheet opens with a PNG (Save Image, Messages and Instagram accept it), the card is readable and not cut off, and long bean names wrap.
+- [ ] In the installed PWA and in Safari; in airplane mode the card still appears (nothing is fetched).
+
 ## Accessibility (#49)
 - [ ] VoiceOver reads every control with a name, in light and dark mode: Home, Brew, Beans, Recipes, History, Settings, People, Scan.
 - [ ] The Copy button reads the item's name; feed rows read as one sentence; the rating reads "4 of 5 stars".
