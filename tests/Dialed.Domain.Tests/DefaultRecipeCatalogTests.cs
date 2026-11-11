@@ -29,6 +29,21 @@ public sealed class DefaultRecipeCatalogTests
     }
 
     [Fact]
+    public void Hario_switch_default_steeps_with_the_valve_closed_then_drains()
+    {
+        var method = BrewMethodCatalog.Default.Get("hario-switch");
+        var recipe = DefaultRecipeCatalog.Default.ForMethod("hario-switch")!;
+
+        method.Name.ShouldBe("Hario Switch");
+        method.Uses(BrewParameter.Steps).ShouldBeTrue();
+        method.Uses(BrewParameter.Filter).ShouldBeTrue();
+        recipe.Steps!.First().Kind.ShouldBe(RecipeStepKind.Pour);
+        recipe.Steps!.Last().Kind.ShouldBe(RecipeStepKind.Wait);
+        recipe.Steps!.Last().Note.ShouldBe("Open the valve");
+        recipe.TimeS.ShouldBe(recipe.Steps!.Last().AtS + recipe.Steps!.Last().DurationS);
+    }
+
+    [Fact]
     public void Every_default_has_a_dose_and_liquid_and_only_what_its_method_uses()
     {
         foreach (var recipe in DefaultRecipeCatalog.Default.Recipes)

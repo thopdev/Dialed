@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "methods": [
     { "code": "espresso", "name": "Espresso", "category": "espresso", "parameters": ["dose", "yield", "grind", "temperature", "time", "preinfusion"] },
     { "code": "v60", "name": "Hario V60", "category": "pourOver", "parameters": ["dose", "water", "grind", "temperature", "time", "steps", "filter"] },
@@ -9,6 +9,7 @@
     { "code": "aeropress", "name": "AeroPress", "category": "immersion", "parameters": ["dose", "water", "grind", "temperature", "time", "steps", "filter"] },
     { "code": "french-press", "name": "French press", "category": "immersion", "parameters": ["dose", "water", "grind", "temperature", "time"] },
     { "code": "clever-dripper", "name": "Clever Dripper", "category": "immersion", "parameters": ["dose", "water", "grind", "temperature", "time", "filter"] },
+    { "code": "hario-switch", "name": "Hario Switch", "category": "immersion", "parameters": ["dose", "water", "grind", "temperature", "time", "steps", "filter"] },
     { "code": "moka-pot", "name": "Moka pot", "category": "other", "parameters": ["dose", "water", "grind"] },
     { "code": "cold-brew", "name": "Cold brew", "category": "coldBrew", "parameters": ["dose", "water", "grind", "time", "filter"] },
     { "code": "siphon", "name": "Siphon", "category": "other", "parameters": ["dose", "water", "grind", "temperature", "time", "filter"] },
