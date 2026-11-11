@@ -2814,61 +2814,65 @@ a.people-row-name {
 }
 
 .dialed-flavor-slice.dialed-flavor-fruity {
-    stroke: var(--colorPaletteRedBackground3);
+    stroke: var(--colorPaletteCranberryBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-fruity {
-    background: var(--colorPaletteRedBackground3);
+    background: var(--colorPaletteCranberryBackground2);
 }
 
 .dialed-flavor-slice.dialed-flavor-floral {
-    stroke: var(--colorPaletteBerryBackground3);
+    stroke: var(--colorPaletteLilacBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-floral {
-    background: var(--colorPaletteBerryBackground3);
+    background: var(--colorPaletteLilacBackground2);
 }
 
 .dialed-flavor-slice.dialed-flavor-sweet {
-    stroke: var(--colorPaletteYellowBackground3);
+    stroke: var(--colorPaletteGoldBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-sweet {
-    background: var(--colorPaletteYellowBackground3);
+    background: var(--colorPaletteGoldBackground2);
 }
 
 .dialed-flavor-slice.dialed-flavor-nuttycocoa {
-    stroke: var(--colorPaletteBrownForeground2);
+    stroke: var(--colorPaletteBrownBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-nuttycocoa {
-    background: var(--colorPaletteBrownForeground2);
+    background: var(--colorPaletteBrownBackground2);
 }
 
 .dialed-flavor-slice.dialed-flavor-spices {
-    stroke: var(--colorPaletteDarkOrangeBackground3);
+    stroke: var(--colorPalettePeachBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-spices {
-    background: var(--colorPaletteDarkOrangeBackground3);
+    background: var(--colorPalettePeachBackground2);
 }
 
 .dialed-flavor-slice.dialed-flavor-green {
-    stroke: var(--colorPaletteGreenBackground3);
+    stroke: var(--colorPaletteForestBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-green {
-    background: var(--colorPaletteGreenBackground3);
+    background: var(--colorPaletteForestBackground2);
 }
 
 .dialed-flavor-slice.dialed-flavor-sourfermented {
-    stroke: var(--colorPalettePurpleForeground2);
+    stroke: var(--colorPaletteLavenderBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-sourfermented {
-    background: var(--colorPalettePurpleForeground2);
+    background: var(--colorPaletteLavenderBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-roasted {
+    stroke: var(--colorPalettePlatinumBackground2);
 }
 
 .dialed-flavor-swatch.dialed-flavor-roasted {
-    background: var(--colorNeutralForeground3);
+    background: var(--colorPalettePlatinumBackground2);
 }
