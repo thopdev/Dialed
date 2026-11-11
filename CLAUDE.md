@@ -27,10 +27,12 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 - UI PRs show what changed: a "Screenshots" section in the PR description with before (current `main`) and after at iPhone width (about 390 px), light mode, plus a short GIF for anything interactive. Dark mode and iPad go in one collapsed sheet. Keep the images on the code-free `pr-media` branch (one folder per PR, never merged) and link them with `?raw=true`.
 
 ## Where things stand
-- Waves 0 to 3 done (core app, accounts, households, friends, sync, passkeys, security, error reporting, accessibility pass, install metadata, privacy page, feedback, statistics, CSV import, label scan with a fake AI client, AI quotas).
+- Waves 0 to 3 done (core app, accounts, households with create/rename/delete and multi-use invites, friends with copy and an activity feed, sync with a cross-tab lock, passkeys, security, error reporting including JavaScript errors, accessibility pass, install metadata, privacy page, feedback, statistics, CSV import).
+- Photos: upload queue with short-lived URLs (#68), metadata stripping and thumbnails (#69), offline label scans read by photo id (#83).
+- AI features run on offline rules behind the kill switch and quotas (`IDialInRefiner`, `IRecipeSuggester`, `ILabelExtractor` with fakes): label scan, dial-in advice and assistant, starting recipe, acceptance metrics per prompt version. The real Claude calls need Azure (#27, #79, #81).
 - Visual polish (#213 to #216, on the shared components of #217) is done and merged; preferences and finished setup are saved on the device (`StoredUserPreferences`).
 - Issue hygiene: an issue whose non-Azure scope is merged but has Azure or device work left stays open with a "Status" comment listing what is left. Use `Part of #N` in PRs that do not finish an issue, and `Closes #N` only when every acceptance criterion is met.
-- Open, no Azure needed: #86 dial-in assistant, #69 thumbnails, #197 lockout in the database, #84 golden-set harness, #39 cross-tab sync lock, #70 create/rename/delete household, #110 sign-in smoke test.
-- Open, owner: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (needs the address), #99 beta testers, real-device checks (#37, #49).
+- Open, no Azure needed: nothing planned. Docs for the beta are in `docs/beta-testing.md`, the real-device list is `docs/iphone-checks.md`, the native app estimate is `docs/native-app.md`.
+- Open, owner: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (needs the address), #99 beta testers, real-device checks (#37, #49), the 30 real label photos for #84, and whether to close #110 (its sign-in test is merged; running against preview environments needs #22).
 - Open, Azure: #22, #24 to #28, #38 (Cosmos), #43 (timer Function), #79, #81, #88 and #90 (Application Insights), #111, #112 (email via #199), #198, #199.
-- Post-MVP (P2): #100, #102 to #106, #109.
+- Post-MVP (P2): #100, #102 to #106.
