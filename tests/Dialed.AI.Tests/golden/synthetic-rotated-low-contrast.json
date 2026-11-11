@@ -1,0 +1,18 @@
+{
+  "id": "synthetic-rotated-low-contrast",
+  "image": "synthetic-rotated-low-contrast.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "Tilted 7 degrees with low contrast. Geisha is part of the name, not a printed variety, so varieties stays empty. The only date is taken as the roast date.",
+  "tags": ["rotated", "low-contrast"],
+  "expected": {
+    "name": "Volcan Geisha",
+    "roaster": "Quiet Hour Coffee",
+    "country": "Panama",
+    "region": "Boquete",
+    "process": "Natural",
+    "tastingNotes": "jasmine, bergamot, peach",
+    "roastDate": "2026-08-30",
+    "weightG": "100"
+  }
+}

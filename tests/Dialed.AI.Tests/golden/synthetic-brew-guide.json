@@ -1,0 +1,17 @@
+{
+  "id": "synthetic-brew-guide",
+  "image": "synthetic-brew-guide.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "Light text on dark. Distractors: the brew guide's 15 g dose is not the bag weight, and the best-before date is not a roast date.",
+  "tags": ["distractor", "dark"],
+  "expected": {
+    "name": "Lake Kivu Lot 7",
+    "roaster": "Lantern Coffee",
+    "country": "Rwanda",
+    "region": "Nyamasheke",
+    "process": "Washed",
+    "varieties": "Red Bourbon",
+    "weightG": "250"
+  }
+}

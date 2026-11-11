@@ -1,4 +1,5 @@
 using Dialed.Api.Configuration;
+using Dialed.Api.Data;
 using Microsoft.AspNetCore.Identity;
 
 namespace Dialed.Api.Passkeys;
@@ -16,7 +17,8 @@ public static class PasskeyExtensions
         services.AddSingleton<ICeremonyNonces, InMemoryCeremonyNonces>();
         services.AddScoped<PasskeyCeremonies>();
         services.AddScoped<RecoveryService>();
-        services.AddSingleton<IEmailRecoveryStore, InMemoryEmailRecoveryStore>();
+        // Lockout, send cooldown and email codes must hold across restarts and instances (#197).
+        services.AddCosmosOrInMemory<IEmailRecoveryStore, CosmosEmailRecoveryStore, InMemoryEmailRecoveryStore>(configuration);
         services.AddSingleton<OutboxEmailSender>();
         services.AddSingleton<IEmailSender>(sp => sp.GetRequiredService<OutboxEmailSender>());
 
