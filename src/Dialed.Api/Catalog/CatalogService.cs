@@ -44,6 +44,11 @@ public sealed record CatalogEntryAdminDto(string Kind, string Id, string Name, i
 
 public sealed record CatalogMergeRequest(string FromId, string IntoId);
 
+public sealed record CatalogUnmergeRequest(string KeyA, string KeyB);
+
+/// <summary>The owner's rules as they stand, for the moderation tools.</summary>
+public sealed record CatalogRulesDto(IReadOnlyList<string> HiddenKeys, IReadOnlyList<CatalogUnmergeRequest> Merges);
+
 /// <summary>The newest build, kept apart from user data: no user ids, household ids or links back to contributors.</summary>
 public interface ICatalogStore
 {
@@ -51,7 +56,10 @@ public interface ICatalogStore
 
     DateTimeOffset? BuiltAt { get; }
 
-    void Save(BeanCatalog catalog, DateTimeOffset builtAt);
+    /// <summary>Entries the owner hid, as the last build found them, so they can be looked at and brought back.</summary>
+    IReadOnlyList<CatalogEntryAdminDto> Hidden { get; }
+
+    void Save(BeanCatalog catalog, DateTimeOffset builtAt, IReadOnlyList<CatalogEntryAdminDto> hidden);
 }
 
 public sealed class InMemoryCatalogStore : ICatalogStore
@@ -59,6 +67,18 @@ public sealed class InMemoryCatalogStore : ICatalogStore
     private readonly Lock gate = new();
     private BeanCatalog current = BeanCatalog.Empty;
     private DateTimeOffset? builtAt;
+    private IReadOnlyList<CatalogEntryAdminDto> hidden = [];
+
+    public IReadOnlyList<CatalogEntryAdminDto> Hidden
+    {
+        get
+        {
+            lock (gate)
+            {
+                return hidden;
+            }
+        }
+    }
 
     public BeanCatalog Current
     {
@@ -82,11 +102,11 @@ public sealed class InMemoryCatalogStore : ICatalogStore
         }
     }
 
-    public void Save(BeanCatalog catalog, DateTimeOffset at)
+    public void Save(BeanCatalog catalog, DateTimeOffset at, IReadOnlyList<CatalogEntryAdminDto> hiddenEntries)
     {
         lock (gate)
         {
-            (current, builtAt) = (catalog, at);
+            (current, builtAt, hidden) = (catalog, at, hiddenEntries);
         }
     }
 }
@@ -99,6 +119,12 @@ public interface ICatalogRulesStore
     void Hide(IEnumerable<string> keys);
 
     void Merge(string keyA, string keyB);
+
+    /// <summary>Takes the keys off the hidden list. <c>false</c> when none of them was hidden.</summary>
+    bool Unhide(IEnumerable<string> keys);
+
+    /// <summary>Removes one merge rule. <c>false</c> when there was none.</summary>
+    bool Unmerge(string keyA, string keyB);
 }
 
 public sealed class InMemoryCatalogRulesStore : ICatalogRulesStore
@@ -120,6 +146,22 @@ public sealed class InMemoryCatalogRulesStore : ICatalogRulesStore
         lock (gate)
         {
             hidden.UnionWith(keys);
+        }
+    }
+
+    public bool Unhide(IEnumerable<string> keys)
+    {
+        lock (gate)
+        {
+            return keys.Aggregate(false, (any, key) => hidden.Remove(key) || any);
+        }
+    }
+
+    public bool Unmerge(string keyA, string keyB)
+    {
+        lock (gate)
+        {
+            return merges.Remove((keyA, keyB));
         }
     }
 
@@ -230,7 +272,23 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
     public async Task RebuildAsync(CancellationToken ct = default)
     {
         var (beans, roasters) = await source.ReadAsync(ct);
-        store.Save(CatalogBuilder.Build(beans, roasters, options.Value.MinContributors, rules.Get()), time.GetUtcNow());
+        var current = rules.Get();
+        var visible = CatalogBuilder.Build(beans, roasters, options.Value.MinContributors, current);
+
+        // The same build without the hide rules shows what was hidden, so it can be looked at and brought back (merges still apply).
+        IReadOnlyList<CatalogEntryAdminDto> hidden = [];
+        if (current.HiddenKeys.Count > 0)
+        {
+            var full = CatalogBuilder.Build(beans, roasters, options.Value.MinContributors, current with { HiddenKeys = new HashSet<string>() });
+            hidden =
+            [
+                .. full.Roasters.Where(r => r.Keys.Any(current.HiddenKeys.Contains)).Select(r => new CatalogEntryAdminDto("roaster", r.Id, r.Name, r.People, r.Keys))
+                    .Concat(full.Beans.Where(b => b.Keys.Any(current.HiddenKeys.Contains)).Select(b => new CatalogEntryAdminDto("bean", b.Id, b.Name, b.People, b.Keys)))
+                    .OrderBy(e => e.Kind, StringComparer.Ordinal).ThenBy(e => e.Name, StringComparer.CurrentCultureIgnoreCase),
+            ];
+        }
+
+        store.Save(visible, time.GetUtcNow(), hidden);
     }
 
     public IReadOnlyList<CatalogRoasterDto> SearchRoasters(string? query)
@@ -294,6 +352,39 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
         }
 
         rules.Hide(entry.Keys);
+        await RebuildAsync(ct);
+        return true;
+    }
+
+    /// <summary>The entries that are hidden now (with their keys), most recently built state.</summary>
+    public IReadOnlyList<CatalogEntryAdminDto> HiddenEntries() => store.Hidden;
+
+    /// <summary>Brings a hidden entry back (it shows again after the rebuild this triggers, if it still has enough people).</summary>
+    public async Task<bool> UnhideAsync(string id, CancellationToken ct = default)
+    {
+        if (store.Hidden.FirstOrDefault(e => e.Id == id) is not { } entry || !rules.Unhide(entry.Keys))
+        {
+            return false;
+        }
+
+        await RebuildAsync(ct);
+        return true;
+    }
+
+    public CatalogRulesDto Rules()
+    {
+        var current = rules.Get();
+        return new CatalogRulesDto([.. current.HiddenKeys.Order(StringComparer.Ordinal)], [.. current.Merges.Select(m => new CatalogUnmergeRequest(m.A, m.B))]);
+    }
+
+    /// <summary>Takes a merge back; the two entries separate again at the rebuild this triggers.</summary>
+    public async Task<bool> UnmergeAsync(string keyA, string keyB, CancellationToken ct = default)
+    {
+        if (!rules.Unmerge(keyA, keyB))
+        {
+            return false;
+        }
+
         await RebuildAsync(ct);
         return true;
     }
