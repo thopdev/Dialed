@@ -1,0 +1,192 @@
+@page "/history/compare/{FirstId}/{SecondId}"
+@using System.Globalization
+@using Dialed.Client.Data
+@using Dialed.Client.Preferences
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Brew> BrewStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
+@inject UnitFormatter Units
+
+<PageTitle>@L["Compare_Title"]</PageTitle>
+
+@* Two brews side by side (#compare): the numbers, how they tasted and the rating, with what moved from the first to the second. *@
+<PageHeader Title="@L["Compare_Title"]" BackHref="@($"history/{FirstId}")" />
+
+@if (!loaded)
+{
+    <Loading IsLoading="true" />
+}
+else if (first is null || second is null)
+{
+    <EmptyState Message="@L["Compare_NotFound"]" />
+}
+else
+{
+    <p id="compare-bean" class="dialed-muted">@BeanName(first)@(BeanName(first) == BeanName(second) ? "" : $" · {BeanName(second)}")</p>
+
+    <table id="compare-table" class="dialed-compare dialed-compare-brews">
+        <thead>
+            <tr>
+                <th><span class="dialed-visually-hidden">@L["History_ParameterColumn"]</span></th>
+                <th scope="col"><a id="compare-first-link" href="@($"history/{first.Id}")">@Heading(first)</a></th>
+                <th scope="col"><a id="compare-second-link" href="@($"history/{second.Id}")">@Heading(second)</a></th>
+                <th scope="col">@L["Compare_Change"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-parameter="method">
+                <th scope="row">@L["Compare_Method"]</th>
+                <td>@MethodName(first.MethodCode)</td>
+                <td>@MethodName(second.MethodCode)</td>
+                <td>@(string.Equals(first.MethodCode, second.MethodCode, StringComparison.OrdinalIgnoreCase) ? "–" : L["Compare_Different"].Value)</td>
+            </tr>
+            @foreach (var row in rows)
+            {
+                <tr class="@(row.Differs ? "differs" : null)" data-parameter="@row.Parameter">
+                    <th scope="row">@ParameterLabel(row.Parameter)</th>
+                    <td>@Format(row.Parameter, row.Planned)</td>
+                    <td>@Format(row.Parameter, row.Actual)</td>
+                    <td>@ChangeText(row)</td>
+                </tr>
+            }
+            <tr class="@(first.Rating != second.Rating ? "differs" : null)" data-parameter="rating">
+                <th scope="row">@L["Compare_Rating"]</th>
+                <td>@RatingText(first.Rating)</td>
+                <td>@RatingText(second.Rating)</td>
+                <td>@(first.Rating is { } ratingA && second.Rating is { } ratingB && ratingA != ratingB ? Signed(ratingB - ratingA, "") : "–")</td>
+            </tr>
+            @foreach (var axis in Axes)
+            {
+                var a = axis.Of(first.Taste);
+                var b = axis.Of(second.Taste);
+                <tr class="@(a != b ? "differs" : null)" data-parameter="taste-@axis.Key">
+                    <th scope="row">@L[axis.LabelKey]</th>
+                    <td>@TasteWord(axis, a)</td>
+                    <td>@TasteWord(axis, b)</td>
+                    <td>@(a == b ? "–" : Signed(b - a, ""))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (!string.IsNullOrWhiteSpace(first.Notes) || !string.IsNullOrWhiteSpace(second.Notes))
+    {
+        <SectionHeader Title="@L["History_NotesAndPhotos"]" />
+        <div id="compare-notes" class="dialed-compare-notes">
+            @foreach (var brew in new[] { first, second })
+            {
+                @if (!string.IsNullOrWhiteSpace(brew.Notes))
+                {
+                    <Card class="dialed-card dialed-notes-card"><strong>@Heading(brew)</strong><p class="dialed-vendor-notes">@brew.Notes</p></Card>
+                }
+            }
+        </div>
+    }
+}
+
+@code {
+    private sealed record TasteAxis(string Key, string LabelKey, string LowKey, string HighKey, Func<Taste, int> Of);
+
+    private static readonly TasteAxis[] Axes =
+    [
+        new("acidity", "Taste_Acidity", "Taste_Sour", "Taste_Bitter", t => t.Acidity),
+        new("strength", "Taste_Strength", "Taste_Weak", "Taste_Strong", t => t.Strength),
+        new("body", "Taste_Body", "Taste_Thin", "Taste_Heavy", t => t.Body),
+        new("sweetness", "Taste_Sweetness", "Taste_Flat", "Taste_Sweet", t => t.Sweetness),
+    ];
+
+    private bool loaded;
+    private Brew? first;
+    private Brew? second;
+    private IReadOnlyList<ParameterDelta> rows = [];
+    private IReadOnlyList<Bag> bags = [];
+    private IReadOnlyList<Bean> beans = [];
+
+    [Parameter]
+    public string FirstId { get; set; } = "";
+
+    [Parameter]
+    public string SecondId { get; set; } = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var brews = await BrewStore.ListAsync();
+        bags = await BagStore.ListAsync();
+        beans = await BeanStore.ListAsync();
+        first = brews.FirstOrDefault(b => b.Id == FirstId && !b.Deleted);
+        second = brews.FirstOrDefault(b => b.Id == SecondId && !b.Deleted);
+        rows = first is null || second is null ? [] : BrewHistory.CompareBrews(first, second);
+        loaded = true;
+    }
+
+    private string BeanName(Brew brew)
+    {
+        var beanId = bags.FirstOrDefault(b => b.Id == brew.BagId)?.BeanId;
+        return beans.FirstOrDefault(b => b.Id == beanId)?.Name ?? L["Bag_UnknownBean"].Value;
+    }
+
+    /// <summary>The column heading of a brew: its date and time, so two brews from the same day still differ.</summary>
+    private static string Heading(Brew brew)
+    {
+        var local = brew.BrewedAt.ToLocalTime();
+        return $"{local.ToString("d MMM", CultureInfo.CurrentCulture)}, {local.ToString("t", CultureInfo.CurrentCulture)}";
+    }
+
+    private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
+
+    private string ParameterLabel(BrewParameter parameter) => parameter switch
+    {
+        BrewParameter.Dose => L["Recipe_Dose"].Value,
+        BrewParameter.Water => L["Recipe_Water"].Value,
+        BrewParameter.Yield => L["Recipe_Yield"].Value,
+        BrewParameter.Grind => L["Recipe_Grind"].Value,
+        BrewParameter.Temperature => L["Recipe_Temp"].Value,
+        _ => L["History_Time"].Value,
+    };
+
+    private string Format(BrewParameter parameter, decimal? value)
+    {
+        if (value is not { } v)
+        {
+            return "–";
+        }
+
+        return parameter switch
+        {
+            BrewParameter.Dose or BrewParameter.Water or BrewParameter.Yield => Units.Weight(v),
+            BrewParameter.Temperature => Units.Temperature(v),
+            BrewParameter.Time => $"{v:0} s",
+            _ => Dialed.Domain.Equipment.GrindScale.Format(v),
+        };
+    }
+
+    /// <summary>"+1 g", "-2", "-3 s": what moved from the first brew to the second, in the person's units. "–" when nothing moved or only one brew has the value.</summary>
+    private string ChangeText(ParameterDelta row)
+    {
+        if (row.Change is not { } change || change == 0)
+        {
+            return "–";
+        }
+
+        var size = Math.Abs(change);
+        var text = row.Parameter switch
+        {
+            BrewParameter.Dose or BrewParameter.Water or BrewParameter.Yield => Units.Weight(size),
+            // A difference of temperatures is not converted like a temperature (no 32 degrees offset).
+            BrewParameter.Temperature => Units.System == Dialed.Domain.Units.UnitSystem.Imperial ? $"{size * 9m / 5m:0.#} °F" : $"{size:0.#} °C",
+            BrewParameter.Time => $"{size:0} s",
+            _ => Dialed.Domain.Equipment.GrindScale.Format(size),
+        };
+        return (change < 0 ? "−" : "+") + text;
+    }
+
+    private static string Signed(int value, string unit) => (value < 0 ? "−" : "+") + Math.Abs(value) + unit;
+
+    private static string RatingText(int? rating) => rating is { } r ? $"{r} ★" : "–";
+
+    private string TasteWord(TasteAxis axis, int value) =>
+        value == 0 ? L["History_Balanced"].Value : value < 0 ? $"{L[axis.LowKey]} {-value}" : $"{L[axis.HighKey]} {value}";
+}

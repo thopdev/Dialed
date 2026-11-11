@@ -1038,4 +1038,13 @@
   <data name="Flavor_Roasted" xml:space="preserve"><value>Gebrand</value></data>
   <data name="Flavor_GreenVegetative" xml:space="preserve"><value>Groen en plantaardig</value></data>
   <data name="Flavor_SourFermented" xml:space="preserve"><value>Zuur en gefermenteerd</value></data>
+  <data name="Compare_Title" xml:space="preserve"><value>Brews vergelijken</value></data>
+  <data name="Compare_With" xml:space="preserve"><value>Vergelijk met een andere brew van deze boon</value></data>
+  <data name="Compare_Go" xml:space="preserve"><value>Vergelijken</value></data>
+  <data name="Compare_Change" xml:space="preserve"><value>Verschil</value></data>
+  <data name="Compare_Method" xml:space="preserve"><value>Methode</value></data>
+  <data name="Compare_Different" xml:space="preserve"><value>Anders</value></data>
+  <data name="Compare_Rating" xml:space="preserve"><value>Beoordeling</value></data>
+  <data name="Compare_NotFound" xml:space="preserve"><value>Een van deze brews bestaat niet meer.</value></data>
+  <data name="Compare_Pick" xml:space="preserve"><value>Kies een brew</value></data>
 </root>

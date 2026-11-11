@@ -156,6 +156,7 @@ public sealed class AccessibilityTests : UiTestContext
     [Fact] public void Settings_is_labeled() => Audit<Settings>();
 
     [Fact] public void Statistics_is_labeled() => Audit<Statistics>();
+    [Fact] public void HistoryCompare_is_labeled() => Audit<HistoryCompare>();
 
     [Fact] public void More_is_labeled() => Audit<More>();
 
