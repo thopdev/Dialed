@@ -802,6 +802,8 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>Een stand op de schaal van je molen, om op smaak bij te stellen.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Heel verse bonen geven veel gas af, dus geef het wat tijd.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>Een gangbare verhouding koffie en vloeistof voor deze methode.</value></data>
+  <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>synchroniseren in een ander tabblad...</value></data>
+  <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Synchroniseren in een ander tabblad</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Hernoemen</value></data>
   <data name="Household_RenameNamed" xml:space="preserve"><value>{0} hernoemen</value></data>
   <data name="Household_Name" xml:space="preserve"><value>Naam van het huishouden</value></data>

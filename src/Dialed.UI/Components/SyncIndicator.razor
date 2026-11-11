@@ -12,6 +12,14 @@
         <span>@string.Format(L["Sync_Restoring"].Value, Sync.RestoringCount)</span>
     </div>
 }
+else if (Sync.Status == SyncStatus.SyncingElsewhere)
+{
+    @* Only one tab syncs at a time (#39); this one syncs once the other is done. *@
+    <div id="sync-other-tab" class="dialed-sync-indicator" role="status">
+        <FluentSpinner />
+        <span>@L["Sync_Indicator_OtherTab"]</span>
+    </div>
+}
 else if (Sync.PendingCount > 0 && Sync.Status != SyncStatus.NeedsSignIn)
 {
     @if (Sync.HasStuckChanges)

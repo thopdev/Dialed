@@ -803,6 +803,8 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>A setting on your grinder's scale, to adjust by taste.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Very fresh beans give off a lot of gas, so give it a little time.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>A usual ratio of coffee to liquid for this method.</value></data>
+  <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>syncing in another tab...</value></data>
+  <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Syncing in another tab</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Rename</value></data>
   <data name="Household_RenameNamed" xml:space="preserve"><value>Rename {0}</value></data>
   <data name="Household_Name" xml:space="preserve"><value>Household name</value></data>
