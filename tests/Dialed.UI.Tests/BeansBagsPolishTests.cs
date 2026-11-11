@@ -229,4 +229,35 @@ public sealed class BeansBagsPolishTests : UiTestContext
         form.Find("#bag-weight").GetAttribute("inputmode").ShouldBe("decimal");
         form.Find("form > .dialed-sticky-actions button[type=submit]").ShouldNotBeNull();
     }
+
+    // ---- Origin country filter ----------------------------------------------------------------
+
+    [Fact]
+    public async Task The_list_opens_narrowed_to_the_country_from_the_link()
+    {
+        await Beans.SaveAsync(new Bean { Name = "Guji", Origin = new BeanOrigin("Ethiopia") }, Ct);
+        await Beans.SaveAsync(new Bean { Name = "Nyeri", Origin = new BeanOrigin("Kenya") }, Ct);
+        Services.GetRequiredService<NavigationManager>().NavigateTo("beans?country=ET");
+
+        var page = Render<Beans>();
+
+        page.WaitForAssertion(() => page.FindAll(".dialed-row-link").Count.ShouldBe(1));
+        page.Markup.ShouldContain("Guji");
+        page.Markup.ShouldNotContain("Nyeri");
+        page.Find("#bean-filter-country").GetAttribute("value").ShouldBe("ET");
+    }
+
+    [Fact]
+    public async Task Choosing_a_country_in_the_filters_narrows_the_list()
+    {
+        await Beans.SaveAsync(new Bean { Name = "Guji", Origin = new BeanOrigin("Ethiopia") }, Ct);
+        await Beans.SaveAsync(new Bean { Name = "Nyeri", Origin = new BeanOrigin("Kenya") }, Ct);
+        var page = Render<Beans>();
+        page.WaitForAssertion(() => page.FindAll(".dialed-row-link").Count.ShouldBe(2));
+
+        page.Find("#bean-filter-country").Change("KE");
+
+        page.FindAll(".dialed-row-link").Count.ShouldBe(1);
+        page.Markup.ShouldContain("Nyeri");
+    }
 }
