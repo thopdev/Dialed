@@ -644,3 +644,12 @@ export async function barcodeDecodeImage(base64) {
     const results = await reader.readBarcodes(new Blob([bytes]), { formats: ['EAN13', 'EAN8', 'UPCA', 'UPCE', 'Code128', 'QRCode'], tryHarder: true, maxNumberOfSymbols: 1 });
     return results.find(r => r.isValid && r.text)?.text ?? null;
 }
+
+// The device's IANA time zone, so stock alerts arrive around 08:00 local time (#259).
+export function pushTimeZone() {
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+    } catch {
+        return null;
+    }
+}

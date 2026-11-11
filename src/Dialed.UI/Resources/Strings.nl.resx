@@ -864,7 +864,7 @@
   <data name="Push_Household" xml:space="preserve"><value>Iemand lid wordt van mijn huishouden</value></data>
   <data name="Push_Disable" xml:space="preserve"><value>Uitzetten op dit toestel</value></data>
   <data name="Privacy_Push_Title" xml:space="preserve"><value>Meldingen</value></data>
-  <data name="Privacy_Push" xml:space="preserve"><value>Als je meldingen toestaat, geeft je browser ons een adres bij de pushdienst voor dit toestel. Dat adres bewaren we bij je account om je te kunnen waarschuwen; het wordt verwijderd als je meldingen uitzet, uitlogt of je account verwijdert. Een melding bevat alleen een naam en wat er gebeurd is, en wordt versleuteld verstuurd: de pushdienst (Apple, Google of Mozilla) kan hem niet lezen.</value></data>
+  <data name="Privacy_Push" xml:space="preserve"><value>Als je meldingen toestaat, geeft je browser ons een adres bij de pushdienst voor dit toestel. Dat adres bewaren we bij je account om je te kunnen waarschuwen; het wordt verwijderd als je meldingen uitzet, uitlogt of je account verwijdert. Zet je meldingen over bijna op of op zijn best aan, dan bewaren we ook je drempel, rusttijden en tijdzone, en noemt de melding de boon. Een melding bevat alleen een naam en wat er gebeurd is, en wordt versleuteld verstuurd: de pushdienst (Apple, Google of Mozilla) kan hem niet lezen.</value></data>
   <data name="Barcode_Title" xml:space="preserve"><value>Barcode scannen</value></data>
   <data name="Barcode_Button" xml:space="preserve"><value>Barcode scannen</value></data>
   <data name="Barcode_Hint" xml:space="preserve"><value>Houd de barcode voor de camera. Hij wordt op dit apparaat gelezen; er wordt niets verstuurd.</value></data>
@@ -920,4 +920,11 @@
   <data name="Report_Failed" xml:space="preserve"><value>De melding kon niet worden verstuurd. Probeer het opnieuw.</value></data>
   <data name="Privacy_Public_Title" xml:space="preserve"><value>Openbaar profiel en openbare items</value></data>
   <data name="Privacy_Public" xml:space="preserve"><value>Een openbaar profiel staat uit tot je het aanzet in Instellingen. Staat het aan, dan kunnen andere Dialed-gebruikers je op naam vinden en je naam, je avatar en de bonen en recepten zien die je op "Iedereen op Dialed" zet, en verder niets. Ze zien je brews, zakken, vrienden en e-mailadres niet, en ze moeten ingelogd zijn: er staat niets op het open web of in zoekmachines. Zet je het uit, dan ben je meteen weg; je items houden hun eigen instelling. Mensen kunnen een profiel, boon of recept melden; de melding (wie, wat, waarom) gaat naar de ontwikkelaar van de beta, die een profiel kan verbergen zonder iets te verwijderen. Je account verwijderen verwijdert je profiel en je openbare items.</value></data>
+  <data name="Push_LowStock" xml:space="preserve"><value>Een zak bijna op is</value></data>
+  <data name="Push_Peak" xml:space="preserve"><value>Een zak op zijn best is</value></data>
+  <data name="Push_StockHint" xml:space="preserve"><value>Meldingen over bijna op en op zijn best komen hooguit één keer per dag, rond 8:00 in jouw tijdzone, en nooit 's nachts. Ze gebruiken de drempel en rusttijden uit Instellingen &gt; Voorraad.</value></data>
+  <data name="Stock_FilterLow" xml:space="preserve"><value>Alleen de zakken die bijna op zijn.</value></data>
+  <data name="Stock_FilterPeak" xml:space="preserve"><value>Alleen de zakken die op hun best zijn.</value></data>
+  <data name="Stock_ShowAll" xml:space="preserve"><value>Toon alles</value></data>
+  <data name="Stock_FilterNone" xml:space="preserve"><value>Geen van je zakken past hier nu nog bij.</value></data>
 </root>

@@ -9,7 +9,7 @@ using Dialed.Client.Sync;
 namespace Dialed.Client.Push;
 
 /// <summary>What the person switched on, and how many of their devices are registered.</summary>
-public sealed record PushSettings(bool Follows, bool Household, int Devices);
+public sealed record PushSettings(bool Follows, bool Household, int Devices, bool LowStock = false, bool Peak = false);
 
 /// <summary>The API's push endpoints (see Dialed.Api, #100). Online only.</summary>
 public interface IPushApi
@@ -23,7 +23,8 @@ public interface IPushApi
 
     Task<PushSettings> GetSettingsAsync(CancellationToken cancellationToken = default);
 
-    Task<PushSettings> SaveSettingsAsync(bool follows, bool household, CancellationToken cancellationToken = default);
+    /// <summary>Saves the switches. For the stock alerts the server also needs the inventory settings and the time zone to judge bags like the app does.</summary>
+    Task<PushSettings> SaveSettingsAsync(bool follows, bool household, bool lowStock, bool peak, Dialed.Domain.Inventory.InventorySettings? inventory, string? timeZone, CancellationToken cancellationToken = default);
 }
 
 public sealed class PushApi(HttpClient http, IAccessTokenProvider tokens) : IPushApi
@@ -56,8 +57,8 @@ public sealed class PushApi(HttpClient http, IAccessTokenProvider tokens) : IPus
     public Task<PushSettings> GetSettingsAsync(CancellationToken cancellationToken = default) =>
         SendAsync<PushSettings>(HttpMethod.Get, "push/settings", null, cancellationToken);
 
-    public Task<PushSettings> SaveSettingsAsync(bool follows, bool household, CancellationToken cancellationToken = default) =>
-        SendAsync<PushSettings>(HttpMethod.Put, "push/settings", new { follows, household }, cancellationToken);
+    public Task<PushSettings> SaveSettingsAsync(bool follows, bool household, bool lowStock, bool peak, Dialed.Domain.Inventory.InventorySettings? inventory, string? timeZone, CancellationToken cancellationToken = default) =>
+        SendAsync<PushSettings>(HttpMethod.Put, "push/settings", new { follows, household, lowStock, peak, inventory, timeZone }, cancellationToken);
 
     private async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken cancellationToken)
     {

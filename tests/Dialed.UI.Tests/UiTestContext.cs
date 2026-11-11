@@ -549,6 +549,10 @@ public abstract class UiTestContext : BunitContext
             return Task.FromResult(new PushSubscribeResult(Subscription, Permission));
         }
 
+        public string? TimeZone { get; set; } = "Europe/Amsterdam";
+
+        public Task<string?> GetTimeZoneAsync(CancellationToken cancellationToken = default) => Task.FromResult(TimeZone);
+
         public Task<string?> UnsubscribeAsync(CancellationToken cancellationToken = default)
         {
             var endpoint = Subscription?.Endpoint;
@@ -567,6 +571,16 @@ public abstract class UiTestContext : BunitContext
         public bool Follows { get; private set; } = true;
 
         public bool Household { get; private set; } = true;
+
+        public bool LowStock { get; private set; }
+
+        public bool Peak { get; private set; }
+
+        public Dialed.Domain.Inventory.InventorySettings? Inventory { get; private set; }
+
+        public string? SentTimeZone { get; private set; }
+
+        public int SaveCalls { get; private set; }
 
         public List<(PushDevice Device, string Language)> Registered { get; } = [];
 
@@ -603,14 +617,19 @@ public abstract class UiTestContext : BunitContext
         public Task<Dialed.Client.Push.PushSettings> GetSettingsAsync(CancellationToken cancellationToken = default)
         {
             Check();
-            return Task.FromResult(new Dialed.Client.Push.PushSettings(Follows, Household, Registered.Count - Removed.Count));
+            return Task.FromResult(new Dialed.Client.Push.PushSettings(Follows, Household, Registered.Count - Removed.Count, LowStock, Peak));
         }
 
-        public Task<Dialed.Client.Push.PushSettings> SaveSettingsAsync(bool follows, bool household, CancellationToken cancellationToken = default)
+        public Task<Dialed.Client.Push.PushSettings> SaveSettingsAsync(bool follows, bool household, bool lowStock, bool peak, Dialed.Domain.Inventory.InventorySettings? inventory, string? timeZone, CancellationToken cancellationToken = default)
         {
             Check();
+            SaveCalls++;
             Follows = follows;
             Household = household;
+            LowStock = lowStock;
+            Peak = peak;
+            Inventory = inventory;
+            SentTimeZone = timeZone;
             return GetSettingsAsync(cancellationToken);
         }
     }

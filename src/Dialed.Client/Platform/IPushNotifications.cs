@@ -43,6 +43,9 @@ public interface IPushNotifications
     /// <summary>Asks for permission when it has not been given yet, then subscribes with the server's public VAPID key.</summary>
     Task<PushSubscribeResult> SubscribeAsync(string publicKey, CancellationToken cancellationToken = default);
 
+    /// <summary>The device's IANA time zone (for example <c>Europe/Amsterdam</c>), so stock alerts arrive around 08:00 local time. <c>null</c> when unknown.</summary>
+    Task<string?> GetTimeZoneAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Drops this device's subscription at the push service. Returns its endpoint, or <c>null</c> when there was none.</summary>
     Task<string?> UnsubscribeAsync(CancellationToken cancellationToken = default);
 }
@@ -61,4 +64,6 @@ public sealed class UnsupportedPushNotifications : IPushNotifications
     public Task<PushSubscribeResult> SubscribeAsync(string publicKey, CancellationToken cancellationToken = default) => Task.FromResult(new PushSubscribeResult(null, PushPermission.Default));
 
     public Task<string?> UnsubscribeAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
+
+    public Task<string?> GetTimeZoneAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
 }

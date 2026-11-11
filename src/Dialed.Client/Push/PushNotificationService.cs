@@ -28,13 +28,13 @@ public enum PushAvailability
     On,
 }
 
-public sealed record PushState(PushAvailability Availability, bool Follows = true, bool Household = true);
+public sealed record PushState(PushAvailability Availability, bool Follows = true, bool Household = true, bool LowStock = false, bool Peak = false);
 
 /// <summary>
 /// Turning notifications on and off for this device (#100) and the per-type switches. Each device registers its own subscription;
 /// nothing here ever fails the caller beyond a state to show.
 /// </summary>
-public sealed class PushNotificationService(IPushNotifications platform, IPushApi api, AuthSession session)
+public sealed class PushNotificationService(IPushNotifications platform, IPushApi api, AuthSession session, Preferences.IUserPreferences? preferences = null)
 {
     public async Task<PushState> GetStateAsync(CancellationToken cancellationToken = default)
     {
@@ -61,7 +61,7 @@ public sealed class PushNotificationService(IPushNotifications platform, IPushAp
         {
             var settings = await api.GetSettingsAsync(cancellationToken);
             var subscribed = permission == PushPermission.Granted && await platform.GetSubscriptionAsync(cancellationToken) is not null;
-            return new PushState(subscribed ? PushAvailability.On : PushAvailability.Off, settings.Follows, settings.Household);
+            return new PushState(subscribed ? PushAvailability.On : PushAvailability.Off, settings.Follows, settings.Household, settings.LowStock, settings.Peak);
         }
         catch (Exception e) when (e is AccountApiException or AccountRefusedException)
         {
@@ -99,6 +99,31 @@ public sealed class PushNotificationService(IPushNotifications platform, IPushAp
     /// <summary>The app language (<c>nl</c> or <c>en</c>); the server stores it so the notification comes in that language.</summary>
     private static string Language() => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "nl" ? "nl" : "en";
 
+    /// <summary>
+    /// After the inventory settings (low-stock threshold, rest windows) change: tells the server, so its alerts keep agreeing with the app.
+    /// Only matters while a stock alert is on; best effort, never throws.
+    /// </summary>
+    public async Task SyncStockSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        if (!session.IsSignedIn)
+        {
+            return;
+        }
+
+        try
+        {
+            var current = await api.GetSettingsAsync(cancellationToken);
+            if (current.LowStock || current.Peak)
+            {
+                await api.SaveSettingsAsync(current.Follows, current.Household, current.LowStock, current.Peak, preferences?.Inventory, await platform.GetTimeZoneAsync(cancellationToken), cancellationToken);
+            }
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            // Offline: the server keeps the earlier numbers until the next change.
+        }
+    }
+
     /// <summary>Removes this device at the push service and at the server. The server is told first, so a failure there leaves nothing behind.</summary>
     public async Task<PushState> DisableAsync(CancellationToken cancellationToken = default)
     {
@@ -131,11 +156,11 @@ public sealed class PushNotificationService(IPushNotifications platform, IPushAp
         }
     }
 
-    public async Task<PushState> SaveSwitchesAsync(bool follows, bool household, CancellationToken cancellationToken = default)
+    public async Task<PushState> SaveSwitchesAsync(bool follows, bool household, bool lowStock = false, bool peak = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            await api.SaveSettingsAsync(follows, household, cancellationToken);
+            await api.SaveSettingsAsync(follows, household, lowStock, peak, preferences?.Inventory, await platform.GetTimeZoneAsync(cancellationToken), cancellationToken);
         }
         catch (Exception e) when (e is AccountApiException or AccountRefusedException)
         {

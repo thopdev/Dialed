@@ -13,9 +13,21 @@
 
 <PageHeader Title="@L["Stock_Title"]" BackHref="more" />
 
+@if (Filter is not null)
+{
+    <p id="stock-filter" class="dialed-banner dialed-banner-info" role="status">
+        @L[Filter == "low" ? "Stock_FilterLow" : "Stock_FilterPeak"]
+        <a id="stock-filter-clear" class="dialed-section-link" href="inventory">@L["Stock_ShowAll"]</a>
+    </p>
+}
+
 @if (stock is null)
 {
     <Loading IsLoading="true" />
+}
+else if (Groups.All(g => g.Items.Count == 0) && Filter is not null)
+{
+    <EmptyState Icon="@(new Icons.Regular.Size24.Box())" Message="@L["Stock_FilterNone"]" />
 }
 else if (Groups.All(g => g.Items.Count == 0))
 {
@@ -45,11 +57,24 @@ else
     private IReadOnlyList<BagStock>? stock;
     private Dictionary<string, Bean> beansById = [];
 
+    /// <summary>A tapped stock notification opens this page with <c>?show=low</c> or <c>?show=peak</c> (#259).</summary>
+    [SupplyParameterFromQuery(Name = "show")]
+    public string? Show { get; set; }
+
+    private string? Filter => Show is "low" or "peak" ? Show : null;
+
+    private bool Matches(BagStock s) => Filter switch
+    {
+        "low" => s.IsLow,
+        "peak" => s.Freshness == Freshness.Peak && s.Bag.Status is BagStatus.Open or BagStatus.Sealed,
+        _ => true,
+    };
+
     private Bean? Bean(BagStock item) => beansById.GetValueOrDefault(item.Bag.BeanId);
 
     private IEnumerable<(BagStatus Status, IReadOnlyList<BagStock> Items)> Groups =>
         new[] { BagStatus.Open, BagStatus.Sealed, BagStatus.Frozen }.Select(status =>
-            (status, (IReadOnlyList<BagStock>)[.. (stock ?? []).Where(s => s.Bag.Status == status).OrderBy(s => s.BeanName, StringComparer.OrdinalIgnoreCase)]));
+            (status, (IReadOnlyList<BagStock>)[.. (stock ?? []).Where(s => s.Bag.Status == status && Matches(s)).OrderBy(s => s.BeanName, StringComparer.OrdinalIgnoreCase)]));
 
     protected override async Task OnInitializedAsync()
     {

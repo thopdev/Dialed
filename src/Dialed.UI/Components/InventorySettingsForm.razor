@@ -1,5 +1,6 @@
 @using Dialed.Client.Preferences
 @using Dialed.Domain.Inventory
+@inject Dialed.Client.Push.PushNotificationService Push
 @inject IStringLocalizer<Strings> L
 @inject IUserPreferences Preferences
 @inject UnitFormatter Units
@@ -64,5 +65,8 @@
             Math.Max(0m, Units.FromDisplayWeight(low)),
             new RestWindows(Window(rows[0]), Window(rows[1]), Window(rows[2]))));
         saved = true;
+
+        // Stock alerts are judged on the server with these numbers, so it has to hear about a change.
+        await Push.SyncStockSettingsAsync();
     }
 }

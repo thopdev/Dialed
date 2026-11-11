@@ -53,6 +53,19 @@ internal sealed class BrowserPushNotifications(BrowserModule browser) : IPushNot
         }
     }
 
+    public async Task<string?> GetTimeZoneAsync(CancellationToken cancellationToken = default)
+    {
+        var module = await browser.GetAsync();
+        try
+        {
+            return await module.InvokeAsync<string?>("pushTimeZone", cancellationToken);
+        }
+        catch (JSException)
+        {
+            return null;
+        }
+    }
+
     public async Task<string?> UnsubscribeAsync(CancellationToken cancellationToken = default)
     {
         var module = await browser.GetAsync();

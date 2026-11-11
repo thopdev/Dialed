@@ -1,4 +1,4 @@
-# Push notifications, part 1 (#100)
+# Push notifications (#100, #259)
 
 Standard Web Push with our own VAPID keys, sent by the API. No Azure Notification Hubs. Part 1 sends two kinds of notification: follow requests (and accepted requests) and new household members. Low stock and "bag at its peak" are #259 (they need a daily server job); the Azure keys, the Cosmos DB subscription store and that job are #260.
 
@@ -20,6 +20,18 @@ FriendService / HouseholdService ── INotifier ──> PushNotifier ──> I
 - **Service worker** (`wwwroot/push-handlers.js`, loaded by both service workers): shows the notification; if the open window is visible and focused it posts the news to the page instead of showing a banner; a tap focuses the open app and asks it to navigate (`js/pwa.js`), or opens the link when the app is closed. Only relative in-app links are followed. `e2e/tests/push-handlers.spec.ts` tests the handlers against a fake worker.
 - **Telemetry**: `dialed.push.sent` by `type` and `outcome` (sent, gone, failed, skipped). No user ids or endpoints.
 
+## Low stock and bag at its peak (#259)
+
+Two more switches in Settings > Notifications, both **off** until switched on.
+
+- **Judged like the app**: the server runs the Domain code the app uses (`InventoryOverview`, `FreshnessRules`, wrapped by `StockAlerts`) over the person's households, read through `ISyncStore`. So it needs the same numbers: when a switch is changed, and when Settings > Inventory is saved, the app sends the inventory settings (low-stock grams, rest windows) and the device's time zone (`PUT /push/settings`). The server keeps nothing else of the preferences.
+- **Low stock**: an *open* bag under the threshold. **Peak**: a *sealed or open* bag with a roast date inside its best window. Finished, frozen and deleted bags are skipped, and so are bags without what the alert needs (no roast date for a peak).
+- **Once per bag**: `StockAlertMemory` remembers which bags a person was told about; a bag drops out of it when it stops qualifying (topped up, finished, left the window), which re-arms it. A new bag of the same bean is a new bag.
+- **Quiet**: `StockAlertService` looks at a person once per local day, when their local time is between 08:00 and 21:00 (never at night), and sends at most one low-stock and one peak notification, combined ("3 bags are running low", or the bean name for one). Each member of a household is judged and notified separately, in the language their device registered.
+- **The job**: `StockAlertWorker` (a hosted service) wakes every hour and calls `StockAlertService.RunAsync`. In Azure a timer-triggered Function does that instead (#260). State is in memory (`InMemoryPushStore`), so a restart can repeat a notification for the day; the Cosmos store (#260) removes that.
+- **Tap**: opens `inventory?show=low` or `inventory?show=peak`, the Inventory screen filtered to those bags, with a way back to all.
+- **Privacy**: the payload is a title and one line with a bean name or a count; the time zone and thresholds are stored with the subscription settings and removed with them.
+
 ## Keys and configuration
 
 | Setting | Meaning |
@@ -33,7 +45,7 @@ Subscriptions live in memory (`InMemoryPushStore`) until the Cosmos DB stores ar
 
 ## Testing
 
-- API: `tests/Dialed.Api.Tests/PushTests.cs` (subscribe, ownership, validation, language, switches, blocked users, no double sends, 404/410 cleanup, failure isolation, payload shape).
+- API: `StockAlertTests` (time zones, once per bag, households, thresholds), `StockAlertsTests` in Domain.Tests (rules, DST), and `tests/Dialed.Api.Tests/PushTests.cs` (subscribe, ownership, validation, language, switches, blocked users, no double sends, 404/410 cleanup, failure isolation, payload shape).
 - UI: `NotificationsPanelTests` covers every state of Settings > Notifications and sign-out.
 - Service worker: `e2e/tests/push-handlers.spec.ts`.
 - Real device: the "Notifications" list in `iphone-checks.md`.
