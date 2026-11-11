@@ -137,7 +137,7 @@
 
     private string? Describe(AccountResult result) => result.Outcome switch
     {
-        AccountOutcome.Success => null,
+        AccountOutcome.Success or AccountOutcome.NoAccount => null,
         AccountOutcome.Cancelled => L["Account_Cancelled"],
         AccountOutcome.NotSupported => L["Account_NotSupported"],
         AccountOutcome.Refused => result.Message,

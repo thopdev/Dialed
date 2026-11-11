@@ -27,6 +27,32 @@ public sealed class PasskeysUiTests : UiTestContext
     private const string TwoPasskeys = "[{\"id\":\"p1\",\"name\":\"First passkey\",\"createdAt\":\"2026-01-01T00:00:00+00:00\",\"lastUsedAt\":null,\"backedUp\":false},{\"id\":\"p2\",\"name\":\"Laptop\",\"createdAt\":\"2026-02-01T00:00:00+00:00\",\"lastUsedAt\":null,\"backedUp\":false}]";
 
     [Fact]
+    public async Task A_sign_in_with_no_account_behind_it_shows_no_error_and_no_passkey_controls()
+    {
+        DataServer.Respond = path => path.StartsWith("account/") ? new HttpResponseMessage(HttpStatusCode.NotFound) : null;
+        Tokens.Value = "tkn";
+        await Session.SetAsync(new SessionTokens("a", DateTimeOffset.MaxValue, "r", "u1", "Thomas", "h-u1"), Xunit.TestContext.Current.CancellationToken);
+
+        var panel = Render<PasskeysPanel>();
+        await Task.Delay(300, Xunit.TestContext.Current.CancellationToken);
+
+        panel.FindAll("#passkeys-message").ShouldBeEmpty();
+        panel.FindAll("#passkeys-add, #recovery-regenerate").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_server_that_cannot_be_reached_still_says_so()
+    {
+        DataServer.Respond = path => path.StartsWith("account/") ? new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("{\"detail\":\"No access.\"}", System.Text.Encoding.UTF8, "application/json") } : null;
+        Tokens.Value = "tkn";
+        await Session.SetAsync(new SessionTokens("a", DateTimeOffset.MaxValue, "r", "u1", "Thomas", "h-u1"), Xunit.TestContext.Current.CancellationToken);
+
+        var panel = Render<PasskeysPanel>();
+
+        panel.WaitForAssertion(() => panel.Find("#passkeys-message").TextContent.ShouldNotBeNullOrWhiteSpace());
+    }
+
+    [Fact]
     public void Nothing_shows_while_signed_out()
     {
         Render<PasskeysPanel>().FindAll("#passkeys-panel").ShouldBeEmpty();
