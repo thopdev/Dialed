@@ -20,6 +20,8 @@ public sealed record ReportRequest(string OwnerId, string Target, string? ItemId
 
 public sealed record ReportDto(string Id, string ReporterId, string OwnerId, string OwnerName, string Target, string? ItemId, string Reason, string? Note, DateTimeOffset CreatedAt);
 
+public sealed record SuspendedDto(string UserId, string DisplayName);
+
 public enum PublicOutcome { Ok, NotFound, Conflict, Invalid }
 
 public sealed record PublicResult<T>(PublicOutcome Outcome, T? Value = default, string? Message = null);
@@ -134,6 +136,18 @@ public sealed class PublicProfileService(IUserDirectory users, IPublicProfileSto
 
         await store.SaveAsync((await store.GetAsync(userId, ct)) with { Suspended = suspended }, ct);
         return true;
+    }
+
+    /// <summary>Who is suspended now, by name.</summary>
+    public async Task<IReadOnlyList<SuspendedDto>> SuspendedAsync(CancellationToken ct = default)
+    {
+        List<SuspendedDto> list = [];
+        foreach (var id in await store.SuspendedUserIdsAsync(ct))
+        {
+            list.Add(new SuspendedDto(id, (await users.FindByIdAsync(id, ct))?.DisplayName ?? ""));
+        }
+
+        return list;
     }
 
     public async Task<IReadOnlyList<ReportDto>> ReportsAsync(CancellationToken ct = default)

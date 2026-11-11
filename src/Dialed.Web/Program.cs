@@ -51,6 +51,7 @@ builder.Services.AddDialedAccount(
     sp => new HouseholdApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
     sp => new AccountDataApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
     sp => new FriendsApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
+builder.Services.AddDialedAdmin(_ => new Dialed.Client.Admin.AdminApi(new HttpClient { BaseAddress = apiBaseAddress }));
 builder.Services.AddDialedCatalog(sp => new Dialed.Client.Catalog.CatalogApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 builder.Services.AddDialedPush(sp => new Dialed.Client.Push.PushApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddDialedScan(sp => new Dialed.Client.Scan.LabelScanner(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
