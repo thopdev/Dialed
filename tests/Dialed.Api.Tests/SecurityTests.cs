@@ -28,6 +28,8 @@ public sealed class SecurityTests(PasskeyApp app) : IClassFixture<PasskeyApp>
         "POST /auth/recover/options", // needs a recovery or email code
         "POST /auth/recover",
         "POST /admin/invites", // needs the admin key header
+        "PUT /photo-blobs/{householdId}/{file}", // local stand-in for Blob Storage: the signed URL is the credential, like a SAS
+        "GET /photo-blobs/{householdId}/{file}",
     ];
 
     private static readonly string[] DevelopmentOnly = ["POST /auth/dev", "* /health", "* /alive"];

@@ -53,6 +53,8 @@ builder.Services.AddDialedAccount(
     sp => new FriendsApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddDialedScan(sp => new Dialed.Client.Scan.LabelScanner(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 builder.Services.AddDialedRecipeAssistant(sp => new Dialed.Client.Recipes.RecipeAssistant(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
+// Photo uploads (#68): URLs come from the API; the file goes to the URL it hands out (Blob Storage in Azure), without the API token.
+builder.Services.AddDialedUploads(sp => new Dialed.Client.Uploads.PhotoUploadApi(new HttpClient { BaseAddress = apiBaseAddress }, new HttpClient(), sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddDialedDialInAssistant(sp => new Dialed.Client.DialIn.DialInAssistant(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
@@ -107,6 +109,16 @@ try
 catch (Exception exception)
 {
     Console.Error.WriteLine($"Sync did not start: {exception.Message}");
+}
+
+// Photo uploads pick up where they left off; the queue shows its own state, so a failure here only logs.
+try
+{
+    await host.Services.GetRequiredService<Dialed.Client.Uploads.PhotoUploadQueue>().StartAsync();
+}
+catch (Exception exception)
+{
+    Console.Error.WriteLine($"Photo uploads did not start: {exception.Message}");
 }
 
 await host.RunAsync();

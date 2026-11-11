@@ -214,6 +214,8 @@ Processing today (#69): `Dialed.Images` holds the work behind interfaces, so the
 - Images are handled with SkiaSharp (MIT).
 - Azure (not done): a blob-triggered Function on `photos/{householdId}/{name}.jpg` calls the same handler, with a Blob Storage `IPhotoBlobStore` and an `IPhotoRecords` on Cosmos DB. The Functions runtime gives the retries and the `webjobs-blobtrigger-poison` queue.
 
+Details, the local stand-in for Blob Storage and the steps to switch to Azure: [photo-uploads.md](photo-uploads.md).
+
 ## 7. Azure resources (per environment)
 
 | Resource | SKU / notes |

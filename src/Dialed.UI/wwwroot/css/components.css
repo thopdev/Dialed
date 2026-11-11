@@ -930,6 +930,29 @@ button.dialed-chip::after {
     border-radius: 8px;
 }
 
+.dialed-photo-upload {
+    max-width: 96px;
+    font-size: var(--dialed-text-xs);
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-photo-upload-failed {
+    color: var(--colorPaletteRedForeground1);
+}
+
+.dialed-uploads-failed {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-3) 0;
+    color: var(--colorPaletteRedForeground1);
+}
+
+.dialed-uploads-failed p {
+    margin: 0;
+}
+
 .dialed-photo-actions {
     display: flex;
     flex-wrap: wrap;

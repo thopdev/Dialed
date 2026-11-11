@@ -132,6 +132,59 @@ public sealed class PhotoTests : UiTestContext
         strip.FindAll("button").ShouldBeEmpty();
     }
 
+    // ---- Upload state (#68) -------------------------------------------------------------------
+
+    [Fact]
+    public async Task A_new_photo_is_queued_and_shows_it_is_waiting_to_upload()
+    {
+        var photo = await Photos.AddAsync(Jpeg(), Ct);
+
+        Uploads.StatusOf(photo.Id).ShouldBe(Dialed.Client.Uploads.UploadStatus.Waiting);
+        var strip = Render<PhotoStrip>(p => p.Add(x => x.PhotoIds, [photo.Id]));
+
+        strip.Find("[data-upload=waiting]").TextContent.ShouldBe("Waiting to upload");
+    }
+
+    [Fact]
+    public async Task The_strip_follows_the_queue_and_offers_a_retry_when_an_upload_failed()
+    {
+        var photo = await Photos.AddAsync(Jpeg(), Ct);
+        var strip = Render<PhotoStrip>(p => p.Add(x => x.PhotoIds, [photo.Id]));
+
+        Uploads.Set(photo.Id, Dialed.Client.Uploads.UploadStatus.Uploading);
+        strip.WaitForAssertion(() => strip.Find("[data-upload=uploading]").TextContent.ShouldBe("Uploading…"));
+
+        Uploads.Set(photo.Id, Dialed.Client.Uploads.UploadStatus.Failed);
+        strip.WaitForAssertion(() => strip.Find("[data-upload=failed]").TextContent.ShouldBe("Upload failed"));
+        strip.Find("button.photo-upload-retry").Click();
+
+        Uploads.Retried.ShouldBe([photo.Id]);
+        strip.WaitForAssertion(() => strip.FindAll("[data-upload=waiting]").Count.ShouldBe(1));
+
+        Uploads.Set(photo.Id, null);
+        strip.WaitForAssertion(() => strip.FindAll("[data-upload]").ShouldBeEmpty());
+    }
+
+    [Fact]
+    public void Settings_shows_waiting_and_failed_uploads_with_a_retry()
+    {
+        var status = Render<UploadQueueStatus>();
+        status.FindAll("#uploads-pending").ShouldBeEmpty();
+        status.FindAll("#uploads-failed").ShouldBeEmpty();
+
+        Uploads.Set("a", Dialed.Client.Uploads.UploadStatus.Waiting);
+        Uploads.Set("b", Dialed.Client.Uploads.UploadStatus.Failed);
+
+        status.WaitForAssertion(() => status.Find("#uploads-pending").TextContent.ShouldContain("Photos waiting to upload: 1"));
+        status.Find("#uploads-failed").TextContent.ShouldContain("Photos that could not be uploaded: 1");
+
+        status.Find("#uploads-retry").Click();
+
+        Uploads.Retried.ShouldBe(["b"]);
+        status.WaitForAssertion(() => status.FindAll("#uploads-failed").ShouldBeEmpty());
+        status.Find("#uploads-pending").TextContent.ShouldContain("2");
+    }
+
     // ---- Forms --------------------------------------------------------------------------------
 
     [Fact]
