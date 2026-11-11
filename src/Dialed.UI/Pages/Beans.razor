@@ -252,6 +252,10 @@
                         <li><span class="dialed-chip">@L["Bean_Decaf"]</span></li>
                     }
                 </ul>
+                @if (Dialed.Domain.Flavors.FlavorWheel.Tally(current.TastingNotes) is { Count: >= 2 } shares)
+                {
+                    <FlavorWheelChart Id="bean-flavor-wheel" Shares="shares" />
+                }
             }
 
             @if (current.Varieties.Count > 0)
