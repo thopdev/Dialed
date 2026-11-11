@@ -2795,4 +2795,112 @@ a.people-row-name {
     display: flex;
     align-items: center;
     cursor: pointer;
+.dialed-flavor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-4);
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-flavor svg {
+    flex: 0 0 9rem;
+    width: 9rem;
+    height: auto;
+}
+
+.dialed-flavor-total {
+    fill: var(--colorNeutralForeground1);
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.dialed-flavor-legend {
+    flex: 1 1 10rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-flavor-legend li {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    min-height: 1.75rem;
+}
+
+.dialed-flavor-swatch {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: var(--borderRadiusCircular);
+}
+
+.dialed-flavor-slice {
+    stroke: var(--colorNeutralForeground3);
+}
+
+.dialed-flavor-slice.dialed-flavor-fruity {
+    stroke: var(--colorPaletteCranberryBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-fruity {
+    background: var(--colorPaletteCranberryBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-floral {
+    stroke: var(--colorPaletteLilacBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-floral {
+    background: var(--colorPaletteLilacBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-sweet {
+    stroke: var(--colorPaletteGoldBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-sweet {
+    background: var(--colorPaletteGoldBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-nuttycocoa {
+    stroke: var(--colorPaletteBrownBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-nuttycocoa {
+    background: var(--colorPaletteBrownBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-spices {
+    stroke: var(--colorPalettePeachBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-spices {
+    background: var(--colorPalettePeachBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-green {
+    stroke: var(--colorPaletteForestBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-green {
+    background: var(--colorPaletteForestBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-sourfermented {
+    stroke: var(--colorPaletteLavenderBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-sourfermented {
+    background: var(--colorPaletteLavenderBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-roasted {
+    stroke: var(--colorPalettePlatinumBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-roasted {
+    background: var(--colorPalettePlatinumBackground2);
 }
