@@ -2889,3 +2889,65 @@ a.people-row-name {
     stroke: var(--colorStrokeFocus2);
     stroke-width: 4;
 }
+
+.dialed-calendar {
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-calendar > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.dialed-calendar-label {
+    fill: var(--colorNeutralForeground3);
+    font-size: 10px;
+}
+
+.dialed-calendar-day {
+    fill: var(--colorBrandBackground);
+}
+
+.dialed-calendar-l0 {
+    fill: var(--colorNeutralBackground5);
+}
+
+.dialed-calendar-l1 {
+    fill-opacity: 0.3;
+}
+
+.dialed-calendar-l2 {
+    fill-opacity: 0.5;
+}
+
+.dialed-calendar-l3 {
+    fill-opacity: 0.75;
+}
+
+.dialed-calendar-l4 {
+    fill-opacity: 1;
+}
+
+.dialed-calendar-roast {
+    fill: var(--colorPaletteMarigoldBackground3);
+    stroke: var(--colorNeutralBackground1);
+    stroke-width: 1;
+}
+
+.dialed-calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    margin-top: var(--dialed-space-2);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-calendar-roast-key {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    margin-inline-start: var(--dialed-space-3);
+}
