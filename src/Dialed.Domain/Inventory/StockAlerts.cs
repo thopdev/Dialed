@@ -15,10 +15,17 @@ public enum StockAlertKind
 public sealed record StockAlertMemory(IReadOnlySet<string> Low, IReadOnlySet<string> Peak)
 {
     public static StockAlertMemory Empty { get; } = new(new HashSet<string>(), new HashSet<string>());
+
+    /// <summary>Bags already told "peak starts tomorrow". Kept apart from <see cref="Peak"/> so the heads-up and the peak itself are each sent once.</summary>
+    public IReadOnlySet<string> PeakSoon { get; init; } = new HashSet<string>();
 }
 
 /// <summary>The bags to tell a person about now, and what to remember for next time.</summary>
-public sealed record StockAlertResult(IReadOnlyList<string> LowStock, IReadOnlyList<string> Peak, StockAlertMemory Memory);
+public sealed record StockAlertResult(IReadOnlyList<string> LowStock, IReadOnlyList<string> Peak, StockAlertMemory Memory)
+{
+    /// <summary>Beans whose peak window starts tomorrow (a heads-up, sent under the same switch as the peak alert).</summary>
+    public IReadOnlyList<string> PeakSoon { get; init; } = [];
+}
 
 /// <summary>
 /// Decides which bags deserve a notification (#259), from the same <see cref="InventoryOverview"/> the app shows, so the server and the app
@@ -43,16 +50,24 @@ public static class StockAlerts
             ? bags.Where(s => s.Bag.Status is BagStatus.Open or BagStatus.Sealed && s.Bag.RoastDate is not null && s.Freshness == Freshness.Peak).ToList()
             : [];
 
+        var soonNow = peak
+            ? bags.Where(s => s.Bag.Status is BagStatus.Open or BagStatus.Sealed && s.Bag.RoastDate is not null && s.PeakTomorrow).ToList()
+            : [];
+
         string Key(BagStock s) => $"{householdId}/{s.Bag.Id}";
 
         // Only this household's keys are replaced; other households' memory is carried over untouched.
         var low = Merge(previous.Low, householdId, lowNow.Select(Key));
         var peakKeys = Merge(previous.Peak, householdId, peakNow.Select(Key));
+        var soonKeys = Merge(previous.PeakSoon, householdId, soonNow.Select(Key));
 
         return new StockAlertResult(
             Names(lowNow.Where(s => !previous.Low.Contains(Key(s)))),
             Names(peakNow.Where(s => !previous.Peak.Contains(Key(s)))),
-            new StockAlertMemory(low, peakKeys));
+            new StockAlertMemory(low, peakKeys) { PeakSoon = soonKeys })
+        {
+            PeakSoon = Names(soonNow.Where(s => !previous.PeakSoon.Contains(Key(s)))),
+        };
     }
 
     private static IReadOnlySet<string> Merge(IReadOnlySet<string> before, string householdId, IEnumerable<string> now)
