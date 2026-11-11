@@ -121,4 +121,14 @@ catch (Exception exception)
     Console.Error.WriteLine($"Photo uploads did not start: {exception.Message}");
 }
 
+// Scans taken offline are read once their photo has uploaded; the queue shows its own state.
+try
+{
+    await host.Services.GetRequiredService<Dialed.Client.Scan.PendingScanQueue>().StartAsync();
+}
+catch (Exception exception)
+{
+    Console.Error.WriteLine($"Pending scans did not start: {exception.Message}");
+}
+
 await host.RunAsync();

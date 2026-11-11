@@ -7,6 +7,7 @@ using Dialed.Api.Auth;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Dialed.Api.Tests;
 
@@ -61,6 +62,99 @@ public sealed class LabelScanTests(WebApplicationFactory<Program> factory) : ICl
         (await client.PostAsync("/ai/label-scans", Photo(type: "image/png"), Ct)).StatusCode.ShouldBe(HttpStatusCode.UnsupportedMediaType);
         (await client.PostAsync("/ai/label-scans", Photo(0), Ct)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         (await client.PostAsync("/ai/label-scans", Photo(AiEndpoints.MaxPhotoBytes + 1), Ct)).StatusCode.ShouldBeOneOf(HttpStatusCode.RequestEntityTooLarge, HttpStatusCode.BadRequest);
+    }
+
+    // ---- By photo id (#83) --------------------------------------------------------------------
+
+    private static async Task<string> PushPhoto(HttpClient client, string? contentType = "image/jpeg")
+    {
+        var id = Guid.CreateVersion7().ToString();
+        using var response = await client.PutAsJsonAsync($"/sync/photos/{id}", new System.Text.Json.Nodes.JsonObject { ["id"] = id, ["contentType"] = contentType, ["deleted"] = false }, Ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        return id;
+    }
+
+    private static string HouseholdOf(HttpClient client)
+    {
+        var token = new JsonWebTokenHandler().ReadJsonWebToken(client.DefaultRequestHeaders.Authorization!.Parameter);
+        return token.Claims.First(c => c.Type == TokenIssuer.HouseholdClaim).Value;
+    }
+
+    [Fact]
+    public async Task A_stored_photo_is_read_from_photo_storage_and_scanned_by_id()
+    {
+        var client = await SignedIn(factory, "alice");
+        var id = await PushPhoto(client);
+        var blobs = factory.Services.GetRequiredService<Dialed.Images.IPhotoBlobStore>();
+        await blobs.WriteAsync(Dialed.Images.PhotoBlobPaths.Original(HouseholdOf(client), id), [0xFF, 0xD8, 0xFF, 0xE0, 1, 2, 3], Ct);
+
+        using var response = await client.PostAsync($"/ai/label-scans/{id}", null, Ct);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var result = (await response.Content.ReadFromJsonAsync<LabelScanResponse>(Ct))!;
+        result.PromptVersion.ShouldBe(LabelPrompt.Version);
+        result.Draft.Name.Value.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task A_photo_that_has_not_synced_or_not_uploaded_is_a_404_that_does_not_use_the_quota()
+    {
+        using var limited = factory.WithWebHostBuilder(b => b.UseSetting("Ai:LabelScansPerDay", "1"));
+        var client = await SignedIn(limited, "bob");
+        var unknown = $"/ai/label-scans/{Guid.CreateVersion7()}";
+        var id = await PushPhoto(client);
+
+        using var notSynced = await client.PostAsync(unknown, null, Ct);
+        using var notUploaded = await client.PostAsync($"/ai/label-scans/{id}", null, Ct);
+        using var again = await client.PostAsync($"/ai/label-scans/{id}", null, Ct);
+
+        notSynced.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await notSynced.Content.ReadAsStringAsync(Ct)).ShouldContain("photo-unknown");
+        notUploaded.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await notUploaded.Content.ReadAsStringAsync(Ct)).ShouldContain("photo-not-uploaded");
+        again.StatusCode.ShouldBe(HttpStatusCode.NotFound); // still 404 and not 429: nothing was counted
+    }
+
+    [Fact]
+    public async Task Another_household_cannot_scan_a_photo_it_cannot_see()
+    {
+        var alice = await SignedIn(factory, "alice");
+        var carol = await SignedIn(factory, "carol");
+        var id = await PushPhoto(alice);
+        var blobs = factory.Services.GetRequiredService<Dialed.Images.IPhotoBlobStore>();
+        await blobs.WriteAsync(Dialed.Images.PhotoBlobPaths.Original(HouseholdOf(alice), id), [0xFF, 0xD8, 0xFF, 0xE0, 1], Ct);
+
+        using var response = await carol.PostAsync($"/ai/label-scans/{id}", null, Ct);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Scanning_by_id_needs_a_signed_in_user_and_shares_the_kill_switch_and_quota()
+    {
+        (await factory.CreateClient().PostAsync($"/ai/label-scans/{Guid.CreateVersion7()}", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+
+        using var limited = factory.WithWebHostBuilder(b => b.UseSetting("Ai:LabelScansPerDay", "1"));
+        var client = await SignedIn(limited, "alice");
+        var blobs = limited.Services.GetRequiredService<Dialed.Images.IPhotoBlobStore>();
+        var first = await PushPhoto(client);
+        var second = await PushPhoto(client);
+        foreach (var id in new[] { first, second })
+        {
+            await blobs.WriteAsync(Dialed.Images.PhotoBlobPaths.Original(HouseholdOf(client), id), [0xFF, 0xD8, 0xFF, 0xE0, 1], Ct);
+        }
+
+        (await client.PostAsync($"/ai/label-scans/{first}", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        using var over = await client.PostAsync($"/ai/label-scans/{second}", null, Ct);
+        over.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+
+        using var off = factory.WithWebHostBuilder(b => b.UseSetting("Ai:Enabled", "false"));
+        var other = await SignedIn(off, "bob");
+        var offId = await PushPhoto(other);
+        await off.Services.GetRequiredService<Dialed.Images.IPhotoBlobStore>().WriteAsync(Dialed.Images.PhotoBlobPaths.Original(HouseholdOf(other), offId), [0xFF, 0xD8, 0xFF, 0xE0, 1], Ct);
+        using var disabled = await other.PostAsync($"/ai/label-scans/{offId}", null, Ct);
+        disabled.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        (await disabled.Content.ReadAsStringAsync(Ct)).ShouldContain("ai-disabled");
     }
 
     private sealed class BrokenExtractor : ILabelExtractor

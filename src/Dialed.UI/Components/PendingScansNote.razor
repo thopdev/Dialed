@@ -1,0 +1,22 @@
+@using Dialed.Client.Scan
+@* Label scans taken without a connection (#83): a link when there is a draft to review, a quiet note while scans are still waiting. *@
+@implements IDisposable
+@inject IScanQueue Queue
+@inject IStringLocalizer<Strings> L
+
+@if (Queue.ReadyCount > 0)
+{
+    <p id="scans-ready" class="dialed-scans-note" role="status"><a href="scan">@L["Scan_NoteReady", Queue.ReadyCount]</a></p>
+}
+else if (Queue.WaitingCount > 0)
+{
+    <p id="scans-waiting" class="dialed-scans-note dialed-muted" role="status"><a href="scan">@L["Scan_NoteWaiting", Queue.WaitingCount]</a></p>
+}
+
+@code {
+    protected override void OnInitialized() => Queue.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Queue.Changed -= OnChanged;
+}

@@ -833,4 +833,20 @@
   <data name="Household_DeleteWarning" xml:space="preserve"><value>{0} verwijderen voor iedereen erin? De bonen, zakken, recepten en brews gaan mee. Dit kan niet ongedaan worden gemaakt.</value></data>
   <data name="Household_ConfirmDelete" xml:space="preserve"><value>Verwijderen voor iedereen</value></data>
   <data name="Household_Deleted" xml:space="preserve"><value>Huishouden verwijderd. Je zit nu in {0}.</value></data>
+  <data name="Scan_Later" xml:space="preserve"><value>Foto bewaren en uitlezen als ik online ben</value></data>
+  <data name="Scan_Queued" xml:space="preserve"><value>Foto bewaard. Dialed leest het etiket zodra je online bent. Je vindt het hier onder Scans om te controleren.</value></data>
+  <data name="Scan_PendingTitle" xml:space="preserve"><value>Scans om te controleren</value></data>
+  <data name="Scan_PendingUnnamed" xml:space="preserve"><value>Scan van {0}</value></data>
+  <data name="Scan_Status_Waiting" xml:space="preserve"><value>Wacht op een verbinding</value></data>
+  <data name="Scan_Status_Reading" xml:space="preserve"><value>Etiket wordt gelezen…</value></data>
+  <data name="Scan_Status_Ready" xml:space="preserve"><value>Klaar om te controleren</value></data>
+  <data name="Scan_Status_Failed" xml:space="preserve"><value>Kon niet worden gelezen</value></data>
+  <data name="Scan_ReviewOpen" xml:space="preserve"><value>Controleren</value></data>
+  <data name="Scan_ReviewNamed" xml:space="preserve"><value>{0} controleren</value></data>
+  <data name="Scan_Retry" xml:space="preserve"><value>Opnieuw proberen</value></data>
+  <data name="Scan_RetryNamed" xml:space="preserve"><value>{0} opnieuw proberen te lezen</value></data>
+  <data name="Scan_Discard" xml:space="preserve"><value>Weggooien</value></data>
+  <data name="Scan_DiscardNamed" xml:space="preserve"><value>{0} weggooien</value></data>
+  <data name="Scan_NoteReady" xml:space="preserve"><value>Scans om te controleren: {0}</value></data>
+  <data name="Scan_NoteWaiting" xml:space="preserve"><value>Etiketscans die op een verbinding wachten: {0}</value></data>
 </root>

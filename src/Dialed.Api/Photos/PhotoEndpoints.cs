@@ -51,11 +51,11 @@ public static class PhotoEndpoints
         // A URL to upload the photo's file, after checking the photo's record is in the caller's household and visible to them. The record
         // syncs first; until it has, the answer is 404 and the app tries again after the next sync.
         photos.MapPost("/{id}/upload-url", async (string id, ClaimsPrincipal user, ISyncStore store, IPhotoUrlIssuer issuer, CancellationToken ct) =>
-            await FindAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(issuer.IssueUpload(blob))) : NotFound());
+            await FindForCallerAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(issuer.IssueUpload(blob))) : NotFound());
 
         // A URL to read the photo's file (for devices that did not take it), with the same check.
         photos.MapGet("/{id}/url", async (string id, ClaimsPrincipal user, ISyncStore store, IPhotoUrlIssuer issuer, CancellationToken ct) =>
-            await FindAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(issuer.IssueRead(blob))) : NotFound());
+            await FindForCallerAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(issuer.IssueRead(blob))) : NotFound());
 
         // The local stand-in for Blob Storage. The signature in the URL is the authorisation, as with a SAS.
         if (endpoints.ServiceProvider.GetService<IPhotoUrlIssuer>() is LocalSignedPhotoUrls)
@@ -131,7 +131,7 @@ public static class PhotoEndpoints
     }
 
     /// <summary>The photo's file, when its record is in the caller's household, not deleted and readable by them.</summary>
-    private static async Task<PhotoBlobRef?> FindAsync(string id, ClaimsPrincipal user, ISyncStore store, CancellationToken ct)
+    internal static async Task<PhotoBlobRef?> FindForCallerAsync(string id, ClaimsPrincipal user, ISyncStore store, CancellationToken ct)
     {
         if (user.FindFirstValue(TokenIssuer.HouseholdClaim) is not { Length: > 0 } household
             || !PhotoBlobRef.IsSafeId(household)

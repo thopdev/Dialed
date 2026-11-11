@@ -51,10 +51,13 @@ Not done here because Azure is not available (#25). The steps:
 
 The app needs no change: it already sends whatever method and headers the API returns, to whatever URL it returns, without the API token.
 
-## Next: offline label scans
+## Offline label scans (#83)
 
-With the queue in place, a label scan taken offline can wait instead of failing. Still to build (separate story):
+A label scan taken without a connection waits instead of failing.
 
-1. `POST /ai/label-scans/{photoId}`: the API reads the uploaded photo through `IPhotoBlobStore` instead of taking the bytes in the request.
-2. A small persistent "scans to review" list in the client: when offline, Scan saves the photo (queued for upload) and a pending scan; once the photo is `Uploaded`, the scan runs and its draft is kept.
-3. A "Scans to review" entry (Home or Beans) that opens the existing review form with the kept draft.
+1. **Scan** (offline): the camera still works. The scan fails as "offline" and offers **Save the photo and read it when I am online**. That saves the photo like any other (`PhotoService.AddAsync`, so the upload queue sends it) and adds a pending scan to `PendingScanQueue`.
+2. **Reading**: `POST /ai/label-scans/{photoId}` takes only the id. The API checks the photo's record is in the caller's household, reads the file through `IPhotoBlobStore` and runs the same quota check, extraction and telemetry as the direct scan. It answers 404 (`photo-unknown` until the record has synced, `photo-not-uploaded` until the file has arrived) without counting against the quota.
+3. **The queue** (`Dialed.Client.Scan.PendingScanQueue`, collection `scans` in the local store) reads one scan at a time when something may have changed: a scan was added, the network came back, the app returned to the foreground, or a photo finished uploading. Offline, signed out, or the photo not being on the server yet is never a failure and the scan keeps waiting. A used-up quota or AI switched off marks it failed with that reason (a **Try again** button restarts it); three server errors in a row do the same. The draft is kept with the scan, across restarts.
+4. **Review**: Scan lists **Scans to review**; **Review** opens the existing review form with the kept draft and the photo that is already saved. A banner (`PendingScansNote`) shows "Scans to review: N" as a link, or a quiet "Label scans waiting for a connection: N".
+
+Not done: the queue does not retry on a timer. After a server error it waits for the next trigger above; a timer can be added if that turns out to be too passive.

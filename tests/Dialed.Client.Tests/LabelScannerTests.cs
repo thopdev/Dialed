@@ -99,4 +99,49 @@ public sealed class LabelScannerTests
 
         exception.Problem.ShouldBe(ScanProblem.Unavailable);
     }
+
+    [Fact]
+    public async Task A_stored_photo_is_scanned_by_id_with_no_body_and_the_token()
+    {
+        var handler = new Handler(HttpStatusCode.OK, Ok);
+
+        var label = await Scanner(handler).ScanStoredAsync("photo 1", Ct);
+
+        handler.Last!.Method.ShouldBe(HttpMethod.Post);
+        handler.Last.RequestUri!.AbsolutePath.ShouldBe("/ai/label-scans/photo%201");
+        handler.Last.Headers.Authorization!.Parameter.ShouldBe("t");
+        handler.Sent.ShouldBeNull();
+        label.Name.Value.ShouldBe("Guji");
+    }
+
+    [Fact]
+    public async Task A_stored_photo_the_server_does_not_have_yet_is_not_uploaded()
+    {
+        var exception = await Should.ThrowAsync<LabelScanException>(() => Scanner(new Handler(HttpStatusCode.NotFound, "{}")).ScanStoredAsync("p", Ct));
+
+        exception.Problem.ShouldBe(ScanProblem.NotUploaded);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.TooManyRequests, "{}", ScanProblem.QuotaUsed)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "{\"code\":\"ai-disabled\"}", ScanProblem.Disabled)]
+    [InlineData(HttpStatusCode.Unauthorized, "{}", ScanProblem.SignedOut)]
+    [InlineData(HttpStatusCode.BadGateway, "{}", ScanProblem.Unavailable)]
+    public async Task A_stored_photo_scan_maps_server_answers_like_a_direct_one(HttpStatusCode status, string body, ScanProblem expected)
+    {
+        var exception = await Should.ThrowAsync<LabelScanException>(() => Scanner(new Handler(status, body)).ScanStoredAsync("p", Ct));
+
+        exception.Problem.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task A_stored_photo_scan_never_reaches_the_server_signed_out_or_offline()
+    {
+        var handler = new Handler(HttpStatusCode.OK, Ok);
+
+        (await Should.ThrowAsync<LabelScanException>(() => Scanner(handler, token: null).ScanStoredAsync("p", Ct))).Problem.ShouldBe(ScanProblem.SignedOut);
+        (await Should.ThrowAsync<LabelScanException>(() => Scanner(handler, online: false).ScanStoredAsync("p", Ct))).Problem.ShouldBe(ScanProblem.Offline);
+
+        handler.Last.ShouldBeNull();
+    }
 }
