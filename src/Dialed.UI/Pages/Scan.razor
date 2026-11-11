@@ -18,6 +18,7 @@
 @inject IRepository<Bag> BagStore
 @inject IRepository<Vendor> VendorStore
 @inject NavigationManager Navigation
+@inject Dialed.Client.Catalog.ICatalogApi Catalog
 
 <PageHeader Title="@L["Scan_Title"]" BackHref="beans" />
 
@@ -118,6 +119,26 @@ else
             </fieldset>
         }
 
+        @if (match?.BestBean is null && catalogCandidates.Count > 0)
+        {
+            <section id="scan-catalog" class="dialed-catalog" aria-labelledby="scan-catalog-title">
+                <h3 id="scan-catalog-title">@L["Scan_CatalogTitle"]</h3>
+                <p class="dialed-muted">@L["Catalog_Hint"]</p>
+                <ul class="dialed-list">
+                    @foreach (var entry in catalogCandidates)
+                    {
+                        <li class="catalog-row" data-catalog="@entry.Id">
+                            <span class="catalog-text">
+                                <strong class="catalog-name">@entry.Name</strong>
+                                <span class="dialed-muted catalog-detail">@string.Join(" · ", new[] { entry.RoasterName, entry.Country, entry.Process }.Where(part => !string.IsNullOrWhiteSpace(part)))</span>
+                            </span>
+                            <button type="button" class="dialed-button catalog-use" aria-label="@string.Format(L["Catalog_UseNamed"].Value, entry.Name)" @onclick="() => UseCatalog(entry)">@L["Catalog_Use"]</button>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
         <div class="@Field(label.Country)">
             <label for="scan-country">@L["Bean_Country"]</label>
             <input id="scan-country" type="text" @bind="country" autocomplete="off" />
@@ -184,6 +205,7 @@ else
     [SupplyParameterFromQuery(Name = "barcode")]
     public string? Barcode { get; set; }
     private LabelMatch? match;
+    private IReadOnlyList<Dialed.Client.Catalog.CatalogBean> catalogCandidates = [];
     private ScanProblem? problem;
     private bool busy;
     private bool nameMissing;
@@ -314,6 +336,39 @@ else
         match = LabelMatcher.Find(roaster, name, country, await VendorStore.ListAsync(), await BeanStore.ListAsync());
         linkRoaster = true;
         linkBean = true;
+        await FindCatalogAsync();
+    }
+
+    /// <summary>Nothing of my own matches: offer what other people share (#105). Online only, optional, never an error.</summary>
+    private async Task FindCatalogAsync()
+    {
+        catalogCandidates = [];
+        if (match?.BestBean is not null || string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        catalogCandidates = [.. (await Catalog.SearchBeansAsync(name, roaster)).Take(3)];
+    }
+
+    /// <summary>Copies what the catalog knows into the form. The label stays the truth for the name and the roaster.</summary>
+    private void UseCatalog(Dialed.Client.Catalog.CatalogBean entry)
+    {
+        country = entry.Country ?? country;
+        region = entry.Region ?? region;
+        process = entry.Process ?? process;
+        if (entry.Varieties.Count > 0)
+        {
+            varieties = string.Join(", ", entry.Varieties);
+        }
+
+        roastLevel = entry.RoastLevel?.ToString() ?? roastLevel;
+        if (entry.TastingNotes.Count > 0)
+        {
+            notes = string.Join(", ", entry.TastingNotes);
+        }
+
+        catalogCandidates = [];
     }
 
     private void Reset()
@@ -322,6 +377,7 @@ else
         photo = null;
         queuedPhotoId = null;
         match = null;
+        catalogCandidates = [];
         nameMissing = false;
     }
 

@@ -1,0 +1,94 @@
+@implements IDisposable
+@using Dialed.Client.Catalog
+@using Dialed.Domain.Model
+@inject ICatalogApi Catalog
+@inject IStringLocalizer<Strings> L
+
+@* Suggestions from the shared catalog (#105) while a bean is typed. Optional and online only: with nothing to suggest this shows nothing.
+   "Use this" copies the entry into the form; it is never linked, and everything stays editable. *@
+@if (results.Count > 0)
+{
+    <section id="bean-catalog" class="dialed-catalog" aria-labelledby="bean-catalog-title">
+        <h3 id="bean-catalog-title">@L["Catalog_Title"]</h3>
+        <p class="dialed-muted">@L["Catalog_Hint"]</p>
+        <ul class="dialed-list">
+            @foreach (var bean in results)
+            {
+                <li class="catalog-row" data-catalog="@bean.Id">
+                    <span class="catalog-text">
+                        <strong class="catalog-name">@bean.Name</strong>
+                        <span class="dialed-muted catalog-detail">@Detail(bean)</span>
+                    </span>
+                    <button type="button" class="dialed-button catalog-use" aria-label="@string.Format(L["Catalog_UseNamed"].Value, bean.Name)" @onclick="() => OnUse.InvokeAsync(bean)">@L["Catalog_Use"]</button>
+                </li>
+            }
+        </ul>
+    </section>
+}
+
+@code {
+    private const int DelayMs = 350;
+
+    private CancellationTokenSource? pending;
+    private string lastQuery = "";
+    private string? lastRoaster;
+    private IReadOnlyList<CatalogBean> results = [];
+
+    /// <summary>What is typed in the name field; fewer than two letters suggests nothing.</summary>
+    [Parameter]
+    public string Query { get; set; } = "";
+
+    /// <summary>The roaster picked so far, to narrow the suggestions.</summary>
+    [Parameter]
+    public string? Roaster { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<CatalogBean> OnUse { get; set; }
+
+    /// <summary>Waits a moment after the last keystroke (and drops an answer that arrives too late) so typing is not one request per key.</summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        var query = Query.Trim();
+        if (query == lastQuery && Roaster == lastRoaster)
+        {
+            return;
+        }
+
+        (lastQuery, lastRoaster) = (query, Roaster);
+        pending?.Cancel();
+        if (query.Length < 2)
+        {
+            results = [];
+            return;
+        }
+
+        var source = pending = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(DelayMs, source.Token);
+            var found = await Catalog.SearchBeansAsync(query, Roaster, source.Token);
+            if (!source.IsCancellationRequested)
+            {
+                results = [.. found.Take(5)];
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Typing went on: the next keystroke asks again.
+        }
+    }
+
+    private string Detail(CatalogBean bean) => string.Join(" · ", new[]
+    {
+        bean.RoasterName,
+        bean.Country,
+        bean.Process,
+        string.Format(L["Catalog_People"].Value, bean.People),
+    }.Where(part => !string.IsNullOrWhiteSpace(part)));
+
+    public void Dispose()
+    {
+        pending?.Cancel();
+        pending?.Dispose();
+    }
+}

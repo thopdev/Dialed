@@ -11,13 +11,14 @@ public sealed class PrivacyTests : UiTestContext
     {
         var page = Render<Privacy>();
 
-        foreach (var section in new[] { "stored", "account", "photos", "sharing", "public", "ai", "errors", "push", "control", "contact" })
+        foreach (var section in new[] { "stored", "account", "photos", "sharing", "public", "catalog", "ai", "errors", "push", "control", "contact" })
         {
             page.FindAll($"#privacy-{section} h2").Count.ShouldBe(1, section);
         }
 
         page.Find("#privacy-push").TextContent.ShouldContain("encrypted");
         page.Find("#privacy-public").TextContent.ShouldContain("switch it off");
+        page.Find("#privacy-catalog").TextContent.ShouldContain("at least two different people");
         page.Find("#privacy-ai").TextContent.ShouldContain("Microsoft Foundry");
         page.Find("#privacy-account").TextContent.ShouldContain("passkeys");
         page.Find("#privacy-control").TextContent.ShouldContain("export");

@@ -4,6 +4,7 @@
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Vendor> Vendors
+@inject Dialed.Client.Catalog.ICatalogApi Catalog
 
 @* Pick a vendor while filling in another form: type to find (forgiving of typos), or create it on the spot with just a name. *@
 <div class="dialed-picker">
@@ -38,6 +39,15 @@
                         </button>
                     </li>
                 }
+                @foreach (var entry in catalog)
+                {
+                    <li role="option">
+                        <button type="button" class="dialed-picker-option dialed-picker-catalog" data-catalog="@entry.Id" aria-label="@string.Format(L["Catalog_UseNamed"].Value, entry.Name)" @onclick="() => UseCatalogAsync(entry)">
+                            @entry.Name
+                            <span class="dialed-picker-detail">@string.Join(", ", new[] { entry.City, entry.Country }.Where(part => !string.IsNullOrEmpty(part)).Append(L["Catalog_FromCatalog"].Value))</span>
+                        </button>
+                    </li>
+                }
                 @if (CanCreate)
                 {
                     <li role="option">
@@ -60,6 +70,12 @@
     private Vendor? selected;
     private string query = "";
     private string? lastSelectedId;
+    private IReadOnlyList<Dialed.Client.Catalog.CatalogRoaster> catalog = [];
+    private CancellationTokenSource? catalogSearch;
+
+    /// <summary>Also suggest roasters from the shared catalog (#105); choosing one copies it into my vendors.</summary>
+    [Parameter]
+    public bool UseCatalog { get; set; }
 
     /// <summary>Id of the chosen vendor, or <c>null</c>.</summary>
     [Parameter]
@@ -75,10 +91,10 @@
     [Parameter]
     public string? Label { get; set; }
 
-    private bool HasSuggestions => query.Trim().Length > 0;
+    private bool HasSuggestions => query.Trim().Length > 0 && (suggestions.Count > 0 || catalog.Count > 0 || CanCreate);
 
     /// <summary>"Create ..." is offered unless a vendor with exactly that name already exists.</summary>
-    private bool CanCreate => HasSuggestions
+    private bool CanCreate => query.Trim().Length > 0
         && !all.Any(vendor => FuzzyMatch.Normalize(vendor.Name) == FuzzyMatch.Normalize(query));
 
     protected override async Task OnInitializedAsync()
@@ -110,10 +126,43 @@
         StateHasChanged();
     });
 
-    private void OnInput(ChangeEventArgs args)
+    private async Task OnInput(ChangeEventArgs args)
     {
         query = args.Value?.ToString() ?? "";
         Refresh();
+        await SearchCatalogAsync();
+    }
+
+    /// <summary>Roasters from the catalog that I do not have yet, a moment after the last keystroke. Never needed, never an error.</summary>
+    private async Task SearchCatalogAsync()
+    {
+        catalogSearch?.Cancel();
+        catalog = [];
+        if (!UseCatalog || Kind != VendorKinds.Roaster || query.Trim().Length < 2)
+        {
+            return;
+        }
+
+        var source = catalogSearch = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(350, source.Token);
+            var found = await Catalog.SearchRoastersAsync(query.Trim(), source.Token);
+            if (!source.IsCancellationRequested)
+            {
+                catalog = [.. found.Where(entry => !all.Any(vendor => FuzzyMatch.Normalize(vendor.Name) == FuzzyMatch.Normalize(entry.Name))).Take(3)];
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task UseCatalogAsync(Dialed.Client.Catalog.CatalogRoaster entry)
+    {
+        var created = await Vendors.SaveAsync(new Vendor { Name = entry.Name, Kinds = Kind, Country = entry.Country, City = entry.City, Website = entry.Website });
+        catalog = [];
+        await SelectAsync(created);
     }
 
     private void Refresh() => suggestions = FuzzyMatch.Rank(all, query, vendor => vendor.Name);
@@ -140,5 +189,9 @@
         await SelectedIdChanged.InvokeAsync(null);
     }
 
-    public void Dispose() => Vendors.Changed -= OnVendorsChanged;
+    public void Dispose()
+    {
+        Vendors.Changed -= OnVendorsChanged;
+        catalogSearch?.Cancel();
+    }
 }

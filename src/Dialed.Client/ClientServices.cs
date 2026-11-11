@@ -24,6 +24,7 @@ public static class ClientServices
         services.TryAddSingleton<ICurrentContext, LocalContext>();
         services.TryAddSingleton<ILocalStore, InMemoryLocalStore>();
         services.TryAddSingleton<StorageStatus>();
+        services.TryAddSingleton<Catalog.ICatalogApi>(Catalog.NoCatalog.Instance);
         services.TryAddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
         return services;
     }
@@ -134,6 +135,17 @@ public static class ClientServices
         services.TryAddSingleton<IPushNotifications>(UnsupportedPushNotifications.Instance);
         services.TryAddSingleton(api);
         services.TryAddSingleton<Push.PushNotificationService>();
+        return services;
+    }
+
+    /// <summary>Registers the shared bean and roaster catalog (#105). <paramref name="catalog"/> creates the API client, so the host decides the base address.</summary>
+    public static IServiceCollection AddDialedCatalog(this IServiceCollection services, Func<IServiceProvider, Catalog.ICatalogApi> catalog)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(catalog);
+
+        services.RemoveAll<Catalog.ICatalogApi>();
+        services.AddSingleton(catalog);
         return services;
     }
 
