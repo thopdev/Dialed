@@ -55,7 +55,7 @@ public interface IScanQueue
 /// <summary>
 /// The scan queue. It reads one scan at a time, whenever something may have changed: a scan was added, the network came back, the app
 /// returned to the foreground or a photo finished uploading. Being offline, signed out or waiting for the upload never counts as a failure;
-/// server trouble does, three times in a row.
+/// server trouble does, three times in a row, with a short wait (30 s, then 60 s) before each new try.
 /// </summary>
 public sealed class PendingScanQueue : IScanQueue, ILoadable, IDisposable
 {
@@ -63,6 +63,9 @@ public sealed class PendingScanQueue : IScanQueue, ILoadable, IDisposable
 
     /// <summary>Server errors in a row before the queue gives up on a scan.</summary>
     public const int MaxFailures = 3;
+
+    /// <summary>How long to wait before reading again after a server error: this times the number of errors so far (30 s, then 60 s).</summary>
+    public static readonly TimeSpan RetryStep = TimeSpan.FromSeconds(30);
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -74,6 +77,7 @@ public sealed class PendingScanQueue : IScanQueue, ILoadable, IDisposable
     private readonly TimeProvider time;
     private readonly Lock gate = new();
     private readonly Dictionary<string, Entry> entries = new(StringComparer.Ordinal);
+    private ITimer? retryTimer;
     private bool running;
     private bool runAgain;
     private bool started;
@@ -296,6 +300,7 @@ public sealed class PendingScanQueue : IScanQueue, ILoadable, IDisposable
         connectivity.Changed -= OnConnectivityChanged;
         lifecycle.Resumed -= Kick;
         photos.Changed -= Kick;
+        retryTimer?.Dispose();
     }
 
     private List<string> WaitingIds()
@@ -351,12 +356,18 @@ public sealed class PendingScanQueue : IScanQueue, ILoadable, IDisposable
                     await UpdateAsync(photoId, e => e with { Status = PendingScanStatus.Failed, Problem = exception.Problem }, cancellationToken);
                     return true;
                 default:
+                    var failures = FailuresOf(photoId) + 1;
                     await UpdateAsync(
                         photoId,
-                        e => e.Failures + 1 >= MaxFailures
-                            ? e with { Status = PendingScanStatus.Failed, Failures = e.Failures + 1, Problem = exception.Problem }
-                            : e with { Status = PendingScanStatus.Waiting, Failures = e.Failures + 1 },
+                        e => failures >= MaxFailures
+                            ? e with { Status = PendingScanStatus.Failed, Failures = failures, Problem = exception.Problem }
+                            : e with { Status = PendingScanStatus.Waiting, Failures = failures },
                         cancellationToken);
+                    if (failures < MaxFailures)
+                    {
+                        ScheduleRetry(RetryStep * failures);
+                    }
+
                     return true;
             }
         }
@@ -378,6 +389,29 @@ public sealed class PendingScanQueue : IScanQueue, ILoadable, IDisposable
         {
             await PersistAsync(next, cancellationToken);
             Changed?.Invoke();
+        }
+    }
+
+    private int FailuresOf(string photoId)
+    {
+        lock (gate)
+        {
+            return entries.TryGetValue(photoId, out var entry) ? entry.Failures : 0;
+        }
+    }
+
+    /// <summary>Reads again after <paramref name="delay"/>. One timer at a time: a later error replaces it, and any trigger in between reads sooner.</summary>
+    private void ScheduleRetry(TimeSpan delay)
+    {
+        lock (gate)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            retryTimer?.Dispose();
+            retryTimer = time.CreateTimer(_ => Kick(), null, delay, Timeout.InfiniteTimeSpan);
         }
     }
 
