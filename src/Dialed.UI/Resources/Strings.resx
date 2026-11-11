@@ -1006,6 +1006,7 @@
   <data name="Calendar_Roasted" xml:space="preserve"><value>Roast day</value></data>
   <data name="Calendar_Description" xml:space="preserve"><value>{0} brews in the last {1} weeks; busiest day {2} with {3}</value></data>
   <data name="Calendar_DescriptionEmpty" xml:space="preserve"><value>No brews in the last {0} weeks</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: show beans</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Flavour wheel</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Tasting notes by flavour: {0}</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruity</value></data>
