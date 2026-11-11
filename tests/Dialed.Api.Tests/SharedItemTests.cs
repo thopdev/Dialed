@@ -76,6 +76,10 @@ public sealed class SharedItemTests(WebApplicationFactory<Program> factory) : IC
     {
         using var alice = await ClientFor("alice");
         using var carol = await ClientFor("carol");
+
+        // The dev people are shared by the tests of this class, which run in no fixed order: start from carol being a stranger.
+        await alice.DeleteAsync("/friends/followers/dev-carol", Ct);
+        await alice.DeleteAsync("/friends/blocks/dev-carol", Ct);
         var bean = await Put(alice, "beans", new JsonObject { ["name"] = "S3 friends", ["visibility"] = VisibilityRules.Friends });
 
         (await carol.GetAsync($"/friends/dev-alice/shared/beans/{bean}", Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
