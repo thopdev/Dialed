@@ -105,6 +105,7 @@ else
         <div class="dialed-form-actions">
             <button id="admin-rebuild" type="button" class="dialed-button" @onclick="RebuildAsync">@L["Admin_Rebuild"]</button>
         </div>
+
         @if (mergeFrom is not null)
         {
             <p id="admin-merging" class="dialed-banner dialed-banner-info" role="status">
@@ -139,6 +140,41 @@ else
                 </li>
             }
         </ul>
+
+        @if (hidden.Count > 0)
+        {
+            <section id="admin-hidden-section" aria-labelledby="admin-hidden-title">
+                <h2 id="admin-hidden-title">@L["Admin_HiddenTitle"]</h2>
+                <ul id="admin-hidden" class="dialed-list">
+                    @foreach (var entry in hidden)
+                    {
+                        <li class="admin-entry" data-hidden="@entry.Id">
+                            <span class="admin-text">
+                                <strong>@entry.Name</strong>
+                                <span class="dialed-muted">@string.Format(L["Admin_EntryLine"].Value, L[$"Admin_Kind_{entry.Kind}"].Value, entry.People)</span>
+                            </span>
+                            <button type="button" class="dialed-button admin-unhide" aria-label="@string.Format(L["Admin_UnhideNamed"].Value, entry.Name)" @onclick="() => UnhideAsync(entry)">@L["Admin_Unhide"]</button>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
+        @if (merges.Count > 0)
+        {
+            <section id="admin-merges-section" aria-labelledby="admin-merges-title">
+                <h2 id="admin-merges-title">@L["Admin_MergesTitle"]</h2>
+                <ul id="admin-merges" class="dialed-list">
+                    @foreach (var merge in merges)
+                    {
+                        <li class="admin-entry admin-merge-rule">
+                            <span class="admin-text"><span class="admin-key">@merge.KeyA</span><span class="dialed-muted" aria-hidden="true">+</span><span class="admin-key">@merge.KeyB</span></span>
+                            <button type="button" class="dialed-button admin-unmerge" aria-label="@string.Format(L["Admin_UnmergeNamed"].Value, merge.KeyA, merge.KeyB)" @onclick="() => UnmergeAsync(merge)">@L["Admin_Unmerge"]</button>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
     }
 }
 
@@ -156,6 +192,8 @@ else
     private IReadOnlyList<AdminSuspended> suspended = [];
     private IReadOnlyList<AdminEntry> entries = [];
     private AdminEntry? mergeFrom;
+    private IReadOnlyList<AdminEntry> hidden = [];
+    private IReadOnlyList<AdminMerge> merges = [];
 
     protected override void OnInitialized() => unlocked = Api.IsUnlocked;
 
@@ -196,6 +234,8 @@ else
         reports = [];
         suspended = [];
         entries = [];
+        hidden = [];
+        merges = [];
         problem = null;
         message = null;
         return Task.CompletedTask;
@@ -221,6 +261,8 @@ else
                 break;
             default:
                 entries = await Api.EntriesAsync();
+                hidden = await Api.HiddenAsync();
+                merges = (await Api.RulesAsync()).Merges;
                 break;
         }
     }
@@ -285,6 +327,20 @@ else
             await Api.HideAsync(entry.Id);
             await LoadAsync();
         }, string.Format(L["Admin_Hidden"].Value, entry.Name));
+
+    private Task UnhideAsync(AdminEntry entry) =>
+        RunAsync(async () =>
+        {
+            await Api.UnhideAsync(entry.Id);
+            await LoadAsync();
+        }, string.Format(L["Admin_Unhidden"].Value, entry.Name));
+
+    private Task UnmergeAsync(AdminMerge merge) =>
+        RunAsync(async () =>
+        {
+            await Api.UnmergeAsync(merge.KeyA, merge.KeyB);
+            await LoadAsync();
+        }, L["Admin_Unmerged"].Value);
 
     private Task MergeAsync(AdminEntry from, AdminEntry into)
     {

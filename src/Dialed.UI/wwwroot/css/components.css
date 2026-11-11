@@ -2707,3 +2707,15 @@ a.people-row-name {
     gap: var(--dialed-space-2);
     justify-content: flex-end;
 }
+
+.admin-key {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--dialed-text-s);
+}
+
+#admin-hidden-title,
+#admin-merges-title {
+    margin: var(--dialed-space-4) 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}

@@ -159,7 +159,7 @@ public sealed class AdminUiTests : UiTestContext
         var page = Unlocked("catalog");
 
         page.FindAll("#admin-entries .admin-entry").Select(e => e.TextContent).ShouldContain(t => t.Contains("Thin Bean") && t.Contains("2 people"));
-        page.FindAll(".admin-entry").Count.ShouldBe(3);
+        page.FindAll("#admin-entries .admin-entry").Count.ShouldBe(3);
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public sealed class AdminUiTests : UiTestContext
         page.Find("[data-entry='b-1'] .admin-hide").Click();
 
         page.WaitForAssertion(() => page.Find("#admin-problem").TextContent.ShouldBe("That no longer exists."));
-        page.FindAll(".admin-entry").Count.ShouldBe(3);
+        page.FindAll("#admin-entries .admin-entry").Count.ShouldBe(3);
     }
 
     [Fact]
@@ -234,5 +234,43 @@ public sealed class AdminUiTests : UiTestContext
         page.Find("#admin-unlock-form").Submit();
 
         page.WaitForAssertion(() => page.Find("#admin-problem").TextContent.ShouldContain("Too many tries"));
+    }
+
+    // ---- Bringing things back -----------------------------------------------------------------
+
+    [Fact]
+    public void Hidden_entries_are_listed_and_can_be_brought_back()
+    {
+        var page = Unlocked("catalog");
+
+        page.Find("#admin-hidden [data-hidden='b-9']").TextContent.ShouldContain("Junk Bean");
+        page.Find(".admin-unhide").GetAttribute("aria-label").ShouldBe("Bring Junk Bean back into the catalog");
+        page.Find(".admin-unhide").Click();
+
+        page.WaitForAssertion(() => page.Find("#admin-message").TextContent.ShouldBe("Junk Bean is back in the catalog."));
+        AdminServer.Calls.ShouldContain("POST admin/catalog/entries/b-9/unhide");
+    }
+
+    [Fact]
+    public void Merges_are_listed_and_can_be_undone()
+    {
+        var page = Unlocked("catalog");
+
+        page.Find("#admin-merges").TextContent.ShouldContain("friedhats|guji|ethiopia");
+        page.Find(".admin-unmerge").Click();
+
+        page.WaitForAssertion(() => page.Find("#admin-message").TextContent.ShouldBe("The merge was undone."));
+        AdminServer.Calls.ShouldContain("POST admin/catalog/unmerge");
+    }
+
+    [Fact]
+    public void With_nothing_hidden_or_merged_those_sections_are_not_shown()
+    {
+        AdminServer.HiddenJson = "[]";
+        AdminServer.RulesJson = "{\"hiddenKeys\":[],\"merges\":[]}";
+
+        var page = Unlocked("catalog");
+
+        page.FindAll("#admin-hidden-section, #admin-merges-section").ShouldBeEmpty();
     }
 }
