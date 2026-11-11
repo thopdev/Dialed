@@ -34,7 +34,10 @@ public static class PushEndpoints
                 options.PrivateKey = keys.PrivateKey;
             }
         });
-        services.AddSingleton<IPushStore, InMemoryPushStore>();
+        // With Push:StorePath the devices, switches and stock alert memory survive a restart (development and one instance); without it they are in memory.
+        services.AddSingleton<IPushStore>(sp => configuration["Push:StorePath"] is { Length: > 0 } path
+            ? new FilePushStore(path, sp.GetRequiredService<ILogger<FilePushStore>>())
+            : new InMemoryPushStore());
         services.AddSingleton<IPushSender>(sp => sp.GetRequiredService<IOptions<PushOptions>>().Value.IsConfigured
             ? ActivatorUtilities.CreateInstance<WebPushSender>(sp)
             : new NoPushSender());

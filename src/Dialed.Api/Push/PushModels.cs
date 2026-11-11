@@ -69,12 +69,60 @@ public interface IPushStore
     Task SaveAlertStateAsync(string userId, StockAlertState state, CancellationToken cancellationToken = default);
 }
 
-public sealed class InMemoryPushStore : IPushStore
+/// <summary>Everything a push store holds, as plain data (sets as arrays) so it can be written to a file.</summary>
+public sealed record PushStoreSnapshot(
+    IReadOnlyList<PushSubscription> Subscriptions,
+    IReadOnlyDictionary<string, PushSettings> Settings,
+    IReadOnlyDictionary<string, PushAlertStateData> AlertStates);
+
+public sealed record PushAlertStateData(DateOnly? LastHandled, IReadOnlyList<string> Low, IReadOnlyList<string> Peak);
+
+public class InMemoryPushStore : IPushStore
 {
     private readonly Lock gate = new();
     private readonly Dictionary<string, PushSubscription> byEndpoint = new(StringComparer.Ordinal);
     private readonly Dictionary<string, PushSettings> settings = new(StringComparer.Ordinal);
     private readonly Dictionary<string, StockAlertState> alertStates = new(StringComparer.Ordinal);
+
+    /// <summary>Called, outside the lock, after every change. A persisting store writes its file here.</summary>
+    protected virtual void OnChanged()
+    {
+    }
+
+    public PushStoreSnapshot Snapshot()
+    {
+        lock (gate)
+        {
+            return new PushStoreSnapshot(
+                [.. byEndpoint.Values],
+                new Dictionary<string, PushSettings>(settings),
+                alertStates.ToDictionary(a => a.Key, a => new PushAlertStateData(a.Value.LastHandled, [.. a.Value.Memory.Low], [.. a.Value.Memory.Peak])));
+        }
+    }
+
+    public void Restore(PushStoreSnapshot snapshot)
+    {
+        lock (gate)
+        {
+            byEndpoint.Clear();
+            settings.Clear();
+            alertStates.Clear();
+            foreach (var subscription in snapshot.Subscriptions)
+            {
+                byEndpoint[subscription.Endpoint] = subscription;
+            }
+
+            foreach (var (user, value) in snapshot.Settings)
+            {
+                settings[user] = value;
+            }
+
+            foreach (var (user, value) in snapshot.AlertStates)
+            {
+                alertStates[user] = new StockAlertState(value.LastHandled, new StockAlertMemory(new HashSet<string>(value.Low, StringComparer.Ordinal), new HashSet<string>(value.Peak, StringComparer.Ordinal)));
+            }
+        }
+    }
 
     public Task SaveAsync(PushSubscription subscription, CancellationToken cancellationToken = default)
     {
@@ -83,15 +131,24 @@ public sealed class InMemoryPushStore : IPushStore
             byEndpoint[subscription.Endpoint] = subscription;
         }
 
+        OnChanged();
         return Task.CompletedTask;
     }
 
     public Task<bool> RemoveAsync(string userId, string endpoint, CancellationToken cancellationToken = default)
     {
+        bool removed;
         lock (gate)
         {
-            return Task.FromResult(byEndpoint.TryGetValue(endpoint, out var found) && found.UserId == userId && byEndpoint.Remove(endpoint));
+            removed = byEndpoint.TryGetValue(endpoint, out var found) && found.UserId == userId && byEndpoint.Remove(endpoint);
         }
+
+        if (removed)
+        {
+            OnChanged();
+        }
+
+        return Task.FromResult(removed);
     }
 
     public Task<IReadOnlyList<PushSubscription>> ListAsync(string userId, CancellationToken cancellationToken = default)
@@ -117,6 +174,7 @@ public sealed class InMemoryPushStore : IPushStore
             settings[userId] = value;
         }
 
+        OnChanged();
         return Task.CompletedTask;
     }
 
@@ -133,6 +191,7 @@ public sealed class InMemoryPushStore : IPushStore
             alertStates.Remove(userId);
         }
 
+        OnChanged();
         return Task.CompletedTask;
     }
 
@@ -159,6 +218,7 @@ public sealed class InMemoryPushStore : IPushStore
             alertStates[userId] = state;
         }
 
+        OnChanged();
         return Task.CompletedTask;
     }
 }
