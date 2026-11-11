@@ -622,7 +622,7 @@
   <data name="Stats_Grind" xml:space="preserve"><value>Maalstand per molen</value></data>
   <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log bereidingen met een molen en maalstand om trends te zien.</value></data>
   <data name="Stats_NothingYet" xml:space="preserve"><value>Nog niets.</value></data>
-  <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} bereidingen</value></data>
+  <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} brews</value></data>
   <data name="Scan_Title" xml:space="preserve"><value>Label scannen</value></data>
   <data name="Scan_Hint" xml:space="preserve"><value>Houd de zak zo dat het hele etiket in beeld is, bij goed licht, en maak een foto. Je kunt alles controleren en aanpassen voordat het wordt opgeslagen.</value></data>
   <data name="Scan_Reading" xml:space="preserve"><value>Etiket lezen…</value></data>
@@ -999,43 +999,43 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} mensen</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>gedeeld door {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Kaart met een markering voor elke herkomst: {0}</value></data>
-  <data name="DialIn_Axis" xml:space="preserve"><value>Oudste naar nieuwste zetting</value></data>
-  <data name="DialIn_Description" xml:space="preserve"><value>Maalinstelling over {0} zettingen, van {1} naar {2}</value></data>
-  <data name="DialIn_Best" xml:space="preserve"><value>Best beoordeeld: maling {0}, {1} sterren, {2}</value></data>
-  <data name="DialIn_Settled" xml:space="preserve"><value>De laatste drie zettingen hadden bijna dezelfde maling: deze zit goed.</value></data>
+  <data name="DialIn_Axis" xml:space="preserve"><value>Oudste naar nieuwste brew</value></data>
+  <data name="DialIn_Description" xml:space="preserve"><value>Maalstand over {0} brews, van {1} naar {2}</value></data>
+  <data name="DialIn_Best" xml:space="preserve"><value>Hoogste score: maalstand {0}, {1} sterren, {2}</value></data>
+  <data name="DialIn_Settled" xml:space="preserve"><value>De laatste drie brews hadden bijna dezelfde maalstand: deze is ingesteld.</value></data>
   <data name="Bean_DialInTrace" xml:space="preserve"><value>Dial-in-verloop</value></data>
-  <data name="Calendar_Title" xml:space="preserve"><value>Zetkalender</value></data>
+  <data name="Calendar_Title" xml:space="preserve"><value>Brewkalender</value></data>
   <data name="Calendar_Less" xml:space="preserve"><value>Minder</value></data>
   <data name="Calendar_More" xml:space="preserve"><value>Meer</value></data>
-  <data name="Calendar_Roasted" xml:space="preserve"><value>Brandingsdag</value></data>
-  <data name="Calendar_Description" xml:space="preserve"><value>{0} zettingen in de afgelopen {1} weken; drukste dag {2} met {3}</value></data>
-  <data name="Calendar_DescriptionEmpty" xml:space="preserve"><value>Geen zettingen in de afgelopen {0} weken</value></data>
-  <data name="Card_Share" xml:space="preserve"><value>Deel een plaatje van deze zetting</value></data>
+  <data name="Calendar_Roasted" xml:space="preserve"><value>Branddag</value></data>
+  <data name="Calendar_Description" xml:space="preserve"><value>{0} brews in de afgelopen {1} weken; drukste dag {2} met {3}</value></data>
+  <data name="Calendar_DescriptionEmpty" xml:space="preserve"><value>Geen brews in de afgelopen {0} weken</value></data>
+  <data name="Card_Share" xml:space="preserve"><value>Deel een afbeelding van deze brew</value></data>
   <data name="Card_Failed" xml:space="preserve"><value>Het plaatje kon op dit apparaat niet worden gemaakt.</value></data>
   <data name="Card_Footer" xml:space="preserve"><value>Gezet op {0} met Dialed</value></data>
-  <data name="Passport_Title" xml:space="preserve"><value>Landen geprobeerd</value></data>
+  <data name="Passport_Title" xml:space="preserve"><value>Geprobeerde landen</value></data>
   <data name="Passport_Progress" xml:space="preserve"><value>{0} van {1} koffielanden</value></data>
   <data name="Passport_ToTry" xml:space="preserve"><value>Nog te proberen ({0})</value></data>
-  <data name="Passport_None" xml:space="preserve"><value>Zet koffie uit een nieuw land om je paspoort te beginnen.</value></data>
+  <data name="Passport_None" xml:space="preserve"><value>Zet koffie uit een nieuw land om je paspoort te starten.</value></data>
   <data name="Milestone_Title" xml:space="preserve"><value>Mijlpalen</value></data>
   <data name="Milestone_None" xml:space="preserve"><value>Zet een paar koffies en je eerste mijlpaal verschijnt hier.</value></data>
-  <data name="Milestone_Brews" xml:space="preserve"><value>{0} zettingen</value></data>
+  <data name="Milestone_Brews" xml:space="preserve"><value>{0} brews</value></data>
   <data name="Milestone_Origins" xml:space="preserve"><value>{0} herkomsten</value></data>
-  <data name="Milestone_Roasters" xml:space="preserve"><value>{0} branderijen</value></data>
+  <data name="Milestone_Roasters" xml:space="preserve"><value>{0} branders</value></data>
   <data name="Milestone_Streak" xml:space="preserve"><value>{0} dagen op rij</value></data>
   <data name="Milestone_Next" xml:space="preserve"><value>Volgende: {0} (nog {1})</value></data>
   <data name="Count_Days_One" xml:space="preserve"><value>{0} dag</value></data>
   <data name="Count_Days_Other" xml:space="preserve"><value>{0} dagen</value></data>
   <data name="Milestone_CurrentStreak" xml:space="preserve"><value>Huidige reeks: {0}</value></data>
-  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: toon bonen</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: bonen tonen</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Smaakwiel</value></data>
-  <data name="Flavor_Description" xml:space="preserve"><value>Smaaknoten per smaak: {0}</value></data>
+  <data name="Flavor_Description" xml:space="preserve"><value>Smaaknotities per smaakgroep: {0}</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruitig</value></data>
   <data name="Flavor_Floral" xml:space="preserve"><value>Bloemig</value></data>
   <data name="Flavor_Sweet" xml:space="preserve"><value>Zoet</value></data>
   <data name="Flavor_NuttyCocoa" xml:space="preserve"><value>Noten en cacao</value></data>
   <data name="Flavor_Spices" xml:space="preserve"><value>Kruiden</value></data>
   <data name="Flavor_Roasted" xml:space="preserve"><value>Gebrand</value></data>
-  <data name="Flavor_GreenVegetative" xml:space="preserve"><value>Groen en kruidig</value></data>
+  <data name="Flavor_GreenVegetative" xml:space="preserve"><value>Groen en plantaardig</value></data>
   <data name="Flavor_SourFermented" xml:space="preserve"><value>Zuur en gefermenteerd</value></data>
 </root>
