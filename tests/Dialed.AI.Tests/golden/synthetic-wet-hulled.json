@@ -1,0 +1,20 @@
+{
+  "id": "synthetic-wet-hulled",
+  "image": "synthetic-wet-hulled.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "Monospaced, tilted the other way; weight printed in grams and pounds.",
+  "tags": ["rotated", "units"],
+  "expected": {
+    "name": "Gayo Highlands",
+    "roaster": "Stonefield Coffee",
+    "country": "Indonesia",
+    "region": "Aceh",
+    "process": "Wet hulled",
+    "varieties": "Ateng, Tim Tim",
+    "roastLevel": "medium-dark",
+    "tastingNotes": "cedar, dark chocolate, tobacco",
+    "roastDate": "2026-07-05",
+    "weightG": "454"
+  }
+}

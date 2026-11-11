@@ -136,3 +136,69 @@ test('settings page opens with every section', async ({ page }) => {
   await expect(page.locator('#settings-units')).toBeVisible();
   await expect(page.locator('#settings-version')).toContainText('Version');
 });
+
+// ---- Accounts and sync, against the Development API that playwright.config.ts starts (#110) ----------------------------
+
+type DevUser = 'alice' | 'bob' | 'carol';
+
+// Signs in through the Development-only dev login: the test fetches tokens from /auth/dev (no credentials) and puts them where
+// the app keeps its sign-in, exactly as a finished passkey sign-in would. Call before startApp.
+async function signInAs(page: Page, user: DevUser) {
+  const response = await page.request.post('/auth/dev', { data: { user } });
+  expect(response.ok(), `POST /auth/dev as ${user}`).toBe(true);
+  const tokens = await response.json() as { accessToken: string; displayName: string };
+  await page.addInitScript(json => localStorage.setItem('dialed.session.v1', json), JSON.stringify(tokens));
+  return tokens;
+}
+
+async function openSettings(page: Page) {
+  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Settings' }).click();
+}
+
+test('signs in with the dev login and shows the account and household', async ({ page }) => {
+  await signInAs(page, 'alice');
+  await skipSetup(page);
+
+  await openSettings(page);
+
+  await expect(page.locator('#account-signed-in')).toContainText('Alice');
+  await expect(page.locator('#account-signup-form')).toHaveCount(0);
+  await expect(page.locator('#household-name')).toHaveText('Alice and Bob');
+  await expect(page.locator('#household-members')).toContainText('Bob');
+});
+
+test('a bean added by one household member reaches the other', async ({ page, browser }) => {
+  // Two cold app starts (Alice's device, then Bob's) in one test.
+  test.slow();
+  const beanName = `Synced ${test.info().project.name} ${Date.now()}`;
+
+  const alice = await signInAs(page, 'alice');
+  await skipSetup(page);
+  // Through the Beans tab, not Home's "first bean" button: the shared household may already hold beans from other tests.
+  await page.getByRole('link', { name: 'Beans', exact: true }).click();
+  await page.locator('a[href="beans/new"]').first().click();
+  await page.locator('#bean-name').fill(beanName);
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL(/\/beans\/[0-9a-f-]{36}$/);
+
+  // The app pushes shortly after a change; wait until the server has the bean before Bob opens the app.
+  await expect.poll(async () => {
+    const response = await page.request.get('/sync/beans', { headers: { authorization: `Bearer ${alice.accessToken}` } });
+    return response.ok() ? await response.text() : '';
+  }, { timeout: 30_000 }).toContain(beanName);
+
+  // Bob is on another device: a fresh browser context with its own storage, same iPhone or iPad profile.
+  const bobContext = await browser.newContext(test.info().project.use);
+  try {
+    const bobPage = await bobContext.newPage();
+    await signInAs(bobPage, 'bob');
+    await skipSetup(bobPage);
+    await bobPage.getByRole('link', { name: 'Beans', exact: true }).click();
+
+    await expect(bobPage.getByText(beanName)).toBeVisible();
+    expect(cspViolations.get(bobPage) ?? [], 'Content-Security-Policy violations on the second device').toEqual([]);
+  } finally {
+    await bobContext.close();
+  }
+});

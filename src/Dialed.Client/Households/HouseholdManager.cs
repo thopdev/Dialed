@@ -23,13 +23,33 @@ public sealed class HouseholdManager(HouseholdApi api, AccountService account, S
     /// </summary>
     public async Task<HouseholdInfo> SwitchAsync(string householdId, CancellationToken cancellationToken = default)
     {
-        await sync.SyncNowAsync(cancellationToken);
-        if (await engine.PendingCountAsync(cancellationToken) > 0)
-        {
-            throw new AccountApiException("Some changes have not been sent yet. Wait until they are synced, then switch.");
-        }
-
+        await SendPendingAsync(cancellationToken);
         var household = await api.SwitchAsync(householdId, cancellationToken);
+        await SwitchedAsync(household.Id, cancellationToken);
+        return household;
+    }
+
+    /// <summary>Creates a household owned by the person and moves to it, like <see cref="SwitchAsync"/> (what is waiting is sent first).</summary>
+    public async Task<HouseholdInfo> CreateAsync(string name, CancellationToken cancellationToken = default)
+    {
+        await SendPendingAsync(cancellationToken);
+        var household = await api.CreateAsync(name, cancellationToken);
+        await SwitchedAsync(household.Id, cancellationToken);
+        return household;
+    }
+
+    /// <summary>The owner renames the active household; nothing changes for this device's data.</summary>
+    public async Task<HouseholdInfo> RenameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var household = await api.RenameAsync(name, cancellationToken);
+        Changed?.Invoke();
+        return household;
+    }
+
+    /// <summary>The owner deletes the active household with its data; this device moves to the household that is active now and drops the deleted one's records.</summary>
+    public async Task<HouseholdInfo> DeleteAsync(CancellationToken cancellationToken = default)
+    {
+        var household = await api.DeleteAsync(cancellationToken);
         await SwitchedAsync(household.Id, cancellationToken);
         return household;
     }
@@ -67,6 +87,16 @@ public sealed class HouseholdManager(HouseholdApi api, AccountService account, S
         var household = await api.TransferOwnershipAsync(userId, cancellationToken);
         Changed?.Invoke();
         return household;
+    }
+
+    /// <summary>This device holds one household at a time, so what is waiting must reach the server before it moves to another.</summary>
+    private async Task SendPendingAsync(CancellationToken cancellationToken)
+    {
+        await sync.SyncNowAsync(cancellationToken);
+        if (await engine.PendingCountAsync(cancellationToken) > 0)
+        {
+            throw new AccountApiException("Some changes have not been sent yet. Wait until they are synced, then switch.");
+        }
     }
 
     private async Task SwitchedAsync(string householdId, CancellationToken cancellationToken)

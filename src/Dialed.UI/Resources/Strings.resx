@@ -803,4 +803,16 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>A setting on your grinder's scale, to adjust by taste.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Very fresh beans give off a lot of gas, so give it a little time.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>A usual ratio of coffee to liquid for this method.</value></data>
+  <data name="Household_Rename" xml:space="preserve"><value>Rename</value></data>
+  <data name="Household_RenameNamed" xml:space="preserve"><value>Rename {0}</value></data>
+  <data name="Household_Name" xml:space="preserve"><value>Household name</value></data>
+  <data name="Household_Renamed" xml:space="preserve"><value>Household renamed.</value></data>
+  <data name="Household_New" xml:space="preserve"><value>New household</value></data>
+  <data name="Household_CreateHint" xml:space="preserve"><value>You move to the new household. Your other households stay in the list.</value></data>
+  <data name="Household_Create" xml:space="preserve"><value>Create household</value></data>
+  <data name="Household_Created" xml:space="preserve"><value>{0} created. You are in it now.</value></data>
+  <data name="Household_Delete" xml:space="preserve"><value>Delete household</value></data>
+  <data name="Household_DeleteWarning" xml:space="preserve"><value>Delete {0} for everyone in it? Its beans, bags, recipes and brews go with it. This cannot be undone.</value></data>
+  <data name="Household_ConfirmDelete" xml:space="preserve"><value>Delete for everyone</value></data>
+  <data name="Household_Deleted" xml:space="preserve"><value>Household deleted. You are now in {0}.</value></data>
 </root>
