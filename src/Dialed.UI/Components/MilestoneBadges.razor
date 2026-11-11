@@ -1,0 +1,38 @@
+@using Dialed.Domain.Statistics
+@inject IStringLocalizer<Strings> L
+
+@* Milestones (#294): quiet badges for what you reached (brews, origins, roasters, longest run of days) and the next step. Nothing expires, nothing nags. *@
+<section id="@Id" class="dialed-milestones">
+    <h2>@L["Milestone_Title"]</h2>
+    @if (Summary.Earned.Count == 0)
+    {
+        <p class="dialed-muted" id="milestones-none">@L["Milestone_None"]</p>
+    }
+    else
+    {
+        <ul class="dialed-chip-list" id="milestones-earned">
+            @foreach (var milestone in Summary.Earned)
+            {
+                <li><span class="dialed-chip dialed-milestone-badge">@Label(milestone)</span></li>
+            }
+        </ul>
+    }
+    @if (Summary.CurrentStreak >= 2)
+    {
+        <p id="milestones-streak">@string.Format(L["Milestone_CurrentStreak"].Value, L.Count("Days", Summary.CurrentStreak))</p>
+    }
+    @if (Summary.Next is { } next)
+    {
+        <p class="dialed-muted" id="milestones-next">@string.Format(L["Milestone_Next"].Value, Label(next), next.ToGo)</p>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public MilestoneSummary Summary { get; set; } = default!;
+
+    [Parameter]
+    public string Id { get; set; } = "stats-milestones";
+
+    private string Label(Milestone milestone) => string.Format(L[$"Milestone_{milestone.Kind}"].Value, milestone.Threshold);
+}
