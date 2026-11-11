@@ -2832,6 +2832,8 @@ a.people-row-name {
     align-items: center;
     gap: var(--dialed-space-1);
     margin-inline-start: var(--dialed-space-3);
+}
+
 .dialed-flavor svg {
     flex: 0 0 9rem;
     width: 9rem;
