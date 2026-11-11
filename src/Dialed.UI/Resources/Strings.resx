@@ -1005,6 +1005,9 @@
   <data name="DialIn_Best" xml:space="preserve"><value>Best rated: grind {0}, {1} stars, {2}</value></data>
   <data name="DialIn_Settled" xml:space="preserve"><value>The last three brews used about the same grind: this one is dialed in.</value></data>
   <data name="Bean_DialInTrace" xml:space="preserve"><value>Dial-in trace</value></data>
+  <data name="Card_Share" xml:space="preserve"><value>Share a picture of this brew</value></data>
+  <data name="Card_Failed" xml:space="preserve"><value>The picture could not be made on this device.</value></data>
+  <data name="Card_Footer" xml:space="preserve"><value>Brewed {0} with Dialed</value></data>
   <data name="Passport_Title" xml:space="preserve"><value>Countries tried</value></data>
   <data name="Passport_Progress" xml:space="preserve"><value>{0} of {1} coffee countries</value></data>
   <data name="Passport_ToTry" xml:space="preserve"><value>Still to try ({0})</value></data>

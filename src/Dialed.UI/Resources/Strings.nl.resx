@@ -1004,6 +1004,9 @@
   <data name="DialIn_Best" xml:space="preserve"><value>Best beoordeeld: maling {0}, {1} sterren, {2}</value></data>
   <data name="DialIn_Settled" xml:space="preserve"><value>De laatste drie zettingen hadden bijna dezelfde maling: deze zit goed.</value></data>
   <data name="Bean_DialInTrace" xml:space="preserve"><value>Dial-in-verloop</value></data>
+  <data name="Card_Share" xml:space="preserve"><value>Deel een plaatje van deze zetting</value></data>
+  <data name="Card_Failed" xml:space="preserve"><value>Het plaatje kon op dit apparaat niet worden gemaakt.</value></data>
+  <data name="Card_Footer" xml:space="preserve"><value>Gezet op {0} met Dialed</value></data>
   <data name="Passport_Title" xml:space="preserve"><value>Landen geprobeerd</value></data>
   <data name="Passport_Progress" xml:space="preserve"><value>{0} van {1} koffielanden</value></data>
   <data name="Passport_ToTry" xml:space="preserve"><value>Nog te proberen ({0})</value></data>

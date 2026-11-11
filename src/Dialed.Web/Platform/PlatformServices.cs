@@ -17,6 +17,7 @@ internal static class PlatformServices
         services.AddSingleton<IConnectivity>(sp => sp.GetRequiredService<BrowserConnectivity>());
         services.AddSingleton<IShareService, BrowserShareService>();
         services.AddSingleton<IFileExport, BrowserFileExport>();
+        services.AddSingleton<IImageRenderer, BrowserImageRenderer>();
         services.AddSingleton<IErrorSink, BrowserErrorSink>();
         services.AddSingleton<IErrorReportingSettings, BrowserErrorReportingSettings>();
         services.AddSingleton<IPreferenceStore, BrowserPreferenceStore>();
