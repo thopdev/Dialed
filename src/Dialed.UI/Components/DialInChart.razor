@@ -1,0 +1,85 @@
+@using System.Globalization
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Statistics
+@inject IStringLocalizer<Strings> L
+
+@* How the grind setting moved from brew to brew for one method of a bean, so you can see where you converged (#dial-in trace).
+   A dot per brew, its strength follows the rating; the best rated brew gets a ring. Plain SVG, no script. *@
+<figure id="@Id" class="dialed-dialin">
+    <figcaption class="dialed-dialin-title">@MethodName</figcaption>
+    <svg viewBox="0 0 @W @H" role="img" aria-label="@Description" focusable="false">
+        <text class="dialed-dialin-axis" x="@(Left - 6)" y="@Num(Top + 4)" text-anchor="end">@Fmt(max)</text>
+        <text class="dialed-dialin-axis" x="@(Left - 6)" y="@Num(Bottom + 4)" text-anchor="end">@Fmt(min)</text>
+        <line class="dialed-dialin-grid" x1="@Left" y1="@Num(Top)" x2="@Right" y2="@Num(Top)" />
+        <line class="dialed-dialin-grid" x1="@Left" y1="@Num(Bottom)" x2="@Right" y2="@Num(Bottom)" />
+        <polyline class="dialed-dialin-line" points="@string.Join(' ', dots.Select(d => $"{Num(d.X)},{Num(d.Y)}"))" />
+        @foreach (var dot in dots)
+        {
+            <circle class="dialed-dialin-dot @(dot.Rated ? "" : "dialed-dialin-unrated")" cx="@Num(dot.X)" cy="@Num(dot.Y)" r="6" fill-opacity="@Num(dot.Opacity)"><title>@dot.Label</title></circle>
+            @if (dot.IsBest)
+            {
+                <circle class="dialed-dialin-best" cx="@Num(dot.X)" cy="@Num(dot.Y)" r="10" />
+            }
+        }
+    </svg>
+    <p class="dialed-muted dialed-dialin-axis-label">@L["DialIn_Axis"]</p>
+    @if (Series.Best is { } best)
+    {
+        <p class="dialed-dialin-best-line">@string.Format(L["DialIn_Best"].Value, Fmt(best.Grind), best.Rating, best.At.ToLocalTime().ToString("d MMM", CultureInfo.CurrentCulture))</p>
+    }
+    @if (Series.Settled)
+    {
+        <p class="dialed-muted">@L["DialIn_Settled"]</p>
+    }
+</figure>
+
+@code {
+    private const int W = 320;
+    private const int H = 150;
+    private const int Left = 40;
+    private const int Right = 308;
+    private const double Top = 14;
+    private const double Bottom = 124;
+
+    private sealed record Dot(double X, double Y, double Opacity, bool Rated, bool IsBest, string Label);
+
+    private List<Dot> dots = [];
+    private decimal min;
+    private decimal max;
+
+    [Parameter, EditorRequired]
+    public DialInSeries Series { get; set; } = default!;
+
+    [Parameter]
+    public string Id { get; set; } = "dialin-chart";
+
+    private string MethodName => BrewMethodCatalog.Default.Find(Series.MethodCode)?.Name ?? Series.MethodCode;
+
+    private string Description => string.Format(L["DialIn_Description"].Value, Series.Points.Count, Fmt(Series.Points[0].Grind), Fmt(Series.Points[^1].Grind));
+
+    protected override void OnParametersSet()
+    {
+        min = Series.MinGrind;
+        max = Series.MaxGrind;
+        if (min == max)
+        {
+            min -= 1;
+            max += 1;
+        }
+
+        var count = Series.Points.Count;
+        dots = [.. Series.Points.Select((p, i) =>
+        {
+            var x = Left + (count == 1 ? 0 : (Right - Left) * (double)i / (count - 1));
+            var y = Bottom - (Bottom - Top) * (double)((p.Grind - min) / (max - min));
+            var label = $"{Fmt(p.Grind)} · {p.At.ToLocalTime().ToString("d MMM", CultureInfo.CurrentCulture)}"
+                + (p.TimeS is { } time ? $" · {time / 60}:{time % 60:00}" : "")
+                + (p.Rating is { } rating ? $" · {rating} ★" : "");
+            return new Dot(x, y, p.Rating is { } r ? 0.25 + 0.75 * r / 5 : 1, p.Rating is not null, p == Series.Best, label);
+        })];
+    }
+
+    private static string Fmt(decimal value) => value.ToString("0.##", CultureInfo.CurrentCulture);
+
+    private static string Num(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+}

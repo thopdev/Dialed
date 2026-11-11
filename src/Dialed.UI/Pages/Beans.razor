@@ -1,3 +1,4 @@
+@using Dialed.Domain.Statistics
 @page "/beans"
 @page "/beans/{Id}"
 @using Dialed.Client.Data
@@ -327,6 +328,15 @@
                 </div>
             }
 
+            @if (currentTrace.Count > 0)
+            {
+                <SectionHeader Title="@L["Bean_DialInTrace"]" />
+                @foreach (var series in currentTrace.Take(3))
+                {
+                    <DialInChart Id="@($"bean-dialin-{series.MethodCode}")" Series="series" />
+                }
+            }
+
             @if (currentBrews.Count > 0)
             {
                 <SectionHeader Title="@L["Bean_RecentBrews"]" />
@@ -358,6 +368,7 @@
     private IReadOnlyList<Bag> currentBags = [];
     private IReadOnlyList<BagStock> currentStock = [];
     private IReadOnlyList<Brew> currentBrews = [];
+    private IReadOnlyList<DialInSeries> currentTrace = [];
     private bool showFilters;
     private Recipe? bestRecipe;
     private string search = "";
@@ -454,11 +465,13 @@
             ];
             var bagIds = currentBags.Select(b => b.Id).ToHashSet();
             currentBrews = [.. brews.Where(b => !b.Deleted && bagIds.Contains(b.BagId)).OrderByDescending(b => b.BrewedAt).Take(5)];
+            currentTrace = DialInTrace.Build(brews.Where(b => bagIds.Contains(b.BagId)));
         }
         else
         {
             currentStock = [];
             currentBrews = [];
+            currentTrace = [];
         }
         bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, await RecipeStore.ListAsync());
     }

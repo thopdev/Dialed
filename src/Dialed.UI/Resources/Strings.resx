@@ -1000,6 +1000,11 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} people</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>shared by {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Map with a marker for each origin: {0}</value></data>
+  <data name="DialIn_Axis" xml:space="preserve"><value>Oldest to newest brew</value></data>
+  <data name="DialIn_Description" xml:space="preserve"><value>Grind setting over {0} brews, from {1} to {2}</value></data>
+  <data name="DialIn_Best" xml:space="preserve"><value>Best rated: grind {0}, {1} stars, {2}</value></data>
+  <data name="DialIn_Settled" xml:space="preserve"><value>The last three brews used about the same grind: this one is dialed in.</value></data>
+  <data name="Bean_DialInTrace" xml:space="preserve"><value>Dial-in trace</value></data>
   <data name="Calendar_Title" xml:space="preserve"><value>Brewing calendar</value></data>
   <data name="Calendar_Less" xml:space="preserve"><value>Less</value></data>
   <data name="Calendar_More" xml:space="preserve"><value>More</value></data>
