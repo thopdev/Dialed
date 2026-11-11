@@ -35,6 +35,11 @@ public sealed record AdminEntry(string Kind, string Id, string Name, int People,
 
 public sealed record AdminRebuild(int Roasters, int Beans);
 
+/// <summary>One merge rule: the two keys (normalised names) of the entries that were joined.</summary>
+public sealed record AdminMerge(string KeyA, string KeyB);
+
+public sealed record AdminRules(IReadOnlyList<string> HiddenKeys, IReadOnlyList<AdminMerge> Merges);
+
 /// <summary>
 /// The owner's moderation endpoints (reports, suspensions, the catalog). They are guarded by one secret, sent as <c>X-Admin-Key</c>. The key is
 /// kept in memory only: never stored on the device, gone when the page is closed or locked.
@@ -82,6 +87,20 @@ public sealed class AdminApi(HttpClient http)
 
     /// <summary>Catalog entries, fewest people first.</summary>
     public Task<IReadOnlyList<AdminEntry>> EntriesAsync(int take = 50, CancellationToken cancellationToken = default) => ListAsync<AdminEntry>($"admin/catalog/entries?take={take}", cancellationToken);
+
+    /// <summary>Entries that were hidden, so they can be brought back.</summary>
+    public Task<IReadOnlyList<AdminEntry>> HiddenAsync(CancellationToken cancellationToken = default) => ListAsync<AdminEntry>("admin/catalog/hidden", cancellationToken);
+
+    public Task UnhideAsync(string entryId, CancellationToken cancellationToken = default) => PostAsync($"admin/catalog/entries/{Uri.EscapeDataString(entryId)}/unhide", null, cancellationToken);
+
+    public async Task<AdminRules> RulesAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, "admin/catalog/rules", null, cancellationToken);
+        Check(response);
+        return await Read<AdminRules>(response, cancellationToken) ?? new AdminRules([], []);
+    }
+
+    public Task UnmergeAsync(string keyA, string keyB, CancellationToken cancellationToken = default) => PostAsync("admin/catalog/unmerge", new { keyA, keyB }, cancellationToken);
 
     public Task HideAsync(string entryId, CancellationToken cancellationToken = default) => PostAsync($"admin/catalog/entries/{Uri.EscapeDataString(entryId)}/hide", null, cancellationToken);
 

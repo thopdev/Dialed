@@ -688,6 +688,10 @@ public abstract class UiTestContext : BunitContext
 
         public string SuspendedJson { get; set; } = "[{\"userId\":\"u7\",\"displayName\":\"Banned\"}]";
 
+        public string HiddenJson { get; set; } = "[{\"kind\":\"bean\",\"id\":\"b-9\",\"name\":\"Junk Bean\",\"people\":2,\"keys\":[\"kx\"]}]";
+
+        public string RulesJson { get; set; } = "{\"hiddenKeys\":[\"kx\"],\"merges\":[{\"keyA\":\"friedhats|guji|ethiopia\",\"keyB\":\"friedhats|gujii|ethiopia\"}]}";
+
         public string EntriesJson { get; set; } = "[{\"kind\":\"bean\",\"id\":\"b-1\",\"name\":\"Thin Bean\",\"people\":2,\"keys\":[\"k1\"]},{\"kind\":\"bean\",\"id\":\"b-2\",\"name\":\"Other Bean\",\"people\":3,\"keys\":[\"k2\"]},{\"kind\":\"roaster\",\"id\":\"r-1\",\"name\":\"Some Roaster\",\"people\":4,\"keys\":[\"k3\"]}]";
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -717,6 +721,8 @@ public abstract class UiTestContext : BunitContext
                 "admin/reports" => TestFriendsServer.Json(ReportsJson),
                 "admin/users/suspended" => TestFriendsServer.Json(SuspendedJson),
                 "admin/catalog/entries" => TestFriendsServer.Json(EntriesJson),
+                "admin/catalog/hidden" => TestFriendsServer.Json(HiddenJson),
+                "admin/catalog/rules" => TestFriendsServer.Json(RulesJson),
                 "admin/catalog/rebuild" => TestFriendsServer.Json("{\"roasters\":3,\"beans\":8}"),
                 _ => new HttpResponseMessage(System.Net.HttpStatusCode.NoContent),
             });

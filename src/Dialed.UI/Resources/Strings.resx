@@ -981,4 +981,12 @@
   <data name="Admin_Hide" xml:space="preserve"><value>Hide</value></data>
   <data name="Admin_HideNamed" xml:space="preserve"><value>Hide {0} from the catalog</value></data>
   <data name="Admin_Hidden" xml:space="preserve"><value>{0} is hidden.</value></data>
+  <data name="Admin_HiddenTitle" xml:space="preserve"><value>Hidden entries</value></data>
+  <data name="Admin_Unhide" xml:space="preserve"><value>Bring back</value></data>
+  <data name="Admin_UnhideNamed" xml:space="preserve"><value>Bring {0} back into the catalog</value></data>
+  <data name="Admin_Unhidden" xml:space="preserve"><value>{0} is back in the catalog.</value></data>
+  <data name="Admin_MergesTitle" xml:space="preserve"><value>Merged entries</value></data>
+  <data name="Admin_Unmerge" xml:space="preserve"><value>Undo merge</value></data>
+  <data name="Admin_UnmergeNamed" xml:space="preserve"><value>Undo the merge of {0} and {1}</value></data>
+  <data name="Admin_Unmerged" xml:space="preserve"><value>The merge was undone.</value></data>
 </root>

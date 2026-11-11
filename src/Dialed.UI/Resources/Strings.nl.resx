@@ -980,4 +980,12 @@
   <data name="Admin_Hide" xml:space="preserve"><value>Verbergen</value></data>
   <data name="Admin_HideNamed" xml:space="preserve"><value>Verberg {0} uit de catalogus</value></data>
   <data name="Admin_Hidden" xml:space="preserve"><value>{0} is verborgen.</value></data>
+  <data name="Admin_HiddenTitle" xml:space="preserve"><value>Verborgen vermeldingen</value></data>
+  <data name="Admin_Unhide" xml:space="preserve"><value>Terugzetten</value></data>
+  <data name="Admin_UnhideNamed" xml:space="preserve"><value>Zet {0} terug in de catalogus</value></data>
+  <data name="Admin_Unhidden" xml:space="preserve"><value>{0} staat weer in de catalogus.</value></data>
+  <data name="Admin_MergesTitle" xml:space="preserve"><value>Samengevoegde vermeldingen</value></data>
+  <data name="Admin_Unmerge" xml:space="preserve"><value>Samenvoegen ongedaan maken</value></data>
+  <data name="Admin_UnmergeNamed" xml:space="preserve"><value>Maak het samenvoegen van {0} en {1} ongedaan</value></data>
+  <data name="Admin_Unmerged" xml:space="preserve"><value>Het samenvoegen is ongedaan gemaakt.</value></data>
 </root>

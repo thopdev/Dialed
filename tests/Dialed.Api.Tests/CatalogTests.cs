@@ -481,4 +481,69 @@ public sealed class CatalogTests(ModeratedApp app) : IClassFixture<ModeratedApp>
 
         (await anonymous.GetAsync("/catalog/barcode?code=4006381333931", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
+
+    // ---- Bringing things back -----------------------------------------------------------------
+
+    [Fact]
+    public async Task A_hidden_entry_is_listed_and_can_be_brought_back()
+    {
+        var name = Unique("Hidden");
+        var a = await NewPerson();
+        var b = await NewPerson();
+        await Bean(a, name);
+        await Bean(b, name);
+        await Rebuild();
+        var id = (await Beans(a, name)).Single().Id;
+        await Admin().PostAsync($"/admin/catalog/entries/{id}/hide", null, Ct);
+        (await Beans(a, name)).ShouldBeEmpty();
+
+        var hidden = (await Admin().GetFromJsonAsync<CatalogEntryAdminDto[]>("/admin/catalog/hidden", Ct))!;
+        hidden.ShouldContain(e => e.Id == id && e.Name == name && e.Kind == "bean" && e.People == 2);
+
+        (await Admin().PostAsync($"/admin/catalog/entries/{id}/unhide", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        (await Beans(a, name)).ShouldHaveSingleItem().Id.ShouldBe(id);
+        (await Admin().GetFromJsonAsync<CatalogEntryAdminDto[]>("/admin/catalog/hidden", Ct))!.ShouldNotContain(e => e.Id == id);
+    }
+
+    [Fact]
+    public async Task Un_hiding_something_that_is_not_hidden_is_not_found()
+    {
+        (await Admin().PostAsync("/admin/catalog/entries/nothing/unhide", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task A_merge_can_be_taken_back_and_the_rules_are_listed()
+    {
+        var token = Unique("Unmerge");
+        var one = $"{token} Alpha Lot";
+        var two = $"{token} Totally Different Name";
+        var people = new[] { await NewPerson(), await NewPerson() };
+        foreach (var person in people)
+        {
+            await Bean(person, one);
+            await Bean(person, two);
+        }
+
+        await Rebuild();
+        var entries = (await Admin().GetFromJsonAsync<CatalogEntryAdminDto[]>("/admin/catalog/entries?take=1000", Ct))!.Where(e => e.Name.StartsWith(token)).ToList();
+        await Admin().PostAsJsonAsync("/admin/catalog/merge", new CatalogMergeRequest(entries[0].Id, entries[1].Id), Ct);
+        (await Beans(people[0], token)).ShouldHaveSingleItem();
+
+        var rules = (await Admin().GetFromJsonAsync<CatalogRulesDto>("/admin/catalog/rules", Ct))!;
+        var merge = rules.Merges.Single(m => entries[0].Keys.Contains(m.KeyA) || entries[0].Keys.Contains(m.KeyB));
+        (await Admin().PostAsJsonAsync("/admin/catalog/unmerge", merge, Ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        (await Beans(people[0], token)).Length.ShouldBe(2);
+        (await Admin().PostAsJsonAsync("/admin/catalog/unmerge", merge, Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task The_new_admin_endpoints_need_the_admin_key()
+    {
+        (await Admin(key: null).GetAsync("/admin/catalog/hidden", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await Admin(key: null).GetAsync("/admin/catalog/rules", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await Admin(key: "wrong").PostAsync("/admin/catalog/entries/x/unhide", null, Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        (await Admin(key: null).PostAsJsonAsync("/admin/catalog/unmerge", new CatalogUnmergeRequest("a", "b"), Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
 }
