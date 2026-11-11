@@ -213,6 +213,11 @@
                 </div>
             </div>
 
+            @if (current.Origin.Country is { } originCountry)
+            {
+                <OriginMap Id="bean-origin-map" Zoom="true" Origins="@([(originCountry, 1)])" />
+            }
+
             @if (current.CopiedFrom is { } copiedFrom)
             {
                 <p id="bean-copied-from" class="dialed-muted dialed-copied-from">@string.Format(L["Item_CopiedFrom"].Value, copiedFrom.OwnerName)</p>
@@ -246,6 +251,10 @@
                         <li><span class="dialed-chip">@L["Bean_Decaf"]</span></li>
                     }
                 </ul>
+                @if (Dialed.Domain.Flavors.FlavorWheel.Tally(current.TastingNotes) is { Count: >= 2 } shares)
+                {
+                    <FlavorWheelChart Id="bean-flavor-wheel" Shares="shares" />
+                }
             }
 
             @if (current.Varieties.Count > 0)

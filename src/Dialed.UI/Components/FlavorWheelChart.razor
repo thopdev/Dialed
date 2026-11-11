@@ -1,0 +1,55 @@
+@using Dialed.Domain.Flavors
+@inject IStringLocalizer<Strings> L
+
+@* The flavour wheel (#291): your tasting notes sorted into the branches of the coffee flavour wheel, as a donut with a legend that says the same in words.
+   Plain SVG, colours from the Fluent palette variables. *@
+@if (Shares.Count > 0)
+{
+    <figure id="@Id" class="dialed-flavor">
+        <svg viewBox="0 0 160 160" role="img" aria-label="@Description" focusable="false">
+            @{ var offset = 0.0; }
+            @foreach (var share in Shares)
+            {
+                var length = Circumference * share.Count / total;
+                <circle class="dialed-flavor-slice dialed-flavor-@Css(share.Category)" cx="80" cy="80" r="@Radius" fill="none" stroke-width="26"
+                        stroke-dasharray="@Num(Math.Max(length - Gap, 0.1)) @Num(Circumference - Math.Max(length - Gap, 0.1))" stroke-dashoffset="@Num(-offset)" transform="rotate(-90 80 80)">
+                    <title>@Label(share)</title>
+                </circle>
+                offset += length;
+            }
+            <text x="80" y="86" text-anchor="middle" class="dialed-flavor-total">@total</text>
+        </svg>
+        <ul class="dialed-flavor-legend">
+            @foreach (var share in Shares)
+            {
+                <li><span class="dialed-flavor-swatch dialed-flavor-@Css(share.Category)" aria-hidden="true"></span>@Label(share)</li>
+            }
+        </ul>
+    </figure>
+}
+
+@code {
+    private const double Radius = 56;
+    private const double Circumference = 2 * Math.PI * Radius;
+    private const double Gap = 2;
+
+    private int total;
+
+    /// <summary>The notes per branch, in the order to draw them (biggest first).</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<FlavorShare> Shares { get; set; } = [];
+
+    [Parameter]
+    public string Id { get; set; } = "flavor-wheel";
+
+    private string Description => string.Format(L["Flavor_Description"].Value, string.Join(", ", Shares.Select(Label)));
+
+    protected override void OnParametersSet() => total = Shares.Sum(s => s.Count);
+
+    private string Label(FlavorShare share) => $"{L[$"Flavor_{share.Category}"].Value} · {share.Count}";
+
+    /// <summary>The class suffix of a branch: its name in lower case, "green" for the green and vegetative branch.</summary>
+    private static string Css(FlavorCategory category) => category == FlavorCategory.GreenVegetative ? "green" : category.ToString().ToLowerInvariant();
+
+    private static string Num(double value) => value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+}

@@ -41,7 +41,7 @@ public sealed class FilePushStoreTests : IDisposable
         var first = Open();
         await first.SaveAsync(Device("u1"), Ct);
         await first.SaveSettingsAsync("u1", new PushSettings(false, true, true, true, new InventorySettings(150m, RestWindows.Default), "Europe/Amsterdam"), Ct);
-        await first.SaveAlertStateAsync("u1", new StockAlertState(new DateOnly(2026, 11, 11), new StockAlertMemory(new HashSet<string> { "h1/bag1" }, new HashSet<string> { "h1/bag2" })), Ct);
+        await first.SaveAlertStateAsync("u1", new StockAlertState(new DateOnly(2026, 11, 11), new StockAlertMemory(new HashSet<string> { "h1/bag1" }, new HashSet<string> { "h1/bag2" }) { PeakSoon = new HashSet<string> { "h1/bag3" } }), Ct);
 
         var second = Open();
 
@@ -53,6 +53,7 @@ public sealed class FilePushStoreTests : IDisposable
         state.LastHandled.ShouldBe(new DateOnly(2026, 11, 11));
         state.Memory.Low.ShouldBe(["h1/bag1"]);
         state.Memory.Peak.ShouldBe(["h1/bag2"]);
+        state.Memory.PeakSoon.ShouldBe(["h1/bag3"]);
         (await second.SubscribedUserIdsAsync(Ct)).ShouldBe(["u1"]);
     }
 

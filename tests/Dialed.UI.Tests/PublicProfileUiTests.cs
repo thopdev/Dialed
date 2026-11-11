@@ -83,6 +83,21 @@ public sealed class PublicProfileUiTests : UiTestContext
 
         page.WaitForAssertion(() => page.FindAll(".people-find-row").Select(a => a.GetAttribute("href")).ShouldBe(["people/u7", "people/u8"]));
         FriendsServer.Calls.Count(c => c.StartsWith("GET people/search")).ShouldBe(1);
+        page.Find("#people-find-count").TextContent.ShouldBe("2 people found");
+        JSInterop.Invocations.ShouldContain(i => i.Identifier == "Blazor._internal.domWrapper.focus"); // the count takes focus: scrolls into view and is announced
+    }
+
+    [Fact]
+    public async Task Search_with_one_match_says_one_person()
+    {
+        FriendsServer.Respond = call => call == "GET people/search?q=zo" ? Json("[{\"userId\":\"u7\",\"displayName\":\"Zoe\"}]") : null;
+        await SignIn();
+        var page = Render<FindPeople>();
+
+        page.Find("#people-find-input").Input("zo");
+        page.Find("#people-find-submit").Click();
+
+        page.WaitForAssertion(() => page.Find("#people-find-count").TextContent.ShouldBe("1 person found"));
     }
 
     [Fact]

@@ -160,6 +160,32 @@ public sealed class StockAlertTests(PushApp app) : IClassFixture<PushApp>
     }
 
     [Fact]
+    public async Task The_day_before_a_bags_peak_starts_there_is_a_heads_up_once_under_the_peak_switch()
+    {
+        var restDays = InventorySettings.Default.RestWindows.For(null).RestDays;
+        var person = await NewPerson("Pia");
+        var off = await NewPerson("Off");
+        foreach (var p in new[] { person, off })
+        {
+            await Subscribe(p);
+            await Bag(p, await Bean(p, "Kiambu"), 250m, ageDays: restDays - 1);
+            await Bag(p, await Bean(p, "Fresh"), 250m, ageDays: Math.Max(restDays - 3, 0));
+        }
+
+        await Switches(person, low: false, peak: true);
+        await Switches(off, low: true, peak: false);
+
+        await Run(Morning);
+        var received = Received(person).ShouldHaveSingleItem();
+        received.Body.ShouldBe("Kiambu reaches its peak tomorrow.");
+        received.Tag.ShouldBe("peak-soon");
+        Received(off).ShouldBeEmpty();
+
+        await Run(Morning.AddDays(1)); // the next day: the peak alert itself, not the heads-up again
+        Received(person).Select(r => r.Tag).ShouldBe(["peak-soon", "peak"]);
+    }
+
+    [Fact]
     public async Task Both_kinds_are_sent_as_two_notifications_and_only_the_ones_switched_on()
     {
         var both = await NewPerson("Both");

@@ -60,8 +60,17 @@ else
     </section>
 
     <Favourites Id="stats-origins" Title="@L["Stats_Origins"]" Items="stats.Origins" />
+    <OriginMap Id="stats-origin-map" Origins="@([.. stats.Origins.Select(o => (o.Name, o.Brews))])" />
     <Favourites Id="stats-roasters" Title="@L["Stats_Roasters"]" Items="stats.Roasters" />
     <Favourites Id="stats-processes" Title="@L["Stats_Processes"]" Items="stats.Processes" />
+
+    @if (stats.Flavours.Count > 0)
+    {
+        <section id="stats-flavours">
+            <h2>@L["Flavor_Title"]</h2>
+            <FlavorWheelChart Id="stats-flavor-wheel" Shares="stats.Flavours" />
+        </section>
+    }
 
     <section id="stats-grind">
         <h2>@L["Stats_Grind"]</h2>
