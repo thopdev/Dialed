@@ -77,6 +77,16 @@
                     </select>
                 </div>
                 <div class="dialed-field">
+                    <label for="bean-filter-country">@L["Bean_Country"]</label>
+                    <select id="bean-filter-country" @bind="countryFilter">
+                        <option value="">@L["Beans_Any"]</option>
+                        @foreach (var (key, name) in BeanQuery.Countries(beans ?? []))
+                        {
+                            <option value="@key">@name</option>
+                        }
+                    </select>
+                </div>
+                <div class="dialed-field">
                     <label for="bean-filter-roast">@L["Bean_RoastLevel"]</label>
                     <select id="bean-filter-roast" @bind="roastFilter">
                         <option value="">@L["Beans_Any"]</option>
@@ -354,6 +364,7 @@
     private string roasterFilter = "";
     private string processFilter = "";
     private string roastFilter = "";
+    private string countryFilter = "";
     private bool? stockFilter;
     private BeanSort sort = BeanSort.Name;
     private bool editing;
@@ -362,6 +373,10 @@
 
     [Parameter]
     public string? Id { get; set; }
+
+    /// <summary>Opens the list already narrowed to one origin country (the ISO code or the name), e.g. from the maps: <c>beans?country=ET</c>.</summary>
+    [SupplyParameterFromQuery(Name = "country")]
+    public string? Country { get; set; }
 
     /// <summary>A scanned barcode to start a new bean with (#104): <c>beans/new?barcode=...</c>.</summary>
     [SupplyParameterFromQuery(Name = "barcode")]
@@ -384,7 +399,8 @@
         roasterFilter == "" ? null : roasterFilter,
         processFilter == "" ? null : processFilter,
         Enum.TryParse<RoastLevel>(roastFilter, out var level) ? level : null,
-        stockFilter), sort);
+        stockFilter,
+        countryFilter == "" ? null : countryFilter), sort);
 
     private RenderFragment Fact(string labelKey, string? value) => __builder =>
     {
@@ -406,6 +422,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        if (Id is null && Country is { Length: > 0 } country)
+        {
+            countryFilter = Dialed.Domain.Geography.CountryCatalog.Find(country)?.Iso2 ?? country;
+            showFilters = true;
+        }
+
         editing = false;
         confirmingDelete = false;
         error = null;
@@ -453,7 +475,7 @@
     });
 
     private int ActiveFilterCount =>
-        (roasterFilter == "" ? 0 : 1) + (processFilter == "" ? 0 : 1) + (roastFilter == "" ? 0 : 1) + (sort == BeanSort.Name ? 0 : 1);
+        (roasterFilter == "" ? 0 : 1) + (processFilter == "" ? 0 : 1) + (roastFilter == "" ? 0 : 1) + (countryFilter == "" ? 0 : 1) + (sort == BeanSort.Name ? 0 : 1);
 
     private int ActiveBags(Bean bean) => bags.Count(b => !b.Deleted && b.BeanId == bean.Id && b.Status != BagStatus.Finished);
 
