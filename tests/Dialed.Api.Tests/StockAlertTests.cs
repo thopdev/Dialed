@@ -73,6 +73,8 @@ public sealed class StockAlertTests(PushApp app) : IClassFixture<PushApp>
 
     private Task Run(DateTimeOffset at) => app.Services.GetRequiredService<StockAlertService>().RunAsync(at, Ct);
 
+    private List<PushPayload> LowStock(Person person) => [.. Received(person).Where(p => p.Tag == "low-stock")];
+
     private List<PushPayload> Received(Person person) => [.. app.Sender.Sent.Where(s => s.To.UserId == person.User.Id).Select(s => s.Payload)];
 
     // ---- Low stock ----------------------------------------------------------------------------
@@ -292,9 +294,10 @@ public sealed class StockAlertTests(PushApp app) : IClassFixture<PushApp>
         await Run(Morning);
         await Run(Morning.AddHours(1));
 
-        Received(owner).ShouldHaveSingleItem();
-        Received(member).ShouldHaveSingleItem();
-        Received(quiet).ShouldBeEmpty();
+        // Only the low-stock alerts count: "someone joined" pushes are sent in the background and can arrive after the subscriptions exist.
+        LowStock(owner).ShouldHaveSingleItem();
+        LowStock(member).ShouldHaveSingleItem();
+        LowStock(quiet).ShouldBeEmpty();
     }
 
     // ---- Settings, content and failure --------------------------------------------------------
