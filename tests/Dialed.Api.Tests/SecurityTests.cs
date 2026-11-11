@@ -31,6 +31,7 @@ public sealed class SecurityTests(PasskeyApp app) : IClassFixture<PasskeyApp>
         "POST /admin/users/{id}/suspend", // needs the admin key header
         "POST /admin/users/{id}/restore",
         "GET /admin/reports",
+        "GET /admin/users/suspended",
         "POST /admin/catalog/rebuild", // needs the admin key header
         "GET /admin/catalog/entries",
         "POST /admin/catalog/entries/{id}/hide",

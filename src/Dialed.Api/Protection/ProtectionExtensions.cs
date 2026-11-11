@@ -86,6 +86,11 @@ public static class ProtectionExtensions
             return Window($"auth:{address}", options.AuthRequestsPerMinute);
         }
 
+        if (path.StartsWithSegments("/admin"))
+        {
+            return Window($"admin:{address}", options.AdminRequestsPerMinute);
+        }
+
         if (path.StartsWithSegments("/reports"))
         {
             return Window($"reports:{user ?? address}", options.ReportsPerMinute);
