@@ -520,7 +520,6 @@
   <data name="People_Unblock" xml:space="preserve"><value>Deblokkeren</value></data>
   <data name="People_ProfileUnavailable" xml:space="preserve"><value>Dit profiel is niet beschikbaar. Je volgt deze persoon misschien niet, of het verzoek wacht nog.</value></data>
   <data name="People_ShowingSaved" xml:space="preserve"><value>Geen verbinding: je ziet wat de vorige keer is bewaard.</value></data>
-  <data name="People_Counts" xml:space="preserve"><value>{0} bonen · {1} recepten · {2} brews · {3} volgers</value></data>
   <data name="People_Tab_beans" xml:space="preserve"><value>Bonen</value></data>
   <data name="People_Tab_recipes" xml:space="preserve"><value>Recepten</value></data>
   <data name="People_Tab_brews" xml:space="preserve"><value>Brews</value></data>
@@ -903,7 +902,6 @@
   <data name="People_FindHint" xml:space="preserve"><value>Alleen mensen die hun openbare profiel aan hebben gezet zijn te vinden. Typ minstens twee letters.</value></data>
   <data name="People_FindSearch" xml:space="preserve"><value>Zoeken</value></data>
   <data name="People_FindNone" xml:space="preserve"><value>Niemand gevonden.</value></data>
-  <data name="People_PublicCounts" xml:space="preserve"><value>{0} bonen · {1} recepten</value></data>
   <data name="People_FollowPublic" xml:space="preserve"><value>Volgen</value></data>
   <data name="People_FollowFailed" xml:space="preserve"><value>Het verzoek kon niet worden verstuurd. Probeer het opnieuw.</value></data>
   <data name="Report_Button" xml:space="preserve"><value>Melden</value></data>
@@ -931,7 +929,6 @@
   <data name="Catalog_Hint" xml:space="preserve"><value>Bonen die andere mensen delen. Eén gebruiken kopieert het hierheen; je kunt alles aanpassen.</value></data>
   <data name="Catalog_Use" xml:space="preserve"><value>Gebruik dit</value></data>
   <data name="Catalog_UseNamed" xml:space="preserve"><value>Gebruik {0} uit de catalogus</value></data>
-  <data name="Catalog_People" xml:space="preserve"><value>gedeeld door {0}</value></data>
   <data name="Catalog_FromCatalog" xml:space="preserve"><value>uit de catalogus</value></data>
   <data name="Scan_CatalogTitle" xml:space="preserve"><value>Niet een van je bonen. Is het een van deze?</value></data>
   <data name="Privacy_Catalog_Title" xml:space="preserve"><value>Gedeelde catalogus</value></data>
@@ -968,7 +965,7 @@
   <data name="Admin_Rebuild" xml:space="preserve"><value>Catalogus nu opnieuw opbouwen</value></data>
   <data name="Admin_Rebuilt" xml:space="preserve"><value>Opnieuw opgebouwd: {0} branders, {1} bonen.</value></data>
   <data name="Admin_NoEntries" xml:space="preserve"><value>De catalogus is leeg.</value></data>
-  <data name="Admin_EntryLine" xml:space="preserve"><value>{0} · {1} mensen</value></data>
+  <data name="Admin_EntryLine" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="Admin_Kind_bean" xml:space="preserve"><value>Boon</value></data>
   <data name="Admin_Kind_roaster" xml:space="preserve"><value>Brander</value></data>
   <data name="Admin_Merge" xml:space="preserve"><value>Samenvoegen</value></data>
@@ -988,4 +985,15 @@
   <data name="Admin_Unmerge" xml:space="preserve"><value>Samenvoegen ongedaan maken</value></data>
   <data name="Admin_UnmergeNamed" xml:space="preserve"><value>Maak het samenvoegen van {0} en {1} ongedaan</value></data>
   <data name="Admin_Unmerged" xml:space="preserve"><value>Het samenvoegen is ongedaan gemaakt.</value></data>
+  <data name="Count_Beans_One" xml:space="preserve"><value>{0} boon</value></data>
+  <data name="Count_Beans_Other" xml:space="preserve"><value>{0} bonen</value></data>
+  <data name="Count_Recipes_One" xml:space="preserve"><value>{0} recept</value></data>
+  <data name="Count_Recipes_Other" xml:space="preserve"><value>{0} recepten</value></data>
+  <data name="Count_Brews_One" xml:space="preserve"><value>{0} brew</value></data>
+  <data name="Count_Brews_Other" xml:space="preserve"><value>{0} brews</value></data>
+  <data name="Count_Followers_One" xml:space="preserve"><value>{0} volger</value></data>
+  <data name="Count_Followers_Other" xml:space="preserve"><value>{0} volgers</value></data>
+  <data name="Count_People_One" xml:space="preserve"><value>{0} persoon</value></data>
+  <data name="Count_People_Other" xml:space="preserve"><value>{0} mensen</value></data>
+  <data name="Catalog_SharedBy" xml:space="preserve"><value>gedeeld door {0}</value></data>
 </root>

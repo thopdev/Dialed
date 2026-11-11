@@ -39,8 +39,8 @@ else
         <div class="dialed-friend-header-text">
             <strong id="friend-name">@profile.DisplayName</strong>
             <span id="friend-counts" class="dialed-muted">@(profile.IsPublicView
-                ? string.Format(L["People_PublicCounts"].Value, profile.Beans, profile.Recipes)
-                : string.Format(L["People_Counts"].Value, profile.Beans, profile.Recipes, profile.Brews, profile.Followers))</span>
+                ? string.Join(" · ", L.Count("Beans", profile.Beans), L.Count("Recipes", profile.Recipes))
+                : string.Join(" · ", L.Count("Beans", profile.Beans), L.Count("Recipes", profile.Recipes), L.Count("Brews", profile.Brews), L.Count("Followers", profile.Followers)))</span>
         </div>
     </header>
 
