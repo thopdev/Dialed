@@ -90,7 +90,7 @@ public static class CatalogBuilder
         var roasterClusters = Cluster(
             roasterInputs.Count,
             i => RoasterKey(roasterInputs[i]),
-            (a, b) => LabelMatcher.RoasterScore(roasterInputs[a].Name, roasterInputs[b].Name) >= LabelMatcher.LikelySame,
+            (a, b) => SameName(RoasterKey(roasterInputs[a]), RoasterKey(roasterInputs[b])),
             rules.Merges);
 
         // Which roaster cluster each distinct roaster key belongs to, so beans can point to it.
@@ -121,7 +121,7 @@ public static class CatalogBuilder
             i => BeanKey(beanKeys[i], beanList[i]),
             (a, b) => beanKeys[a] == beanKeys[b]
                 && SameCountry(beanList[a].Country, beanList[b].Country)
-                && LabelMatcher.Similarity(beanList[a].Name, beanList[b].Name) >= LabelMatcher.LikelySame,
+                && SameName(beanList[a].Name, beanList[b].Name),
             rules.Merges);
         beanClusters = AttachUnknownCountries(beanClusters, beanList, beanKeys);
 
@@ -155,6 +155,52 @@ public static class CatalogBuilder
     private static string BeanKey(string roasterKey, CatalogBeanInput bean) =>
         $"{roasterKey}|{FuzzyMatch.Normalize(bean.Name)}|{FuzzyMatch.Normalize(bean.Country)}";
 
+    /// <summary>
+    /// Whether two names are the same apart from small typos. Stricter than the label matcher, which also accepts a name that merely starts with
+    /// another ("Guji" and "Guji Natural"): in a catalog those are different coffees, and chaining them would swallow whole lines.
+    /// </summary>
+    internal static bool SameName(string? a, string? b)
+    {
+        var (x, y) = (FuzzyMatch.Normalize(a), FuzzyMatch.Normalize(b));
+        if (x.Length == 0 || y.Length == 0)
+        {
+            return false;
+        }
+
+        if (x == y)
+        {
+            return true;
+        }
+
+        // "Lot 12" and "Lot 13" are different coffees, however close the text looks.
+        if (!x.Where(char.IsDigit).SequenceEqual(y.Where(char.IsDigit)))
+        {
+            return false;
+        }
+
+        var longest = Math.Max(x.Length, y.Length);
+        var allowed = longest <= 4 ? 0 : longest <= 10 ? 1 : 2; // short names tolerate no typo: "Natural" and "Mutural" differ
+        return Distance(x, y) <= allowed;
+    }
+
+    private static int Distance(string a, string b)
+    {
+        var previous = Enumerable.Range(0, b.Length + 1).ToArray();
+        for (var i = 1; i <= a.Length; i++)
+        {
+            var current = new int[b.Length + 1];
+            current[0] = i;
+            for (var j = 1; j <= b.Length; j++)
+            {
+                current[j] = Math.Min(Math.Min(current[j - 1] + 1, previous[j] + 1), previous[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1));
+            }
+
+            previous = current;
+        }
+
+        return previous[b.Length];
+    }
+
     /// <summary>Two beans are the same coffee only from the same country; both without a country count as the same.</summary>
     private static bool SameCountry(string? a, string? b) => FuzzyMatch.Normalize(a) == FuzzyMatch.Normalize(b);
 
@@ -170,7 +216,7 @@ public static class CatalogBuilder
         foreach (var unknown in clusters.Where(Unknown))
         {
             var fits = known.Where(k => roasterKeys[k[0]] == roasterKeys[unknown[0]]
-                && LabelMatcher.Similarity(beans[k[0]].Name, beans[unknown[0]].Name) >= LabelMatcher.LikelySame).ToList();
+                && SameName(beans[k[0]].Name, beans[unknown[0]].Name)).ToList();
             if (fits.Count == 1)
             {
                 fits[0].AddRange(unknown);

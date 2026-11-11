@@ -83,6 +83,25 @@ public sealed class CatalogBuilderTests
     }
 
     [Fact]
+    public void A_name_that_only_starts_like_another_is_another_coffee()
+    {
+        var catalog = Build([Bean("a", "Guji"), Bean("b", "Guji"), Bean("a", "Guji Natural"), Bean("b", "Guji Natural"), Bean("a", "Guji Washed"), Bean("b", "Guji Washed")]);
+
+        catalog.Beans.Select(b => b.Name).Order().ShouldBe(["Guji", "Guji Natural", "Guji Washed"]);
+    }
+
+    [Fact]
+    public void Short_names_tolerate_no_typo_and_longer_ones_a_few()
+    {
+        CatalogBuilder.SameName("Natural", "Naturel").ShouldBeTrue(); // one typo in a 7 letter name
+        CatalogBuilder.SameName("Lot 12", "Lot 13").ShouldBeFalse(); // numbers matter
+        CatalogBuilder.SameName("Dak", "Dok").ShouldBeFalse();
+        CatalogBuilder.SameName("Ethiopia Guji Natural", "Ethiopia Gujj Natural").ShouldBeTrue();
+        CatalogBuilder.SameName("Ethiopia Guji Natural", "Ethiopia Guji Washed").ShouldBeFalse();
+        CatalogBuilder.SameName("", "x").ShouldBeFalse();
+    }
+
+    [Fact]
     public void The_same_name_from_another_roaster_is_another_coffee()
     {
         var catalog = Build(

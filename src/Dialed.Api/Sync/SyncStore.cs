@@ -36,6 +36,12 @@ public interface ISyncStore
     /// <summary>Everything <paramref name="authorId"/> made in the household, whatever its visibility (for the person's own export). Deleted rows are left out.</summary>
     Task<IReadOnlyList<SyncRow>> ListAuthoredAsync(string householdId, string authorId, string table, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Every public (<c>Visibility.Public</c>) row of a table across all households, deleted ones left out. The one place that reads across
+    /// households: only the catalog build (#105) uses it, and it filters by the author's public profile itself.
+    /// </summary>
+    Task<IReadOnlyList<SyncRow>> ListPublicAsync(string table, CancellationToken cancellationToken = default);
+
     /// <summary>Removes the whole household's data (it was the last member's).</summary>
     Task DeleteHouseholdAsync(string householdId, CancellationToken cancellationToken = default);
 
@@ -102,6 +108,20 @@ public sealed class InMemorySyncStore(TimeProvider time) : ISyncStore
                 .ToList();
 
             return Task.FromResult<(IReadOnlyList<SyncRow>, int)>(([.. all.Skip(Math.Max(0, skip)).Take(Math.Clamp(take, 1, 100))], all.Count));
+        }
+    }
+
+    public Task<IReadOnlyList<SyncRow>> ListPublicAsync(string table, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<SyncRow>>([.. rows
+                .Where(r => r.Key.Table == table)
+                .Select(r => r.Value)
+                .Where(r => VisibilityRules.Of(r.Entity) == VisibilityRules.Public
+                    && !(r.Entity["deleted"] is JsonValue d && d.TryGetValue<bool>(out var gone) && gone))
+                .OrderBy(r => r.HouseholdId, StringComparer.Ordinal)
+                .ThenBy(r => r.Id, StringComparer.Ordinal)]);
         }
     }
 
