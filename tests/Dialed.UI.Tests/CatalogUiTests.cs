@@ -157,6 +157,8 @@ public sealed class CatalogUiTests : UiTestContext
         picker.Find(".dialed-picker-catalog").GetAttribute("aria-label").ShouldBe("Use Manhattan Coffee Roasters from the catalog");
         picker.Find(".dialed-picker-catalog").Click();
 
+        // The vendor is saved by an async handler: wait for the picker to show the choice before looking in the store.
+        picker.WaitForAssertion(() => picker.Find(".dialed-picker-selected").TextContent.ShouldContain("Manhattan"));
         var created = (await Vendors.ListAsync(Ct)).ShouldHaveSingleItem();
         (created.Name, created.City, created.Country, created.Website).ShouldBe(("Manhattan Coffee Roasters", "Rotterdam", "Netherlands", "https://manhattan.example"));
         picker.Find(".dialed-picker-selected").TextContent.ShouldContain("Manhattan");
