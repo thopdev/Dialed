@@ -205,7 +205,7 @@ public sealed class InMemoryFriendStore : IFriendStore
 /// Following with approval. There is no search for people: you follow someone by their friend code, they accept or decline, and
 /// either side can end it. A blocked person cannot ask again and never learns that they are blocked.
 /// </summary>
-public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyncStore sync, TimeProvider time)
+public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyncStore sync, TimeProvider time, PublicProfiles.IPublicProfileStore profiles)
 {
     private const string CodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -348,15 +348,29 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         }
 
         var relationship = await RelationshipAsync(viewerId, ownerId, ct);
+        var profile = await profiles.GetAsync(ownerId, ct);
+        if (profile.Suspended && relationship != Relationship.Author && !owner.AllHouseholdIds.Any(viewer.IsMemberOf))
+        {
+            // A suspended person is hidden from everyone but themselves and their household (#106).
+            relationship = Relationship.Blocked;
+        }
+        else if (relationship == Relationship.Stranger && profile.IsOpen)
+        {
+            relationship = Relationship.PublicViewer;
+        }
+
         var scopes = owner.AllHouseholdIds
-            .Select(h => new SharedScope(h, relationship == Relationship.Stranger && viewer.IsMemberOf(h) ? Relationship.HouseholdMember : relationship))
+            .Select(h => new SharedScope(h, relationship is Relationship.Stranger or Relationship.PublicViewer && viewer.IsMemberOf(h) ? Relationship.HouseholdMember : relationship))
             .ToList();
         return (owner, scopes);
     }
 
-    private static bool MayBrowse(Relationship relationship) => relationship is Relationship.Author or Relationship.HouseholdMember or Relationship.AcceptedFollower;
+    private static bool MayBrowse(Relationship relationship) => relationship is Relationship.Author or Relationship.HouseholdMember or Relationship.AcceptedFollower or Relationship.PublicViewer;
 
     private static bool MayBrowse(IReadOnlyList<SharedScope> scopes) => scopes.Any(s => MayBrowse(s.Reader));
+
+    /// <summary>A stranger looking at a public profile: only public beans and recipes, no brews and no follower count.</summary>
+    private static bool PublicOnly(IReadOnlyList<SharedScope> scopes) => scopes.All(s => s.Reader == Relationship.PublicViewer);
 
     /// <summary>Header of a friend's profile with counts of what is shared with the viewer. Strangers and blocked people get nothing, not even a hint the person exists.</summary>
     public async Task<FriendProfileDto?> ProfileAsync(string viewerId, string ownerId, CancellationToken ct = default)
@@ -367,13 +381,14 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
             return null;
         }
 
+        var publicOnly = PublicOnly(scopes);
         var counts = new Dictionary<string, int>();
         foreach (var table in SharedTables)
         {
-            counts[table] = (await sync.ListSharedAsync(scopes, ownerId, table, 0, 1, ct)).Total;
+            counts[table] = publicOnly && !VisibilityRules.AllowsPublic(table) ? 0 : (await sync.ListSharedAsync(scopes, ownerId, table, 0, 1, ct)).Total;
         }
 
-        var followers = (await store.FollowsAsync(ownerId, asFollowee: true, ct)).Count(f => f.Status == FollowStatus.Accepted);
+        var followers = publicOnly ? 0 : (await store.FollowsAsync(ownerId, asFollowee: true, ct)).Count(f => f.Status == FollowStatus.Accepted);
         return new FriendProfileDto(owner.Id, owner.DisplayName, counts["beans"], counts["recipes"], counts["brews"], followers);
     }
 
@@ -386,7 +401,7 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         }
 
         var (owner, scopes) = await ReaderAsync(viewerId, ownerId, ct);
-        if (owner is null || !MayBrowse(scopes))
+        if (owner is null || !MayBrowse(scopes) || (PublicOnly(scopes) && !VisibilityRules.AllowsPublic(table)))
         {
             return null;
         }

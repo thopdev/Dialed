@@ -17,6 +17,9 @@ public sealed class ProtectionOptions
     /// <summary>Requests per minute for one user on the friend endpoints (<c>/friends</c>), which is stricter so friend codes cannot be guessed.</summary>
     public int FriendsRequestsPerMinute { get; set; } = 30;
 
+    /// <summary>Requests per minute for one user on <c>/reports</c> (#106).</summary>
+    public int ReportsPerMinute { get; set; } = 5;
+
     /// <summary>Send <c>Strict-Transport-Security</c>. On everywhere except local development, where the API runs over plain HTTP.</summary>
     public bool Hsts { get; set; } = true;
 
