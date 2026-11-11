@@ -1006,6 +1006,9 @@
   <data name="Calendar_Roasted" xml:space="preserve"><value>Roast day</value></data>
   <data name="Calendar_Description" xml:space="preserve"><value>{0} brews in the last {1} weeks; busiest day {2} with {3}</value></data>
   <data name="Calendar_DescriptionEmpty" xml:space="preserve"><value>No brews in the last {0} weeks</value></data>
+  <data name="Card_Share" xml:space="preserve"><value>Share a picture of this brew</value></data>
+  <data name="Card_Failed" xml:space="preserve"><value>The picture could not be made on this device.</value></data>
+  <data name="Card_Footer" xml:space="preserve"><value>Brewed {0} with Dialed</value></data>
   <data name="Passport_Title" xml:space="preserve"><value>Countries tried</value></data>
   <data name="Passport_Progress" xml:space="preserve"><value>{0} of {1} coffee countries</value></data>
   <data name="Passport_ToTry" xml:space="preserve"><value>Still to try ({0})</value></data>
