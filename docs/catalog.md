@@ -35,7 +35,7 @@ Hide and merge are kept as **rules on the entries' keys** (normalised names), no
 - **Bean form** (new beans only): typing a name suggests catalog beans (a moment after the last key, at least 2 letters, online only). **Use this** *copies* the entry into the form: name, origin, process, varieties, roast level, tasting notes, and the roaster (the one I already have, or a new vendor made from its name). Nothing is linked; everything stays editable.
 - **Roaster picker**: catalog roasters I do not have yet appear below my own; choosing one copies it into my vendors with its country, city and website.
 - **Label scan**: when none of my beans matches the label, up to 3 catalog candidates are offered; **Use this** fills the origin fields (the label stays the truth for name and roaster) and the saved bean is a copy.
-- **Barcode scan** (#104): catalog entries have no barcodes, so an unknown code leads to *Add as a new bean*, whose form has the typeahead.
+- **Barcode scan** (#104): contributors' bean barcodes feed the catalog under the same rule (a code is only included when at least 2 people entered it). When none of my own beans has a scanned code, the catalog is asked (`GET /catalog/barcode?code=`, any spelling of the code: UPC-A or EAN-13); a match is offered as *Add this bean*, which makes a bean of my own (a copy, with the code on it and my roaster or a new one) and opens it. The three choices stay below it.
 - Online only: offline, signed out or on any error the lists are simply empty and nothing breaks (`ICatalogApi` never throws).
 
 ## Testing

@@ -8,6 +8,9 @@
 @inject IStringLocalizer<Strings> L
 @inject IBarcodeScanner Scanner
 @inject IRepository<Bean> BeanStore
+@inject IRepository<Vendor> VendorStore
+@inject Dialed.Client.Catalog.ICatalogApi Catalog
+@inject Dialed.Client.Preferences.IUserPreferences Preferences
 @inject NavigationManager Navigation
 
 @* Scan the barcode on a bag (#104): a bean you already have opens at once; an unknown code can start a new bean, join an existing one, or go on to the label scan. *@
@@ -87,6 +90,26 @@ else
     <section id="barcode-unknown" aria-labelledby="barcode-unknown-title">
         <h2 id="barcode-unknown-title">@L["Barcode_UnknownTitle"]</h2>
         <p class="dialed-muted">@L["Barcode_UnknownBody", unknownCode]</p>
+        @if (catalogMatches.Count > 0)
+        {
+            <section id="barcode-catalog" class="dialed-catalog" aria-labelledby="barcode-catalog-title">
+                <h3 id="barcode-catalog-title">@L["Barcode_CatalogTitle"]</h3>
+                <p class="dialed-muted">@L["Catalog_Hint"]</p>
+                <ul class="dialed-list">
+                    @foreach (var entry in catalogMatches)
+                    {
+                        <li class="catalog-row" data-catalog="@entry.Id">
+                            <span class="catalog-text">
+                                <strong class="catalog-name">@entry.Name</strong>
+                                <span class="dialed-muted catalog-detail">@string.Join(" · ", new[] { entry.RoasterName, entry.Country, entry.Process }.Where(part => !string.IsNullOrWhiteSpace(part)))</span>
+                            </span>
+                            <button type="button" class="dialed-button dialed-button-primary catalog-use" aria-label="@string.Format(L["Barcode_CatalogAddNamed"].Value, entry.Name)" @onclick="() => AddFromCatalogAsync(entry)">@L["Barcode_CatalogAdd"]</button>
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
         <div class="dialed-form-actions barcode-choices">
             <button id="barcode-new" type="button" class="dialed-button dialed-button-primary" @onclick="NewBean">@L["Barcode_NewBean"]</button>
             <button id="barcode-attach" type="button" class="dialed-button" @onclick="OpenAttachAsync">@L["Barcode_AttachBean"]</button>
@@ -107,6 +130,7 @@ else
     private string typed = "";
     private string search = "";
     private IReadOnlyList<Bean> beans = [];
+    private IReadOnlyList<Dialed.Client.Catalog.CatalogBean> catalogMatches = [];
 
     private IReadOnlyList<Bean> Candidates => string.IsNullOrWhiteSpace(search)
         ? [.. beans.OrderBy(b => b.Name, StringComparer.CurrentCultureIgnoreCase).Take(30)]
@@ -188,7 +212,17 @@ else
         else
         {
             unknownCode = code;
+
+            // Nothing of mine has this code: the catalog may know the coffee (online only, optional, never an error).
+            catalogMatches = [.. (await Catalog.FindByBarcodeAsync(code)).Take(3)];
         }
+    }
+
+    /// <summary>Makes a bean of my own from the catalog entry, with this code on it, and opens it.</summary>
+    private async Task AddFromCatalogAsync(Dialed.Client.Catalog.CatalogBean entry)
+    {
+        var created = await Dialed.Client.Catalog.CatalogCopier.SaveBeanAsync(entry, unknownCode, BeanStore, VendorStore, Preferences.Profile.DefaultVisibility, stop.Token);
+        Navigation.NavigateTo($"beans/{created.Id}");
     }
 
     private void NewBean() => Navigation.NavigateTo($"beans/new?barcode={Uri.EscapeDataString(unknownCode!)}");
@@ -212,6 +246,7 @@ else
     private void Reset()
     {
         unknownCode = null;
+        catalogMatches = [];
         attaching = false;
         typed = "";
         search = "";

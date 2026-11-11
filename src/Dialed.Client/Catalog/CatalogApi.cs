@@ -21,7 +21,8 @@ public sealed record CatalogBean(
     IReadOnlyList<string> Varieties,
     RoastLevel? RoastLevel,
     IReadOnlyList<string> TastingNotes,
-    int People);
+    int People,
+    IReadOnlyList<string>? Barcodes = null);
 
 /// <summary>
 /// Suggestions from the shared catalog. Online only and always optional: without a network, a sign-in or an answer the lists are
@@ -33,6 +34,9 @@ public interface ICatalogApi
 
     /// <summary>Beans by name, optionally narrowed to a roaster (a roaster alone lists its beans).</summary>
     Task<IReadOnlyList<CatalogBean>> SearchBeansAsync(string? query, string? roaster, CancellationToken cancellationToken = default);
+
+    /// <summary>Beans that carry this barcode, for a code that none of my own beans has.</summary>
+    Task<IReadOnlyList<CatalogBean>> FindByBarcodeAsync(string code, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Nothing is suggested: the default until a host registers the real client.</summary>
@@ -43,6 +47,8 @@ public sealed class NoCatalog : ICatalogApi
     public Task<IReadOnlyList<CatalogRoaster>> SearchRoastersAsync(string query, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<CatalogRoaster>>([]);
 
     public Task<IReadOnlyList<CatalogBean>> SearchBeansAsync(string? query, string? roaster, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<CatalogBean>>([]);
+
+    public Task<IReadOnlyList<CatalogBean>> FindByBarcodeAsync(string code, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<CatalogBean>>([]);
 }
 
 /// <summary>Calls <c>GET /catalog/roasters</c> and <c>GET /catalog/beans</c>.</summary>
@@ -55,6 +61,9 @@ public sealed class CatalogApi(HttpClient http, IAccessTokenProvider tokens, ICo
 
     public Task<IReadOnlyList<CatalogBean>> SearchBeansAsync(string? query, string? roaster, CancellationToken cancellationToken = default) =>
         GetAsync<CatalogBean>($"catalog/beans?q={Uri.EscapeDataString(query ?? "")}&roaster={Uri.EscapeDataString(roaster ?? "")}", cancellationToken);
+
+    public Task<IReadOnlyList<CatalogBean>> FindByBarcodeAsync(string code, CancellationToken cancellationToken = default) =>
+        GetAsync<CatalogBean>($"catalog/barcode?code={Uri.EscapeDataString(code)}", cancellationToken);
 
     private async Task<IReadOnlyList<T>> GetAsync<T>(string path, CancellationToken cancellationToken)
     {

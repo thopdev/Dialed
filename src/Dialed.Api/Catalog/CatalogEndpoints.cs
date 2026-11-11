@@ -22,6 +22,7 @@ public static class CatalogEndpoints
         var group = endpoints.MapGroup("/catalog").RequireAuthorization();
         group.MapGet("/roasters", (string? q, CatalogService catalog) => Results.Ok(catalog.SearchRoasters(q)));
         group.MapGet("/beans", (string? q, string? roaster, CatalogService catalog) => Results.Ok(catalog.SearchBeans(q, roaster)));
+        group.MapGet("/barcode", (string? code, CatalogService catalog) => Results.Ok(catalog.FindByBarcode(code)));
 
         var admin = endpoints.MapGroup("/admin/catalog");
         admin.MapPost("/rebuild", async (HttpContext http, IOptions<BetaOptions> options, CatalogService catalog, ICatalogStore store, CancellationToken ct) =>

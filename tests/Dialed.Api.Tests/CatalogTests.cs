@@ -430,4 +430,55 @@ public sealed class CatalogTests(ModeratedApp app) : IClassFixture<ModeratedApp>
         (await Admin().PostAsJsonAsync("/admin/catalog/merge", new CatalogMergeRequest(bean.Id, bean.Id), Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
         (await Admin().PostAsJsonAsync("/admin/catalog/merge", new CatalogMergeRequest(roaster.Id, bean.Id), Ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
+
+    // ---- Barcodes -----------------------------------------------------------------------------
+
+    private static async Task<string> BeanWithCodes(Person person, string name, params string[] codes)
+    {
+        var id = Guid.CreateVersion7().ToString();
+        await Put(person, "beans", new JsonObject
+        {
+            ["id"] = id, ["name"] = name, ["visibility"] = VisibilityRules.Public, ["origin"] = new JsonObject { ["country"] = "Ethiopia" },
+            ["tastingNotes"] = new JsonArray(), ["varieties"] = new JsonArray(), ["photoIds"] = new JsonArray(),
+            ["barcodes"] = new JsonArray([.. codes.Select(c => (JsonNode)c)]),
+        });
+        return id;
+    }
+
+    private static async Task<CatalogBeanDto[]> ByBarcode(Person asker, string code) =>
+        (await asker.Client.GetFromJsonAsync<CatalogBeanDto[]>($"/catalog/barcode?code={Uri.EscapeDataString(code)}", Ct))!;
+
+    [Fact]
+    public async Task A_barcode_two_people_entered_finds_the_bean_in_any_spelling()
+    {
+        var name = Unique("Coded");
+        var a = await NewPerson();
+        var b = await NewPerson();
+        await BeanWithCodes(a, name, "4006381333931", "96385074");
+        await BeanWithCodes(b, name, "4006381333931");
+        await Rebuild();
+
+        (await ByBarcode(a, "4006381333931")).ShouldHaveSingleItem().Name.ShouldBe(name);
+        (await ByBarcode(a, "4 006381 333931")).ShouldHaveSingleItem().Name.ShouldBe(name);
+        var entry = (await Beans(a, name)).Single();
+        entry.Barcodes.ShouldBe(["4006381333931"]); // the second code was only on one person's bean
+        (await ByBarcode(a, "96385074")).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_code_with_a_wrong_check_digit_or_nothing_finds_nothing()
+    {
+        var a = await NewPerson();
+
+        (await ByBarcode(a, "4006381333932")).ShouldBeEmpty();
+        (await ByBarcode(a, "")).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task The_barcode_lookup_is_for_signed_in_people_only()
+    {
+        using var anonymous = app.CreateClient();
+
+        (await anonymous.GetAsync("/catalog/barcode?code=4006381333931", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
 }
