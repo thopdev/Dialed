@@ -40,6 +40,14 @@ public static class CatalogEndpoints
             AdminKey.Check(http, options.Value) ?? (await catalog.HideAsync(id, ct) ? Results.NoContent() : Results.NotFound()));
         admin.MapPost("/merge", async (CatalogMergeRequest request, HttpContext http, IOptions<BetaOptions> options, CatalogService catalog, CancellationToken ct) =>
             AdminKey.Check(http, options.Value) ?? (await catalog.MergeAsync(request.FromId, request.IntoId, ct) ? Results.NoContent() : Results.NotFound()));
+        admin.MapGet("/hidden", (HttpContext http, IOptions<BetaOptions> options, CatalogService catalog) =>
+            AdminKey.Check(http, options.Value) ?? Results.Ok(catalog.HiddenEntries()));
+        admin.MapPost("/entries/{id}/unhide", async (string id, HttpContext http, IOptions<BetaOptions> options, CatalogService catalog, CancellationToken ct) =>
+            AdminKey.Check(http, options.Value) ?? (await catalog.UnhideAsync(id, ct) ? Results.NoContent() : Results.NotFound()));
+        admin.MapGet("/rules", (HttpContext http, IOptions<BetaOptions> options, CatalogService catalog) =>
+            AdminKey.Check(http, options.Value) ?? Results.Ok(catalog.Rules()));
+        admin.MapPost("/unmerge", async (CatalogUnmergeRequest request, HttpContext http, IOptions<BetaOptions> options, CatalogService catalog, CancellationToken ct) =>
+            AdminKey.Check(http, options.Value) ?? (await catalog.UnmergeAsync(request.KeyA, request.KeyB, ct) ? Results.NoContent() : Results.NotFound()));
         return endpoints;
     }
 }

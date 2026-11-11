@@ -35,6 +35,10 @@ public sealed class SecurityTests(PasskeyApp app) : IClassFixture<PasskeyApp>
         "GET /admin/catalog/entries",
         "POST /admin/catalog/entries/{id}/hide",
         "POST /admin/catalog/merge",
+        "GET /admin/catalog/hidden",
+        "POST /admin/catalog/entries/{id}/unhide",
+        "GET /admin/catalog/rules",
+        "POST /admin/catalog/unmerge",
         "PUT /photo-blobs/{householdId}/{file}", // local stand-in for Blob Storage: the signed URL is the credential, like a SAS
         "GET /photo-blobs/{householdId}/{file}",
     ];
