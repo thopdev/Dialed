@@ -2571,6 +2571,7 @@ a.people-row-name {
 }
 
 .people-find-row {
+    color: var(--colorNeutralForeground1);
     display: flex;
     align-items: center;
     gap: var(--dialed-space-3);
