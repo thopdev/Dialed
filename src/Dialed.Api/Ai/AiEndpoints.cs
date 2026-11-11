@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Dialed.AI.DialIn;
 using Dialed.AI.Labels;
+using Dialed.Api.Sync;
+using Dialed.Images;
 using Dialed.AI.Recipes;
 using Dialed.Telemetry;
 
@@ -38,9 +40,44 @@ public static class AiEndpoints
         return services;
     }
 
+    /// <summary>The quota check, the extraction and the telemetry that both label-scan endpoints share.</summary>
+    private static async Task<IResult> ScanAsync(byte[] jpeg, ClaimsPrincipal user, AiGate gate, ILabelExtractor extractor, ILoggerFactory logs, HttpContext http, CancellationToken ct)
+    {
+        var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
+        var entry = gate.TryEnter(userId, AiOperations.Label);
+        if (entry.Status == AiGateStatus.Disabled)
+        {
+            return Results.Problem("AI is switched off for now. Enter the bean by hand.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
+        }
+
+        if (entry.Status == AiGateStatus.QuotaExceeded)
+        {
+            http.Response.Headers.RetryAfter = ((int)Math.Ceiling(entry.RetryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return Results.Problem($"You have used all {entry.Limit} label scans for today. Enter the bean by hand, or try again tomorrow.", statusCode: StatusCodes.Status429TooManyRequests, extensions: new Dictionary<string, object?> { ["code"] = "ai-quota" });
+        }
+
+        var started = Stopwatch.GetTimestamp();
+        try
+        {
+            var extraction = await extractor.ExtractAsync(jpeg, ct);
+            var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+            DialedTelemetry.AiTokens.Add(extraction.InputTokens, new KeyValuePair<string, object?>("operation", "label"), new KeyValuePair<string, object?>("direction", "input"));
+            DialedTelemetry.AiTokens.Add(extraction.OutputTokens, new KeyValuePair<string, object?>("operation", "label"), new KeyValuePair<string, object?>("direction", "output"));
+            DialedTelemetry.AiLatency.Record(elapsed, new KeyValuePair<string, object?>("operation", "label"));
+            DialedTelemetry.AiEstimatedCost.Add((double)gate.EstimateCostUsd(extraction.InputTokens, extraction.OutputTokens), new KeyValuePair<string, object?>("operation", "label"));
+            return Results.Ok(new LabelScanResponse(extraction.Draft, extraction.PromptVersion, extraction.ModelId));
+        }
+        catch (LabelExtractionException exception)
+        {
+            gate.Refund(userId, AiOperations.Label);
+            logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Label extraction failed");
+            return Results.Problem("The label could not be read right now. Enter the bean by hand, or try again later.", statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+    }
+
     /// <summary>
     /// POST /ai/label-scans: a JPEG photo of a bean label in the request body, a <see cref="BeanDraft"/> back. Taking the photo bytes directly is
-    /// the interim step: reading a stored photo by id comes with the photo upload queue (#68). Rate limited under the "ai" limit.
+    /// the direct way; <c>POST /ai/label-scans/{photoId}</c> reads a photo that was uploaded earlier (#83). Rate limited under the "ai" limit.
     /// </summary>
     public static IEndpointRouteBuilder MapDialedAi(this IEndpointRouteBuilder endpoints)
     {
@@ -60,36 +97,24 @@ public static class AiEndpoints
                 return Results.Problem(buffer.Length == 0 ? "The photo is empty." : "The photo is too large.", statusCode: buffer.Length == 0 ? StatusCodes.Status400BadRequest : StatusCodes.Status413PayloadTooLarge);
             }
 
-            var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
-            var entry = gate.TryEnter(userId, AiOperations.Label);
-            if (entry.Status == AiGateStatus.Disabled)
+            return await ScanAsync(buffer.ToArray(), user, gate, extractor, logs, request.HttpContext, ct);
+        });
+
+        // The same scan for a photo that was uploaded earlier (#83 offline scans): the API reads it from photo storage, so the app only sends the id.
+        // 404 until the record has synced and the file has arrived, which the app takes as "not yet" and asks again later. Not counted against the quota.
+        group.MapPost("/label-scans/{photoId}", async (string photoId, HttpContext http, ClaimsPrincipal user, ISyncStore sync, IPhotoBlobStore blobs, AiGate gate, ILabelExtractor extractor, ILoggerFactory logs, CancellationToken ct) =>
+        {
+            if (await Dialed.Api.Photos.PhotoEndpoints.FindForCallerAsync(photoId, user, sync, ct) is not { } blob)
             {
-                return Results.Problem("AI is switched off for now. Enter the bean by hand.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
+                return Results.Problem("That photo is not known yet.", statusCode: StatusCodes.Status404NotFound, extensions: new Dictionary<string, object?> { ["code"] = "photo-unknown" });
             }
 
-            if (entry.Status == AiGateStatus.QuotaExceeded)
+            if (await blobs.ReadAsync(blob.Path, ct) is not { Length: > 0 } jpeg)
             {
-                request.HttpContext.Response.Headers.RetryAfter = ((int)Math.Ceiling(entry.RetryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
-                return Results.Problem($"You have used all {entry.Limit} label scans for today. Enter the bean by hand, or try again tomorrow.", statusCode: StatusCodes.Status429TooManyRequests, extensions: new Dictionary<string, object?> { ["code"] = "ai-quota" });
+                return Results.Problem("That photo has not been uploaded yet.", statusCode: StatusCodes.Status404NotFound, extensions: new Dictionary<string, object?> { ["code"] = "photo-not-uploaded" });
             }
 
-            var started = Stopwatch.GetTimestamp();
-            try
-            {
-                var extraction = await extractor.ExtractAsync(buffer.ToArray(), ct);
-                var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
-                DialedTelemetry.AiTokens.Add(extraction.InputTokens, new KeyValuePair<string, object?>("operation", "label"), new KeyValuePair<string, object?>("direction", "input"));
-                DialedTelemetry.AiTokens.Add(extraction.OutputTokens, new KeyValuePair<string, object?>("operation", "label"), new KeyValuePair<string, object?>("direction", "output"));
-                DialedTelemetry.AiLatency.Record(elapsed, new KeyValuePair<string, object?>("operation", "label"));
-                DialedTelemetry.AiEstimatedCost.Add((double)gate.EstimateCostUsd(extraction.InputTokens, extraction.OutputTokens), new KeyValuePair<string, object?>("operation", "label"));
-                return Results.Ok(new LabelScanResponse(extraction.Draft, extraction.PromptVersion, extraction.ModelId));
-            }
-            catch (LabelExtractionException exception)
-            {
-                gate.Refund(userId, AiOperations.Label);
-                logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Label extraction failed");
-                return Results.Problem("The label could not be read right now. Enter the bean by hand, or try again later.", statusCode: StatusCodes.Status503ServiceUnavailable);
-            }
+            return await ScanAsync(jpeg, user, gate, extractor, logs, http, ct);
         });
 
         group.MapPost("/dial-in", async (DialInContext context, ClaimsPrincipal user, AiGate gate, IDialInRefiner refiner, ILoggerFactory logs, HttpContext http, CancellationToken ct) =>

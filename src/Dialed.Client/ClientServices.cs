@@ -58,6 +58,11 @@ public static class ClientServices
             loadables.Add(uploads);
         }
 
+        if (services.GetService<Scan.IScanQueue>() is ILoadable scans)
+        {
+            loadables.Add(scans);
+        }
+
         foreach (var loadable in loadables)
         {
             await loadable.LoadAsync(cancellationToken);
@@ -126,6 +131,16 @@ public static class ClientServices
         ArgumentNullException.ThrowIfNull(scanner);
 
         services.TryAddSingleton(scanner);
+
+        // Scans taken offline wait here until their photo has uploaded (#83). Call PendingScanQueue.StartAsync once after loading the local data.
+        services.TryAddSingleton(sp => new Scan.PendingScanQueue(
+            sp.GetRequiredService<ILocalStore>(),
+            sp.GetRequiredService<IRepository<Photo>>(),
+            sp.GetRequiredService<Scan.ILabelScanner>(),
+            sp.GetRequiredService<IConnectivity>(),
+            sp.GetRequiredService<IAppLifecycle>(),
+            sp.GetService<TimeProvider>() ?? TimeProvider.System));
+        services.TryAddSingleton<Scan.IScanQueue>(sp => sp.GetRequiredService<Scan.PendingScanQueue>());
         return services;
     }
 

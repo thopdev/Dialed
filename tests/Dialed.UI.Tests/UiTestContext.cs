@@ -27,6 +27,8 @@ public abstract class UiTestContext : BunitContext
     /// <summary>Stands in for the camera and photo library: set <see cref="TestPhotoCapture.Next"/> to what the user will "take".</summary>
     protected TestScanner Scanner { get; } = new();
 
+    protected TestScanQueue ScanQueue { get; } = new();
+
     protected TestRecipeAssistant Assistant { get; } = new();
 
     protected TestDialInAssistant DialInAssistant { get; } = new();
@@ -84,6 +86,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<PhotoService>();
         Services.AddSingleton<IPhotoCapture>(Camera);
         Services.AddSingleton<Dialed.Client.Scan.ILabelScanner>(Scanner);
+        Services.AddSingleton<Dialed.Client.Scan.IScanQueue>(ScanQueue);
         Services.AddSingleton<Dialed.Client.Recipes.IRecipeAssistant>(Assistant);
         Services.AddSingleton<Dialed.Client.DialIn.IDialInAssistant>(DialInAssistant);
         Services.AddSingleton<IAccessTokenProvider>(Tokens);
@@ -470,6 +473,51 @@ public abstract class UiTestContext : BunitContext
             new(System.Net.HttpStatusCode.OK) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
     }
 
+    protected sealed class TestScanQueue : Dialed.Client.Scan.IScanQueue
+    {
+        private readonly List<Dialed.Client.Scan.PendingScan> items = [];
+
+        public IReadOnlyList<Dialed.Client.Scan.PendingScan> Items => [.. items];
+
+        public int WaitingCount => items.Count(i => i.Status is Dialed.Client.Scan.PendingScanStatus.Waiting or Dialed.Client.Scan.PendingScanStatus.Reading);
+
+        public int ReadyCount => items.Count(i => i.Status == Dialed.Client.Scan.PendingScanStatus.Ready);
+
+        public List<string> Retried { get; } = [];
+
+        public event Action? Changed;
+
+        public Dialed.Client.Scan.PendingScan? Get(string photoId) => items.FirstOrDefault(i => i.PhotoId == photoId);
+
+        /// <summary>Puts a scan in a given state, as if the queue had got there.</summary>
+        public void Set(string photoId, Dialed.Client.Scan.PendingScanStatus status, Dialed.Client.Scan.ScannedLabel? draft = null, Dialed.Client.Scan.ScanProblem? problem = null)
+        {
+            items.RemoveAll(i => i.PhotoId == photoId);
+            items.Add(new Dialed.Client.Scan.PendingScan(photoId, status, draft, problem, new DateTimeOffset(2026, 11, 11, 9, 30, 0, TimeSpan.Zero)));
+            Changed?.Invoke();
+        }
+
+        public Task EnqueueAsync(string photoId, CancellationToken cancellationToken = default)
+        {
+            Set(photoId, Dialed.Client.Scan.PendingScanStatus.Waiting);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveAsync(string photoId, CancellationToken cancellationToken = default)
+        {
+            items.RemoveAll(i => i.PhotoId == photoId);
+            Changed?.Invoke();
+            return Task.CompletedTask;
+        }
+
+        public Task RetryAsync(string photoId, CancellationToken cancellationToken = default)
+        {
+            Retried.Add(photoId);
+            Set(photoId, Dialed.Client.Scan.PendingScanStatus.Waiting);
+            return Task.CompletedTask;
+        }
+    }
+
     protected sealed class TestScanner : Dialed.Client.Scan.ILabelScanner
     {
         public Dialed.Client.Scan.ScannedLabel? Result { get; set; }
@@ -477,6 +525,9 @@ public abstract class UiTestContext : BunitContext
         public Dialed.Client.Scan.ScanProblem? Problem { get; set; }
 
         public int Scans { get; private set; }
+
+        public Task<Dialed.Client.Scan.ScannedLabel> ScanStoredAsync(string photoId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException("The UI reads queued scans through the scan queue.");
 
         public Task<Dialed.Client.Scan.ScannedLabel> ScanAsync(CapturedPhoto photo, CancellationToken cancellationToken = default)
         {

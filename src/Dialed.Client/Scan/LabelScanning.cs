@@ -50,6 +50,9 @@ public enum ScanProblem
     /// <summary>The kill switch is on (503, code ai-disabled).</summary>
     Disabled,
 
+    /// <summary>The photo has not reached the server yet (404): try again after it has uploaded.</summary>
+    NotUploaded,
+
     /// <summary>The model failed or answered something unusable.</summary>
     Unavailable,
 }
@@ -63,6 +66,12 @@ public interface ILabelScanner
 {
     /// <summary>Sends the photo to the API and returns what was read. Throws <see cref="LabelScanException"/>.</summary>
     Task<ScannedLabel> ScanAsync(CapturedPhoto photo, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reads a photo the API already has (uploaded earlier, #83): only its id is sent. Throws <see cref="LabelScanException"/>, with
+    /// <see cref="ScanProblem.NotUploaded"/> while the photo has not arrived.
+    /// </summary>
+    Task<ScannedLabel> ScanStoredAsync(string photoId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Calls <c>POST /ai/label-scans</c>.</summary>
@@ -88,6 +97,25 @@ public sealed class LabelScanner(HttpClient http, IAccessTokenProvider tokens, I
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "ai/label-scans") { Content = new ByteArrayContent(photo.Content) };
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+        return await SendAsync(request, token, cancellationToken);
+    }
+
+    public async Task<ScannedLabel> ScanStoredAsync(string photoId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(photoId);
+
+        var token = await tokens.GetAccessTokenAsync(cancellationToken) ?? throw new LabelScanException(ScanProblem.SignedOut);
+        if (!connectivity.IsOnline)
+        {
+            throw new LabelScanException(ScanProblem.Offline);
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"ai/label-scans/{Uri.EscapeDataString(photoId)}");
+        return await SendAsync(request, token, cancellationToken);
+    }
+
+    private async Task<ScannedLabel> SendAsync(HttpRequestMessage request, string token, CancellationToken cancellationToken)
+    {
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         HttpResponseMessage response;
@@ -116,6 +144,7 @@ public sealed class LabelScanner(HttpClient http, IAccessTokenProvider tokens, I
                 HttpStatusCode.Unauthorized => new LabelScanException(ScanProblem.SignedOut),
                 HttpStatusCode.TooManyRequests => new LabelScanException(ScanProblem.QuotaUsed),
                 HttpStatusCode.ServiceUnavailable when text.Contains("ai-disabled", StringComparison.Ordinal) => new LabelScanException(ScanProblem.Disabled),
+                HttpStatusCode.NotFound => new LabelScanException(ScanProblem.NotUploaded),
                 _ => new LabelScanException(ScanProblem.Unavailable),
             };
         }

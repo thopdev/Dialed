@@ -30,7 +30,7 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 - Waves 0 to 3 done (core app, accounts, households, friends, sync, passkeys, security, error reporting, accessibility pass, install metadata, privacy page, feedback, statistics, CSV import, label scan with a fake AI client, AI quotas).
 - Visual polish (#213 to #216, on the shared components of #217) is done and merged; preferences and finished setup are saved on the device (`StoredUserPreferences`).
 - Issue hygiene: an issue whose non-Azure scope is merged but has Azure or device work left stays open with a "Status" comment listing what is left. Use `Part of #N` in PRs that do not finish an issue, and `Closes #N` only when every acceptance criterion is met.
-- Open, no Azure needed: #86 dial-in assistant, offline scan queue for #83 (the upload queue #68 is in: needs a label scan by photo id plus a "scans to review" list, see `docs/photo-uploads.md`), #69 thumbnails, #197 lockout in the database, #84 golden-set harness, #39 cross-tab sync lock, #70 create/rename/delete household, #110 sign-in smoke test.
+- Open, no Azure needed: #86 dial-in assistant, #69 thumbnails, #197 lockout in the database, #84 golden-set harness, #39 cross-tab sync lock, #70 create/rename/delete household, #110 sign-in smoke test.
 - Open, owner: `Feedback:Email` in `src/Dialed.Web/wwwroot/appsettings.json` (needs the address), #99 beta testers, real-device checks (#37, #49).
 - Open, Azure: #22, #24 to #28, #38 (Cosmos), #43 (timer Function), #79, #81, #88 and #90 (Application Insights), #111, #112 (email via #199), #198, #199.
 - Post-MVP (P2): #100, #102 to #106, #109.

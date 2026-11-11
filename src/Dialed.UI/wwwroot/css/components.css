@@ -2492,3 +2492,57 @@ a.people-row-name {
 .dialed-dialin {
     margin-bottom: var(--dialed-space-4);
 }
+
+/* ---- Offline label scans (#83) ----------------------------------------------------------------- */
+
+.dialed-scan-pending {
+    margin: var(--dialed-space-4) 0;
+}
+
+.dialed-scan-pending h2 {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-scan-pending ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* The status gets the full width; the buttons wrap under the text instead of squeezing it. */
+.scan-pending-row {
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2) var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.scan-pending-row .dialed-row-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.scan-pending-row .dialed-row-title,
+.scan-pending-row .dialed-row-subtitle {
+    white-space: normal;
+}
+
+.scan-pending-actions {
+    display: flex;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-scans-note {
+    margin: var(--dialed-space-2) 0;
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-scans-note a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+}

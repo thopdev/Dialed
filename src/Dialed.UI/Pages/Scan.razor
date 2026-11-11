@@ -10,6 +10,8 @@
 @inject IStringLocalizer<Strings> L
 @inject IPhotoCapture Capture
 @inject ILabelScanner Scanner
+@inject IScanQueue Queue
+@implements IDisposable
 @inject PhotoService Photos
 @inject AuthSession Session
 @inject IRepository<Bean> BeanStore
@@ -29,9 +31,17 @@
 else if (label is null)
 {
     <p class="dialed-muted" id="scan-hint">@L["Scan_Hint"]</p>
+    @if (queuedNote)
+    {
+        <p id="scan-queued" role="status">@L["Scan_Queued"]</p>
+    }
     @if (problem is not null)
     {
         <p id="scan-problem" role="alert">@L[$"Scan_Problem_{problem}"]</p>
+        @if (offlineCapture is not null)
+        {
+            <p><button id="scan-later" type="button" class="dialed-button dialed-button-primary" disabled="@busy" @onclick="ScanLaterAsync">@L["Scan_Later"]</button></p>
+        }
         <p><a href="beans/new">@L["Beans_New"]</a></p>
     }
 
@@ -42,6 +52,36 @@ else if (label is null)
     @if (busy)
     {
         <p id="scan-busy" role="status">@L["Scan_Reading"]</p>
+    }
+
+    @if (Queue.Items.Count > 0)
+    {
+        <section id="scan-pending" class="dialed-scan-pending" aria-labelledby="scan-pending-title">
+            <h2 id="scan-pending-title">@L["Scan_PendingTitle"]</h2>
+            <ul class="dialed-list">
+                @foreach (var item in Queue.Items)
+                {
+                    <li class="dialed-row scan-pending-row" data-photo="@item.PhotoId" data-status="@item.Status">
+                        <Thumb PhotoId="@item.PhotoId" Size="48" />
+                        <span class="dialed-row-text">
+                            <span class="dialed-row-title">@PendingTitle(item)</span>
+                            <span class="dialed-row-subtitle scan-pending-status">@PendingStatus(item)</span>
+                        </span>
+                        <span class="scan-pending-actions">
+                            @if (item.Status == PendingScanStatus.Ready)
+                            {
+                                <button type="button" class="dialed-button dialed-button-primary scan-pending-review" aria-label="@string.Format(L["Scan_ReviewNamed"].Value, PendingTitle(item))" @onclick="() => ReviewPending(item)">@L["Scan_ReviewOpen"]</button>
+                            }
+                            else if (item.Status == PendingScanStatus.Failed)
+                            {
+                                <button type="button" class="dialed-button scan-pending-retry" aria-label="@string.Format(L["Scan_RetryNamed"].Value, PendingTitle(item))" @onclick="() => Queue.RetryAsync(item.PhotoId)">@L["Scan_Retry"]</button>
+                            }
+                            <button type="button" class="dialed-button scan-pending-discard" aria-label="@string.Format(L["Scan_DiscardNamed"].Value, PendingTitle(item))" @onclick="() => DiscardPendingAsync(item)">@L["Scan_Discard"]</button>
+                        </span>
+                    </li>
+                }
+            </ul>
+        </section>
     }
 }
 else
@@ -136,6 +176,9 @@ else
 @code {
     private ScannedLabel? label;
     private CapturedPhoto? photo;
+    private CapturedPhoto? offlineCapture;
+    private string? queuedPhotoId;
+    private bool queuedNote;
     private LabelMatch? match;
     private ScanProblem? problem;
     private bool busy;
@@ -157,9 +200,84 @@ else
         }
     };
 
+    protected override void OnInitialized() => Queue.Changed += OnQueueChanged;
+
+    private void OnQueueChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Queue.Changed -= OnQueueChanged;
+
+    private string PendingTitle(PendingScan item) =>
+        item.Draft?.Name.Value is { Length: > 0 } name ? name : L["Scan_PendingUnnamed", item.QueuedAt.ToLocalTime().ToString("d MMM HH:mm", System.Globalization.CultureInfo.CurrentCulture)].Value;
+
+    private string PendingStatus(PendingScan item) => item.Status switch
+    {
+        PendingScanStatus.Failed => L[$"Scan_Problem_{item.Problem ?? ScanProblem.Unavailable}"].Value,
+        _ => L[$"Scan_Status_{item.Status}"].Value,
+    };
+
+    /// <summary>Offline: keeps the photo like any other (it uploads when there is a network) and lets the queue read the label afterwards.</summary>
+    private async Task ScanLaterAsync()
+    {
+        if (offlineCapture is null)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var saved = await Photos.AddAsync(offlineCapture);
+            await Queue.EnqueueAsync(saved.Id);
+            offlineCapture = null;
+            problem = null;
+            queuedNote = true;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    /// <summary>Opens the draft the queue kept in the same review form as a fresh scan; the photo is the one already saved.</summary>
+    private async Task ReviewPending(PendingScan item)
+    {
+        if (item.Draft is not { } draft)
+        {
+            return;
+        }
+
+        queuedPhotoId = item.PhotoId;
+        photo = null;
+        await ShowAsync(draft);
+    }
+
+    private async Task DiscardPendingAsync(PendingScan item)
+    {
+        await Queue.RemoveAsync(item.PhotoId);
+        await Photos.RemoveAsync(item.PhotoId);
+    }
+
+    private async Task ShowAsync(ScannedLabel scanned)
+    {
+        label = scanned;
+        name = scanned.Name.Value ?? "";
+        roaster = scanned.Roaster.Value ?? "";
+        country = scanned.Country.Value ?? "";
+        region = scanned.Region.Value ?? "";
+        process = scanned.Process.Value ?? "";
+        varieties = scanned.Varieties.Value ?? "";
+        roastLevel = scanned.RoastLevel.Value ?? "";
+        notes = scanned.TastingNotes.Value ?? "";
+        weight = scanned.WeightG.Value ?? "";
+        roastDate = BeanImport.ParseDate(scanned.RoastDate.Value)?.ToString("yyyy-MM-dd") ?? "";
+        await Rematch();
+    }
+
     private async Task ScanAsync(PhotoSource source)
     {
         problem = null;
+        queuedNote = false;
+        offlineCapture = null;
         var captured = await Capture.CaptureAsync(source, 1600);
         if (captured is null)
         {
@@ -171,22 +289,15 @@ else
         {
             var scanned = await Scanner.ScanAsync(captured);
             photo = captured;
-            label = scanned;
-            name = scanned.Name.Value ?? "";
-            roaster = scanned.Roaster.Value ?? "";
-            country = scanned.Country.Value ?? "";
-            region = scanned.Region.Value ?? "";
-            process = scanned.Process.Value ?? "";
-            varieties = scanned.Varieties.Value ?? "";
-            roastLevel = scanned.RoastLevel.Value ?? "";
-            notes = scanned.TastingNotes.Value ?? "";
-            weight = scanned.WeightG.Value ?? "";
-            roastDate = BeanImport.ParseDate(scanned.RoastDate.Value)?.ToString("yyyy-MM-dd") ?? "";
-            await Rematch();
+            queuedPhotoId = null;
+            await ShowAsync(scanned);
         }
         catch (LabelScanException exception)
         {
             problem = exception.Problem;
+
+            // Without a network the photo can still be kept and read later; other problems (quota, switched off) would not change by waiting.
+            offlineCapture = exception.Problem == ScanProblem.Offline ? captured : null;
         }
         finally
         {
@@ -205,6 +316,7 @@ else
     {
         label = null;
         photo = null;
+        queuedPhotoId = null;
         match = null;
         nameMissing = false;
     }
@@ -222,11 +334,20 @@ else
         {
             var existingBean = match?.BestBean is { } b && linkBean ? b.Item.Id : null;
             var existingRoaster = match?.BestRoaster is { } r && linkRoaster ? r.Item.Id : null;
-            var photoId = existingBean is null && photo is not null ? (await Photos.AddAsync(photo)).Id : null;
+            var photoId = existingBean is not null ? null : queuedPhotoId ?? (photo is not null ? (await Photos.AddAsync(photo)).Id : null);
             var grams = BeanImport.ParseWeightG(weight);
             var saved = await ScanSaver.SaveAsync(
                 new ScanReview(name, roaster, existingRoaster, country, region, process, varieties, roastLevel, notes, grams, BeanImport.ParseDate(roastDate), existingBean, photoId),
                 BeanStore, BagStore, VendorStore);
+            if (queuedPhotoId is not null)
+            {
+                await Queue.RemoveAsync(queuedPhotoId);
+                if (photoId is null)
+                {
+                    await Photos.RemoveAsync(queuedPhotoId); // the bean already has its photo: this one is not needed
+                }
+            }
+
             Navigation.NavigateTo($"beans/{saved.Bean.Id}");
         }
         finally

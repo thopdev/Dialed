@@ -121,6 +121,24 @@ public sealed class AccessibilityTests : UiTestContext
         Problems(card).Distinct().ToList().ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task Offline_scans_are_labeled()
+    {
+        Uploads.Set("p1", Dialed.Client.Uploads.UploadStatus.Waiting);
+        ScanQueue.Set("p1", Dialed.Client.Scan.PendingScanStatus.Ready, new Dialed.Client.Scan.ScannedLabel(
+            new(" Guji", 0.9), new("Friedhats", 0.9), new(null, 0), new(null, 0), new(null, 0), new(null, 0), new(null, 0), new(null, 0), new(null, 0), new(null, 0), new(null, 0), "v", "m"));
+        ScanQueue.Set("p2", Dialed.Client.Scan.PendingScanStatus.Failed, problem: Dialed.Client.Scan.ScanProblem.QuotaUsed);
+        await Services.GetRequiredService<Dialed.Client.Account.AuthSession>().SetAsync(
+            new Dialed.Client.Account.SessionTokens("a", DateTimeOffset.MaxValue, "r", "u1", "Thomas", "h-u1"), Xunit.TestContext.Current.CancellationToken);
+
+        var page = Render<Scan>();
+        var banner = Render<PendingScansNote>();
+
+        page.FindAll(".scan-pending-row").Count.ShouldBe(2);
+        banner.Find("#scans-ready").ShouldNotBeNull();
+        Problems(page).Concat(Problems(banner)).Distinct().ToList().ShouldBeEmpty();
+    }
+
     [Fact] public void Recipes_is_labeled() => Audit<Recipes>();
 
     [Fact] public void Equipment_is_labeled() => Audit<Gear>();
