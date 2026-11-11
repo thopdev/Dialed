@@ -100,7 +100,7 @@
         bean.RoasterName,
         bean.Country,
         bean.Process,
-        string.Format(L["Catalog_People"].Value, bean.People),
+        string.Format(L["Catalog_SharedBy"].Value, L.Count("People", bean.People)),
     }.Where(part => !string.IsNullOrWhiteSpace(part)));
 
     public void Dispose()

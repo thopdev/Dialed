@@ -521,7 +521,6 @@
   <data name="People_Unblock" xml:space="preserve"><value>Unblock</value></data>
   <data name="People_ProfileUnavailable" xml:space="preserve"><value>This profile is not available. You may not follow this person, or the request is still waiting.</value></data>
   <data name="People_ShowingSaved" xml:space="preserve"><value>No connection: showing what was saved the last time.</value></data>
-  <data name="People_Counts" xml:space="preserve"><value>{0} beans · {1} recipes · {2} brews · {3} followers</value></data>
   <data name="People_Tab_beans" xml:space="preserve"><value>Beans</value></data>
   <data name="People_Tab_recipes" xml:space="preserve"><value>Recipes</value></data>
   <data name="People_Tab_brews" xml:space="preserve"><value>Brews</value></data>
@@ -904,7 +903,6 @@
   <data name="People_FindHint" xml:space="preserve"><value>Only people who switched on their public profile can be found. Type at least two letters.</value></data>
   <data name="People_FindSearch" xml:space="preserve"><value>Search</value></data>
   <data name="People_FindNone" xml:space="preserve"><value>Nobody found.</value></data>
-  <data name="People_PublicCounts" xml:space="preserve"><value>{0} beans · {1} recipes</value></data>
   <data name="People_FollowPublic" xml:space="preserve"><value>Follow</value></data>
   <data name="People_FollowFailed" xml:space="preserve"><value>The request could not be sent. Try again.</value></data>
   <data name="Report_Button" xml:space="preserve"><value>Report</value></data>
@@ -932,7 +930,6 @@
   <data name="Catalog_Hint" xml:space="preserve"><value>Beans other people chose to share. Using one copies it here; you can change everything.</value></data>
   <data name="Catalog_Use" xml:space="preserve"><value>Use this</value></data>
   <data name="Catalog_UseNamed" xml:space="preserve"><value>Use {0} from the catalog</value></data>
-  <data name="Catalog_People" xml:space="preserve"><value>shared by {0}</value></data>
   <data name="Catalog_FromCatalog" xml:space="preserve"><value>from the catalog</value></data>
   <data name="Scan_CatalogTitle" xml:space="preserve"><value>Not one of your beans. Is it one of these?</value></data>
   <data name="Privacy_Catalog_Title" xml:space="preserve"><value>Shared catalog</value></data>
@@ -969,7 +966,7 @@
   <data name="Admin_Rebuild" xml:space="preserve"><value>Rebuild the catalog now</value></data>
   <data name="Admin_Rebuilt" xml:space="preserve"><value>Rebuilt: {0} roasters, {1} beans.</value></data>
   <data name="Admin_NoEntries" xml:space="preserve"><value>The catalog is empty.</value></data>
-  <data name="Admin_EntryLine" xml:space="preserve"><value>{0} · {1} people</value></data>
+  <data name="Admin_EntryLine" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="Admin_Kind_bean" xml:space="preserve"><value>Bean</value></data>
   <data name="Admin_Kind_roaster" xml:space="preserve"><value>Roaster</value></data>
   <data name="Admin_Merge" xml:space="preserve"><value>Merge</value></data>
@@ -989,4 +986,15 @@
   <data name="Admin_Unmerge" xml:space="preserve"><value>Undo merge</value></data>
   <data name="Admin_UnmergeNamed" xml:space="preserve"><value>Undo the merge of {0} and {1}</value></data>
   <data name="Admin_Unmerged" xml:space="preserve"><value>The merge was undone.</value></data>
+  <data name="Count_Beans_One" xml:space="preserve"><value>{0} bean</value></data>
+  <data name="Count_Beans_Other" xml:space="preserve"><value>{0} beans</value></data>
+  <data name="Count_Recipes_One" xml:space="preserve"><value>{0} recipe</value></data>
+  <data name="Count_Recipes_Other" xml:space="preserve"><value>{0} recipes</value></data>
+  <data name="Count_Brews_One" xml:space="preserve"><value>{0} brew</value></data>
+  <data name="Count_Brews_Other" xml:space="preserve"><value>{0} brews</value></data>
+  <data name="Count_Followers_One" xml:space="preserve"><value>{0} follower</value></data>
+  <data name="Count_Followers_Other" xml:space="preserve"><value>{0} followers</value></data>
+  <data name="Count_People_One" xml:space="preserve"><value>{0} person</value></data>
+  <data name="Count_People_Other" xml:space="preserve"><value>{0} people</value></data>
+  <data name="Catalog_SharedBy" xml:space="preserve"><value>shared by {0}</value></data>
 </root>

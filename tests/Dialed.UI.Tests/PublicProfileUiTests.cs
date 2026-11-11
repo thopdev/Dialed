@@ -143,8 +143,16 @@ public sealed class PublicProfileUiTests : UiTestContext
     {
         var page = await PublicProfile();
 
-        page.Find("#friend-counts").TextContent.ShouldBe("2 beans · 1 recipes");
+        page.Find("#friend-counts").TextContent.ShouldBe("2 beans · 1 recipe");
         page.FindAll("[role=tab]").Select(t => t.Id).ShouldBe(["friend-tab-beans", "friend-tab-recipes"]);
+    }
+
+    [Fact]
+    public async Task A_friends_counts_say_one_in_the_singular()
+    {
+        var page = await PublicProfile("{\"userId\":\"u3\",\"displayName\":\"Olga\",\"beans\":1,\"recipes\":1,\"brews\":1,\"followers\":1,\"relation\":\"following\"}");
+
+        page.Find("#friend-counts").TextContent.ShouldBe("1 bean · 1 recipe · 1 brew · 1 follower");
     }
 
     [Fact]

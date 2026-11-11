@@ -123,7 +123,7 @@ else
                 <li class="admin-entry" data-entry="@entry.Id">
                     <span class="admin-text">
                         <strong>@entry.Name</strong>
-                        <span class="dialed-muted">@string.Format(L["Admin_EntryLine"].Value, L[$"Admin_Kind_{entry.Kind}"].Value, entry.People)</span>
+                        <span class="dialed-muted">@string.Format(L["Admin_EntryLine"].Value, L[$"Admin_Kind_{entry.Kind}"].Value, L.Count("People", entry.People))</span>
                     </span>
                     <span class="admin-actions">
                         @if (mergeFrom is { } from && from.Id != entry.Id && from.Kind == entry.Kind)
@@ -151,7 +151,7 @@ else
                         <li class="admin-entry" data-hidden="@entry.Id">
                             <span class="admin-text">
                                 <strong>@entry.Name</strong>
-                                <span class="dialed-muted">@string.Format(L["Admin_EntryLine"].Value, L[$"Admin_Kind_{entry.Kind}"].Value, entry.People)</span>
+                                <span class="dialed-muted">@string.Format(L["Admin_EntryLine"].Value, L[$"Admin_Kind_{entry.Kind}"].Value, L.Count("People", entry.People))</span>
                             </span>
                             <button type="button" class="dialed-button admin-unhide" aria-label="@string.Format(L["Admin_UnhideNamed"].Value, entry.Name)" @onclick="() => UnhideAsync(entry)">@L["Admin_Unhide"]</button>
                         </li>
