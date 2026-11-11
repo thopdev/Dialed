@@ -986,6 +986,8 @@
   <data name="Admin_Unmerge" xml:space="preserve"><value>Undo merge</value></data>
   <data name="Admin_UnmergeNamed" xml:space="preserve"><value>Undo the merge of {0} and {1}</value></data>
   <data name="Admin_Unmerged" xml:space="preserve"><value>The merge was undone.</value></data>
+  <data name="People_FindCount_One" xml:space="preserve"><value>{0} person found</value></data>
+  <data name="People_FindCount_Other" xml:space="preserve"><value>{0} people found</value></data>
   <data name="Count_Beans_One" xml:space="preserve"><value>{0} bean</value></data>
   <data name="Count_Beans_Other" xml:space="preserve"><value>{0} beans</value></data>
   <data name="Count_Recipes_One" xml:space="preserve"><value>{0} recipe</value></data>
