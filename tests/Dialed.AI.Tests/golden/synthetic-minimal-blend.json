@@ -1,0 +1,13 @@
+{
+  "id": "synthetic-minimal-blend",
+  "image": "synthetic-minimal-blend.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "A blend with almost nothing printed. Any country, process or weight the model adds is a guess and counts as unexpected.",
+  "tags": ["sparse", "blend"],
+  "expected": {
+    "name": "House Espresso",
+    "roaster": "Moonrise Roastery",
+    "roastLevel": "dark"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "synthetic-full-washed",
+  "image": "synthetic-full-washed.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "Every field printed with a label in front of it.",
+  "tags": ["clean", "all-fields"],
+  "expected": {
+    "name": "La Esperanza",
+    "roaster": "Northbound Coffee Co.",
+    "country": "Colombia",
+    "region": "Huila",
+    "farm": "Finca La Esperanza",
+    "process": "Washed",
+    "varieties": "Caturra, Castillo",
+    "roastLevel": "medium-light",
+    "tastingNotes": "red apple, panela, orange zest",
+    "roastDate": "2026-09-14",
+    "weightG": "340"
+  }
+}
