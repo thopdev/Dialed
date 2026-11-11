@@ -25,8 +25,12 @@ public sealed record DialInContext(
 /// <summary>One change as from to. <see cref="Kind"/> is a <c>SuggestionKind</c> name (GrindFiner, HotterWater, ...).</summary>
 public sealed record DialInChange(string Kind, decimal? From, decimal? To);
 
-/// <summary>One or two changes with a short reason, and which prompt and model produced them (recorded with accept or dismiss, #86).</summary>
-public sealed record DialInRefinement(IReadOnlyList<DialInChange> Changes, string Why, string PromptVersion, string ModelId, int InputTokens = 0, int OutputTokens = 0);
+/// <summary>
+/// One or two changes with a short reason, and which prompt and model produced them (recorded with accept or dismiss, #86). <see cref="Why"/>
+/// is the reason in English; <see cref="ReasonCode"/>, when set, is a reason the app words in the user's language instead (the rules set it,
+/// a model answer does not).
+/// </summary>
+public sealed record DialInRefinement(IReadOnlyList<DialInChange> Changes, string Why, string PromptVersion, string ModelId, int InputTokens = 0, int OutputTokens = 0, string? ReasonCode = null);
 
 public interface IDialInRefiner
 {

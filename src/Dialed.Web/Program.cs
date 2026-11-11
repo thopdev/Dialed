@@ -55,6 +55,7 @@ builder.Services.AddDialedScan(sp => new Dialed.Client.Scan.LabelScanner(new Htt
 builder.Services.AddDialedRecipeAssistant(sp => new Dialed.Client.Recipes.RecipeAssistant(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 // Photo uploads (#68): URLs come from the API; the file goes to the URL it hands out (Blob Storage in Azure), without the API token.
 builder.Services.AddDialedUploads(sp => new Dialed.Client.Uploads.PhotoUploadApi(new HttpClient { BaseAddress = apiBaseAddress }, new HttpClient(), sp.GetRequiredService<IAccessTokenProvider>()));
+builder.Services.AddDialedDialInAssistant(sp => new Dialed.Client.DialIn.DialInAssistant(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 builder.Services.AddSingleton<IAppEnvironment, WebAppEnvironment>();
 builder.Services.AddSingleton<PwaState>();
 builder.Services.AddSingleton<IPwaState>(sp => sp.GetRequiredService<PwaState>());
