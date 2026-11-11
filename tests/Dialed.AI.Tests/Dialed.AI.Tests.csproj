@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Dialed.AI\Dialed.AI.csproj" />
+    <ProjectReference Include="..\..\tools\Dialed.LabelEval\Dialed.LabelEval.csproj" />
+  </ItemGroup>
+
+  <!-- The label golden set (#84): images and expected fields. See docs/ai-label-golden-set.md. -->
+  <ItemGroup>
+    <Content Include="golden\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

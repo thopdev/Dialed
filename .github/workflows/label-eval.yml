@@ -1,0 +1,94 @@
+name: Label eval
+
+# Runs the label golden set (#84) and posts the field accuracy on the PR.
+# With the Foundry secrets AI_ENDPOINT, AI_API_KEY and AI_EXTRACTION_MODEL set (after #79 and #27) it runs against Claude and
+# fails below the target; without them (today, and on pull requests from forks) it runs against the fake extractor, which
+# only checks the harness. See docs/ai-label-golden-set.md.
+
+on:
+  pull_request:
+    paths:
+      - 'src/Dialed.AI/Labels/**'
+      - 'tests/Dialed.AI.Tests/golden/**'
+      - 'tools/Dialed.LabelEval/**'
+      - '.github/workflows/label-eval.yml'
+  workflow_dispatch:
+    inputs:
+      extractor:
+        description: auto (Claude when the secrets are set), fake or claude
+        type: choice
+        options: [auto, fake, claude]
+        default: auto
+      min-accuracy:
+        description: Field accuracy target when running against Claude
+        default: '0.8'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: label-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  label-eval:
+    runs-on: ubuntu-latest
+    env:
+      Ai__Endpoint: ${{ secrets.AI_ENDPOINT }}
+      Ai__ApiKey: ${{ secrets.AI_API_KEY }}
+      Ai__ExtractionModel: ${{ secrets.AI_EXTRACTION_MODEL }}
+      EXTRACTOR: ${{ inputs.extractor || 'auto' }}
+      MIN_ACCURACY: ${{ inputs.min-accuracy || '0.8' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run golden set
+        id: eval
+        run: |
+          args=(--extractor "$EXTRACTOR" --markdown label-eval.md --json label-eval.json)
+          # The target only means something for a real model; the fake is far below it on purpose.
+          if [ "$EXTRACTOR" = "claude" ] || { [ "$EXTRACTOR" = "auto" ] && [ -n "$Ai__Endpoint" ] && [ -n "$Ai__ApiKey" ] && [ -n "$Ai__ExtractionModel" ]; }; then
+            args+=(--min-accuracy "$MIN_ACCURACY")
+          fi
+          set +e
+          dotnet run --project tools/Dialed.LabelEval --configuration Release -- "${args[@]}"
+          code=$?
+          set -e
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          [ -f label-eval.md ] && cat label-eval.md >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Comment on the PR
+        if: github.event_name == 'pull_request' && hashFiles('label-eval.md') != ''
+        continue-on-error: true # read-only token on fork PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          marker='<!-- label-eval -->'
+          { echo "$marker"; cat label-eval.md; echo; echo "_Run ${GITHUB_RUN_ID} on ${GITHUB_SHA::7}._"; } > comment.md
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | tail -1)
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@comment.md > /dev/null
+          else
+            gh pr comment "$PR" --body-file comment.md
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: label-eval
+          path: label-eval.*
+          if-no-files-found: ignore
+
+      - name: Fail below target or on a broken golden set
+        if: steps.eval.outputs.code != '0'
+        run: |
+          echo "::error::Label eval exited with ${{ steps.eval.outputs.code }} (1: below the accuracy target, 2: wrong arguments or a broken golden set)."
+          exit 1

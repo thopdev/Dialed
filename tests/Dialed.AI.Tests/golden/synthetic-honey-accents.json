@@ -1,0 +1,20 @@
+{
+  "id": "synthetic-honey-accents",
+  "image": "synthetic-honey-accents.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "Accented names (Tarrazú, Sarchí, Catuaí), a red honey process and the weight in kilograms.",
+  "tags": ["accents", "units"],
+  "expected": {
+    "name": "Cerro Alto",
+    "roaster": "Tidewater Roasting",
+    "country": "Costa Rica",
+    "region": "Tarrazú",
+    "farm": "Finca Cerro Alto",
+    "process": "Red Honey",
+    "varieties": "Villa Sarchí, Catuaí",
+    "roastLevel": "medium",
+    "tastingNotes": "caramel, plum, cocoa nib",
+    "weightG": "500"
+  }
+}
