@@ -34,10 +34,10 @@ Ask testers to do the scenarios in this order and to report what surprised them,
 | 6 | Dial-in | After a sour or bitter brew, tap **Apply to next brew** on the advice card | The next brew form has the change filled in |
 | 7 | Offline | Turn on airplane mode, log a brew, add a bean, then turn it off | Nothing is lost; the "not yet synced" note goes away once you are online |
 | 8 | Two devices | Sign in on a second device (passkey) | Beans, bags, recipes and brews are the same on both |
-| 9 | Household | Settings > Household > create an invite, send it to a second person, they join | Both see the same beans and brews; the second person is listed |
-| 10 | Friends | People > share your friend code; the other person follows you, you accept | They see what you shared with friends and can copy a bean or recipe into their own household |
+| 9 | Household | Settings > Household > **Create invite code**, send it to a second person, they join | Both see the same beans and brews; the second person is listed |
+| 10 | Friends | More > People > share **Your friend code**; the other person follows you, you accept | They see what you shared with friends and can copy a bean or recipe into their own household |
 | 11 | Photos | Add a photo to a bean in airplane mode, then go online | The photo shows "Waiting to upload", then uploads; a second device shows it |
-| 12 | Lost passkey | On a device without your passkey: use "I lost my passkey" with a recovery code | You can register a new passkey and are signed in |
+| 12 | Lost passkey | On a device without your passkey: tap **Lost your passkey?** and use a recovery code | You can register a new passkey and are signed in |
 | 13 | Your data | Settings > Export my data | A JSON file with your data downloads |
 | 14 | Feedback | Settings > Feedback > Send feedback | The mail app opens with the version and device filled in |
 | 15 | Delete account (last) | Settings > Delete account | Your account is gone and you are signed out. Do this on a throwaway account |
