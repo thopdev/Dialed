@@ -2766,3 +2766,60 @@ a.people-row-name {
     fill: var(--colorBrandForeground1);
     fill-opacity: 0.8;
 }
+
+.dialed-dialin {
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-dialin-title {
+    font-weight: 600;
+}
+
+.dialed-dialin svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.dialed-dialin-axis {
+    fill: var(--colorNeutralForeground3);
+    font-size: 11px;
+}
+
+.dialed-dialin-grid {
+    stroke: var(--colorNeutralStroke2);
+    stroke-width: 1;
+}
+
+.dialed-dialin-line {
+    fill: none;
+    stroke: var(--colorNeutralStroke1);
+    stroke-width: 1.5;
+}
+
+.dialed-dialin-dot {
+    fill: var(--colorBrandForeground1);
+}
+
+.dialed-dialin-unrated {
+    fill: var(--colorNeutralBackground1);
+    stroke: var(--colorNeutralStroke1);
+    stroke-width: 1.5;
+}
+
+.dialed-dialin-best {
+    fill: none;
+    stroke: var(--colorBrandForeground1);
+    stroke-width: 2;
+}
+
+.dialed-dialin-axis-label {
+    margin: 0;
+    font-size: var(--dialed-text-s);
+    text-align: right;
+}
+
+.dialed-dialin-best-line {
+    margin: var(--dialed-space-1) 0 0;
+}
