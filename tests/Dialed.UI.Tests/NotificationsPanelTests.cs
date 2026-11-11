@@ -55,7 +55,7 @@ public sealed class NotificationsPanelTests : UiTestContext
 
         panel.Find("#push-status").TextContent.ShouldContain("off on this device");
         panel.Find("#push-enable").TextContent.ShouldBe("Allow notifications");
-        panel.Find(".dialed-muted").TextContent.ShouldContain("only says who and what");
+        panel.Find(".dialed-muted").TextContent.ShouldContain("only says who or which bean");
     }
 
     [Fact]

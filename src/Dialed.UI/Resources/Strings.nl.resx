@@ -850,7 +850,7 @@
   <data name="Scan_NoteReady" xml:space="preserve"><value>Scans om te controleren: {0}</value></data>
   <data name="Scan_NoteWaiting" xml:space="preserve"><value>Etiketscans die op een verbinding wachten: {0}</value></data>
   <data name="Push_Title" xml:space="preserve"><value>Meldingen</value></data>
-  <data name="Push_Explain" xml:space="preserve"><value>Krijg een melding als iemand je wil volgen, je verzoek accepteert of lid wordt van je huishouden. Een melding zegt alleen wie en wat, verder niets.</value></data>
+  <data name="Push_Explain" xml:space="preserve"><value>Krijg een melding als iemand je wil volgen, je verzoek accepteert of lid wordt van je huishouden. Twee andere zijn optioneel: een zak die bijna op is en een zak die op zijn best is. Een melding zegt alleen wie of welke boon, en wat er gebeurd is.</value></data>
   <data name="Push_SignedOut" xml:space="preserve"><value>Meld je aan om meldingen te krijgen.</value></data>
   <data name="Push_Unsupported" xml:space="preserve"><value>Deze browser kan geen meldingen ontvangen.</value></data>
   <data name="Push_NotInstalled" xml:space="preserve"><value>Op iPhone en iPad werken meldingen pas als Dialed op je beginscherm staat. Zet het daar eerst neer (zie "Zet Dialed op je beginscherm" hieronder) en open het dan vanaf daar.</value></data>
