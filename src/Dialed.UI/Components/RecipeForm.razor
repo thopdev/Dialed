@@ -181,13 +181,17 @@
 
     <div class="dialed-field">
         <label for="recipe-visibility">@L["Bean_Visibility"]</label>
-        <select id="recipe-visibility" @bind="visibility">
+        <select id="recipe-visibility" @bind="visibility" aria-describedby="@(visibility == Visibility.Public ? "recipe-visibility-hint" : null)">
             @foreach (var option in Enum.GetValues<Visibility>())
             {
                 <option value="@option">@L[$"Visibility_{option}"]</option>
             }
         </select>
     </div>
+    @if (visibility == Visibility.Public)
+    {
+        <p id="recipe-visibility-hint" class="dialed-muted" role="note">@L["Visibility_PublicHint"]</p>
+    }
 
     <div class="dialed-form-actions">
         <button type="submit" class="dialed-button dialed-button-primary">@L["Save"]</button>

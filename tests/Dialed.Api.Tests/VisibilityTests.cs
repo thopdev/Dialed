@@ -18,18 +18,27 @@ public sealed class VisibilityTests(WebApplicationFactory<Program> factory) : IC
     [InlineData(VisibilityRules.Private, Relationship.Author, true)]
     [InlineData(VisibilityRules.Private, Relationship.HouseholdMember, false)]
     [InlineData(VisibilityRules.Private, Relationship.AcceptedFollower, false)]
+    [InlineData(VisibilityRules.Private, Relationship.PublicViewer, false)]
     [InlineData(VisibilityRules.Private, Relationship.Stranger, false)]
     [InlineData(VisibilityRules.Private, Relationship.Blocked, false)]
     [InlineData(VisibilityRules.Household, Relationship.Author, true)]
     [InlineData(VisibilityRules.Household, Relationship.HouseholdMember, true)]
     [InlineData(VisibilityRules.Household, Relationship.AcceptedFollower, false)]
+    [InlineData(VisibilityRules.Household, Relationship.PublicViewer, false)]
     [InlineData(VisibilityRules.Household, Relationship.Stranger, false)]
     [InlineData(VisibilityRules.Household, Relationship.Blocked, false)]
     [InlineData(VisibilityRules.Friends, Relationship.Author, true)]
     [InlineData(VisibilityRules.Friends, Relationship.HouseholdMember, true)]
     [InlineData(VisibilityRules.Friends, Relationship.AcceptedFollower, true)]
+    [InlineData(VisibilityRules.Friends, Relationship.PublicViewer, false)]
     [InlineData(VisibilityRules.Friends, Relationship.Stranger, false)]
     [InlineData(VisibilityRules.Friends, Relationship.Blocked, false)]
+    [InlineData(VisibilityRules.Public, Relationship.Author, true)]
+    [InlineData(VisibilityRules.Public, Relationship.HouseholdMember, true)]
+    [InlineData(VisibilityRules.Public, Relationship.AcceptedFollower, true)]
+    [InlineData(VisibilityRules.Public, Relationship.PublicViewer, true)]
+    [InlineData(VisibilityRules.Public, Relationship.Stranger, false)]
+    [InlineData(VisibilityRules.Public, Relationship.Blocked, false)]
     public void Who_can_read_what(int visibility, Relationship relationship, bool expected) =>
         VisibilityRules.CanRead(visibility, relationship).ShouldBe(expected);
 
@@ -38,6 +47,9 @@ public sealed class VisibilityTests(WebApplicationFactory<Program> factory) : IC
     {
         VisibilityRules.Of(new JsonObject { ["visibility"] = 0 }).ShouldBe(VisibilityRules.Private);
         VisibilityRules.Of(new JsonObject { ["visibility"] = 2 }).ShouldBe(VisibilityRules.Friends);
+        VisibilityRules.Of(new JsonObject { ["visibility"] = 3 }).ShouldBe(VisibilityRules.Public);
+        VisibilityRules.Of(new JsonObject { ["visibility"] = "public" }).ShouldBe(VisibilityRules.Public);
+        VisibilityRules.Of(new JsonObject { ["visibility"] = 4 }).ShouldBe(VisibilityRules.Private);
         VisibilityRules.Of(new JsonObject { ["visibility"] = "private" }).ShouldBe(VisibilityRules.Private);
         VisibilityRules.Of(new JsonObject { ["visibility"] = "Friends" }).ShouldBe(VisibilityRules.Friends);
         VisibilityRules.Of(new JsonObject()).ShouldBe(VisibilityRules.Household);

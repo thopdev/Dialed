@@ -1,0 +1,92 @@
+@implements IDisposable
+@using Dialed.Client.Account
+@using Dialed.Client.Friends
+@inject FriendsApi Friends
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+
+@* The opt-in for a public profile (#106): off until switched on; shows name and avatar and the items marked "Everyone on Dialed". *@
+<div id="public-profile-panel">
+    <h3>@L["PublicProfile_Title"]</h3>
+    <p class="dialed-muted">@L["PublicProfile_Explain"]</p>
+
+    @if (!Session.IsSignedIn)
+    {
+        <p id="public-profile-status" class="dialed-muted">@L["PublicProfile_SignIn"]</p>
+    }
+    else if (failed)
+    {
+        <p id="public-profile-status" class="dialed-muted" role="status">@L["PublicProfile_Offline"]</p>
+        <button id="public-profile-retry" type="button" class="dialed-button" @onclick="LoadAsync">@L["Error_Retry"]</button>
+    }
+    else if (enabled is not null)
+    {
+        <label class="dialed-check"><input id="public-profile-switch" type="checkbox" checked="@enabled" disabled="@busy" @onchange="e => SetAsync((bool)e.Value!)" /> @L["PublicProfile_Switch"]</label>
+        <p id="public-profile-status" class="dialed-muted" role="status">@L[enabled == true ? "PublicProfile_On" : "PublicProfile_Off"]</p>
+    }
+</div>
+
+@code {
+    private bool? enabled;
+    private bool busy;
+    private bool failed;
+    private bool wasSignedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        wasSignedIn = Session.IsSignedIn;
+        if (wasSignedIn)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        if (Session.IsSignedIn && !wasSignedIn)
+        {
+            wasSignedIn = true;
+            await LoadAsync();
+        }
+        else if (!Session.IsSignedIn)
+        {
+            wasSignedIn = false;
+            enabled = null;
+        }
+
+        StateHasChanged();
+    });
+
+    private async Task LoadAsync()
+    {
+        failed = false;
+        try
+        {
+            enabled = await Friends.GetPublicProfileAsync();
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            failed = true;
+        }
+    }
+
+    private async Task SetAsync(bool value)
+    {
+        busy = true;
+        try
+        {
+            enabled = await Friends.SetPublicProfileAsync(value);
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            failed = true;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

@@ -38,12 +38,34 @@ else
         <Avatar Name="@profile.DisplayName" Size="64" />
         <div class="dialed-friend-header-text">
             <strong id="friend-name">@profile.DisplayName</strong>
-            <span id="friend-counts" class="dialed-muted">@string.Format(L["People_Counts"].Value, profile.Beans, profile.Recipes, profile.Brews, profile.Followers)</span>
+            <span id="friend-counts" class="dialed-muted">@(profile.IsPublicView
+                ? string.Format(L["People_PublicCounts"].Value, profile.Beans, profile.Recipes)
+                : string.Format(L["People_Counts"].Value, profile.Beans, profile.Recipes, profile.Brews, profile.Followers))</span>
         </div>
     </header>
 
+    @if (profile.Relation is "none" or "requested" or "following")
+    {
+        <div id="friend-actions" class="dialed-form-actions">
+            @if (profile.Relation == "none")
+            {
+                <button id="friend-follow" type="button" class="dialed-button dialed-button-primary" disabled="@busy" @onclick="FollowAsync">@L["People_FollowPublic"]</button>
+            }
+            else if (profile.Relation == "requested")
+            {
+                <span id="friend-requested" class="dialed-muted" role="status">@L["People_RequestSent"]</span>
+            }
+
+            <ReportForm OwnerId="@UserId" Target="profile" Name="@profile.DisplayName" />
+        </div>
+        @if (followFailed)
+        {
+            <p id="friend-follow-failed" class="dialed-field-error" role="alert">@L["People_FollowFailed"]</p>
+        }
+    }
+
     <div role="tablist" class="dialed-segmented" aria-label="@L["People_SharedLabel"]">
-        @foreach (var tab in Tabs)
+        @foreach (var tab in Tabs.Where(t => !(profile.IsPublicView && t == "brews")))
         {
             <button type="button" role="tab" id="friend-tab-@tab" class="dialed-segment @(tab == current ? "selected" : "")" aria-selected="@(tab == current)" @onclick="() => SelectAsync(tab)">@L[$"People_Tab_{tab}"]</button>
         }
@@ -85,6 +107,10 @@ else
                         {
                             <button type="button" class="dialed-button friend-copy" disabled="@(busy || copying == id)" aria-label="@string.Format(L["People_CopyNamed"].Value, Title(item))" @onclick="() => CopyAsync(item)">@L["People_Copy"]</button>
                         }
+                        @if (profile.Relation is "none" or "requested" or "following")
+                        {
+                            <ReportForm OwnerId="@UserId" Target="@(current == "beans" ? "bean" : "recipe")" ItemId="@id" Name="@Title(item)" />
+                        }
                     }
                 </li>
             }
@@ -112,6 +138,7 @@ else
     private string? message;
     private string? messageHref;
     private string? copying;
+    private bool followFailed;
     private readonly Dictionary<string, CopyResult> copies = [];
 
     /// <summary>Beans and recipes can be copied to my household; brews cannot.</summary>
@@ -205,6 +232,23 @@ else
         }
 
         copying = null;
+    }
+
+    private async Task FollowAsync()
+    {
+        busy = true;
+        followFailed = false;
+        try
+        {
+            await Friends.FollowPublicAsync(UserId);
+            profile = profile! with { Relation = "requested" };
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            followFailed = true;
+        }
+
+        busy = false;
     }
 
     private async Task MoreAsync()

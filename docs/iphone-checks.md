@@ -42,6 +42,13 @@ Setup: one iPhone, ideally an iPad too, two accounts that follow each other (Ali
 - [ ] Carol copies a shared bean from Alice's page; it syncs to Carol's other device and says "Copied from Alice" (#232).
 - [ ] A shared household is deleted by its owner while a member's device is open: after the next sync its beans are gone from that device (#251).
 
+## Public profiles (#106)
+- [ ] Settings > Profile: the **Public profile** switch is off by default; switching it on and off works with one tap and shows the status.
+- [ ] A bean's visibility picker offers **Everyone on Dialed** with the explanation under it; brews do not.
+- [ ] People > **Find people**: the keyboard's Search key submits; results open the profile; at least two letters are needed.
+- [ ] A stranger's profile shows name, beans and recipes only (no brews tab), **Follow** sends a request, **Report** opens the form and confirms.
+- [ ] Switching the profile off hides it from search and from a stranger's phone at once.
+
 ## Accessibility (#49)
 - [ ] VoiceOver reads every control with a name, in light and dark mode: Home, Brew, Beans, Recipes, History, Settings, People, Scan.
 - [ ] The Copy button reads the item's name; feed rows read as one sentence; the rating reads "4 of 5 stars".
