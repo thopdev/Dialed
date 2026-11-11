@@ -32,6 +32,7 @@ public abstract class UiTestContext : BunitContext
     protected TestPushDevice PushDevice { get; } = new();
 
     protected TestPushServer PushServer { get; } = new();
+    protected TestBarcodeScanner Barcodes { get; } = new();
 
     protected TestRecipeAssistant Assistant { get; } = new();
 
@@ -91,6 +92,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IPhotoCapture>(Camera);
         Services.AddSingleton<Dialed.Client.Scan.ILabelScanner>(Scanner);
         Services.AddSingleton<Dialed.Client.Scan.IScanQueue>(ScanQueue);
+        Services.AddSingleton<IBarcodeScanner>(Barcodes);
         Services.AddSingleton<Dialed.Client.Recipes.IRecipeAssistant>(Assistant);
         Services.AddSingleton<Dialed.Client.DialIn.IDialInAssistant>(DialInAssistant);
         Services.AddSingleton<IAccessTokenProvider>(Tokens);
@@ -580,6 +582,32 @@ public abstract class UiTestContext : BunitContext
             Follows = follows;
             Household = household;
             return GetSettingsAsync(cancellationToken);
+    protected sealed class TestBarcodeScanner : IBarcodeScanner
+    {
+        public Queue<BarcodeResult> Results { get; } = new();
+
+        public List<string> PreviewIds { get; } = [];
+
+        /// <summary>Keeps the scan running until the page cancels it, like a camera that has not seen a code.</summary>
+        public bool Hold { get; set; }
+
+        public bool CancelledByPage { get; private set; }
+
+        public Task<BarcodeResult> ScanAsync(string previewElementId, CancellationToken cancellationToken = default)
+        {
+            PreviewIds.Add(previewElementId);
+            if (Hold)
+            {
+                var waiting = new TaskCompletionSource<BarcodeResult>();
+                cancellationToken.Register(() =>
+                {
+                    CancelledByPage = true;
+                    waiting.TrySetResult(BarcodeResult.Failed(BarcodeProblem.Cancelled));
+                });
+                return waiting.Task;
+            }
+
+            return Task.FromResult(Results.TryDequeue(out var result) ? result : BarcodeResult.Failed(BarcodeProblem.Cancelled));
         }
     }
 

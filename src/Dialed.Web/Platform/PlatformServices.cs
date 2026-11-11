@@ -28,6 +28,7 @@ internal static class PlatformServices
         services.AddSingleton<IWakeLock, BrowserWakeLock>();
         services.AddSingleton<ICrossTabLock, BrowserCrossTabLock>();
         services.AddSingleton<IPushNotifications, BrowserPushNotifications>();
+        services.AddSingleton<IBarcodeScanner, BrowserBarcodeScanner>();
         services.AddSingleton<ISoundCue, BrowserSoundCue>();
         services.AddSingleton<BrowserAppLifecycle>();
         services.AddSingleton<IAppLifecycle>(sp => sp.GetRequiredService<BrowserAppLifecycle>());

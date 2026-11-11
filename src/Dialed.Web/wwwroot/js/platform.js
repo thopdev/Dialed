@@ -536,4 +536,111 @@ export async function pushUnsubscribe() {
     const endpoint = subscription.endpoint;
     await subscription.unsubscribe();
     return endpoint;
+// ---- Barcode scan (#104) -----------------------------------------------------------------------
+// A live camera in the <video> element with the given id, read by a self-hosted zxing-wasm (wwwroot/lib/zxing). Nothing is loaded from a CDN.
+
+let zxing = null;
+let barcodeSession = null;
+
+async function loadZxing() {
+    if (!zxing) {
+        const base = new URL('../lib/zxing/reader/', import.meta.url);
+        const module = await import('../lib/zxing/reader/index.js');
+        await module.prepareZXingModule({ overrides: { locateFile: (path) => new URL(path, base).href }, fireImmediately: true });
+        zxing = module;
+    }
+    return zxing;
+}
+
+export function barcodeStop() {
+    barcodeSession?.stop();
+}
+
+export async function barcodeScan(videoId) {
+    barcodeStop();
+    const video = document.getElementById(videoId);
+    if (!video || !navigator.mediaDevices?.getUserMedia) {
+        return { problem: 'Unsupported' };
+    }
+
+    let reader;
+    try {
+        reader = await loadZxing();
+    } catch {
+        return { problem: 'Unsupported' };
+    }
+
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    } catch (error) {
+        return { problem: error?.name === 'NotAllowedError' || error?.name === 'SecurityError' ? 'PermissionDenied' : 'NoCamera' };
+    }
+
+    video.muted = true;
+    video.setAttribute('playsinline', '');
+    video.srcObject = stream;
+    try {
+        await video.play();
+    } catch {
+        stream.getTracks().forEach(t => t.stop());
+        video.srcObject = null;
+        return { problem: 'NoCamera' };
+    }
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    const options = { formats: ['EAN13', 'EAN8', 'UPCA', 'UPCE', 'Code128', 'QRCode'], tryHarder: true, maxNumberOfSymbols: 1 };
+
+    return new Promise(resolve => {
+        let finished = false;
+        let timer = 0;
+        const finish = result => {
+            if (finished) {
+                return;
+            }
+            finished = true;
+            clearTimeout(timer);
+            stream.getTracks().forEach(t => t.stop());
+            video.srcObject = null;
+            if (barcodeSession === session) {
+                barcodeSession = null;
+            }
+            resolve(result);
+        };
+        const session = { stop: () => finish({ problem: 'Cancelled' }) };
+        barcodeSession = session;
+
+        const tick = async () => {
+            if (finished) {
+                return;
+            }
+            try {
+                if (video.readyState >= 2 && video.videoWidth > 0) {
+                    const scale = Math.min(1, 1280 / video.videoWidth);
+                    canvas.width = Math.round(video.videoWidth * scale);
+                    canvas.height = Math.round(video.videoHeight * scale);
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const results = await reader.readBarcodes(context.getImageData(0, 0, canvas.width, canvas.height), options);
+                    const hit = results.find(r => r.isValid && r.text);
+                    if (hit) {
+                        finish({ code: hit.text });
+                        return;
+                    }
+                }
+            } catch {
+                // a frame that cannot be read is skipped; the next one is tried
+            }
+            timer = setTimeout(tick, 150);
+        };
+        tick();
+    });
+}
+
+// For tests and diagnostics: decode a still image (a File or Blob) with the same reader and options.
+export async function barcodeDecodeImage(base64) {
+    const reader = await loadZxing();
+    const bytes = base64ToBytes(base64);
+    const results = await reader.readBarcodes(new Blob([bytes]), { formats: ['EAN13', 'EAN8', 'UPCA', 'UPCE', 'Code128', 'QRCode'], tryHarder: true, maxNumberOfSymbols: 1 });
+    return results.find(r => r.isValid && r.text)?.text ?? null;
 }

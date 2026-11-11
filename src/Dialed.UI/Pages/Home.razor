@@ -42,6 +42,10 @@ else
             <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.ScanCamera())" Color="Color.Custom" CustomColor="currentColor" /></span>
             @L["Home_ScanBag"]
         </a>
+        <a id="home-scan-code" class="dialed-button dialed-button-icon" href="scan-code">
+            <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.BarcodeScanner())" Color="Color.Custom" CustomColor="currentColor" /></span>
+            @L["Barcode_Button"]
+        </a>
     </div>
     <p id="home-scan-hint" class="dialed-home-hint">@L["Home_ScanHint"]</p>
 

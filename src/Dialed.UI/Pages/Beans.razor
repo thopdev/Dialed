@@ -23,6 +23,7 @@
         <PageHeader Title="@L["Nav_Beans"]">
             <Actions>
                 <a id="beans-scan" class="dialed-button" href="scan">@L["Scan_Title"]</a>
+                <a id="beans-scan-code" class="dialed-button" href="scan-code">@L["Barcode_Button"]</a>
                 <a class="dialed-button dialed-button-primary" href="beans/new">@L["Beans_New"]</a>
             </Actions>
         </PageHeader>
@@ -143,7 +144,7 @@
         else if (Id == "new")
         {
             <PageHeader Title="@L["Beans_New"]" BackHref="beans" />
-            <BeanForm OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("beans"))" />
+            <BeanForm Bean="@NewBeanSeed" OnSubmit="CreateAsync" OnCancel="@(() => Navigation.NavigateTo("beans"))" />
         }
         else if (current is null)
         {
@@ -225,6 +226,11 @@
                         <StatTile Value="@value" Label="@label" />
                     }
                 </div>
+            }
+
+            @if (current.Barcodes.Count > 0)
+            {
+                <p id="bean-barcodes-list" class="dialed-bean-line dialed-muted">@L["Bean_Barcodes"]: @string.Join(", ", current.Barcodes)</p>
             }
 
             @if (current.TastingNotes.Count > 0 || current.IsDecaf)
@@ -347,6 +353,18 @@
 
     [Parameter]
     public string? Id { get; set; }
+
+    /// <summary>A scanned barcode to start a new bean with (#104): <c>beans/new?barcode=...</c>.</summary>
+    [SupplyParameterFromQuery(Name = "barcode")]
+    public string? Barcode { get; set; }
+
+    private Bean? seed;
+
+    /// <summary>For a new bean: <c>null</c>, or an empty bean carrying the scanned code. One instance per visit, so typing does not reset the form.</summary>
+    private Bean? NewBeanSeed =>
+        Dialed.Domain.Barcodes.BarcodeMatcher.Normalize(Barcode) is { } code
+            ? seed is not null && seed.Barcodes.Contains(code) ? seed : seed = new Bean { Name = "", Barcodes = [code] }
+            : seed = null;
 
     private IEnumerable<string> ProcessOptions =>
         BeanQuery.KnownProcesses.Concat((beans ?? []).Select(b => b.Process).OfType<string>())

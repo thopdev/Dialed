@@ -47,7 +47,7 @@ public sealed class DependencyRulesTests
         [
             "IPhotoCapture", "ILocalFileStore", "IConnectivity", "IShareService", "IPasskeyClient",
             "IStoragePersistence", "IWakeLock", "ISoundCue", "IAppLifecycle", "IFileExport", "IErrorSink", "IDeviceInfo", "IPreferenceStore",
-            "ICrossTabLock", "IPushNotifications",
+            "ICrossTabLock", "IBarcodeScanner", "IPushNotifications",
         ];
 
         var platform = typeof(ClientAssembly).Assembly.GetTypes()

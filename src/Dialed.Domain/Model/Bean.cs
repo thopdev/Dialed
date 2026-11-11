@@ -43,6 +43,12 @@ public sealed record Bean : SyncEntity
 
     public IReadOnlyList<string> PhotoIds { get; init; } = [];
 
+    /// <summary>
+    /// Barcodes printed on this coffee's bags (#104). A bean can have several because the same coffee comes in different bag sizes.
+    /// Stored in the form <see cref="Dialed.Domain.Barcodes.BarcodeMatcher.Normalize"/> gives.
+    /// </summary>
+    public IReadOnlyList<string> Barcodes { get; init; } = [];
+
     /// <summary>1 to 5.</summary>
     public int? Rating { get; init; }
 
