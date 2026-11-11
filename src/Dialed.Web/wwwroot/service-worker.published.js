@@ -20,6 +20,7 @@ self.addEventListener('error', event => reportToPages(event.error));
 self.addEventListener('unhandledrejection', event => reportToPages(event.reason));
 
 self.importScripts('./service-worker-assets.js');
+self.importScripts('./push-handlers.js');
 self.addEventListener('install', event => event.waitUntil(reported(onInstall())));
 self.addEventListener('activate', event => event.waitUntil(reported(onActivate())));
 self.addEventListener('fetch', event => event.respondWith(onFetch(event)));

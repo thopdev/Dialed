@@ -1,0 +1,101 @@
+@implements IDisposable
+@using Dialed.Client.Account
+@using Dialed.Client.Push
+@inject PushNotificationService Push
+@inject AuthSession Session
+@inject IStringLocalizer<Strings> L
+
+@* Settings > Notifications (#100): what is sent, the Allow button (a tap, because iOS only asks for permission after one), and the switches. *@
+<div id="notifications-panel">
+    <h3>@L["Push_Title"]</h3>
+    <p class="dialed-muted">@L["Push_Explain"]</p>
+
+    @if (state is null)
+    {
+        <Loading IsLoading="true" />
+    }
+    else
+    {
+        switch (state.Availability)
+        {
+            case PushAvailability.SignedOut:
+                <p id="push-status" class="dialed-muted">@L["Push_SignedOut"]</p>
+                break;
+            case PushAvailability.Unsupported:
+                <p id="push-status" class="dialed-muted">@L["Push_Unsupported"]</p>
+                break;
+            case PushAvailability.NotInstalled:
+                <p id="push-status" class="dialed-muted">@L["Push_NotInstalled"]</p>
+                break;
+            case PushAvailability.ServerUnavailable:
+                <p id="push-status" class="dialed-muted" role="status">@L["Push_ServerUnavailable"]</p>
+                <button id="push-retry" type="button" class="dialed-button" @onclick="RefreshAsync">@L["Error_Retry"]</button>
+                break;
+            case PushAvailability.Denied:
+                <p id="push-status" class="dialed-muted" role="status">@L["Push_Denied"]</p>
+                break;
+            case PushAvailability.Off:
+                <p id="push-status" class="dialed-muted">@L["Push_Off"]</p>
+                <button id="push-enable" type="button" class="dialed-button dialed-button-primary" disabled="@busy" @onclick="EnableAsync">@L["Push_Allow"]</button>
+                break;
+            case PushAvailability.On:
+                <p id="push-status" role="status">@L["Push_On"]</p>
+                <fieldset id="push-switches">
+                    <legend>@L["Push_Switches"]</legend>
+                    <label class="dialed-check"><input id="push-follows" type="checkbox" checked="@state.Follows" disabled="@busy" @onchange="e => SwitchAsync(follows: (bool)e.Value!, household: state.Household)" /> @L["Push_Follows"]</label>
+                    <label class="dialed-check"><input id="push-household" type="checkbox" checked="@state.Household" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: (bool)e.Value!)" /> @L["Push_Household"]</label>
+                </fieldset>
+                <button id="push-disable" type="button" class="dialed-button" disabled="@busy" @onclick="DisableAsync">@L["Push_Disable"]</button>
+                break;
+        }
+    }
+</div>
+
+@code {
+    private PushState? state;
+    private bool busy;
+    private bool wasSignedIn;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        wasSignedIn = Session.IsSignedIn;
+        await RefreshAsync();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(async () =>
+    {
+        if (Session.IsSignedIn != wasSignedIn)
+        {
+            wasSignedIn = Session.IsSignedIn;
+            await RefreshAsync();
+        }
+    });
+
+    private async Task RefreshAsync()
+    {
+        state = await Push.GetStateAsync();
+        StateHasChanged();
+    }
+
+    private Task EnableAsync() => RunAsync(() => Push.EnableAsync());
+
+    private Task DisableAsync() => RunAsync(() => Push.DisableAsync());
+
+    private Task SwitchAsync(bool follows, bool household) => RunAsync(() => Push.SaveSwitchesAsync(follows, household));
+
+    private async Task RunAsync(Func<Task<PushState>> action)
+    {
+        busy = true;
+        try
+        {
+            state = await action();
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

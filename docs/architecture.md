@@ -257,7 +257,7 @@ CI/CD: GitHub Actions with **OIDC federated credentials** to Azure (no stored Az
 ## 10. MAUI readiness
 What keeps a future native app (MAUI Blazor Hybrid) cheap:
 - All UI in `Dialed.UI`, all data/sync logic in `Dialed.Client`; both free of browser APIs (architecture test).
-- Platform services behind interfaces with web implementations today: `IPhotoCapture`, `ILocalFileStore`, `IConnectivity`, `IShareService`, `IPasskeyClient`, `IStoragePersistence`, `IWakeLock`, `ISoundCue`, `IAppLifecycle`, `ICrossTabLock`.
+- Platform services behind interfaces with web implementations today: `IPhotoCapture`, `ILocalFileStore`, `IConnectivity`, `IShareService`, `IPasskeyClient`, `IStoragePersistence`, `IWakeLock`, `ISoundCue`, `IAppLifecycle`, `ICrossTabLock`, `IPushNotifications`.
 - Local `DbContext` is provider-agnostic (SQLite-WASM now, native SQLite in MAUI).
 - API is token-based (no cookies needed after sign-in).
 - Fluent UI Blazor works in MAUI Blazor Hybrid.
@@ -278,6 +278,7 @@ What keeps a future native app (MAUI Blazor Hybrid) cheap:
    | `ISoundCue` | Web Audio | platform audio player |
    | `IAppLifecycle` | page visibility | window `Activated`/`Deactivated` |
    | `ICrossTabLock` | Web Locks (`navigator.locks`): one tab syncs at a time | one window: `SingleWindowLock` |
+   | `IPushNotifications` | `PushManager` in the service worker plus the Notification permission (installed app on iOS) | native: APNs (#261) |
 
 3. Also implement `IAppEnvironment` and `IPwaState` (no updates, always installed) and swap the SQLite provider.
 4. Passkeys need Associated Domains (`webcredentials:`) for the API's domain.

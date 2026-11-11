@@ -850,4 +850,20 @@
   <data name="Scan_DiscardNamed" xml:space="preserve"><value>Discard {0}</value></data>
   <data name="Scan_NoteReady" xml:space="preserve"><value>Scans to review: {0}</value></data>
   <data name="Scan_NoteWaiting" xml:space="preserve"><value>Label scans waiting for a connection: {0}</value></data>
+  <data name="Push_Title" xml:space="preserve"><value>Notifications</value></data>
+  <data name="Push_Explain" xml:space="preserve"><value>Get a notification when someone asks to follow you, accepts your request, or joins your household. A notification only says who and what, nothing else.</value></data>
+  <data name="Push_SignedOut" xml:space="preserve"><value>Sign in to get notifications.</value></data>
+  <data name="Push_Unsupported" xml:space="preserve"><value>This browser cannot receive notifications.</value></data>
+  <data name="Push_NotInstalled" xml:space="preserve"><value>On iPhone and iPad, notifications only work once Dialed is on your Home Screen. Add it first (see "Add Dialed to your Home Screen" below), then open it from there.</value></data>
+  <data name="Push_ServerUnavailable" xml:space="preserve"><value>Notifications are not available right now. Try again later.</value></data>
+  <data name="Push_Denied" xml:space="preserve"><value>Notifications are blocked for Dialed. Allow them in your browser or device settings, then come back here.</value></data>
+  <data name="Push_Off" xml:space="preserve"><value>Notifications are off on this device.</value></data>
+  <data name="Push_Allow" xml:space="preserve"><value>Allow notifications</value></data>
+  <data name="Push_On" xml:space="preserve"><value>Notifications are on for this device.</value></data>
+  <data name="Push_Switches" xml:space="preserve"><value>Tell me when</value></data>
+  <data name="Push_Follows" xml:space="preserve"><value>Someone asks to follow me, or accepts my request</value></data>
+  <data name="Push_Household" xml:space="preserve"><value>Someone joins my household</value></data>
+  <data name="Push_Disable" xml:space="preserve"><value>Turn off on this device</value></data>
+  <data name="Privacy_Push_Title" xml:space="preserve"><value>Notifications</value></data>
+  <data name="Privacy_Push" xml:space="preserve"><value>If you allow notifications, your browser gives us an address at its push service for this device. We keep that address with your account so we can notify you; it is removed when you turn notifications off, sign out or delete your account. A notification says only a name and what happened, and travels encrypted: the push service (Apple, Google or Mozilla) cannot read it.</value></data>
 </root>

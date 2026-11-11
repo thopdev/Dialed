@@ -42,6 +42,17 @@ Setup: one iPhone, ideally an iPad too, two accounts that follow each other (Ali
 - [ ] Carol copies a shared bean from Alice's page; it syncs to Carol's other device and says "Copied from Alice" (#232).
 - [ ] A shared household is deleted by its owner while a member's device is open: after the next sync its beans are gone from that device (#251).
 
+## Notifications (#100)
+Needs a deployed API with real VAPID keys (#260), or the API run locally and reachable from the phone (dev tunnel).
+- [ ] In Safari (not installed): Settings > Notifications says to add Dialed to the Home Screen first and has no Allow button.
+- [ ] Installed app (iOS 16.4 or later): **Allow notifications** shows the system prompt after the tap; allowing turns the switches on.
+- [ ] Carol follows Alice's code: with the app **closed**, Alice gets a banner "New follow request"; tapping it opens People.
+- [ ] Same with the app **open** on another screen: no banner interrupts, the request shows in People.
+- [ ] Alice accepts: Carol gets "Request accepted".
+- [ ] Someone joins Alice's household with an invite: Alice gets "New household member"; tapping it opens Settings at the household.
+- [ ] Switching a type off stops it at once; **Turn off on this device** stops all of them; signing out does too.
+- [ ] Denying the permission shows how to allow it in Settings; nothing breaks.
+
 ## Accessibility (#49)
 - [ ] VoiceOver reads every control with a name, in light and dark mode: Home, Brew, Beans, Recipes, History, Settings, People, Scan.
 - [ ] The Copy button reads the item's name; feed rows read as one sentence; the rating reads "4 of 5 stars".

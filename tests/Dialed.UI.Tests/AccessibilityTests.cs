@@ -162,6 +162,7 @@ public sealed class AccessibilityTests : UiTestContext
     [Fact] public void Import_is_labeled() => Audit<Import>();
 
     [Fact] public void Scan_is_labeled() => Audit<Scan>();
+    [Fact] public void Notifications_panel_is_labeled() => Audit<Dialed.UI.Components.NotificationsPanel>();
 
     [Fact] public void Onboarding_is_labeled() => Audit<Onboarding>();
 

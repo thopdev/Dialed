@@ -4,7 +4,7 @@ using Dialed.Client.Sync;
 namespace Dialed.Client.Account;
 
 /// <summary>Sign-up, sign-in and sign-out with passkeys: runs the ceremony between the platform and the API.</summary>
-public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, AuthSession session, SyncEngine engine, SyncCoordinator sync)
+public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, AuthSession session, SyncEngine engine, SyncCoordinator sync, Push.PushNotificationService? push = null)
 {
     /// <summary>Recovery codes the person has not yet confirmed they saved. Only in memory: they are shown once and never stored here.</summary>
     public IReadOnlyList<string>? PendingRecoveryCodes { get; private set; }
@@ -106,6 +106,13 @@ public sealed class AccountService(AccountApi api, IPasskeyClient passkeys, Auth
     public async Task SignOutAsync(CancellationToken cancellationToken = default)
     {
         var refreshToken = session.Tokens?.RefreshToken;
+
+        // This device stops receiving this person's notifications (best effort, needs the token that is cleared next).
+        if (push is not null)
+        {
+            await push.ForgetThisDeviceAsync(cancellationToken);
+        }
+
         await session.ClearAsync(cancellationToken);
         if (refreshToken is null)
         {

@@ -29,6 +29,10 @@ public abstract class UiTestContext : BunitContext
 
     protected TestScanQueue ScanQueue { get; } = new();
 
+    protected TestPushDevice PushDevice { get; } = new();
+
+    protected TestPushServer PushServer { get; } = new();
+
     protected TestRecipeAssistant Assistant { get; } = new();
 
     protected TestDialInAssistant DialInAssistant { get; } = new();
@@ -96,6 +100,9 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IErrorSink>(ErrorSink);
         Services.AddSingleton<IShareService>(Shares);
         Services.AddDialedSync();
+        Services.AddSingleton<IPushNotifications>(PushDevice);
+        Services.AddSingleton<Dialed.Client.Push.IPushApi>(PushServer);
+        Services.AddSingleton<Dialed.Client.Push.PushNotificationService>();
         Services.AddSingleton<IPasskeyClient>(Passkeys);
         Services.AddSingleton<ISessionStore, InMemorySessionStore>();
         Services.AddSingleton<AuthSession>();
@@ -471,6 +478,109 @@ public abstract class UiTestContext : BunitContext
 
         private static HttpResponseMessage Json(string json) =>
             new(System.Net.HttpStatusCode.OK) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
+    }
+
+    /// <summary>This device's push support, permission and subscription, as the browser would report them.</summary>
+    protected sealed class TestPushDevice : IPushNotifications
+    {
+        public PushSupport Support { get; set; } = PushSupport.Supported;
+
+        public PushPermission Permission { get; set; } = PushPermission.Default;
+
+        public PushDevice? Subscription { get; set; }
+
+        /// <summary>What the person answers when asked for permission.</summary>
+        public PushPermission Answer { get; set; } = PushPermission.Granted;
+
+        public string? PublicKeyUsed { get; private set; }
+
+        public Task<PushSupport> GetSupportAsync(CancellationToken cancellationToken = default) => Task.FromResult(Support);
+
+        public Task<PushPermission> GetPermissionAsync(CancellationToken cancellationToken = default) => Task.FromResult(Permission);
+
+        public Task<PushDevice?> GetSubscriptionAsync(CancellationToken cancellationToken = default) => Task.FromResult(Subscription);
+
+        public Task<PushSubscribeResult> SubscribeAsync(string publicKey, CancellationToken cancellationToken = default)
+        {
+            PublicKeyUsed = publicKey;
+            if (Permission == PushPermission.Default)
+            {
+                Permission = Answer;
+            }
+
+            if (Permission != PushPermission.Granted)
+            {
+                return Task.FromResult(new PushSubscribeResult(null, Permission));
+            }
+
+            Subscription ??= new PushDevice("https://push.test/device-1", "p256dh-key", "auth-secret");
+            return Task.FromResult(new PushSubscribeResult(Subscription, Permission));
+        }
+
+        public Task<string?> UnsubscribeAsync(CancellationToken cancellationToken = default)
+        {
+            var endpoint = Subscription?.Endpoint;
+            Subscription = null;
+            return Task.FromResult(endpoint);
+        }
+    }
+
+    /// <summary>The server's push endpoints, remembering what was registered.</summary>
+    protected sealed class TestPushServer : Dialed.Client.Push.IPushApi
+    {
+        public string? Key { get; set; } = "public-vapid-key";
+
+        public bool Down { get; set; }
+
+        public bool Follows { get; private set; } = true;
+
+        public bool Household { get; private set; } = true;
+
+        public List<(PushDevice Device, string Language)> Registered { get; } = [];
+
+        public List<string> Removed { get; } = [];
+
+        private void Check()
+        {
+            if (Down)
+            {
+                throw new AccountApiException("The server could not be reached.");
+            }
+        }
+
+        public Task<string?> GetKeyAsync(CancellationToken cancellationToken = default)
+        {
+            Check();
+            return Task.FromResult(Key);
+        }
+
+        public Task SubscribeAsync(PushDevice device, string language, CancellationToken cancellationToken = default)
+        {
+            Check();
+            Registered.Add((device, language));
+            return Task.CompletedTask;
+        }
+
+        public Task UnsubscribeAsync(string endpoint, CancellationToken cancellationToken = default)
+        {
+            Check();
+            Removed.Add(endpoint);
+            return Task.CompletedTask;
+        }
+
+        public Task<Dialed.Client.Push.PushSettings> GetSettingsAsync(CancellationToken cancellationToken = default)
+        {
+            Check();
+            return Task.FromResult(new Dialed.Client.Push.PushSettings(Follows, Household, Registered.Count - Removed.Count));
+        }
+
+        public Task<Dialed.Client.Push.PushSettings> SaveSettingsAsync(bool follows, bool household, CancellationToken cancellationToken = default)
+        {
+            Check();
+            Follows = follows;
+            Household = household;
+            return GetSettingsAsync(cancellationToken);
+        }
     }
 
     protected sealed class TestScanQueue : Dialed.Client.Scan.IScanQueue
