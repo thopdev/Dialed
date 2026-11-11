@@ -37,6 +37,7 @@ public enum PushKind
     HouseholdJoined,
     LowStock,
     Peak,
+    PeakSoon,
 }
 
 public interface IPushSender
@@ -75,7 +76,7 @@ public sealed record PushStoreSnapshot(
     IReadOnlyDictionary<string, PushSettings> Settings,
     IReadOnlyDictionary<string, PushAlertStateData> AlertStates);
 
-public sealed record PushAlertStateData(DateOnly? LastHandled, IReadOnlyList<string> Low, IReadOnlyList<string> Peak);
+public sealed record PushAlertStateData(DateOnly? LastHandled, IReadOnlyList<string> Low, IReadOnlyList<string> Peak, IReadOnlyList<string>? PeakSoon = null);
 
 public class InMemoryPushStore : IPushStore
 {
@@ -96,7 +97,7 @@ public class InMemoryPushStore : IPushStore
             return new PushStoreSnapshot(
                 [.. byEndpoint.Values],
                 new Dictionary<string, PushSettings>(settings),
-                alertStates.ToDictionary(a => a.Key, a => new PushAlertStateData(a.Value.LastHandled, [.. a.Value.Memory.Low], [.. a.Value.Memory.Peak])));
+                alertStates.ToDictionary(a => a.Key, a => new PushAlertStateData(a.Value.LastHandled, [.. a.Value.Memory.Low], [.. a.Value.Memory.Peak], [.. a.Value.Memory.PeakSoon])));
         }
     }
 
@@ -119,7 +120,7 @@ public class InMemoryPushStore : IPushStore
 
             foreach (var (user, value) in snapshot.AlertStates)
             {
-                alertStates[user] = new StockAlertState(value.LastHandled, new StockAlertMemory(new HashSet<string>(value.Low, StringComparer.Ordinal), new HashSet<string>(value.Peak, StringComparer.Ordinal)));
+                alertStates[user] = new StockAlertState(value.LastHandled, new StockAlertMemory(new HashSet<string>(value.Low, StringComparer.Ordinal), new HashSet<string>(value.Peak, StringComparer.Ordinal)) { PeakSoon = new HashSet<string>(value.PeakSoon ?? [], StringComparer.Ordinal) });
             }
         }
     }
