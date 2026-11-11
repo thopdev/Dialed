@@ -1,0 +1,227 @@
+@page "/scan-code"
+@using Dialed.Client.Data
+@using Dialed.Client.Platform
+@using Dialed.Domain.Barcodes
+@using Dialed.Domain.Model
+@using Dialed.Domain.Text
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IBarcodeScanner Scanner
+@inject IRepository<Bean> BeanStore
+@inject NavigationManager Navigation
+
+@* Scan the barcode on a bag (#104): a bean you already have opens at once; an unknown code can start a new bean, join an existing one, or go on to the label scan. *@
+<PageHeader Title="@L["Barcode_Title"]" BackHref="beans" />
+
+@if (unknownCode is null)
+{
+    @if (matches.Count > 1)
+    {
+        <section id="barcode-matches" aria-labelledby="barcode-matches-title">
+            <h2 id="barcode-matches-title">@L["Barcode_SeveralBeans"]</h2>
+            <ul class="barcode-bean-list">
+                @foreach (var bean in matches)
+                {
+                    <li><a class="dialed-button barcode-match" href="@($"beans/{bean.Id}")">@bean.Name</a></li>
+                }
+            </ul>
+        </section>
+    }
+    else
+    {
+        @if (scanning)
+        {
+            <p id="barcode-hint" class="dialed-muted">@L["Barcode_Hint"]</p>
+        }
+
+        @if (problem is { } p)
+        {
+            <p id="barcode-problem" role="alert">@L[$"Barcode_Problem_{p}"]</p>
+        }
+
+        @if (invalid)
+        {
+            <p id="barcode-invalid" role="alert">@L["Barcode_Invalid"]</p>
+        }
+
+        <video id="barcode-video" class="dialed-barcode-video" playsinline muted hidden="@(!scanning)" aria-label="@L["Barcode_Preview"]"></video>
+
+        <form id="barcode-manual-form" class="dialed-form" @onsubmit="LookUpTypedAsync" @onsubmit:preventDefault>
+            <div class="dialed-field">
+                <label for="barcode-manual">@L["Barcode_Type"]</label>
+                <input id="barcode-manual" type="text" inputmode="numeric" autocomplete="off" @bind="typed" />
+            </div>
+            <div class="dialed-form-actions">
+                <button id="barcode-manual-go" type="submit" class="dialed-button dialed-button-primary">@L["Barcode_LookUp"]</button>
+                @if (!scanning && problem is not BarcodeProblem.Unsupported)
+                {
+                    <button id="barcode-again" type="button" class="dialed-button" @onclick="StartAsync">@L["Barcode_ScanAgain"]</button>
+                }
+            </div>
+        </form>
+    }
+}
+else if (attaching)
+{
+    <section id="barcode-attach-list" aria-labelledby="barcode-attach-title">
+        <h2 id="barcode-attach-title">@L["Barcode_AttachTitle", unknownCode]</h2>
+        <div class="dialed-field">
+            <label for="barcode-search">@L["Barcode_Search"]</label>
+            <input id="barcode-search" type="search" autocomplete="off" @bind="search" @bind:event="oninput" />
+        </div>
+        <ul class="barcode-bean-list">
+            @foreach (var bean in Candidates)
+            {
+                <li><button type="button" class="dialed-button barcode-attach-bean" @onclick="() => AttachAsync(bean)">@bean.Name</button></li>
+            }
+        </ul>
+        @if (Candidates.Count == 0)
+        {
+            <p id="barcode-attach-empty" class="dialed-muted">@L["Barcode_NoBeans"]</p>
+        }
+        <p><button id="barcode-attach-back" type="button" class="dialed-button" @onclick="() => attaching = false">@L["Back"]</button></p>
+    </section>
+}
+else
+{
+    <section id="barcode-unknown" aria-labelledby="barcode-unknown-title">
+        <h2 id="barcode-unknown-title">@L["Barcode_UnknownTitle"]</h2>
+        <p class="dialed-muted">@L["Barcode_UnknownBody", unknownCode]</p>
+        <div class="dialed-form-actions barcode-choices">
+            <button id="barcode-new" type="button" class="dialed-button dialed-button-primary" @onclick="NewBean">@L["Barcode_NewBean"]</button>
+            <button id="barcode-attach" type="button" class="dialed-button" @onclick="OpenAttachAsync">@L["Barcode_AttachBean"]</button>
+            <button id="barcode-label" type="button" class="dialed-button" @onclick="ScanLabel">@L["Barcode_ScanLabel"]</button>
+        </div>
+        <p><button id="barcode-retry" type="button" class="dialed-button" @onclick="Reset">@L["Barcode_ScanAnother"]</button></p>
+    </section>
+}
+
+@code {
+    private readonly CancellationTokenSource stop = new();
+    private IReadOnlyList<Bean> matches = [];
+    private bool scanning;
+    private bool invalid;
+    private bool attaching;
+    private BarcodeProblem? problem;
+    private string? unknownCode;
+    private string typed = "";
+    private string search = "";
+    private IReadOnlyList<Bean> beans = [];
+
+    private IReadOnlyList<Bean> Candidates => string.IsNullOrWhiteSpace(search)
+        ? [.. beans.OrderBy(b => b.Name, StringComparer.CurrentCultureIgnoreCase).Take(30)]
+        : [.. FuzzyMatch.Rank(beans, search, b => b.Name).Take(30)];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            beans = [.. (await BeanStore.ListAsync()).Where(b => !b.Deleted)];
+            await StartAsync();
+        }
+    }
+
+    /// <summary>Starts the camera and handles the first code it reads. Does nothing when a scan is already running.</summary>
+    private async Task StartAsync()
+    {
+        if (scanning)
+        {
+            return;
+        }
+
+        scanning = true;
+        problem = null;
+        invalid = false;
+        StateHasChanged();
+
+        BarcodeResult result;
+        try
+        {
+            result = await Scanner.ScanAsync("barcode-video", stop.Token);
+        }
+        finally
+        {
+            scanning = false;
+        }
+
+        if (stop.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (result.Code is { } code)
+        {
+            await HandleAsync(code);
+        }
+        else if (result.Problem is { } failed and not BarcodeProblem.Cancelled)
+        {
+            problem = failed;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LookUpTypedAsync()
+    {
+        await HandleAsync(typed);
+    }
+
+    private async Task HandleAsync(string raw)
+    {
+        invalid = false;
+        if (BarcodeMatcher.Normalize(raw) is not { } code)
+        {
+            invalid = true;
+            return;
+        }
+
+        beans = [.. (await BeanStore.ListAsync()).Where(b => !b.Deleted)];
+        var found = BarcodeMatcher.Find(code, beans);
+        if (found.Count == 1)
+        {
+            Navigation.NavigateTo($"beans/{found[0].Id}");
+        }
+        else if (found.Count > 1)
+        {
+            matches = found;
+        }
+        else
+        {
+            unknownCode = code;
+        }
+    }
+
+    private void NewBean() => Navigation.NavigateTo($"beans/new?barcode={Uri.EscapeDataString(unknownCode!)}");
+
+    private void ScanLabel() => Navigation.NavigateTo($"scan?barcode={Uri.EscapeDataString(unknownCode!)}");
+
+    private async Task OpenAttachAsync()
+    {
+        // Beans may have arrived from sync since this screen opened.
+        beans = [.. (await BeanStore.ListAsync()).Where(b => !b.Deleted)];
+        search = "";
+        attaching = true;
+    }
+
+    private async Task AttachAsync(Bean bean)
+    {
+        var saved = await BeanStore.SaveAsync(bean with { Barcodes = BarcodeMatcher.NormalizeAll([.. bean.Barcodes, unknownCode!]) });
+        Navigation.NavigateTo($"beans/{saved.Id}");
+    }
+
+    private void Reset()
+    {
+        unknownCode = null;
+        attaching = false;
+        typed = "";
+        search = "";
+        matches = [];
+        _ = StartAsync();
+    }
+
+    public void Dispose()
+    {
+        stop.Cancel();
+        stop.Dispose();
+    }
+}

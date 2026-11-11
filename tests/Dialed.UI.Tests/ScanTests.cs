@@ -138,4 +138,38 @@ public sealed class ScanTests : UiTestContext
         Scanner.Scans.ShouldBe(0);
         page.FindAll("#scan-review").ShouldBeEmpty();
     }
+
+    [Fact]
+    public async Task A_barcode_from_the_scanner_is_saved_on_the_new_bean()
+    {
+        await SignIn();
+        Scanner.Result = Label();
+        Camera.Next = new CapturedPhoto([1, 2, 3], "image/jpeg", "label.jpg");
+        Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().NavigateTo("scan?barcode=4006381333931");
+        var page = Render<Scan>();
+        page.Find("#scan-camera").Click();
+        page.WaitForAssertion(() => page.Find("#scan-review"));
+
+        page.Find("#scan-review").Submit();
+
+        (await Services.GetRequiredService<IRepository<Bean>>().ListAsync(Ct)).ShouldHaveSingleItem().Barcodes.ShouldBe(["4006381333931"]);
+    }
+
+    [Fact]
+    public async Task A_barcode_from_the_scanner_is_added_to_the_bean_the_label_was_matched_to()
+    {
+        await SignIn();
+        var beans = Services.GetRequiredService<IRepository<Bean>>();
+        await beans.SaveAsync(new Bean { Name = "Guji Hambela", Barcodes = ["96385074"] }, Ct);
+        Scanner.Result = Label();
+        Camera.Next = new CapturedPhoto([1, 2, 3], "image/jpeg", "label.jpg");
+        Services.GetRequiredService<Microsoft.AspNetCore.Components.NavigationManager>().NavigateTo("scan?barcode=4006381333931");
+        var page = Render<Scan>();
+        page.Find("#scan-camera").Click();
+        page.WaitForAssertion(() => page.Find("#scan-review"));
+
+        page.Find("#scan-review").Submit();
+
+        (await beans.ListAsync(Ct)).ShouldHaveSingleItem().Barcodes.ShouldBe(["96385074", "4006381333931"]);
+    }
 }

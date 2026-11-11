@@ -2577,3 +2577,50 @@ a.people-row-name {
     min-height: var(--dialed-touch-target);
     text-decoration: none;
 }
+
+
+.dialed-barcode-video {
+    display: block;
+    width: 100%;
+    max-height: 50vh;
+    margin: 0 0 var(--dialed-space-3);
+    border-radius: var(--dialed-radius-m, 0.75rem);
+    background: var(--colorNeutralBackground3);
+    object-fit: cover;
+}
+
+.dialed-barcode-video[hidden] {
+    display: none;
+}
+
+.barcode-choices {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.barcode-attach-bean,
+.barcode-match {
+    width: 100%;
+    min-height: var(--dialed-touch-target);
+    text-align: start;
+}
+
+#barcode-unknown h2,
+#barcode-matches h2,
+#barcode-attach-title {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-l);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+#barcode-retry {
+    margin-top: var(--dialed-space-3);
+}
+
+.barcode-bean-list {
+    display: grid;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+    list-style: none;
+}
