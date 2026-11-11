@@ -1,8 +1,8 @@
 name: E2E
 
 # Playwright smoke tests in WebKit (the Safari engine) with iPhone and iPad profiles (#110).
-# Publishes the PWA and serves it locally, so no Azure is needed. Not a required check yet: it is new,
-# and sign-in flows follow once accounts exist.
+# Publishes the PWA and serves it locally next to the API in Development (dev login for the account and sync tests),
+# so no Azure is needed. Not a required check yet: it is new.
 
 on:
   pull_request:
@@ -35,6 +35,10 @@ jobs:
 
       - name: Publish the PWA
         run: dotnet publish src/Dialed.Web/Dialed.Web.csproj --configuration Release --output publish
+
+      # Playwright starts it with `dotnet run`; building here keeps that start quick and shows build errors in their own step.
+      - name: Build the API
+        run: dotnet build src/Dialed.Api/Dialed.Api.csproj --configuration Debug
 
       - name: Install Playwright and WebKit
         working-directory: e2e
