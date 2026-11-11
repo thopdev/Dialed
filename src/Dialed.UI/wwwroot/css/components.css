@@ -2666,3 +2666,15 @@ a.people-row-name {
     flex-shrink: 0;
     white-space: nowrap;
 }
+
+/* Filtered inventory from a stock notification (#259) */
+#stock-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+}
+
+#stock-filter .dialed-section-link {
+    white-space: nowrap;
+}

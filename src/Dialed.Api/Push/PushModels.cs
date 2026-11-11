@@ -1,10 +1,21 @@
+using Dialed.Domain.Inventory;
+
 namespace Dialed.Api.Push;
 
 /// <summary>One device's push subscription as the browser's PushManager gave it (RFC 8030 endpoint, RFC 8291 keys).</summary>
 public sealed record PushSubscription(string UserId, string Endpoint, string P256dh, string Auth, string Language, DateTimeOffset CreatedAt);
 
-/// <summary>What a person wants to hear about. Everything is on until they switch it off.</summary>
-public sealed record PushSettings(bool Follows = true, bool Household = true);
+/// <summary>
+/// What a person wants to hear about. Follow and household notifications are on until switched off; the stock alerts (#259) are off until
+/// switched on. For those the app sends what the server needs to judge a bag the way the app does: the inventory settings and the time zone.
+/// </summary>
+public sealed record PushSettings(bool Follows = true, bool Household = true, bool LowStock = false, bool Peak = false, InventorySettings? Inventory = null, string? TimeZone = null);
+
+/// <summary>What the stock alert job remembers about one person: the last local day they were looked at, and which bags they were told about.</summary>
+public sealed record StockAlertState(DateOnly? LastHandled, StockAlertMemory Memory)
+{
+    public static StockAlertState None { get; } = new(null, StockAlertMemory.Empty);
+}
 
 /// <summary>What the person sees: a title, one line, and where a tap goes. Never more than a name and the event.</summary>
 public sealed record PushPayload(string Title, string Body, string Url, string Tag);
@@ -24,6 +35,8 @@ public enum PushKind
     FollowRequest,
     FollowAccepted,
     HouseholdJoined,
+    LowStock,
+    Peak,
 }
 
 public interface IPushSender
@@ -47,6 +60,13 @@ public interface IPushStore
     Task SaveSettingsAsync(string userId, PushSettings settings, CancellationToken cancellationToken = default);
 
     Task RemoveUserAsync(string userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Everyone with at least one device (the stock alert job only looks at them).</summary>
+    Task<IReadOnlyList<string>> SubscribedUserIdsAsync(CancellationToken cancellationToken = default);
+
+    Task<StockAlertState> GetAlertStateAsync(string userId, CancellationToken cancellationToken = default);
+
+    Task SaveAlertStateAsync(string userId, StockAlertState state, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryPushStore : IPushStore
@@ -54,6 +74,7 @@ public sealed class InMemoryPushStore : IPushStore
     private readonly Lock gate = new();
     private readonly Dictionary<string, PushSubscription> byEndpoint = new(StringComparer.Ordinal);
     private readonly Dictionary<string, PushSettings> settings = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, StockAlertState> alertStates = new(StringComparer.Ordinal);
 
     public Task SaveAsync(PushSubscription subscription, CancellationToken cancellationToken = default)
     {
@@ -109,6 +130,33 @@ public sealed class InMemoryPushStore : IPushStore
             }
 
             settings.Remove(userId);
+            alertStates.Remove(userId);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<string>> SubscribedUserIdsAsync(CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult<IReadOnlyList<string>>([.. byEndpoint.Values.Select(s => s.UserId).Distinct(StringComparer.Ordinal)]);
+        }
+    }
+
+    public Task<StockAlertState> GetAlertStateAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            return Task.FromResult(alertStates.GetValueOrDefault(userId) ?? StockAlertState.None);
+        }
+    }
+
+    public Task SaveAlertStateAsync(string userId, StockAlertState state, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            alertStates[userId] = state;
         }
 
         return Task.CompletedTask;

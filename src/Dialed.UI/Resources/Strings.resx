@@ -851,7 +851,7 @@
   <data name="Scan_NoteReady" xml:space="preserve"><value>Scans to review: {0}</value></data>
   <data name="Scan_NoteWaiting" xml:space="preserve"><value>Label scans waiting for a connection: {0}</value></data>
   <data name="Push_Title" xml:space="preserve"><value>Notifications</value></data>
-  <data name="Push_Explain" xml:space="preserve"><value>Get a notification when someone asks to follow you, accepts your request, or joins your household. A notification only says who and what, nothing else.</value></data>
+  <data name="Push_Explain" xml:space="preserve"><value>Get a notification when someone asks to follow you, accepts your request, or joins your household. Two more are optional: a bag running low, and a bag at its peak. A notification only says who or which bean, and what happened.</value></data>
   <data name="Push_SignedOut" xml:space="preserve"><value>Sign in to get notifications.</value></data>
   <data name="Push_Unsupported" xml:space="preserve"><value>This browser cannot receive notifications.</value></data>
   <data name="Push_NotInstalled" xml:space="preserve"><value>On iPhone and iPad, notifications only work once Dialed is on your Home Screen. Add it first (see "Add Dialed to your Home Screen" below), then open it from there.</value></data>
@@ -865,7 +865,7 @@
   <data name="Push_Household" xml:space="preserve"><value>Someone joins my household</value></data>
   <data name="Push_Disable" xml:space="preserve"><value>Turn off on this device</value></data>
   <data name="Privacy_Push_Title" xml:space="preserve"><value>Notifications</value></data>
-  <data name="Privacy_Push" xml:space="preserve"><value>If you allow notifications, your browser gives us an address at its push service for this device. We keep that address with your account so we can notify you; it is removed when you turn notifications off, sign out or delete your account. A notification says only a name and what happened, and travels encrypted: the push service (Apple, Google or Mozilla) cannot read it.</value></data>
+  <data name="Privacy_Push" xml:space="preserve"><value>If you allow notifications, your browser gives us an address at its push service for this device. We keep that address with your account so we can notify you; it is removed when you turn notifications off, sign out or delete your account. If you switch on low-stock or peak alerts we also keep your low-stock threshold, rest times and time zone, and the notification names the bean. A notification says only a name and what happened, and travels encrypted: the push service (Apple, Google or Mozilla) cannot read it.</value></data>
   <data name="Barcode_Title" xml:space="preserve"><value>Scan barcode</value></data>
   <data name="Barcode_Button" xml:space="preserve"><value>Scan barcode</value></data>
   <data name="Barcode_Hint" xml:space="preserve"><value>Hold the barcode in front of the camera. It is read on this device; nothing is sent anywhere.</value></data>
@@ -921,6 +921,13 @@
   <data name="Report_Failed" xml:space="preserve"><value>The report could not be sent. Try again.</value></data>
   <data name="Privacy_Public_Title" xml:space="preserve"><value>Public profile and public items</value></data>
   <data name="Privacy_Public" xml:space="preserve"><value>A public profile is off until you switch it on in Settings. When it is on, other Dialed users can find you by your name and see your name, your avatar and the beans and recipes you set to "Everyone on Dialed", and nothing else. They cannot see your brews, bags, friends or email address, and they have to be signed in: nothing is on the open web or in search engines. Switch it off and you disappear at once; your items keep their own setting. People can report a profile, bean or recipe; the report (who, what, why) goes to the developer of the beta, who can hide a profile without deleting anything. Deleting your account removes your profile and your public items.</value></data>
+  <data name="Push_LowStock" xml:space="preserve"><value>A bag is running low</value></data>
+  <data name="Push_Peak" xml:space="preserve"><value>A bag is at its peak</value></data>
+  <data name="Push_StockHint" xml:space="preserve"><value>Low stock and peak alerts come at most once a day, around 8:00 in your time zone, and never at night. They use the thresholds and rest times from Settings &gt; Inventory.</value></data>
+  <data name="Stock_FilterLow" xml:space="preserve"><value>Showing the bags that are running low.</value></data>
+  <data name="Stock_FilterPeak" xml:space="preserve"><value>Showing the bags that are at their peak.</value></data>
+  <data name="Stock_ShowAll" xml:space="preserve"><value>Show all</value></data>
+  <data name="Stock_FilterNone" xml:space="preserve"><value>None of your bags match any more.</value></data>
   <data name="Catalog_Title" xml:space="preserve"><value>From the catalog</value></data>
   <data name="Catalog_Hint" xml:space="preserve"><value>Beans other people chose to share. Using one copies it here; you can change everything.</value></data>
   <data name="Catalog_Use" xml:space="preserve"><value>Use this</value></data>

@@ -122,6 +122,24 @@ public sealed class PushNotifier(IUserDirectory users, IFriendStore friends, IPu
 /// <summary>The words of a push, in the language the device told us (English or Dutch).</summary>
 public static class PushText
 {
+    /// <summary>One line for the stock alerts (#259): the bean name for one bag, a count for several. Taps open the inventory filtered to those bags.</summary>
+    public static PushPayload ForStock(PushKind kind, IReadOnlyList<string> beanNames, string? language)
+    {
+        var nl = string.Equals(language, "nl", StringComparison.OrdinalIgnoreCase);
+        var many = beanNames.Count > 1;
+        return kind == PushKind.LowStock
+            ? new(
+                nl ? "Bijna op" : "Running low",
+                many ? (nl ? $"{beanNames.Count} zakken raken op." : $"{beanNames.Count} bags are running low.") : (nl ? $"{beanNames[0]} raakt op." : $"{beanNames[0]} is running low."),
+                "inventory?show=low",
+                "low-stock")
+            : new(
+                nl ? "Op zijn best" : "At its peak",
+                many ? (nl ? $"{beanNames.Count} zakken zijn op hun best." : $"{beanNames.Count} bags are at their peak.") : (nl ? $"{beanNames[0]} is op zijn best." : $"{beanNames[0]} is at its peak."),
+                "inventory?show=peak",
+                "peak");
+    }
+
     public static PushPayload For(PushKind kind, string name, string? language)
     {
         var nl = string.Equals(language, "nl", StringComparison.OrdinalIgnoreCase);

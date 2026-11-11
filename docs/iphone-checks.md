@@ -55,6 +55,8 @@ Needs a deployed API with real VAPID keys (#260), or the API run locally and rea
 - [ ] Someone joins Alice's household with an invite: Alice gets "New household member"; tapping it opens Settings at the household.
 - [ ] Switching a type off stops it at once; **Turn off on this device** stops all of them; signing out does too.
 - [ ] Denying the permission shows how to allow it in Settings; nothing breaks.
+- [ ] Low stock and peak (#259): switch both on, set the low-stock threshold above a bag's weight; the notification arrives the next morning around 08:00 (or run the job against a dev API), says the bean, and tapping it opens Inventory showing only those bags.
+- [ ] At most one low-stock and one peak notification per day, none at night; changing the threshold in Settings > Inventory changes what is announced.
 ## Public profiles (#106)
 - [ ] Settings > Profile: the **Public profile** switch is off by default; switching it on and off works with one tap and shows the status.
 - [ ] A bean's visibility picker offers **Everyone on Dialed** with the explanation under it; brews do not.
