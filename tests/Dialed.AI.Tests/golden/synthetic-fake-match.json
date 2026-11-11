@@ -1,0 +1,16 @@
+{
+  "id": "synthetic-fake-match",
+  "image": "synthetic-fake-match.jpg",
+  "source": "synthetic",
+  "license": "CC0: drawn by tools/Dialed.LabelEval/synthetic/New-SyntheticLabels.ps1, made-up names",
+  "notes": "Says exactly what FakeLabelExtractor returns, so the CI run has one case at 100%.",
+  "tags": ["clean"],
+  "expected": {
+    "name": "Guji Hambela",
+    "roaster": "Example Roasters",
+    "country": "Ethiopia",
+    "process": "Natural",
+    "roastLevel": "light",
+    "weightG": "250"
+  }
+}

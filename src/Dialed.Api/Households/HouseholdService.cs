@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Dialed.Api.Auth;
+using Dialed.Api.Sync;
 
 namespace Dialed.Api.Households;
 
@@ -26,6 +27,9 @@ public sealed record JoinRequest(string Code);
 
 public sealed record TransferRequest(string UserId);
 
+/// <summary>The name for a new household, or the new name of the active one.</summary>
+public sealed record HouseholdNameRequest(string Name);
+
 public enum HouseholdOutcome
 {
     Ok,
@@ -39,6 +43,9 @@ public enum HouseholdOutcome
 
     /// <summary>The state of the household does not allow it (for example the owner leaving a household with other members); see the message.</summary>
     Conflict,
+
+    /// <summary>The request itself is not acceptable (for example an empty name); see the message.</summary>
+    Invalid,
 }
 
 public sealed record HouseholdResult<T>(HouseholdOutcome Outcome, T? Value = default, string? Message = null)
@@ -199,9 +206,14 @@ public sealed class InMemoryHouseholdStore(IEnumerable<Household>? initial = nul
 /// Households: everyone starts in a personal one, an owner can invite people with a single-use code, and members can leave or be removed
 /// (back to a personal household of their own). Records stay in the household they were made in.
 /// </summary>
-public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store, TimeProvider time)
+public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store, ISyncStore sync, TimeProvider time)
 {
     public const int MaxMembers = 10;
+
+    /// <summary>How many households one person can create households up to; creating one more is refused.</summary>
+    public const int MaxHouseholdsPerPerson = 10;
+
+    public const int MaxNameLength = 60;
     private const string CodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
     private static readonly TimeSpan InviteLifetime = TimeSpan.FromDays(7);
 
@@ -403,6 +415,97 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
         await store.SaveAsync(transferred, ct);
         return new(HouseholdOutcome.Ok, await ToDtoAsync(transferred, ownerId, ct));
     }
+
+    /// <summary>Creates a household owned by the person and makes it the active one (the next token carries it). Earlier households stay.</summary>
+    public async Task<HouseholdResult<HouseholdDto>> CreateAsync(string userId, string? name, CancellationToken ct = default)
+    {
+        if (await users.FindByIdAsync(userId, ct) is not { } user)
+        {
+            return new(HouseholdOutcome.NotFound);
+        }
+
+        if (CleanName(name) is not { } clean)
+        {
+            return new(HouseholdOutcome.Invalid, Message: $"Give the household a name of up to {MaxNameLength} characters.");
+        }
+
+        if (user.AllHouseholdIds.Count >= MaxHouseholdsPerPerson)
+        {
+            return new(HouseholdOutcome.Conflict, Message: $"You can be in up to {MaxHouseholdsPerPerson} households. Leave one first.");
+        }
+
+        var household = new Household("hh-" + Guid.NewGuid().ToString("N"), clean, userId);
+        await store.SaveAsync(household, ct);
+        await users.SetHouseholdAsync(userId, household.Id, ct);
+        return new(HouseholdOutcome.Ok, await ToDtoAsync(household, userId, ct));
+    }
+
+    /// <summary>The owner renames the active household.</summary>
+    public async Task<HouseholdResult<HouseholdDto>> RenameAsync(string userId, string? name, CancellationToken ct = default)
+    {
+        var (outcome, household) = await OwnedAsync(userId, ct);
+        if (outcome != HouseholdOutcome.Ok)
+        {
+            return new(outcome);
+        }
+
+        if (CleanName(name) is not { } clean)
+        {
+            return new(HouseholdOutcome.Invalid, Message: $"Give the household a name of up to {MaxNameLength} characters.");
+        }
+
+        var renamed = household! with { Name = clean };
+        await store.SaveAsync(renamed, ct);
+        return new(HouseholdOutcome.Ok, await ToDtoAsync(renamed, userId, ct));
+    }
+
+    /// <summary>
+    /// The owner deletes the active household with all its data, the way deleting an account removes a household its last member was alone in.
+    /// Every member loses it (someone with no other household gets a personal one again), so their devices purge its records on the next sync.
+    /// The owner's last household cannot be deleted, as it cannot be left. Returns the owner's household that is active now.
+    /// </summary>
+    public async Task<HouseholdResult<HouseholdDto>> DeleteAsync(string userId, CancellationToken ct = default)
+    {
+        var (outcome, household) = await OwnedAsync(userId, ct);
+        if (outcome != HouseholdOutcome.Ok)
+        {
+            return new(outcome);
+        }
+
+        var owner = (await users.FindByIdAsync(userId, ct))!;
+        if (owner.AllHouseholdIds.Count <= 1)
+        {
+            return new(HouseholdOutcome.Conflict, Message: "This is your only household; you cannot delete it.");
+        }
+
+        var members = await users.ListByHouseholdAsync(household!.Id, ct);
+
+        // Someone whose only household this is falls back to their personal one; when that is this very household (it was handed to the owner),
+        // they would come back to the same id and their devices would not notice it was emptied, so refuse instead.
+        if (members.FirstOrDefault(m => m.Id != userId && m.AllHouseholdIds.Count <= 1 && m.PersonalHouseholdId == household.Id) is { } stuck)
+        {
+            return new(HouseholdOutcome.Conflict, Message: $"This household is the only one {stuck.DisplayName} has, so it cannot be deleted until they join or create another.");
+        }
+
+        await sync.DeleteHouseholdAsync(household.Id, ct);
+        await store.DeleteAsync(household.Id, ct);
+        foreach (var member in members.Where(m => m.Id != userId))
+        {
+            if (member.AllHouseholdIds.Count <= 1)
+            {
+                await store.EnsureAsync(member.PersonalHouseholdId, DefaultName(member), member.Id, ct);
+                await users.SetHouseholdAsync(member.Id, member.PersonalHouseholdId, ct);
+            }
+
+            await users.RemoveMembershipAsync(member.Id, household.Id, ct);
+        }
+
+        return new(HouseholdOutcome.Ok, await EndMembershipAsync(owner, household.Id, ct));
+    }
+
+    /// <summary>A trimmed name of 1 to <see cref="MaxNameLength"/> characters, or <c>null</c> when there is none.</summary>
+    private static string? CleanName(string? name) =>
+        (name ?? "").Trim() is { Length: > 0 and <= MaxNameLength } clean ? clean : null;
 
     /// <summary>Every household the person belongs to, the active one marked.</summary>
     public async Task<HouseholdResult<IReadOnlyList<HouseholdSummaryDto>>> ListMineAsync(string userId, CancellationToken ct = default)

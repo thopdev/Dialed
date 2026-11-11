@@ -4,6 +4,7 @@ using Dialed.Domain.Model;
 using Dialed.UI.Components;
 using Dialed.UI.Pages;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dialed.UI.Tests;
 
@@ -134,4 +135,26 @@ public sealed class AccessibilityTests : UiTestContext
     [Fact] public void Onboarding_is_labeled() => Audit<Onboarding>();
 
     [Fact] public void Tab_bar_is_labeled() => Audit<Dialed.UI.Layout.TabBar>();
+
+    [Fact]
+    public async Task Household_create_rename_and_delete_are_labeled()
+    {
+        Tokens.Value = "tkn";
+        await Services.GetRequiredService<Dialed.Client.Account.AuthSession>().SetAsync(new Dialed.Client.Account.SessionTokens("a", DateTimeOffset.MaxValue, "r", "u1", "You", "h1"), Xunit.TestContext.Current.CancellationToken);
+        HouseholdServer.Households = [("h1", "Home"), ("h2", "Office")];
+        var panel = Render<HouseholdPanel>();
+        panel.WaitForElement("#household-delete");
+        Problems(panel).Distinct().ToList().ShouldBeEmpty("household panel");
+
+        panel.Find("#household-rename").Click();
+        Problems(panel).Distinct().ToList().ShouldBeEmpty("rename form");
+        panel.Find("#household-rename-cancel").Click();
+
+        panel.Find("#household-create").Click();
+        Problems(panel).Distinct().ToList().ShouldBeEmpty("create form");
+        panel.Find("#household-create-cancel").Click();
+
+        panel.Find("#household-delete").Click();
+        Problems(panel).Distinct().ToList().ShouldBeEmpty("delete confirmation");
+    }
 }

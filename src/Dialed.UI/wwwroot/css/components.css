@@ -2336,6 +2336,48 @@ a.people-row-name {
     letter-spacing: 0.08em;
 }
 
+/* ---- Creating, renaming and deleting households (#70) ------------------------------------------- */
+
+.household-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+}
+
+.household-heading h3 {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.household-manage {
+    margin-top: var(--dialed-space-4);
+    padding-top: var(--dialed-space-3);
+    border-top: 1px solid var(--colorNeutralStroke2);
+}
+
+#household-rename-form {
+    margin-bottom: var(--dialed-space-3);
+}
+
+#household-create-hint {
+    margin: var(--dialed-space-1) 0 0;
+    font-size: var(--dialed-text-s);
+}
+
+.household-delete-confirmation {
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorPaletteRedBorder2);
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorPaletteRedBackground1);
+}
+
+.household-delete-confirmation p {
+    margin: 0 0 var(--dialed-space-3);
+    color: var(--colorNeutralForeground1);
+}
+
 /* ---- Storage and sync notes (#114) ------------------------------------------------------------ */
 
 .dialed-sync-indicator {
