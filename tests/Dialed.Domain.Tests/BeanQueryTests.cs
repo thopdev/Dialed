@@ -76,4 +76,36 @@ public sealed class BeanQueryTests
         BeanQuery.AddUnique(list, "  ").ShouldBeSameAs(list);
         BeanQuery.AddUnique(list, null).ShouldBeSameAs(list);
     }
+
+    [Fact]
+    public void Filters_by_origin_country_whatever_language_it_was_typed_in()
+    {
+        Bean[] beans =
+        [
+            new() { Id = "1", Name = "A", Origin = new BeanOrigin("Ethiopia") },
+            new() { Id = "2", Name = "B", Origin = new BeanOrigin(" ethiopië ") },
+            new() { Id = "3", Name = "C", Origin = new BeanOrigin("Kenya") },
+            new() { Id = "4", Name = "D", Origin = new BeanOrigin("Atlantis") },
+            new() { Id = "5", Name = "E" },
+        ];
+
+        BeanQuery.Apply(beans, [], new BeanFilter(Country: "ET"), BeanSort.Name).Select(b => b.Id).ShouldBe(["1", "2"]);
+        BeanQuery.Apply(beans, [], new BeanFilter(Country: "atlantis"), BeanSort.Name).Select(b => b.Id).ShouldBe(["4"]); // not a known country: the typed text is the key
+        BeanQuery.Apply(beans, [], new BeanFilter(Country: " "), BeanSort.Name).Count.ShouldBe(5);
+    }
+
+    [Fact]
+    public void Lists_each_origin_country_once()
+    {
+        Bean[] beans =
+        [
+            new() { Id = "1", Name = "A", Origin = new BeanOrigin("Ethiopia") },
+            new() { Id = "2", Name = "B", Origin = new BeanOrigin("Ethiopië") },
+            new() { Id = "3", Name = "C", Origin = new BeanOrigin("Kenya") },
+            new() { Id = "4", Name = "D", Deleted = true, Origin = new BeanOrigin("Brazil") },
+            new() { Id = "5", Name = "E" },
+        ];
+
+        BeanQuery.Countries(beans).ShouldBe([("ET", "Ethiopia"), ("KE", "Kenya")]);
+    }
 }

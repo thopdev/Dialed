@@ -1004,6 +1004,7 @@
   <data name="DialIn_Best" xml:space="preserve"><value>Best beoordeeld: maling {0}, {1} sterren, {2}</value></data>
   <data name="DialIn_Settled" xml:space="preserve"><value>De laatste drie zettingen hadden bijna dezelfde maling: deze zit goed.</value></data>
   <data name="Bean_DialInTrace" xml:space="preserve"><value>Dial-in-verloop</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: toon bonen</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Smaakwiel</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Smaaknoten per smaak: {0}</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruitig</value></data>
