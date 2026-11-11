@@ -8,7 +8,7 @@ public sealed class StockAlertsTests
 {
     private static readonly DateOnly Today = new(2026, 11, 11);
 
-    private static BagStock Stock(string id, string bean, decimal remaining, BagStatus status = BagStatus.Open, int? ageDays = 14, Freshness freshness = Freshness.Peak, bool hasRoastDate = true, decimal low = 100m) =>
+    private static BagStock Stock(string id, string bean, decimal remaining, BagStatus status = BagStatus.Open, int? ageDays = 14, Freshness freshness = Freshness.Peak, bool hasRoastDate = true, decimal low = 100m, bool peakTomorrow = false) =>
         new(
             new Bag { Id = id, BeanId = "b-" + id, WeightG = 250, Status = status, RoastDate = hasRoastDate ? Today.AddDays(-(ageDays ?? 0)) : null },
             bean,
@@ -16,7 +16,8 @@ public sealed class StockAlertsTests
             Cups: 5,
             ageDays,
             freshness,
-            IsLow: status == BagStatus.Open && remaining < low);
+            IsLow: status == BagStatus.Open && remaining < low,
+            PeakTomorrow: peakTomorrow);
 
     private static StockAlertResult Run(IEnumerable<BagStock> stock, StockAlertMemory? memory = null, bool low = true, bool peak = true, string household = "h1") =>
         StockAlerts.Evaluate(household, stock, memory ?? StockAlertMemory.Empty, low, peak);
@@ -75,6 +76,42 @@ public sealed class StockAlertsTests
     }
 
     // ---- Peak ---------------------------------------------------------------------------------
+
+    [Fact]
+    public void A_bag_whose_peak_starts_tomorrow_gets_a_heads_up_once_and_then_the_peak_alert_itself()
+    {
+        var soon = Run([Stock("1", "Kiambu", 200m, freshness: Freshness.Resting, ageDays: 6, peakTomorrow: true)]);
+        soon.PeakSoon.ShouldBe(["Kiambu"]);
+        soon.Peak.ShouldBeEmpty();
+
+        var again = Run([Stock("1", "Kiambu", 200m, freshness: Freshness.Resting, ageDays: 6, peakTomorrow: true)], soon.Memory);
+        again.PeakSoon.ShouldBeEmpty();
+
+        var peak = Run([Stock("1", "Kiambu", 200m)], soon.Memory);
+        peak.PeakSoon.ShouldBeEmpty();
+        peak.Peak.ShouldBe(["Kiambu"]);
+        peak.Memory.PeakSoon.ShouldBeEmpty(); // re-armed: the bag left the "tomorrow" state
+    }
+
+    [Fact]
+    public void The_heads_up_follows_the_peak_switch_and_skips_finished_bags_and_bags_without_a_roast_date()
+    {
+        Run([Stock("1", "A", 200m, freshness: Freshness.Resting, peakTomorrow: true)], peak: false).PeakSoon.ShouldBeEmpty();
+        Run([Stock("1", "A", 200m, BagStatus.Finished, freshness: Freshness.Resting, peakTomorrow: true)]).PeakSoon.ShouldBeEmpty();
+        Run([Stock("1", "A", 200m, freshness: Freshness.Resting, hasRoastDate: false, peakTomorrow: true)]).PeakSoon.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void The_inventory_flags_a_resting_bag_whose_peak_begins_tomorrow()
+    {
+        var window = InventorySettings.Default.RestWindows.For(null);
+        var bean = new Bean { Id = "b1", Name = "Guji" };
+        Bag RoastedDaysAgo(int days) => new() { Id = $"bag{days}", BeanId = "b1", WeightG = 250m, RoastDate = Today.AddDays(-days) };
+
+        var stock = InventoryOverview.Build([RoastedDaysAgo(window.RestDays - 1), RoastedDaysAgo(window.RestDays - 2), RoastedDaysAgo(window.RestDays)], [bean], [], Today, InventorySettings.Default);
+
+        stock.Where(s => s.PeakTomorrow).Select(s => s.Bag.Id).ShouldBe([$"bag{window.RestDays - 1}"]);
+    }
 
     [Fact]
     public void A_bag_entering_its_peak_window_is_announced_once_and_not_again_while_it_stays()

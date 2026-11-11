@@ -25,6 +25,9 @@ public sealed record CoffeeStatistics(
     IReadOnlyList<GrinderTrend> GrindTrends,
     int TotalBrews)
 {
+    /// <summary>The tasting notes of the coffees you brewed, sorted into the branches of the flavour wheel (a note counts once per brew).</summary>
+    public IReadOnlyList<Flavors.FlavorShare> Flavours { get; init; } = [];
+
     public const int Weeks = 12;
 
     public const int Top = 5;
@@ -53,7 +56,10 @@ public sealed record CoffeeStatistics(
             Favourites(liveBrews, bagById, beanById, bean => bean.RoasterId is { } id && vendorById.TryGetValue(id, out var vendor) ? vendor.Name : null),
             Favourites(liveBrews, bagById, beanById, bean => bean.Process),
             GrindTrendsOf(liveBrews, equipment.Where(e => !e.Deleted && e.Kind == EquipmentKind.Grinder)),
-            liveBrews.Count);
+            liveBrews.Count)
+        {
+            Flavours = Flavors.FlavorWheel.Tally(liveBrews.SelectMany(b => bagById.TryGetValue(b.BagId, out var bag) && beanById.TryGetValue(bag.BeanId, out var bean) ? bean.TastingNotes : [])),
+        };
     }
 
     public static DateOnly MondayOf(DateOnly date) => date.AddDays(-(((int)date.DayOfWeek + 6) % 7));
