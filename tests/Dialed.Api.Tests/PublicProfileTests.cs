@@ -468,4 +468,20 @@ public sealed class PublicProfileTests(ModeratedApp app) : IClassFixture<Moderat
         export["profile"]!["publicProfile"]!.GetValue<bool>().ShouldBeTrue();
         export["items"]!["beans"]!.AsArray().Single()!["visibility"]!.GetValue<int>().ShouldBe(VisibilityRules.Public);
     }
+
+    [Fact]
+    public async Task The_owner_can_list_who_is_suspended()
+    {
+        var one = await NewPerson(Unique("Susp"));
+        var two = await NewPerson(Unique("Fine"));
+        await Admin().PostAsync($"/admin/users/{one.User.Id}/suspend", null, Ct);
+
+        var list = (await Admin().GetFromJsonAsync<SuspendedDto[]>("/admin/users/suspended", Ct))!;
+        list.ShouldContain(s => s.UserId == one.User.Id && s.DisplayName == one.User.DisplayName);
+        list.ShouldNotContain(s => s.UserId == two.User.Id);
+
+        await Admin().PostAsync($"/admin/users/{one.User.Id}/restore", null, Ct);
+        (await Admin().GetFromJsonAsync<SuspendedDto[]>("/admin/users/suspended", Ct))!.ShouldNotContain(s => s.UserId == one.User.Id);
+        (await Admin(key: null).GetAsync("/admin/users/suspended", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+    }
 }
