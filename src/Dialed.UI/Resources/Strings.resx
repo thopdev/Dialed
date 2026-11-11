@@ -937,4 +937,45 @@
   <data name="Scan_CatalogTitle" xml:space="preserve"><value>Not one of your beans. Is it one of these?</value></data>
   <data name="Privacy_Catalog_Title" xml:space="preserve"><value>Shared catalog</value></data>
   <data name="Privacy_Catalog" xml:space="preserve"><value>Dialed suggests beans and roasters from a catalog built from what people chose to share publicly. A bean or roaster only enters it when at least two different people made the same one public, and it holds no names, ids or anything that points back to a person. Nothing private ever enters it. If you un-share an item, switch your public profile off or delete your account, your contribution drops out at the next rebuild. Using a suggestion copies it into your own beans; nothing stays linked.</value></data>
+  <data name="Admin_Title" xml:space="preserve"><value>Admin</value></data>
+  <data name="Admin_Intro" xml:space="preserve"><value>Reports, suspended people and the catalog. Enter the admin key of this server. It is kept in memory only and forgotten when you lock or leave.</value></data>
+  <data name="Admin_Key" xml:space="preserve"><value>Admin key</value></data>
+  <data name="Admin_Unlock" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Admin_Lock" xml:space="preserve"><value>Lock</value></data>
+  <data name="Admin_Tab_reports" xml:space="preserve"><value>Reports</value></data>
+  <data name="Admin_Tab_people" xml:space="preserve"><value>People</value></data>
+  <data name="Admin_Tab_catalog" xml:space="preserve"><value>Catalog</value></data>
+  <data name="Admin_Problem_WrongKey" xml:space="preserve"><value>That key is not right.</value></data>
+  <data name="Admin_Problem_NotEnabled" xml:space="preserve"><value>Admin tools are not switched on on this server.</value></data>
+  <data name="Admin_Problem_NotFound" xml:space="preserve"><value>That no longer exists.</value></data>
+  <data name="Admin_Problem_TooManyTries" xml:space="preserve"><value>Too many tries. Wait a minute.</value></data>
+  <data name="Admin_Problem_Unreachable" xml:space="preserve"><value>The server could not be reached.</value></data>
+  <data name="Admin_NoReports" xml:space="preserve"><value>No reports.</value></data>
+  <data name="Admin_ReportLine" xml:space="preserve"><value>{0} by {1} · {2}</value></data>
+  <data name="Admin_Target_profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Admin_Target_bean" xml:space="preserve"><value>Bean</value></data>
+  <data name="Admin_Target_recipe" xml:space="preserve"><value>Recipe</value></data>
+  <data name="Admin_Suspend" xml:space="preserve"><value>Suspend</value></data>
+  <data name="Admin_SuspendNamed" xml:space="preserve"><value>Suspend {0}</value></data>
+  <data name="Admin_UserId" xml:space="preserve"><value>Person id to suspend</value></data>
+  <data name="Admin_NoSuspended" xml:space="preserve"><value>Nobody is suspended.</value></data>
+  <data name="Admin_Restore" xml:space="preserve"><value>Restore</value></data>
+  <data name="Admin_RestoreNamed" xml:space="preserve"><value>Restore {0}</value></data>
+  <data name="Admin_Suspended" xml:space="preserve"><value>{0} is suspended and hidden from everyone else.</value></data>
+  <data name="Admin_Restored" xml:space="preserve"><value>Restored.</value></data>
+  <data name="Admin_Rebuild" xml:space="preserve"><value>Rebuild the catalog now</value></data>
+  <data name="Admin_Rebuilt" xml:space="preserve"><value>Rebuilt: {0} roasters, {1} beans.</value></data>
+  <data name="Admin_NoEntries" xml:space="preserve"><value>The catalog is empty.</value></data>
+  <data name="Admin_EntryLine" xml:space="preserve"><value>{0} · {1} people</value></data>
+  <data name="Admin_Kind_bean" xml:space="preserve"><value>Bean</value></data>
+  <data name="Admin_Kind_roaster" xml:space="preserve"><value>Roaster</value></data>
+  <data name="Admin_Merge" xml:space="preserve"><value>Merge</value></data>
+  <data name="Admin_MergeNamed" xml:space="preserve"><value>Merge {0} into another entry</value></data>
+  <data name="Admin_Merging" xml:space="preserve"><value>Merging {0}: choose the entry to merge it into.</value></data>
+  <data name="Admin_MergeHere" xml:space="preserve"><value>Merge here</value></data>
+  <data name="Admin_MergeIntoNamed" xml:space="preserve"><value>Merge {0} into {1}</value></data>
+  <data name="Admin_Merged" xml:space="preserve"><value>{0} was merged into {1}.</value></data>
+  <data name="Admin_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Admin_HideNamed" xml:space="preserve"><value>Hide {0} from the catalog</value></data>
+  <data name="Admin_Hidden" xml:space="preserve"><value>{0} is hidden.</value></data>
 </root>

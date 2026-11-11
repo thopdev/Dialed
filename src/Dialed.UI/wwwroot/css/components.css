@@ -2678,3 +2678,31 @@ a.people-row-name {
 #stock-filter .dialed-section-link {
     white-space: nowrap;
 }
+
+/* The owner's moderation screen */
+.admin-report,
+.admin-person,
+.admin-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+}
+
+.admin-text {
+    display: grid;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-note {
+    font-style: italic;
+}
+
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    justify-content: flex-end;
+}

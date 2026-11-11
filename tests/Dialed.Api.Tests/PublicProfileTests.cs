@@ -484,4 +484,22 @@ public sealed class PublicProfileTests(ModeratedApp app) : IClassFixture<Moderat
         (await Admin().GetFromJsonAsync<SuspendedDto[]>("/admin/users/suspended", Ct))!.ShouldNotContain(s => s.UserId == one.User.Id);
         (await Admin(key: null).GetAsync("/admin/users/suspended", Ct)).StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task The_admin_endpoints_are_rate_limited_so_the_key_cannot_be_guessed()
+    {
+        await using var limited = app.WithWebHostBuilder(b => b.UseSetting("Protection:AdminRequestsPerMinute", "3"));
+        using var client = limited.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Admin-Key", "wrong");
+        var statuses = new List<HttpStatusCode>();
+
+        for (var i = 0; i < 8; i++)
+        {
+            using var response = await client.GetAsync("/admin/reports", Ct);
+            statuses.Add(response.StatusCode);
+        }
+
+        statuses.Take(3).ShouldAllBe(s => s == HttpStatusCode.Unauthorized);
+        statuses.ShouldContain(HttpStatusCode.TooManyRequests);
+    }
 }
