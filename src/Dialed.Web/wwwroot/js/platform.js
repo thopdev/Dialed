@@ -187,6 +187,27 @@ export async function saveFile(fileName, contentType, bytes) {
     return true;
 }
 
+// Draws an SVG (as a data URL image, so nothing leaves the device) on a canvas and returns the PNG bytes, or null when the browser cannot.
+export async function svgToPng(svg, width, height) {
+    const image = new Image();
+    image.decoding = 'async';
+    const loaded = new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; });
+    image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    try {
+        await loaded;
+    } catch {
+        return null;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+    context.drawImage(image, 0, 0, width, height);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    return blob ? new Uint8Array(await blob.arrayBuffer()) : null;
+}
+
 // ---- Passkeys (same conversion as the spike, ADR-0010) --------------------------------------------
 
 const b64urlToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(s.length / 4) * 4, '=')), c => c.charCodeAt(0)).buffer;

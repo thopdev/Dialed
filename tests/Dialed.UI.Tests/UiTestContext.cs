@@ -62,6 +62,7 @@ public abstract class UiTestContext : BunitContext
     protected TestAccountDataServer DataServer { get; } = new();
 
     protected TestFiles ExportedFiles { get; } = new();
+    protected TestRenderer ImageRenderer { get; } = new();
 
     /// <summary>Collects the error reports the app would send.</summary>
     protected TestErrorSink ErrorSink { get; } = new();
@@ -118,6 +119,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton(new AccountApi(new HttpClient(Accounts) { BaseAddress = new Uri("https://api.test/") }));
         Services.AddSingleton<AccountService>();
         Services.AddSingleton<IFileExport>(ExportedFiles);
+        Services.AddSingleton<IImageRenderer>(ImageRenderer);
         Services.AddSingleton(new AccountDataApi(new HttpClient(DataServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<AccountDataService>();
         Services.AddSingleton<PasskeyManager>();
@@ -260,6 +262,20 @@ public abstract class UiTestContext : BunitContext
         {
             Reports.Add(report);
             return Task.CompletedTask;
+        }
+    }
+
+    protected sealed class TestRenderer : IImageRenderer
+    {
+        public List<(string Svg, int Width, int Height)> Rendered { get; } = [];
+
+        /// <summary>Pretend the browser cannot draw the picture.</summary>
+        public bool Fail { get; set; }
+
+        public Task<byte[]?> SvgToPngAsync(string svg, int width, int height)
+        {
+            Rendered.Add((svg, width, height));
+            return Task.FromResult<byte[]?>(Fail ? null : [0x89, 0x50, 0x4E, 0x47]);
         }
     }
 

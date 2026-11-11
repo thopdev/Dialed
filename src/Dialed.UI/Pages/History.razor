@@ -18,6 +18,8 @@
 @inject HouseholdManager Households
 @inject TimeProvider Time
 @inject NavigationManager Navigation
+@inject Dialed.Client.Platform.IFileExport Files
+@inject Dialed.Client.Platform.IImageRenderer Images
 
 <ListDetailLayout HasSelection="@(Id is not null)">
     <List>
@@ -151,6 +153,9 @@
                 <Actions>
                     @if (IsMine(current))
                     {
+                    <button type="button" id="history-share-card" class="dialed-icon-button" aria-label="@L["Card_Share"]" title="@L["Card_Share"]" disabled="@sharing" @onclick="ShareCardAsync">
+                        <FluentIcon Value="@(new Icons.Regular.Size24.Share())" Color="Color.Custom" CustomColor="currentColor" />
+                    </button>
                         <button type="button" id="history-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
                             <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
                         </button>
@@ -257,6 +262,7 @@
     private bool showFilters;
     private Dictionary<string, string> memberNames = [];
     private bool confirmingDelete;
+    private bool sharing;
     private string? error;
 
     [Parameter]
@@ -366,6 +372,44 @@
         (int Value, string Low, string High)[] axes =
             [(taste.Acidity, "Taste_Sour", "Taste_Bitter"), (taste.Strength, "Taste_Weak", "Taste_Strong"), (taste.Body, "Taste_Thin", "Taste_Heavy"), (taste.Sweetness, "Taste_Flat", "Taste_Sweet")];
         return axes.Where(a => a.Value != 0).Select(a => $"{L[a.Value < 0 ? a.Low : a.High].Value} {Math.Abs(a.Value)}");
+    }
+
+    /// <summary>Makes the picture of this brew (bean, method, numbers, rating) and hands it to the share sheet or a download.</summary>
+    private async Task ShareCardAsync()
+    {
+        if (current is null || sharing)
+        {
+            return;
+        }
+
+        sharing = true;
+        error = null;
+        try
+        {
+            var bean = beans.FirstOrDefault(b => b.Id == bags.FirstOrDefault(g => g.Id == current.BagId)?.BeanId);
+            var origin = bean is null ? null : string.Join(", ", new[] { bean.Origin.Country, bean.Origin.Region }.Where(p => !string.IsNullOrWhiteSpace(p)));
+            var parameters = comparison.Where(r => r.Actual is not null).Select(r => (ParameterLabel(r.Parameter), Format(r.Parameter, r.Actual))).ToList();
+            var svg = Dialed.UI.Cards.BrewCard.Build(new Dialed.UI.Cards.BrewCardContent(
+                BeanOf(current),
+                origin,
+                current.Rating,
+                MethodName(current.MethodCode),
+                parameters,
+                bean is { TastingNotes.Count: > 0 } ? string.Join(" · ", bean.TastingNotes) : current.Notes,
+                string.Format(L["Card_Footer"].Value, current.BrewedAt.ToLocalTime().ToString("d MMM yyyy", CultureInfo.CurrentCulture))));
+            var png = await Images.SvgToPngAsync(svg, Dialed.UI.Cards.BrewCard.Width, Dialed.UI.Cards.BrewCard.Height);
+            if (png is null)
+            {
+                error = L["Card_Failed"].Value;
+                return;
+            }
+
+            await Files.SaveAsync("dialed-brew.png", "image/png", png);
+        }
+        finally
+        {
+            sharing = false;
+        }
     }
 
     private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
