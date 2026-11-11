@@ -11,9 +11,9 @@ public sealed record PushSubscribeRequest(string Endpoint, string P256dh, string
 
 public sealed record PushUnsubscribeRequest(string Endpoint);
 
-public sealed record PushSettingsDto(bool Follows, bool Household, int Devices);
+public sealed record PushSettingsDto(bool Follows, bool Household, int Devices, bool LowStock = false, bool Peak = false);
 
-public sealed record PushSettingsRequest(bool Follows, bool Household);
+public sealed record PushSettingsRequest(bool Follows, bool Household, bool LowStock = false, bool Peak = false, Dialed.Domain.Inventory.InventorySettings? Inventory = null, string? TimeZone = null);
 
 public static class PushEndpoints
 {
@@ -38,6 +38,8 @@ public static class PushEndpoints
         services.AddSingleton<IPushSender>(sp => sp.GetRequiredService<IOptions<PushOptions>>().Value.IsConfigured
             ? ActivatorUtilities.CreateInstance<WebPushSender>(sp)
             : new NoPushSender());
+        services.AddSingleton<StockAlertService>();
+        services.AddHostedService<StockAlertWorker>();
         services.AddSingleton<PushNotifier>();
         services.AddSingleton<INotifier>(sp => sp.GetRequiredService<PushNotifier>());
         return services;
@@ -80,18 +82,31 @@ public static class PushEndpoints
         {
             var userId = UserId(user);
             var settings = await store.GetSettingsAsync(userId, ct);
-            return Results.Ok(new PushSettingsDto(settings.Follows, settings.Household, (await store.ListAsync(userId, ct)).Count));
+            return Results.Ok(new PushSettingsDto(settings.Follows, settings.Household, (await store.ListAsync(userId, ct)).Count, settings.LowStock, settings.Peak));
         });
 
         group.MapPut("/settings", async (PushSettingsRequest request, ClaimsPrincipal user, IPushStore store, CancellationToken ct) =>
         {
             var userId = UserId(user);
-            await store.SaveSettingsAsync(userId, new PushSettings(request.Follows, request.Household), ct);
-            return Results.Ok(new PushSettingsDto(request.Follows, request.Household, (await store.ListAsync(userId, ct)).Count));
+            if (!ValidInventory(request.Inventory))
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]> { ["inventory"] = ["Those inventory settings are not valid."] });
+            }
+
+            // Only a time zone this server knows is kept; the stock alerts fall back to UTC without one.
+            var zone = request.TimeZone is { Length: > 0 and <= 64 } id && TimeZoneInfo.TryFindSystemTimeZoneById(id, out _) ? id : null;
+            await store.SaveSettingsAsync(userId, new PushSettings(request.Follows, request.Household, request.LowStock, request.Peak, request.Inventory, zone), ct);
+            return Results.Ok(new PushSettingsDto(request.Follows, request.Household, (await store.ListAsync(userId, ct)).Count, request.LowStock, request.Peak));
         });
 
         return endpoints;
     }
+
+    private static bool ValidInventory(Dialed.Domain.Inventory.InventorySettings? inventory) =>
+        inventory is null
+        || (inventory.LowStockG is >= 0m and <= 100_000m
+            && inventory.RestWindows is { } windows
+            && new[] { windows.Light, windows.Medium, windows.Dark }.All(w => w is { RestDays: >= 0 and <= 365, PeakEndDays: >= 0 and <= 1000 }));
 
     private static bool IsValid(PushSubscribeRequest request) =>
         request is not null
