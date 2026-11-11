@@ -215,7 +215,7 @@
 
             @if (current.Origin.Country is { } originCountry)
             {
-                <OriginMap Id="bean-origin-map" Origins="@([(originCountry, 1)])" />
+                <OriginMap Id="bean-origin-map" Zoom="true" Origins="@([(originCountry, 1)])" />
             }
 
             @if (current.CopiedFrom is { } copiedFrom)
