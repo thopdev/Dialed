@@ -28,6 +28,9 @@ public sealed class SecurityTests(PasskeyApp app) : IClassFixture<PasskeyApp>
         "POST /auth/recover/options", // needs a recovery or email code
         "POST /auth/recover",
         "POST /admin/invites", // needs the admin key header
+        "POST /admin/users/{id}/suspend", // needs the admin key header
+        "POST /admin/users/{id}/restore",
+        "GET /admin/reports",
         "PUT /photo-blobs/{householdId}/{file}", // local stand-in for Blob Storage: the signed URL is the credential, like a SAS
         "GET /photo-blobs/{householdId}/{file}",
     ];

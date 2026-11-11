@@ -144,7 +144,7 @@
     <div class="dialed-field">
         <label for="brew-visibility">@L["Bean_Visibility"]</label>
         <select id="brew-visibility" @bind="visibility">
-            @foreach (var option in Enum.GetValues<Visibility>())
+            @foreach (var option in Enum.GetValues<Visibility>().Where(v => v != Visibility.Public))
             {
                 <option value="@option">@L[$"Visibility_{option}"]</option>
             }

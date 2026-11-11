@@ -1,0 +1,70 @@
+@using Dialed.Client.Account
+@using Dialed.Client.Friends
+@inject FriendsApi Friends
+@inject IStringLocalizer<Strings> L
+
+@* Find people with a public profile by name (#106). A search needs at least two letters; it runs when asked, not on every key. *@
+<section id="people-find" class="dialed-people-section" aria-labelledby="people-find-title">
+    <h2 id="people-find-title">@L["People_FindTitle"]</h2>
+    <form class="dialed-form" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+        <div class="dialed-field">
+            <label for="people-find-input">@L["People_FindLabel"]</label>
+            <input id="people-find-input" type="search" maxlength="60" autocomplete="off" aria-describedby="people-find-hint" @bind="query" @bind:event="oninput" />
+            <p id="people-find-hint" class="dialed-muted">@L["People_FindHint"]</p>
+        </div>
+        <div class="dialed-form-actions">
+            <button id="people-find-submit" type="submit" class="dialed-button" disabled="@(busy || query.Trim().Length < 2)">@L["People_FindSearch"]</button>
+        </div>
+    </form>
+
+    @if (failed)
+    {
+        <p id="people-find-offline" class="dialed-muted" role="status">@L["People_Offline"]</p>
+    }
+    else if (results is not null)
+    {
+        @if (results.Count == 0)
+        {
+            <p id="people-find-none" class="dialed-muted" role="status">@L["People_FindNone"]</p>
+        }
+        else
+        {
+            <ul id="people-find-results" class="dialed-list">
+                @foreach (var person in results)
+                {
+                    <li><a class="people-find-row dialed-row" href="@($"people/{person.UserId}")"><Avatar Name="@person.DisplayName" Size="40" /> <span class="dialed-row-title">@person.DisplayName</span></a></li>
+                }
+            </ul>
+        }
+    }
+</section>
+
+@code {
+    private string query = "";
+    private bool busy;
+    private bool failed;
+    private IReadOnlyList<Person>? results;
+
+    private async Task SearchAsync()
+    {
+        if (query.Trim().Length < 2)
+        {
+            return;
+        }
+
+        busy = true;
+        failed = false;
+        try
+        {
+            results = await Friends.SearchPeopleAsync(query.Trim());
+        }
+        catch (Exception e) when (e is AccountApiException or AccountRefusedException)
+        {
+            failed = true;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

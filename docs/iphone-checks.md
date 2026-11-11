@@ -52,6 +52,12 @@ Needs a deployed API with real VAPID keys (#260), or the API run locally and rea
 - [ ] Someone joins Alice's household with an invite: Alice gets "New household member"; tapping it opens Settings at the household.
 - [ ] Switching a type off stops it at once; **Turn off on this device** stops all of them; signing out does too.
 - [ ] Denying the permission shows how to allow it in Settings; nothing breaks.
+## Public profiles (#106)
+- [ ] Settings > Profile: the **Public profile** switch is off by default; switching it on and off works with one tap and shows the status.
+- [ ] A bean's visibility picker offers **Everyone on Dialed** with the explanation under it; brews do not.
+- [ ] People > **Find people**: the keyboard's Search key submits; results open the profile; at least two letters are needed.
+- [ ] A stranger's profile shows name, beans and recipes only (no brews tab), **Follow** sends a request, **Report** opens the form and confirms.
+- [ ] Switching the profile off hides it from search and from a stranger's phone at once.
 
 ## Accessibility (#49)
 - [ ] VoiceOver reads every control with a name, in light and dark mode: Home, Brew, Beans, Recipes, History, Settings, People, Scan.

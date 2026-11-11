@@ -15,7 +15,8 @@ public sealed record FriendCodeDto(string Code);
 
 public sealed record FollowRequest(string Code);
 
-public sealed record FriendProfileDto(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers);
+/// <param name="Relation"><c>self</c>, <c>household</c>, <c>following</c>, <c>requested</c> (asked, not answered) or <c>none</c> (a stranger looking at a public profile, #106).</param>
+public sealed record FriendProfileDto(string UserId, string DisplayName, int Beans, int Recipes, int Brews, int Followers, string Relation = "following");
 
 /// <summary>One line of the friends feed (#78): a brew or a new bean someone I follow shares with me.</summary>
 /// <param name="Kind"><c>brew</c> or <c>bean</c>.</param>
@@ -205,7 +206,7 @@ public sealed class InMemoryFriendStore : IFriendStore
 /// Following with approval. There is no search for people: you follow someone by their friend code, they accept or decline, and
 /// either side can end it. A blocked person cannot ask again and never learns that they are blocked.
 /// </summary>
-public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyncStore sync, TimeProvider time, Push.INotifier notifier)
+public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyncStore sync, TimeProvider time, Push.INotifier notifier, PublicProfiles.IPublicProfileStore profiles)
 {
     private const string CodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -227,9 +228,15 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
     public async Task<FriendCodeDto> RotateCodeAsync(string userId, CancellationToken ct = default) =>
         new(await store.RotateCodeAsync(userId, NewCode, ct));
 
-    public async Task<FriendResult<PersonDto>> FollowAsync(string userId, string code, CancellationToken ct = default)
+    public async Task<FriendResult<PersonDto>> FollowAsync(string userId, string code, CancellationToken ct = default) =>
+        await RequestFollowAsync(userId, string.IsNullOrWhiteSpace(code) ? null : await store.FindUserByCodeAsync(code, ct), ct);
+
+    /// <summary>Asks to follow someone whose public profile is on, without their friend code (#106). Anyone else answers like an unknown code.</summary>
+    public async Task<FriendResult<PersonDto>> FollowPublicAsync(string userId, string targetId, CancellationToken ct = default) =>
+        await RequestFollowAsync(userId, (await profiles.GetAsync(targetId, ct)).IsOpen ? targetId : null, ct);
+
+    private async Task<FriendResult<PersonDto>> RequestFollowAsync(string userId, string? targetId, CancellationToken ct)
     {
-        var targetId = string.IsNullOrWhiteSpace(code) ? null : await store.FindUserByCodeAsync(code, ct);
         if (targetId is null || await users.FindByIdAsync(targetId, ct) is not { } target)
         {
             return new(FriendOutcome.NotFound, Message: "That friend code is not valid.");
@@ -350,15 +357,29 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         }
 
         var relationship = await RelationshipAsync(viewerId, ownerId, ct);
+        var profile = await profiles.GetAsync(ownerId, ct);
+        if (profile.Suspended && relationship != Relationship.Author && !owner.AllHouseholdIds.Any(viewer.IsMemberOf))
+        {
+            // A suspended person is hidden from everyone but themselves and their household (#106).
+            relationship = Relationship.Blocked;
+        }
+        else if (relationship == Relationship.Stranger && profile.IsOpen)
+        {
+            relationship = Relationship.PublicViewer;
+        }
+
         var scopes = owner.AllHouseholdIds
-            .Select(h => new SharedScope(h, relationship == Relationship.Stranger && viewer.IsMemberOf(h) ? Relationship.HouseholdMember : relationship))
+            .Select(h => new SharedScope(h, relationship is Relationship.Stranger or Relationship.PublicViewer && viewer.IsMemberOf(h) ? Relationship.HouseholdMember : relationship))
             .ToList();
         return (owner, scopes);
     }
 
-    private static bool MayBrowse(Relationship relationship) => relationship is Relationship.Author or Relationship.HouseholdMember or Relationship.AcceptedFollower;
+    private static bool MayBrowse(Relationship relationship) => relationship is Relationship.Author or Relationship.HouseholdMember or Relationship.AcceptedFollower or Relationship.PublicViewer;
 
     private static bool MayBrowse(IReadOnlyList<SharedScope> scopes) => scopes.Any(s => MayBrowse(s.Reader));
+
+    /// <summary>A stranger looking at a public profile: only public beans and recipes, no brews and no follower count.</summary>
+    private static bool PublicOnly(IReadOnlyList<SharedScope> scopes) => scopes.All(s => s.Reader == Relationship.PublicViewer);
 
     /// <summary>Header of a friend's profile with counts of what is shared with the viewer. Strangers and blocked people get nothing, not even a hint the person exists.</summary>
     public async Task<FriendProfileDto?> ProfileAsync(string viewerId, string ownerId, CancellationToken ct = default)
@@ -369,14 +390,23 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
             return null;
         }
 
+        var publicOnly = PublicOnly(scopes);
         var counts = new Dictionary<string, int>();
         foreach (var table in SharedTables)
         {
-            counts[table] = (await sync.ListSharedAsync(scopes, ownerId, table, 0, 1, ct)).Total;
+            counts[table] = publicOnly && !VisibilityRules.AllowsPublic(table) ? 0 : (await sync.ListSharedAsync(scopes, ownerId, table, 0, 1, ct)).Total;
         }
 
-        var followers = (await store.FollowsAsync(ownerId, asFollowee: true, ct)).Count(f => f.Status == FollowStatus.Accepted);
-        return new FriendProfileDto(owner.Id, owner.DisplayName, counts["beans"], counts["recipes"], counts["brews"], followers);
+        var followers = publicOnly ? 0 : (await store.FollowsAsync(ownerId, asFollowee: true, ct)).Count(f => f.Status == FollowStatus.Accepted);
+        var relation = viewerId == ownerId ? "self"
+            : !publicOnly && scopes.Any(s => s.Reader == Relationship.HouseholdMember) ? "household"
+            : (await store.FindFollowAsync(viewerId, ownerId, ct))?.Status switch
+            {
+                FollowStatus.Accepted => "following",
+                FollowStatus.Pending => "requested",
+                _ => "none",
+            };
+        return new FriendProfileDto(owner.Id, owner.DisplayName, counts["beans"], counts["recipes"], counts["brews"], followers, relation);
     }
 
     /// <summary>One page of what the owner shares with the viewer, newest first. <c>null</c> when the viewer may not browse or the table is not shareable.</summary>
@@ -388,7 +418,7 @@ public sealed class FriendService(IUserDirectory users, IFriendStore store, ISyn
         }
 
         var (owner, scopes) = await ReaderAsync(viewerId, ownerId, ct);
-        if (owner is null || !MayBrowse(scopes))
+        if (owner is null || !MayBrowse(scopes) || (PublicOnly(scopes) && !VisibilityRules.AllowsPublic(table)))
         {
             return null;
         }

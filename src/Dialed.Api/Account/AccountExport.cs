@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Dialed.Api.Account;
 
-public sealed record ExportProfile(string UserId, string DisplayName, string? Email, string HouseholdId);
+public sealed record ExportProfile(string UserId, string DisplayName, string? Email, string HouseholdId, bool PublicProfile = false);
 
 public sealed record AccountExport(
     int FormatVersion,
@@ -21,7 +21,7 @@ public sealed record AccountExport(
     IReadOnlyList<PersonDto> Followers);
 
 /// <summary>Everything one person made, as one JSON document they can keep or move (#36). Photos are included as records that link to their files.</summary>
-public sealed class AccountExporter(IUserDirectory users, ISyncStore sync, FriendService friends, TimeProvider time)
+public sealed class AccountExporter(IUserDirectory users, ISyncStore sync, FriendService friends, PublicProfiles.IPublicProfileStore publicProfiles, TimeProvider time)
 {
     public const int FormatVersion = 1;
 
@@ -47,7 +47,7 @@ public sealed class AccountExporter(IUserDirectory users, ISyncStore sync, Frien
         return new AccountExport(
             FormatVersion,
             time.GetUtcNow(),
-            new ExportProfile(user.Id, user.DisplayName, user.Email, user.HouseholdId),
+            new ExportProfile(user.Id, user.DisplayName, user.Email, user.HouseholdId, (await publicProfiles.GetAsync(userId, ct)).Enabled),
             items,
             await friends.FollowingAsync(userId, ct),
             await friends.FollowersAsync(userId, ct));
@@ -64,6 +64,7 @@ public sealed class AccountDeleter(
     IHouseholdStore households,
     IFriendStore friends,
     Push.IPushStore push,
+    PublicProfiles.IPublicProfileStore publicProfiles,
     IRefreshTokenStore sessions,
     ISyncStore sync)
 {
@@ -98,6 +99,7 @@ public sealed class AccountDeleter(
 
         await friends.RemoveUserAsync(userId, ct);
         await push.RemoveUserAsync(userId, ct);
+        await publicProfiles.RemoveUserAsync(userId, ct);
         await sessions.RevokeUserAsync(userId, ct);
         if (await accounts.FindByIdAsync(userId) is { } account)
         {

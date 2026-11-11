@@ -23,6 +23,9 @@ public static class FriendEndpoints
         group.MapPost("/follow", async (FollowRequest request, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
             Map(await service.FollowAsync(UserId(user), request.Code, ct)));
 
+        group.MapPost("/{userId}/follow", async (string userId, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
+            Map(await service.FollowPublicAsync(UserId(user), userId, ct)));
+
         group.MapGet("/requests", async (ClaimsPrincipal user, FriendService service, CancellationToken ct) => Results.Ok(await service.RequestsAsync(UserId(user), ct)));
         group.MapPost("/requests/{followerId}/accept", async (string followerId, ClaimsPrincipal user, FriendService service, CancellationToken ct) =>
             Map(await service.AcceptAsync(UserId(user), followerId, ct)));
