@@ -63,6 +63,7 @@ In Development the AppHost sets `Seed__Enabled=true`; every `IDevelopmentSeeder`
 - [Product & delivery plan](docs/PLAN.md): vision, scope, milestones, risks, open questions
 - [Architecture](docs/architecture.md): components, domain model, sync, auth, AI, Azure resources, MAUI readiness
 - [Architecture decisions (ADRs)](docs/adr/README.md)
+- [Documentation index](docs/README.md): every doc by topic (features, security, beta, real-device checks)
 - [Backlog](https://github.com/thopdev/Dialed/issues) and [milestones](https://github.com/thopdev/Dialed/milestones)
 
 ## Stack
