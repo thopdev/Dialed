@@ -2547,7 +2547,37 @@ a.people-row-name {
     min-height: var(--dialed-touch-target);
 }
 
-/* ---- Barcode scan (#104) ---------------------------------------------------------------------- */
+/* Public profiles and reports (#106) */
+#friend-actions {
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: var(--dialed-space-3);
+}
+
+.report:has(.report-form) {
+    flex: 1 1 100%;
+}
+
+.report-form {
+    width: 100%;
+}
+
+.friend-row:has(.report-form) {
+    flex-wrap: wrap;
+}
+
+.friend-row .report-form {
+    flex: 1 1 100%;
+}
+
+.people-find-row {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    text-decoration: none;
+}
+
 
 .dialed-barcode-video {
     display: block;
@@ -2593,33 +2623,4 @@ a.people-row-name {
     margin: var(--dialed-space-3) 0;
     padding: 0;
     list-style: none;
-/* Public profiles and reports (#106) */
-#friend-actions {
-    flex-wrap: wrap;
-    align-items: center;
-    margin-bottom: var(--dialed-space-3);
-}
-
-.report:has(.report-form) {
-    flex: 1 1 100%;
-}
-
-.report-form {
-    width: 100%;
-}
-
-.friend-row:has(.report-form) {
-    flex-wrap: wrap;
-}
-
-.friend-row .report-form {
-    flex: 1 1 100%;
-}
-
-.people-find-row {
-    display: flex;
-    align-items: center;
-    gap: var(--dialed-space-3);
-    min-height: var(--dialed-touch-target);
-    text-decoration: none;
 }
