@@ -1003,6 +1003,7 @@
   <data name="Card_Share" xml:space="preserve"><value>Share a picture of this brew</value></data>
   <data name="Card_Failed" xml:space="preserve"><value>The picture could not be made on this device.</value></data>
   <data name="Card_Footer" xml:space="preserve"><value>Brewed {0} with Dialed</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: show beans</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Flavour wheel</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Tasting notes by flavour: {0}</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruity</value></data>

@@ -15,7 +15,8 @@ public sealed record BeanFilter(
     string? RoasterId = null,
     string? Process = null,
     RoastLevel? RoastLevel = null,
-    bool? InStock = null);
+    bool? InStock = null,
+    string? Country = null);
 
 public static class BeanQuery
 {
@@ -25,6 +26,27 @@ public static class BeanQuery
 
     public static bool IsKnownProcess(string? process) =>
         process is not null && KnownProcesses.Contains(process, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// What identifies a bean's origin country in a filter: the ISO code when the text is a known country ("Ethiopia" and "Ethiopië" are both <c>ET</c>),
+    /// otherwise the text as typed. <c>null</c> without a country.
+    /// </summary>
+    public static string? CountryKey(Bean bean)
+    {
+        ArgumentNullException.ThrowIfNull(bean);
+        var text = bean.Origin.Country?.Trim();
+        return string.IsNullOrEmpty(text) ? null : Geography.CountryCatalog.Find(text)?.Iso2 ?? text;
+    }
+
+    /// <summary>The origin countries on the given beans, one entry per country (key and the name as typed first), sorted by name.</summary>
+    public static IReadOnlyList<(string Key, string Name)> Countries(IEnumerable<Bean> beans)
+    {
+        ArgumentNullException.ThrowIfNull(beans);
+        return [.. beans.Where(b => !b.Deleted && CountryKey(b) is not null)
+            .GroupBy(b => CountryKey(b)!, StringComparer.OrdinalIgnoreCase)
+            .Select(g => (g.Key, Name: g.First().Origin.Country!.Trim()))
+            .OrderBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase)];
+    }
 
     /// <summary>A bean is in stock while at least one of its bags is not finished.</summary>
     public static bool HasStock(string beanId, IEnumerable<Bag> bags) =>
@@ -52,6 +74,11 @@ public static class BeanQuery
         if (filter.RoastLevel is { } level)
         {
             query = query.Where(bean => bean.RoastLevel == level);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Country))
+        {
+            query = query.Where(bean => string.Equals(CountryKey(bean), filter.Country.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
         if (filter.InStock is { } inStock)

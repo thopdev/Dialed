@@ -1002,6 +1002,7 @@
   <data name="Card_Share" xml:space="preserve"><value>Deel een plaatje van deze zetting</value></data>
   <data name="Card_Failed" xml:space="preserve"><value>Het plaatje kon op dit apparaat niet worden gemaakt.</value></data>
   <data name="Card_Footer" xml:space="preserve"><value>Gezet op {0} met Dialed</value></data>
+  <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: toon bonen</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Smaakwiel</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Smaaknoten per smaak: {0}</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruitig</value></data>
