@@ -29,6 +29,13 @@ export async function initialize(dotNetRef) {
                     }
                 });
             });
+            // A tapped notification asks the running app to open its screen (#100).
+            navigator.serviceWorker.addEventListener('message', event => {
+                const data = event.data;
+                if (data && data.type === 'dialed-navigate' && typeof data.url === 'string' && data.url && window.Blazor) {
+                    window.Blazor.navigateTo(data.url);
+                }
+            });
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (!reloading) {
                     reloading = true;

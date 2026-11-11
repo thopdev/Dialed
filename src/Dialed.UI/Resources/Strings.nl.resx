@@ -849,6 +849,22 @@
   <data name="Scan_DiscardNamed" xml:space="preserve"><value>{0} weggooien</value></data>
   <data name="Scan_NoteReady" xml:space="preserve"><value>Scans om te controleren: {0}</value></data>
   <data name="Scan_NoteWaiting" xml:space="preserve"><value>Etiketscans die op een verbinding wachten: {0}</value></data>
+  <data name="Push_Title" xml:space="preserve"><value>Meldingen</value></data>
+  <data name="Push_Explain" xml:space="preserve"><value>Krijg een melding als iemand je wil volgen, je verzoek accepteert of lid wordt van je huishouden. Een melding zegt alleen wie en wat, verder niets.</value></data>
+  <data name="Push_SignedOut" xml:space="preserve"><value>Meld je aan om meldingen te krijgen.</value></data>
+  <data name="Push_Unsupported" xml:space="preserve"><value>Deze browser kan geen meldingen ontvangen.</value></data>
+  <data name="Push_NotInstalled" xml:space="preserve"><value>Op iPhone en iPad werken meldingen pas als Dialed op je beginscherm staat. Zet het daar eerst neer (zie "Zet Dialed op je beginscherm" hieronder) en open het dan vanaf daar.</value></data>
+  <data name="Push_ServerUnavailable" xml:space="preserve"><value>Meldingen zijn nu niet beschikbaar. Probeer het later opnieuw.</value></data>
+  <data name="Push_Denied" xml:space="preserve"><value>Meldingen zijn geblokkeerd voor Dialed. Sta ze toe in de instellingen van je browser of toestel en kom dan hier terug.</value></data>
+  <data name="Push_Off" xml:space="preserve"><value>Meldingen staan uit op dit toestel.</value></data>
+  <data name="Push_Allow" xml:space="preserve"><value>Meldingen toestaan</value></data>
+  <data name="Push_On" xml:space="preserve"><value>Meldingen staan aan op dit toestel.</value></data>
+  <data name="Push_Switches" xml:space="preserve"><value>Laat me weten wanneer</value></data>
+  <data name="Push_Follows" xml:space="preserve"><value>Iemand me wil volgen of mijn verzoek accepteert</value></data>
+  <data name="Push_Household" xml:space="preserve"><value>Iemand lid wordt van mijn huishouden</value></data>
+  <data name="Push_Disable" xml:space="preserve"><value>Uitzetten op dit toestel</value></data>
+  <data name="Privacy_Push_Title" xml:space="preserve"><value>Meldingen</value></data>
+  <data name="Privacy_Push" xml:space="preserve"><value>Als je meldingen toestaat, geeft je browser ons een adres bij de pushdienst voor dit toestel. Dat adres bewaren we bij je account om je te kunnen waarschuwen; het wordt verwijderd als je meldingen uitzet, uitlogt of je account verwijdert. Een melding bevat alleen een naam en wat er gebeurd is, en wordt versleuteld verstuurd: de pushdienst (Apple, Google of Mozilla) kan hem niet lezen.</value></data>
   <data name="Barcode_Title" xml:space="preserve"><value>Barcode scannen</value></data>
   <data name="Barcode_Button" xml:space="preserve"><value>Barcode scannen</value></data>
   <data name="Barcode_Hint" xml:space="preserve"><value>Houd de barcode voor de camera. Hij wordt op dit apparaat gelezen; er wordt niets verstuurd.</value></data>

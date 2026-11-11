@@ -472,6 +472,70 @@ export function crossTabLockRelease(id) {
     else entry?.abort.abort();
 }
 
+// ---- Push notifications (#100) --------------------------------------------------------------
+
+function isIos() {
+    return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+}
+
+// "supported", "notInstalled" (iPhone or iPad in a Safari tab) or "unsupported".
+export function pushSupport() {
+    const capable = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    if (capable) return 'supported';
+    return isIos() && !isStandalone() ? 'notInstalled' : 'unsupported';
+}
+
+export function pushPermission() {
+    return 'Notification' in window ? Notification.permission : 'denied';
+}
+
+// "ready" never settles when the service worker could not be registered; give up instead of leaving the button spinning.
+async function pushRegistration() {
+    return await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('The service worker is not ready.')), 8000))
+    ]);
+}
+
+function pushDevice(subscription) {
+    if (!subscription) return null;
+    const json = subscription.toJSON();
+    return { endpoint: json.endpoint, p256dh: json.keys?.p256dh ?? '', auth: json.keys?.auth ?? '' };
+}
+
+export async function pushGetSubscription() {
+    if (pushSupport() !== 'supported') return null;
+    return pushDevice(await (await pushRegistration()).pushManager.getSubscription());
+}
+
+function urlBase64ToBytes(base64) {
+    const padded = (base64 + '='.repeat((4 - (base64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(padded);
+    return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+// Must run from a tap: iOS only shows the permission prompt for a user gesture.
+export async function pushSubscribe(publicKey) {
+    if (pushSupport() !== 'supported') return { device: null, permission: 'default' };
+    const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+    if (permission !== 'granted') return { device: null, permission };
+    const registration = await pushRegistration();
+    const subscription = (await registration.pushManager.getSubscription())
+        ?? await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToBytes(publicKey) });
+    return { device: pushDevice(subscription), permission };
+}
+
+export async function pushUnsubscribe() {
+    if (pushSupport() !== 'supported') return null;
+    const subscription = await (await pushRegistration()).pushManager.getSubscription();
+    if (!subscription) return null;
+    const endpoint = subscription.endpoint;
+    await subscription.unsubscribe();
+    return endpoint;
 // ---- Barcode scan (#104) -----------------------------------------------------------------------
 // A live camera in the <video> element with the given id, read by a self-hosted zxing-wasm (wwwroot/lib/zxing). Nothing is loaded from a CDN.
 

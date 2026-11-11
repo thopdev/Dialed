@@ -27,6 +27,7 @@ internal static class PlatformServices
         services.AddSingleton<IDeviceInfo, BrowserDeviceInfo>();
         services.AddSingleton<IWakeLock, BrowserWakeLock>();
         services.AddSingleton<ICrossTabLock, BrowserCrossTabLock>();
+        services.AddSingleton<IPushNotifications, BrowserPushNotifications>();
         services.AddSingleton<IBarcodeScanner, BrowserBarcodeScanner>();
         services.AddSingleton<ISoundCue, BrowserSoundCue>();
         services.AddSingleton<BrowserAppLifecycle>();

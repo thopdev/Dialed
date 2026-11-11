@@ -51,6 +51,7 @@ builder.Services.AddDialedAccount(
     sp => new HouseholdApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
     sp => new AccountDataApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()),
     sp => new FriendsApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
+builder.Services.AddDialedPush(sp => new Dialed.Client.Push.PushApi(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>()));
 builder.Services.AddDialedScan(sp => new Dialed.Client.Scan.LabelScanner(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 builder.Services.AddDialedRecipeAssistant(sp => new Dialed.Client.Recipes.RecipeAssistant(new HttpClient { BaseAddress = apiBaseAddress }, sp.GetRequiredService<IAccessTokenProvider>(), sp.GetRequiredService<Dialed.Client.Platform.IConnectivity>()));
 // Photo uploads (#68): URLs come from the API; the file goes to the URL it hands out (Blob Storage in Azure), without the API token.

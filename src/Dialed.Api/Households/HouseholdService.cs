@@ -206,7 +206,7 @@ public sealed class InMemoryHouseholdStore(IEnumerable<Household>? initial = nul
 /// Households: everyone starts in a personal one, an owner can invite people with a single-use code, and members can leave or be removed
 /// (back to a personal household of their own). Records stay in the household they were made in.
 /// </summary>
-public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store, ISyncStore sync, TimeProvider time)
+public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store, ISyncStore sync, TimeProvider time, Push.INotifier notifier)
 {
     public const int MaxMembers = 10;
 
@@ -323,6 +323,7 @@ public sealed class HouseholdService(IUserDirectory users, IHouseholdStore store
         }
 
         await users.SetHouseholdAsync(userId, target.Id, ct);
+        notifier.HouseholdJoined(userId, target.Id);
         return new(HouseholdOutcome.Ok, await ToDtoAsync(target, userId, ct));
     }
 

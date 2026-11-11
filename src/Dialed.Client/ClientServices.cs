@@ -125,6 +125,18 @@ public static class ClientServices
         public Task<string?> GetAccessTokenAsync(CancellationToken cancellationToken = default) => Task.FromResult<string?>(null);
     }
 
+    /// <summary>Registers notifications (#100). <paramref name="api"/> creates the API client, so the host decides the base address.</summary>
+    public static IServiceCollection AddDialedPush(this IServiceCollection services, Func<IServiceProvider, Push.IPushApi> api)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(api);
+
+        services.TryAddSingleton<IPushNotifications>(UnsupportedPushNotifications.Instance);
+        services.TryAddSingleton(api);
+        services.TryAddSingleton<Push.PushNotificationService>();
+        return services;
+    }
+
     /// <summary>Registers label scanning (#83). <paramref name="scanner"/> creates the API client, so the host decides the base address.</summary>
     public static IServiceCollection AddDialedScan(this IServiceCollection services, Func<IServiceProvider, Scan.ILabelScanner> scanner)
     {
