@@ -2429,3 +2429,43 @@ a.people-row-name {
     flex-direction: column;
     margin: 0;
 }
+
+/* ---- Dial-in assistant (#86) ------------------------------------------------------------------ */
+
+.dialed-dialin-ai {
+    margin: var(--dialed-space-3) 0 0;
+    padding-top: var(--dialed-space-3);
+    border-top: 1px solid var(--colorNeutralStroke2);
+}
+
+.dialed-dialin-ai > .dialed-muted {
+    margin: var(--dialed-space-2) 0 0;
+}
+
+.dialed-dialin-ai-result {
+    padding: var(--dialed-space-3) var(--dialed-space-4);
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorBrandBackground2);
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-dialin-ai-result h3 {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+}
+
+.dialed-dialin-ai-result > .dialed-muted {
+    margin: 0;
+}
+
+.dialed-dialin-ai-result .dialed-muted {
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-dialin-ai + .dialed-dialin-actions {
+    margin-top: var(--dialed-space-4);
+}
+
+.dialed-dialin {
+    margin-bottom: var(--dialed-space-4);
+}

@@ -802,6 +802,16 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>Een stand op de schaal van je molen, om op smaak bij te stellen.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Heel verse bonen geven veel gas af, dus geef het wat tijd.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>Een gangbare verhouding koffie en vloeistof voor deze methode.</value></data>
+  <data name="DialIn_Ask" xml:space="preserve"><value>Vraag de assistent</value></data>
+  <data name="DialIn_AskHint" xml:space="preserve"><value>Gebruikt deze bereiding, je laatste bereidingen van deze zak, de boon en je molen. Telt mee voor je suggesties van vandaag.</value></data>
+  <data name="DialIn_Asking" xml:space="preserve"><value>De assistent denkt na…</value></data>
+  <data name="DialIn_AiTitle" xml:space="preserve"><value>De assistent stelt voor</value></data>
+  <data name="DialIn_Reason_AlreadyTried" xml:space="preserve"><value>Je vorige aanpassing in deze richting gaf geen betere kop, dus probeer dit.</value></data>
+  <data name="DialIn_Problem_SignedOut" xml:space="preserve"><value>Log in om de assistent te vragen. Het advies hierboven werkt nog steeds.</value></data>
+  <data name="DialIn_Problem_Offline" xml:space="preserve"><value>Je bent offline. Het advies hierboven werkt nog steeds; vraag de assistent als je weer online bent.</value></data>
+  <data name="DialIn_Problem_QuotaUsed" xml:space="preserve"><value>Je hebt alle suggesties van vandaag gebruikt. Het advies hierboven werkt nog steeds.</value></data>
+  <data name="DialIn_Problem_Disabled" xml:space="preserve"><value>De assistent staat even uit. Het advies hierboven werkt nog steeds.</value></data>
+  <data name="DialIn_Problem_Unavailable" xml:space="preserve"><value>De assistent geeft nu geen antwoord. Het advies hierboven werkt nog steeds.</value></data>
   <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>synchroniseren in een ander tabblad...</value></data>
   <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Synchroniseren in een ander tabblad</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Hernoemen</value></data>

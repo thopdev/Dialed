@@ -272,6 +272,63 @@ public sealed class BrewLogTests : UiTestContext
     }
 
     [Fact]
+    public async Task Applying_the_assistants_change_fills_the_next_brew_with_its_value()
+    {
+        var (_, bag) = await SomeBag();
+        var previous = await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "espresso", DoseG = 18m, YieldG = 36m, TempC = 93m, Rating = 2, Taste = new Taste(Acidity: -2), BrewedAt = DateTimeOffset.UtcNow.AddDays(-1) }, Ct);
+        Services.GetRequiredService<NavigationManager>().NavigateTo($"/brew/{bag.Id}/log/again/{previous.Id}?apply=ai&kind=HotterWater&to=94.5");
+        var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.BrewId, previous.Id));
+
+        page.Find("#brew-advice-applied").TextContent.ShouldBe("Applied from your last brew: Use hotter water.");
+        page.Find("form").Submit();
+
+        (await Brews.ListAsync(Ct)).Single(b => b.Id != previous.Id).TempC.ShouldBe(94.5m);
+    }
+
+    [Fact]
+    public async Task A_made_up_assistant_change_is_ignored()
+    {
+        var (_, bag) = await SomeBag();
+        var previous = await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "espresso", DoseG = 18m, YieldG = 36m, BrewedAt = DateTimeOffset.UtcNow.AddDays(-1) }, Ct);
+        Services.GetRequiredService<NavigationManager>().NavigateTo($"/brew/{bag.Id}/log/again/{previous.Id}?apply=ai&kind=Teleport&to=1");
+        var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.BrewId, previous.Id));
+
+        page.FindAll("#brew-advice-applied").ShouldBeEmpty();
+        page.Find("#brew-dose").GetAttribute("value").ShouldBe("18");
+    }
+
+    [Fact]
+    public async Task A_low_rated_brew_lands_on_the_bag_page_with_its_dial_in_advice()
+    {
+        var (_, bag) = await SomeBag();
+        var recipe = await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning", DoseG = 15m, WaterG = 240m, TempC = 94m, TimeS = 180 }, Ct);
+        var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.RecipeId, recipe.Id));
+
+        page.Find("[aria-label='2 of 5 stars']").Click();
+        page.Find("form").Submit();
+
+        var saved = (await Brews.ListAsync(Ct)).Single();
+        var navigation = Services.GetRequiredService<NavigationManager>();
+        navigation.Uri.ShouldEndWith($"brew/{bag.Id}?logged={saved.Id}");
+
+        var home = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
+        home.Find("#dialin-advice").ShouldNotBeNull();
+        home.Find("#dialin-primary").TextContent.ShouldContain("Keep this recipe");
+    }
+
+    [Fact]
+    public async Task A_good_brew_does_not_show_advice_on_the_bag_page()
+    {
+        var (_, bag) = await SomeBag();
+        var brew = await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, WaterG = 240m, Rating = 5, BrewedAt = DateTimeOffset.UtcNow }, Ct);
+        Services.GetRequiredService<NavigationManager>().NavigateTo($"/brew/{bag.Id}?logged={brew.Id}");
+
+        var home = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
+
+        home.FindAll("#dialin-advice").ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task The_brew_made_with_an_applied_suggestion_is_linked_to_it_with_its_rating()
     {
         var (_, bag) = await SomeBag();

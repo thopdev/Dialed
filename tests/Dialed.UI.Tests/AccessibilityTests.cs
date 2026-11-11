@@ -95,6 +95,19 @@ public sealed class AccessibilityTests : UiTestContext
         Problems(panel).Distinct().ToList().ShouldBeEmpty();
     }
 
+    [Fact]
+    public void The_dial_in_assistant_is_labeled()
+    {
+        var brew = new Brew { BagId = "b", MethodCode = "espresso", DoseG = 18m, YieldG = 36m, GrindSetting = 12m, TempC = 93m, TimeS = 28, Taste = new Taste(Acidity: -2) };
+        var card = Render<DialInAdviceCard>(p => p.Add(x => x.Brew, brew).Add(x => x.Scale, Dialed.Domain.Equipment.GrindScale.Clicks(40)));
+        Problems(card).Distinct().ToList().ShouldBeEmpty();
+
+        card.Find("#dialin-ask").Click();
+
+        card.FindAll("#dialin-ai").ShouldNotBeEmpty();
+        Problems(card).Distinct().ToList().ShouldBeEmpty();
+    }
+
     [Fact] public void Recipes_is_labeled() => Audit<Recipes>();
 
     [Fact] public void Equipment_is_labeled() => Audit<Gear>();

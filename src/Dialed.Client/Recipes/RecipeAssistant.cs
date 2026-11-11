@@ -1,7 +1,3 @@
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json;
 using Dialed.Client.Sync;
 using Dialed.Client.Platform;
 
@@ -71,53 +67,10 @@ public interface IRecipeAssistant
 /// <summary>Calls <c>POST /ai/recipe-suggestions</c>.</summary>
 public sealed class RecipeAssistant(HttpClient http, IAccessTokenProvider tokens, IConnectivity connectivity) : IRecipeAssistant
 {
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
-
-    public async Task<SuggestedRecipe> SuggestAsync(RecipeAssistantRequest request, CancellationToken cancellationToken = default)
+    public Task<SuggestedRecipe> SuggestAsync(RecipeAssistantRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
-        var token = await tokens.GetAccessTokenAsync(cancellationToken) ?? throw new RecipeAssistantException(AssistantProblem.SignedOut);
-        if (!connectivity.IsOnline)
-        {
-            throw new RecipeAssistantException(AssistantProblem.Offline);
-        }
-
-        using var message = new HttpRequestMessage(HttpMethod.Post, "ai/recipe-suggestions") { Content = JsonContent.Create(request, options: Json) };
-        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-        HttpResponseMessage response;
-        try
-        {
-            response = await http.SendAsync(message, cancellationToken);
-        }
-        catch (HttpRequestException)
-        {
-            throw new RecipeAssistantException(AssistantProblem.Offline);
-        }
-
-        using (response)
-        {
-            if (response.IsSuccessStatusCode)
-            {
-                try
-                {
-                    return await response.Content.ReadFromJsonAsync<SuggestedRecipe>(Json, cancellationToken) ?? throw new RecipeAssistantException(AssistantProblem.Unavailable);
-                }
-                catch (JsonException)
-                {
-                    throw new RecipeAssistantException(AssistantProblem.Unavailable);
-                }
-            }
-
-            var text = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw response.StatusCode switch
-            {
-                HttpStatusCode.Unauthorized => new RecipeAssistantException(AssistantProblem.SignedOut),
-                HttpStatusCode.TooManyRequests => new RecipeAssistantException(AssistantProblem.QuotaUsed),
-                HttpStatusCode.ServiceUnavailable when text.Contains("ai-disabled", StringComparison.Ordinal) => new RecipeAssistantException(AssistantProblem.Disabled),
-                _ => new RecipeAssistantException(AssistantProblem.Unavailable),
-            };
-        }
+        return AssistantHttp.PostAsync<RecipeAssistantRequest, SuggestedRecipe>(
+            http, tokens, connectivity, "ai/recipe-suggestions", request, problem => new RecipeAssistantException(problem), cancellationToken);
     }
 }

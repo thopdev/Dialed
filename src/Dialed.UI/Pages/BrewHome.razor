@@ -3,6 +3,7 @@
 @using Dialed.Client.Data
 @using Dialed.Client.Preferences
 @using Dialed.Domain.BrewMethods
+@using Dialed.Domain.DialIn
 @using Dialed.Domain.Inventory
 @using Dialed.Domain.Model
 @implements IDisposable
@@ -11,6 +12,7 @@
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Recipe> RecipeStore
 @inject IRepository<Brew> BrewStore
+@inject IRepository<EquipmentItem> GearStore
 @inject UnitFormatter Units
 @inject IUserPreferences Preferences
 @inject TimeProvider Time
@@ -85,6 +87,11 @@
                 </Card>
             }
 
+            @if (logged is not null)
+            {
+                <DialInAdviceCard Brew="logged" Scale="@loggedScale" />
+            }
+
             @if (last is not null)
             {
                 <a id="brew-again" class="dialed-card dialed-card-link dialed-brew-again" href="@($"brew/{current.Id}/log/again/{last.Id}")">
@@ -141,6 +148,13 @@
     [Parameter]
     public string? BagId { get; set; }
 
+    /// <summary>The brew just logged from this bag: when it did not taste right, its dial-in advice shows at the top (#86).</summary>
+    [SupplyParameterFromQuery(Name = "logged")]
+    public string? Logged { get; set; }
+
+    private Brew? logged;
+    private Dialed.Domain.Equipment.GrindScale? loggedScale;
+
     /// <summary>Open bags first (what you are brewing from), then sealed ones; frozen and finished bags are not offered.</summary>
     private IReadOnlyList<BagStock> Active =>
         [.. stock.Where(s => s.Bag.Status is BagStatus.Open or BagStatus.Sealed)
@@ -168,6 +182,8 @@
         current = BagId is null ? null : bags.FirstOrDefault(b => b.Id == BagId);
         currentStock = current is null ? null : stock.FirstOrDefault(s => s.Bag.Id == current.Id);
         last = current is null ? null : BrewPrefill.Last(current.Id, brews);
+        logged = current is null || Logged is null ? null : brews.FirstOrDefault(b => !b.Deleted && b.Id == Logged && b.BagId == current.Id && DialInHistory.NeedsAdvice(b));
+        loggedScale = logged?.GrinderId is { } grinderId ? (await GearStore.GetAsync(grinderId))?.GrindScale : null;
         recipesForBag = current is null
             ? []
             : [.. recipes.Where(r => !r.IsSuperseded && (r.BeanId == current.BeanId || r.BeanId is null))

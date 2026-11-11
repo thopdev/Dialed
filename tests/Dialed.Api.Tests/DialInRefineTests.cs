@@ -51,6 +51,33 @@ public sealed class DialInRefineTests(WebApplicationFactory<Program> factory) : 
     }
 
     [Fact]
+    public async Task The_fake_answer_is_deterministic_and_has_an_english_why_and_a_reason_code()
+    {
+        var client = await SignedIn(factory, "carol");
+
+        var first = (await (await client.PostAsJsonAsync("/ai/dial-in", Sour(), Ct)).Content.ReadFromJsonAsync<DialInRefinement>(Ct))!;
+        var second = (await (await client.PostAsJsonAsync("/ai/dial-in", Sour(), Ct)).Content.ReadFromJsonAsync<DialInRefinement>(Ct))!;
+
+        second.Changes.ShouldBe(first.Changes);
+        first.Why.ShouldContain("sour");
+        first.ReasonCode.ShouldBe("Sour");
+    }
+
+    [Fact]
+    public async Task When_the_last_brew_already_ground_finer_without_a_better_cup_it_leads_with_the_other_change()
+    {
+        var client = await SignedIn(factory, "bob");
+        var earlier = new DialInBrewSummary(18m, null, 36m, 13m, 93m, 26, 2, new Taste(Acidity: -2));
+
+        using var response = await client.PostAsJsonAsync("/ai/dial-in", Sour() with { Recent = [earlier] }, Ct);
+
+        var result = (await response.Content.ReadFromJsonAsync<DialInRefinement>(Ct))!;
+        result.Changes.ShouldBe([new DialInChange("HotterWater", 93m, 94m)]);
+        result.ReasonCode.ShouldBe(RulesDialInRefiner.AlreadyTriedCode);
+        result.Why.ShouldContain("did not give a better cup");
+    }
+
+    [Fact]
     public async Task An_unknown_method_or_a_missing_dose_is_a_bad_request()
     {
         var client = await SignedIn(factory, "bob");

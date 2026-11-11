@@ -803,6 +803,16 @@
   <data name="Suggest_Reason_OnScale" xml:space="preserve"><value>A setting on your grinder's scale, to adjust by taste.</value></data>
   <data name="Suggest_Reason_Fresh" xml:space="preserve"><value>Very fresh beans give off a lot of gas, so give it a little time.</value></data>
   <data name="Suggest_Reason_Ratio" xml:space="preserve"><value>A usual ratio of coffee to liquid for this method.</value></data>
+  <data name="DialIn_Ask" xml:space="preserve"><value>Ask the assistant</value></data>
+  <data name="DialIn_AskHint" xml:space="preserve"><value>Uses this brew, your last brews of this bag, the bean and your grinder. Counts toward your daily suggestions.</value></data>
+  <data name="DialIn_Asking" xml:space="preserve"><value>Asking the assistant…</value></data>
+  <data name="DialIn_AiTitle" xml:space="preserve"><value>The assistant suggests</value></data>
+  <data name="DialIn_Reason_AlreadyTried" xml:space="preserve"><value>Your last change in this direction did not give a better cup, so try this instead.</value></data>
+  <data name="DialIn_Problem_SignedOut" xml:space="preserve"><value>Sign in to ask the assistant. The advice above still works.</value></data>
+  <data name="DialIn_Problem_Offline" xml:space="preserve"><value>You are offline. The advice above still works; ask the assistant when you are back online.</value></data>
+  <data name="DialIn_Problem_QuotaUsed" xml:space="preserve"><value>You have used all suggestions for today. The advice above still works.</value></data>
+  <data name="DialIn_Problem_Disabled" xml:space="preserve"><value>The assistant is switched off for now. The advice above still works.</value></data>
+  <data name="DialIn_Problem_Unavailable" xml:space="preserve"><value>No answer from the assistant right now. The advice above still works.</value></data>
   <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>syncing in another tab...</value></data>
   <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Syncing in another tab</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Rename</value></data>
