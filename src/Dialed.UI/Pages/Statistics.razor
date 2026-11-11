@@ -41,6 +41,11 @@ else
 
     <MilestoneBadges Summary="milestones" />
 
+    <section id="stats-calendar-section">
+        <h2>@L["Calendar_Title"]</h2>
+        <BrewCalendarChart Calendar="calendar" />
+    </section>
+
     <section id="stats-spend">
         <h2>@L["Stats_Spend"]</h2>
         @if (stats.Spend.Count == 0)
@@ -99,6 +104,7 @@ else
 
 @code {
     private CoffeeStatistics? stats;
+    private BrewCalendar calendar = BrewCalendar.Build([], [], DateOnly.FromDateTime(DateTime.Today));
     private MilestoneSummary milestones = MilestoneSummary.Calculate([], [], [], DateOnly.FromDateTime(DateTime.Today));
 
     private decimal BarWidth(decimal grams)
@@ -120,6 +126,7 @@ else
         var bags = await BagStore.ListAsync();
         var beans = await BeanStore.ListAsync();
         var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        calendar = BrewCalendar.Build(brews, bags, today);
         milestones = MilestoneSummary.Calculate(brews, bags, beans, today);
         stats = CoffeeStatistics.Calculate(brews, bags, beans, await VendorStore.ListAsync(), await EquipmentStore.ListAsync(), today);
     }

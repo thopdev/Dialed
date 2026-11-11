@@ -1000,6 +1000,12 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} people</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>shared by {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Map with a marker for each origin: {0}</value></data>
+  <data name="Calendar_Title" xml:space="preserve"><value>Brewing calendar</value></data>
+  <data name="Calendar_Less" xml:space="preserve"><value>Less</value></data>
+  <data name="Calendar_More" xml:space="preserve"><value>More</value></data>
+  <data name="Calendar_Roasted" xml:space="preserve"><value>Roast day</value></data>
+  <data name="Calendar_Description" xml:space="preserve"><value>{0} brews in the last {1} weeks; busiest day {2} with {3}</value></data>
+  <data name="Calendar_DescriptionEmpty" xml:space="preserve"><value>No brews in the last {0} weeks</value></data>
   <data name="Card_Share" xml:space="preserve"><value>Share a picture of this brew</value></data>
   <data name="Card_Failed" xml:space="preserve"><value>The picture could not be made on this device.</value></data>
   <data name="Card_Footer" xml:space="preserve"><value>Brewed {0} with Dialed</value></data>
