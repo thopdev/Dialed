@@ -17,6 +17,9 @@ public sealed class ProtectionOptions
     /// <summary>Requests per minute for one user on the friend endpoints (<c>/friends</c>), which is stricter so friend codes cannot be guessed.</summary>
     public int FriendsRequestsPerMinute { get; set; } = 30;
 
+    /// <summary>Requests per minute for one address on the <c>/admin</c> endpoints, so the admin key cannot be guessed.</summary>
+    public int AdminRequestsPerMinute { get; set; } = 20;
+
     /// <summary>Requests per minute for one user on <c>/reports</c> (#106).</summary>
     public int ReportsPerMinute { get; set; } = 5;
 

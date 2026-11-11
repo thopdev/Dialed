@@ -47,6 +47,8 @@ public static class PublicProfileEndpoints
             AdminKey.Check(http, options.Value) ?? (await service.SetSuspendedAsync(id, suspended: true, ct) ? Results.NoContent() : Results.NotFound()));
         admin.MapPost("/users/{id}/restore", async (string id, HttpContext http, IOptions<BetaOptions> options, PublicProfileService service, CancellationToken ct) =>
             AdminKey.Check(http, options.Value) ?? (await service.SetSuspendedAsync(id, suspended: false, ct) ? Results.NoContent() : Results.NotFound()));
+        admin.MapGet("/users/suspended", async (HttpContext http, IOptions<BetaOptions> options, PublicProfileService service, CancellationToken ct) =>
+            AdminKey.Check(http, options.Value) ?? Results.Ok(await service.SuspendedAsync(ct)));
         admin.MapGet("/reports", async (HttpContext http, IOptions<BetaOptions> options, PublicProfileService service, CancellationToken ct) =>
             AdminKey.Check(http, options.Value) ?? Results.Ok(await service.ReportsAsync(ct)));
 
