@@ -43,7 +43,7 @@
             </ul>
         </div>
     }
-    <button id="sync-now" type="button" class="dialed-button" disabled="@(Sync.Status == SyncStatus.Syncing)" @onclick="SyncNow">@L["Sync_Now"]</button>
+    <button id="sync-now" type="button" class="dialed-button" disabled="@(Sync.Status is SyncStatus.Syncing or SyncStatus.SyncingElsewhere)" @onclick="SyncNow">@L["Sync_Now"]</button>
 </div>
 
 @code {
@@ -53,6 +53,7 @@
     private string StatusText => Sync.Status switch
     {
         SyncStatus.Syncing => L["Sync_State_Syncing"],
+        SyncStatus.SyncingElsewhere => L["Sync_State_SyncingElsewhere"],
         SyncStatus.Offline => L["Sync_State_Offline"],
         SyncStatus.NeedsSignIn => L["Sync_State_NeedsSignIn"],
         _ => L["Sync_State_Idle"],

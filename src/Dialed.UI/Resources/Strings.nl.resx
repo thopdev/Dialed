@@ -809,6 +809,8 @@
   <data name="Photo_Upload_Uploading" xml:space="preserve"><value>Bezig met uploaden…</value></data>
   <data name="Photo_Upload_Failed" xml:space="preserve"><value>Upload mislukt</value></data>
   <data name="Photo_Upload_Retry" xml:space="preserve"><value>Opnieuw uploaden</value></data>
+  <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>synchroniseren in een ander tabblad...</value></data>
+  <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Synchroniseren in een ander tabblad</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Hernoemen</value></data>
   <data name="Household_RenameNamed" xml:space="preserve"><value>{0} hernoemen</value></data>
   <data name="Household_Name" xml:space="preserve"><value>Naam van het huishouden</value></data>

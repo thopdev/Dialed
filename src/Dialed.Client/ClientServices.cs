@@ -100,6 +100,7 @@ public static class ClientServices
                 Table<DialInFeedback>(sp, "dialinfeedback"),
             ],
             sp.GetRequiredService<ISyncState>()));
+        services.TryAddSingleton<ICrossTabLock>(SingleWindowLock.Instance);
         services.TryAddSingleton<SyncCoordinator>();
         return services;
     }

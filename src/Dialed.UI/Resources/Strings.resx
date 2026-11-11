@@ -810,6 +810,8 @@
   <data name="Photo_Upload_Uploading" xml:space="preserve"><value>Uploading…</value></data>
   <data name="Photo_Upload_Failed" xml:space="preserve"><value>Upload failed</value></data>
   <data name="Photo_Upload_Retry" xml:space="preserve"><value>Retry upload</value></data>
+  <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>syncing in another tab...</value></data>
+  <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Syncing in another tab</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Rename</value></data>
   <data name="Household_RenameNamed" xml:space="preserve"><value>Rename {0}</value></data>
   <data name="Household_Name" xml:space="preserve"><value>Household name</value></data>
