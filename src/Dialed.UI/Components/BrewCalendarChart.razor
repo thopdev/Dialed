@@ -1,0 +1,65 @@
+@using System.Globalization
+@using Dialed.Domain.Statistics
+@inject IStringLocalizer<Strings> L
+
+@* The brewing calendar (#292): the last weeks as a grid of days, darker for more brews, a dot on the days a bag was roasted. Plain SVG; each day has a tooltip. *@
+<figure id="@Id" class="dialed-calendar">
+    <svg viewBox="0 0 @Num(width) @Num(height)" role="img" aria-label="@Description" focusable="false">
+        @for (var week = 0; week < Calendar.Weeks.Count; week++)
+        {
+            @foreach (var (day, row) in Calendar.Weeks[week].Days.Select((d, i) => (d, i)).Where(x => !x.d.InFuture))
+            {
+                var x = Gutter + week * Step;
+                var y = row * Step;
+                <rect class="dialed-calendar-day dialed-calendar-l@(Calendar.Level(day))" x="@Num(x)" y="@Num(y)" width="@Cell" height="@Cell" rx="3"><title>@Tip(day)</title></rect>
+                @if (day.Roasted)
+                {
+                    <circle class="dialed-calendar-roast" cx="@Num(x + Cell / 2.0)" cy="@Num(y + Cell / 2.0)" r="2.5" />
+                }
+            }
+        }
+        @foreach (var row in new[] { 0, 2, 4 })
+        {
+            <g><text class="dialed-calendar-label" x="0" y="@Num(row * Step + Cell - 3)">@DayLetter(row)</text></g>
+        }
+    </svg>
+    <figcaption class="dialed-muted dialed-calendar-legend">
+        <span>@L["Calendar_Less"]</span>
+        @for (var level = 0; level <= 4; level++)
+        {
+            <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><rect class="dialed-calendar-day dialed-calendar-l@(level)" width="14" height="14" rx="3" /></svg>
+        }
+        <span>@L["Calendar_More"]</span>
+        <span class="dialed-calendar-roast-key"><svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><circle class="dialed-calendar-roast" cx="7" cy="7" r="3" /></svg> @L["Calendar_Roasted"]</span>
+    </figcaption>
+</figure>
+
+@code {
+    private const int Cell = 14;
+    private const int Step = 17;
+    private const int Gutter = 16;
+
+    private double width => Gutter + Calendar.Weeks.Count * Step;
+
+    private double height => 7 * Step;
+
+    [Parameter, EditorRequired]
+    public BrewCalendar Calendar { get; set; } = default!;
+
+    [Parameter]
+    public string Id { get; set; } = "stats-calendar";
+
+    private string Description => Calendar.BusiestDay is { } busiest
+        ? string.Format(L["Calendar_Description"].Value, Calendar.TotalBrews, Calendar.Weeks.Count, busiest.Date.ToString("d MMM", CultureInfo.CurrentCulture), busiest.Brews)
+        : string.Format(L["Calendar_DescriptionEmpty"].Value, Calendar.Weeks.Count);
+
+    private string Tip(CalendarDay day)
+    {
+        var text = $"{day.Date.ToString("ddd d MMM", CultureInfo.CurrentCulture)}: {L.Count("Brews", day.Brews)}";
+        return day.Roasted ? $"{text} · {L["Calendar_Roasted"].Value}" : text;
+    }
+
+    private static string DayLetter(int row) => CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName((DayOfWeek)((row + 1) % 7))[..1].ToUpperInvariant();
+
+    private static string Num(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+}

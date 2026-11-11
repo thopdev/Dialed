@@ -39,6 +39,11 @@ else
         </ul>
     </section>
 
+    <section id="stats-calendar-section">
+        <h2>@L["Calendar_Title"]</h2>
+        <BrewCalendarChart Calendar="calendar" />
+    </section>
+
     <section id="stats-spend">
         <h2>@L["Stats_Spend"]</h2>
         @if (stats.Spend.Count == 0)
@@ -88,6 +93,7 @@ else
 
 @code {
     private CoffeeStatistics? stats;
+    private BrewCalendar calendar = BrewCalendar.Build([], [], DateOnly.FromDateTime(DateTime.Today));
 
     private decimal BarWidth(decimal grams)
     {
@@ -102,14 +108,20 @@ else
         await LoadAsync();
     }
 
-    private async Task LoadAsync() =>
+    private async Task LoadAsync()
+    {
+        var brews = await BrewStore.ListAsync();
+        var bags = await BagStore.ListAsync();
+        var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
+        calendar = BrewCalendar.Build(brews, bags, today);
         stats = CoffeeStatistics.Calculate(
-            await BrewStore.ListAsync(),
-            await BagStore.ListAsync(),
+            brews,
+            bags,
             await BeanStore.ListAsync(),
             await VendorStore.ListAsync(),
             await EquipmentStore.ListAsync(),
-            DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
+            today);
+    }
 
     private void OnChanged() => _ = InvokeAsync(async () =>
     {
