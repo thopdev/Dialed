@@ -42,4 +42,22 @@ public sealed class CountryCatalogTests
         CountryCatalog.All.Select(p => p.Name).Distinct().Count().ShouldBe(CountryCatalog.All.Count);
         CountryCatalog.All.Select(p => p.Iso2).Distinct().Count().ShouldBe(CountryCatalog.All.Count);
     }
+
+    [Fact]
+    public void The_producer_list_leaves_out_countries_that_only_drink_coffee()
+    {
+        var iso = CountryCatalog.Producers.Select(p => p.Iso2).ToList();
+
+        iso.ShouldContain("ET");
+        iso.ShouldContain("CO");
+        iso.ShouldNotContain("NL");
+        iso.ShouldNotContain("JP");
+        iso.Order(StringComparer.Ordinal).Count().ShouldBe(iso.Count);
+    }
+
+    [Fact]
+    public void A_flag_is_two_regional_indicator_letters()
+    {
+        CountryCatalog.Find("Ethiopia")!.Flag.ShouldBe("\U0001F1EA\U0001F1F9");
+    }
 }
