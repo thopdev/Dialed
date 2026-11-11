@@ -72,6 +72,60 @@ public sealed class ScanQueueTests : IDisposable
         new ScannedField("Natural", 0.9), new ScannedField(null, 0), new ScannedField(null, 0), new ScannedField(null, 0), new ScannedField(null, 0),
         new ScannedField("250", 0.9), "label-v1", "fake");
 
+    /// <summary>A clock whose timers only fire when the test says so.</summary>
+    private sealed class ManualClock : TimeProvider
+    {
+        private readonly List<(TimerCallback Callback, object? State, TimeSpan Due)> timers = [];
+
+        public IReadOnlyList<TimeSpan> Delays
+        {
+            get
+            {
+                lock (timers)
+                {
+                    return [.. timers.Select(t => t.Due)];
+                }
+            }
+        }
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            lock (timers)
+            {
+                timers.Add((callback, state, dueTime));
+            }
+
+            return new NoTimer();
+        }
+
+        /// <summary>Runs the timers that were created, as if their time had come.</summary>
+        public void FireAll()
+        {
+            List<(TimerCallback Callback, object? State, TimeSpan Due)> due;
+            lock (timers)
+            {
+                due = [.. timers];
+                timers.Clear();
+            }
+
+            foreach (var (callback, state, _) in due)
+            {
+                callback(state);
+            }
+        }
+
+        private sealed class NoTimer : ITimer
+        {
+            public bool Change(TimeSpan dueTime, TimeSpan period) => true;
+
+            public void Dispose()
+            {
+            }
+
+            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        }
+    }
+
     private readonly Network network = new();
     private readonly Lifecycle lifecycle = new();
     private readonly InMemoryLocalStore store = new();
@@ -283,5 +337,51 @@ public sealed class ScanQueueTests : IDisposable
 
         afterRead.ShouldBeGreaterThanOrEqualTo(3); // added, reading, ready
         changes.ShouldBe(afterRead + 1);
+    }
+
+    [Fact]
+    public async Task After_a_server_error_the_scan_is_read_again_after_a_short_wait_without_any_other_trigger()
+    {
+        scanner.Script.Enqueue(ScanProblem.Unavailable);
+        var clock = new ManualClock();
+        var queue = new PendingScanQueue(store, photos, scanner, network, lifecycle, clock);
+        queues.Add(queue);
+        await queue.LoadAsync(Ct);
+        var photo = await SavedPhoto(UploadState.Uploaded);
+
+        await queue.EnqueueAsync(photo.Id, Ct);
+        await Eventually(() => clock.Delays.Count == 1, "no retry was scheduled");
+
+        clock.Delays.ShouldBe([PendingScanQueue.RetryStep]);
+        queue.Get(photo.Id)!.Status.ShouldBe(PendingScanStatus.Waiting);
+
+        clock.FireAll();
+        await Eventually(() => queue.ReadyCount == 1, "the scan was not read after the wait");
+    }
+
+    [Fact]
+    public async Task The_wait_grows_with_each_error_and_the_third_error_gives_up_without_scheduling_another()
+    {
+        for (var i = 0; i < PendingScanQueue.MaxFailures; i++)
+        {
+            scanner.Script.Enqueue(ScanProblem.Unavailable);
+        }
+
+        var clock = new ManualClock();
+        var queue = new PendingScanQueue(store, photos, scanner, network, lifecycle, clock);
+        queues.Add(queue);
+        await queue.LoadAsync(Ct);
+        var photo = await SavedPhoto(UploadState.Uploaded);
+
+        await queue.EnqueueAsync(photo.Id, Ct);
+        await Eventually(() => clock.Delays.Count == 1, "no first retry");
+        clock.Delays[0].ShouldBe(PendingScanQueue.RetryStep);
+        clock.FireAll();
+        await Eventually(() => clock.Delays.Count == 1, "no second retry");
+        clock.Delays[0].ShouldBe(PendingScanQueue.RetryStep * 2);
+        clock.FireAll();
+
+        await Eventually(() => queue.Get(photo.Id)!.Status == PendingScanStatus.Failed, "the scan did not give up");
+        clock.Delays.ShouldBeEmpty();
     }
 }
