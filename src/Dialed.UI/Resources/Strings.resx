@@ -1000,6 +1000,10 @@
   <data name="Count_People_Other" xml:space="preserve"><value>{0} people</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>shared by {0}</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Map with a marker for each origin: {0}</value></data>
+  <data name="Passport_Title" xml:space="preserve"><value>Countries tried</value></data>
+  <data name="Passport_Progress" xml:space="preserve"><value>{0} of {1} coffee countries</value></data>
+  <data name="Passport_ToTry" xml:space="preserve"><value>Still to try ({0})</value></data>
+  <data name="Passport_None" xml:space="preserve"><value>Brew a coffee from somewhere new to start your passport.</value></data>
   <data name="Milestone_Title" xml:space="preserve"><value>Milestones</value></data>
   <data name="Milestone_None" xml:space="preserve"><value>Brew a few coffees and your first milestone shows up here.</value></data>
   <data name="Milestone_Brews" xml:space="preserve"><value>{0} brews</value></data>

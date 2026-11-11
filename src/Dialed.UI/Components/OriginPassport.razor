@@ -1,0 +1,49 @@
+@using Dialed.Domain.Geography
+@inject IStringLocalizer<Strings> L
+
+@* The "passport" (#288): every coffee country, the ones you have brewed lit up. *@
+<section id="@Id" class="dialed-passport">
+    <h2>@L["Passport_Title"]</h2>
+    @if (tried.Count == 0)
+    {
+        <p class="dialed-muted" id="passport-empty">@L["Passport_None"]</p>
+    }
+    else
+    {
+        <p class="dialed-muted" id="passport-progress" role="status">@string.Format(L["Passport_Progress"].Value, tried.Count, CountryCatalog.Producers.Count)</p>
+        <ul class="dialed-passport-list" aria-label="@L["Passport_Title"]">
+            @foreach (var place in tried)
+            {
+                <li class="dialed-passport-stamp dialed-passport-tried"><span aria-hidden="true">@place.Flag</span> @place.Name</li>
+            }
+        </ul>
+    }
+    <details class="dialed-passport-more">
+        <summary>@string.Format(L["Passport_ToTry"].Value, remaining.Count)</summary>
+        <ul class="dialed-passport-list">
+            @foreach (var place in remaining)
+            {
+                <li class="dialed-passport-stamp"><span aria-hidden="true">@place.Flag</span> @place.Name</li>
+            }
+        </ul>
+    </details>
+</section>
+
+@code {
+    private List<CountryPlace> tried = [];
+    private List<CountryPlace> remaining = [];
+
+    /// <summary>Country names as typed on the beans you brewed.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> Countries { get; set; } = [];
+
+    [Parameter]
+    public string Id { get; set; } = "stats-passport";
+
+    protected override void OnParametersSet()
+    {
+        var found = Countries.Select(CountryCatalog.Find).OfType<CountryPlace>().Where(p => CountryCatalog.Producers.Contains(p)).Distinct().ToList();
+        tried = [.. found.OrderBy(p => p.Name, StringComparer.Ordinal)];
+        remaining = [.. CountryCatalog.Producers.Except(found)];
+    }
+}
