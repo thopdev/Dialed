@@ -1,0 +1,54 @@
+@using Dialed.Domain.Geography
+@inject IStringLocalizer<Strings> L
+
+@* A small world map with a marker for each origin country (#285). Offline: the land outline is bundled, nothing is fetched.
+   A text alternative names the countries; the lists next to the map on the screens say the same in words. *@
+@if (pins.Count > 0)
+{
+    <figure id="@Id" class="dialed-origin-map">
+        <svg viewBox="0 0 @Num(WorldMapProjection.Width) @Num(WorldMapProjection.Height)" role="img" aria-label="@Description" focusable="false">
+            <path class="dialed-origin-map-land" d="@WorldMapLand.Path" />
+            @foreach (var pin in pins)
+            {
+                <circle class="dialed-origin-map-pin" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(pin.Radius)"><title>@pin.Label</title></circle>
+            }
+        </svg>
+    </figure>
+}
+
+@code {
+    private sealed record Pin(double X, double Y, double Radius, string Label);
+
+    private List<Pin> pins = [];
+
+    /// <summary>Country names as typed on the beans, each with how often it comes up (brews, beans); the dot grows with the count.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<(string Country, int Count)> Origins { get; set; } = [];
+
+    [Parameter]
+    public string Id { get; set; } = "origin-map";
+
+    private string Description => string.Format(L["Map_Description"].Value, string.Join(", ", pins.Select(p => p.Label)));
+
+    protected override void OnParametersSet()
+    {
+        var byCountry = new Dictionary<CountryPlace, (string Typed, int Count)>();
+        foreach (var (country, count) in Origins)
+        {
+            if (CountryCatalog.Find(country) is { } place)
+            {
+                var known = byCountry.GetValueOrDefault(place);
+                byCountry[place] = (known.Typed ?? country.Trim(), known.Count + Math.Max(count, 1));
+            }
+        }
+
+        var max = byCountry.Count == 0 ? 1 : byCountry.Values.Max(v => v.Count);
+        pins = [.. byCountry.OrderByDescending(p => p.Value.Count).Select(p =>
+        {
+            var (x, y) = WorldMapProjection.Project(p.Key.Latitude, p.Key.Longitude);
+            return new Pin(x, y, 7 + 9.0 * p.Value.Count / max, p.Value.Typed);
+        })];
+    }
+
+    private static string Num(double value) => value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+}

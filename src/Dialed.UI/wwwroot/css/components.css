@@ -2726,3 +2726,28 @@ a.people-row-name {
     font-size: var(--dialed-text-m);
     font-weight: var(--dialed-weight-semibold);
 }
+
+.dialed-origin-map {
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-origin-map svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--borderRadiusMedium);
+    background: var(--colorNeutralBackground2);
+}
+
+.dialed-origin-map-land {
+    fill: var(--colorNeutralBackground6);
+    stroke: none;
+}
+
+.dialed-origin-map-pin {
+    fill: var(--colorBrandForeground1);
+    fill-opacity: 1;
+    stroke: var(--colorNeutralBackground1);
+    stroke-width: 2;
+}
