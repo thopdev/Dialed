@@ -30,7 +30,7 @@ How photo files get from the phone to storage, and what changes when Azure Blob 
 The interfaces are in `src/Dialed.Api/Photos/PhotoStorage.cs`:
 
 - `IPhotoUrlIssuer` makes the upload and read URLs (one permission, one photo, short expiry).
-- `IPhotoBlobStore` reads and writes the files, for the stand-in and for server-side readers such as a label scan by photo id.
+- `IPhotoBlobStore` (in `Dialed.Images`, paths like `photos/{household}/{photo}.jpg`) reads and writes the files, for the stand-in, for the processing of #69 (metadata stripping and thumbnails, run in place so the read URL serves the stripped photo) and for server-side readers such as a label scan by photo id. The in-memory store and the development folder store both raise `BlobWritten`, which stands in for Azure's blob-created event.
 - `IPhotoUploadedHandler` runs after a photo arrived. Thumbnails and metadata stripping (#69) plug in here for local development; in Azure the same work is triggered by the blob-created event.
 
 Settings live under `Photos` (`UploadUrlLifetime`, `ReadUrlLifetime`, `MaxBytes`, `LocalFolder`). Development keeps files in `%TEMP%/dialed-dev-photos`; tests keep them in memory. The stand-in signs URLs with an HMAC key made at startup, so restarting the API also ends every URL it handed out (the queue simply asks for a new one).

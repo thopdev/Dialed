@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using Dialed.Images;
 
 namespace Dialed.Api.Photos;
 
@@ -48,21 +48,6 @@ public interface IPhotoUrlIssuer
 }
 
 /// <summary>
-/// The photo files. Only the local stand-in writes through this (Azure uploads go straight to Blob Storage); readers such as the label
-/// scan or thumbnails (#69) use it to fetch a stored photo by id.
-/// </summary>
-public interface IPhotoBlobStore
-{
-    Task WriteAsync(PhotoBlobRef blob, byte[] content, CancellationToken cancellationToken = default);
-
-    /// <summary>The photo, or <c>null</c> when it was never uploaded.</summary>
-    Task<byte[]?> ReadAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default);
-
-    /// <summary>Removes the photo; removing a missing one is not an error.</summary>
-    Task DeleteAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default);
-}
-
-/// <summary>
 /// Runs after a photo arrived in storage. Azure: an Event Grid "blob created" event triggers a Function (metadata stripping and
 /// thumbnails, #69). The local stand-in calls every registered handler right after the upload, so the same work can run in development.
 /// </summary>
@@ -71,59 +56,51 @@ public interface IPhotoUploadedHandler
     Task OnUploadedAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default);
 }
 
-public sealed class InMemoryPhotoBlobStore : IPhotoBlobStore
+/// <summary>
+/// Photos as files in a local folder, laid out like the blob container (<c>photos/{household}/{photo}.jpg</c>, <c>thumbnails/...</c>). The
+/// development stand-in for Blob Storage when <see cref="PhotoStorageOptions.LocalFolder"/> is set: the same store the processing uses, so
+/// an uploaded photo is stripped and thumbnailed in place and the read URL serves the processed file.
+/// </summary>
+public sealed class FileSystemPhotoBlobStore(string root) : IPhotoBlobStore, IPhotoBlobEvents
 {
-    private readonly ConcurrentDictionary<string, byte[]> files = new(StringComparer.Ordinal);
+    public event Action<string>? BlobWritten;
 
-    public Task WriteAsync(PhotoBlobRef blob, byte[] content, CancellationToken cancellationToken = default)
+    public async Task WriteAsync(string path, byte[] content, CancellationToken cancellationToken = default)
     {
-        files[blob.Path] = content;
-        return Task.CompletedTask;
-    }
-
-    public Task<byte[]?> ReadAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default) =>
-        Task.FromResult(files.GetValueOrDefault(blob.Path));
-
-    public Task DeleteAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default)
-    {
-        files.TryRemove(blob.Path, out _);
-        return Task.CompletedTask;
-    }
-}
-
-/// <summary>Photos as files in a local folder, laid out like the blob container.</summary>
-public sealed class FileSystemPhotoBlobStore(string root) : IPhotoBlobStore
-{
-    public async Task WriteAsync(PhotoBlobRef blob, byte[] content, CancellationToken cancellationToken = default)
-    {
-        var path = FullPath(blob);
-        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
+        ArgumentNullException.ThrowIfNull(content);
+        var full = FullPath(path);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
 
         // Write next to the target and move, so a reader never sees half a photo.
-        var temporary = path + ".part";
+        var temporary = full + ".part";
         await File.WriteAllBytesAsync(temporary, content, cancellationToken);
-        File.Move(temporary, path, overwrite: true);
+        File.Move(temporary, full, overwrite: true);
+        BlobWritten?.Invoke(path);
     }
 
-    public async Task<byte[]?> ReadAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default)
+    public async Task<byte[]?> ReadAsync(string path, CancellationToken cancellationToken = default)
     {
-        var path = FullPath(blob);
-        return File.Exists(path) ? await File.ReadAllBytesAsync(path, cancellationToken) : null;
+        var full = FullPath(path);
+        return File.Exists(full) ? await File.ReadAllBytesAsync(full, cancellationToken) : null;
     }
 
-    public Task DeleteAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default)
+    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default) => Task.FromResult(File.Exists(FullPath(path)));
+
+    public Task DeleteAsync(string path, CancellationToken cancellationToken = default)
     {
-        File.Delete(FullPath(blob));
+        File.Delete(FullPath(path));
         return Task.CompletedTask;
     }
 
-    private string FullPath(PhotoBlobRef blob)
+    /// <summary>Every segment of a blob path is letters, digits, dashes, underscores or a dot inside the file name, and never <c>..</c>, so a path can never leave the folder.</summary>
+    private string FullPath(string path)
     {
-        if (!PhotoBlobRef.IsSafeId(blob.HouseholdId) || !PhotoBlobRef.IsSafeId(blob.PhotoId))
+        var segments = path.Split('/');
+        if (segments.Length < 2 || segments.Any(s => s.Length == 0 || s is "." or ".." || !s.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.')))
         {
-            throw new ArgumentException("Not a valid photo reference.", nameof(blob));
+            throw new ArgumentException("Not a valid photo path.", nameof(path));
         }
 
-        return System.IO.Path.Combine(root, blob.HouseholdId, blob.PhotoId + ".jpg");
+        return System.IO.Path.Combine([root, .. segments]);
     }
 }

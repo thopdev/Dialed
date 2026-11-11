@@ -4,6 +4,8 @@ using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using Dialed.Api.Auth;
 using Dialed.Api.Photos;
+using Dialed.Images;
+using Dialed.Images.Tests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -121,6 +123,35 @@ public sealed class PhotoUploadTests(WebApplicationFactory<Program> factory) : I
     }
 
     [Fact]
+    public async Task A_photo_with_GPS_uploaded_through_its_url_is_read_back_stripped_and_gets_thumbnails()
+    {
+        using var alice = await ClientFor("alice");
+        using var anonymous = factory.CreateClient();
+        var trigger = factory.Services.GetRequiredService<InMemoryPhotoTrigger>();
+        var id = await PushPhoto(alice);
+        var original = TestPhotos.WithGps(1200, 900);
+        JpegMetadata.HasMetadata(original).ShouldBeTrue();
+
+        var upload = await UploadUrl(alice, id);
+        using (var put = await Put(anonymous, upload.Url, original))
+        {
+            put.StatusCode.ShouldBe(HttpStatusCode.Created);
+        }
+
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        while (trigger.Pending > 0)
+        {
+            clock.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(20), "photo processing did not finish");
+            await Task.Delay(20, Ct);
+        }
+
+        var read = (await alice.GetFromJsonAsync<PhotoUrlResponse>($"/photos/{id}/url", Ct))!;
+        var served = await (await anonymous.GetAsync(read.Url, Ct)).Content.ReadAsByteArrayAsync(Ct);
+        JpegMetadata.HasMetadata(served).ShouldBeFalse();
+        TestPhotos.Size(served).ShouldBe((1200, 900));
+    }
+
+    [Fact]
     public async Task Household_members_can_read_a_shared_photo_but_other_households_cannot_see_it()
     {
         using var alice = await ClientFor("alice");
@@ -232,7 +263,33 @@ public sealed class PhotoUploadTests(WebApplicationFactory<Program> factory) : I
         PhotoBlobRef.IsSafeId("../etc").ShouldBeFalse();
         PhotoBlobRef.IsSafeId("a/b").ShouldBeFalse();
         PhotoBlobRef.IsSafeId("").ShouldBeFalse();
-        Should.Throw<ArgumentException>(() => new FileSystemPhotoBlobStore(Path.GetTempPath()).ReadAsync(new PhotoBlobRef("..", "x"), Ct));
+        Should.Throw<ArgumentException>(() => new FileSystemPhotoBlobStore(Path.GetTempPath()).ReadAsync("photos/../x.jpg", Ct));
+    }
+
+    [Fact]
+    public async Task The_file_store_says_when_a_file_was_written()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "dialed-photo-tests", Guid.NewGuid().ToString());
+        var store = new FileSystemPhotoBlobStore(root);
+        var written = new List<string>();
+        store.BlobWritten += written.Add;
+
+        await store.WriteAsync("photos/h1/p1.jpg", Jpeg, Ct);
+        await store.WriteAsync("thumbnails/h1/p1-256.jpg", Jpeg, Ct);
+
+        written.ShouldBe(["photos/h1/p1.jpg", "thumbnails/h1/p1-256.jpg"]);
+        Directory.Delete(root, recursive: true);
+    }
+
+    [Fact]
+    public async Task The_file_store_refuses_paths_that_leave_its_folder()
+    {
+        var store = new FileSystemPhotoBlobStore(Path.Combine(Path.GetTempPath(), "dialed-photo-tests", Guid.NewGuid().ToString()));
+
+        foreach (var path in new[] { "../x.jpg", "photos/../../x.jpg", "photos//x.jpg", "x.jpg", "photos/a b/x.jpg", "/etc/passwd" })
+        {
+            await Should.ThrowAsync<ArgumentException>(() => store.ReadAsync(path, Ct));
+        }
     }
 
     [Fact]
@@ -242,13 +299,14 @@ public sealed class PhotoUploadTests(WebApplicationFactory<Program> factory) : I
         var store = new FileSystemPhotoBlobStore(root);
         var blob = new PhotoBlobRef("h1", "p1");
 
-        await store.WriteAsync(blob, Jpeg, Ct);
-        (await store.ReadAsync(blob, Ct)).ShouldBe(Jpeg);
-        File.Exists(Path.Combine(root, "h1", "p1.jpg")).ShouldBeTrue();
+        await store.WriteAsync(blob.Path, Jpeg, Ct);
+        (await store.ReadAsync(blob.Path, Ct)).ShouldBe(Jpeg);
+        File.Exists(Path.Combine(root, "photos", "h1", "p1.jpg")).ShouldBeTrue();
+        (await store.ExistsAsync(blob.Path, Ct)).ShouldBeTrue();
 
-        await store.DeleteAsync(blob, Ct);
-        await store.DeleteAsync(blob, Ct);
-        (await store.ReadAsync(blob, Ct)).ShouldBeNull();
+        await store.DeleteAsync(blob.Path, Ct);
+        await store.DeleteAsync(blob.Path, Ct);
+        (await store.ReadAsync(blob.Path, Ct)).ShouldBeNull();
         Directory.Delete(root, recursive: true);
     }
 

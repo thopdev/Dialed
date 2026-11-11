@@ -11,8 +11,10 @@ public static class PhotoProcessingExtensions
     /// </summary>
     public static IServiceCollection AddDialedPhotoProcessing(this IServiceCollection services)
     {
+        // In memory unless AddDialedPhotos swaps in the folder-based store for development.
         services.AddSingleton<InMemoryPhotoBlobStore>();
         services.AddSingleton<IPhotoBlobStore>(sp => sp.GetRequiredService<InMemoryPhotoBlobStore>());
+        services.AddSingleton<IPhotoBlobEvents>(sp => sp.GetRequiredService<InMemoryPhotoBlobStore>());
         services.AddSingleton<IPhotoImageProcessor, SkiaPhotoImageProcessor>();
         services.AddSingleton<IPhotoRecords, SyncStorePhotoRecords>();
         services.AddScoped<PhotoProcessingHandler>();

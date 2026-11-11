@@ -17,7 +17,14 @@ public interface IPhotoBlobStore
     Task DeleteAsync(string path, CancellationToken cancellationToken = default);
 }
 
-public sealed class InMemoryPhotoBlobStore : IPhotoBlobStore
+/// <summary>A store that says when a file was written, like Blob Storage's blob-created event. The in-process trigger listens to it.</summary>
+public interface IPhotoBlobEvents
+{
+    /// <summary>Raised after every write, with the blob path.</summary>
+    event Action<string>? BlobWritten;
+}
+
+public sealed class InMemoryPhotoBlobStore : IPhotoBlobStore, IPhotoBlobEvents
 {
     private readonly ConcurrentDictionary<string, byte[]> blobs = new(StringComparer.Ordinal);
 

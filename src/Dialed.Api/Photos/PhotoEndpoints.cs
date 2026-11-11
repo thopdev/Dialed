@@ -1,3 +1,4 @@
+using Dialed.Images;
 using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Dialed.Api.Auth;
@@ -32,9 +33,14 @@ public static class PhotoEndpoints
         // Azure: register an issuer that makes user-delegation SAS URLs and a Blob Storage-backed store instead (docs/photo-uploads.md).
         services.TryAddSingleton<LocalSignedPhotoUrls>();
         services.TryAddSingleton<IPhotoUrlIssuer>(sp => sp.GetRequiredService<LocalSignedPhotoUrls>());
-        services.TryAddSingleton<IPhotoBlobStore>(_ => string.IsNullOrEmpty(options.LocalFolder)
-            ? new InMemoryPhotoBlobStore()
-            : new FileSystemPhotoBlobStore(options.LocalFolder));
+        // One store for uploads, processing and reads: in memory (registered by AddDialedPhotoProcessing), or a folder in development so photos
+        // survive an API restart.
+        if (!string.IsNullOrEmpty(options.LocalFolder))
+        {
+            var files = new FileSystemPhotoBlobStore(options.LocalFolder);
+            services.Replace(ServiceDescriptor.Singleton<IPhotoBlobStore>(files));
+            services.Replace(ServiceDescriptor.Singleton<IPhotoBlobEvents>(files));
+        }
         return services;
     }
 
@@ -90,7 +96,7 @@ public static class PhotoEndpoints
             return Results.Problem("The file is not a JPEG photo.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        await store.WriteAsync(blob, content, ct);
+        await store.WriteAsync(blob.Path, content, ct);
         foreach (var handler in handlers)
         {
             await handler.OnUploadedAsync(blob, ct);
@@ -108,7 +114,7 @@ public static class PhotoEndpoints
             return Results.Problem("The URL is not valid or has expired.", statusCode: StatusCodes.Status403Forbidden);
         }
 
-        if (await store.ReadAsync(blob, ct) is not { } content)
+        if (await store.ReadAsync(blob.Path, ct) is not { } content)
         {
             return Results.NotFound();
         }
