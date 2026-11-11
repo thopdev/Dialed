@@ -213,6 +213,11 @@
                 </div>
             </div>
 
+            @if (current.Origin.Country is { } originCountry)
+            {
+                <OriginMap Id="bean-origin-map" Zoom="true" Origins="@([(originCountry, 1)])" />
+            }
+
             @if (current.CopiedFrom is { } copiedFrom)
             {
                 <p id="bean-copied-from" class="dialed-muted dialed-copied-from">@string.Format(L["Item_CopiedFrom"].Value, copiedFrom.OwnerName)</p>

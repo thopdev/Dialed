@@ -999,4 +999,5 @@
   <data name="Count_People_One" xml:space="preserve"><value>{0} person</value></data>
   <data name="Count_People_Other" xml:space="preserve"><value>{0} people</value></data>
   <data name="Catalog_SharedBy" xml:space="preserve"><value>shared by {0}</value></data>
+  <data name="Map_Description" xml:space="preserve"><value>Map with a marker for each origin: {0}</value></data>
 </root>

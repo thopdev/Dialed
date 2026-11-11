@@ -29,6 +29,7 @@ public sealed class StatisticsTests : UiTestContext
 
         page.WaitForAssertion(() => page.Find("#stats-weekly").TextContent.ShouldContain("18 g"));
         page.Find("#stats-origins").TextContent.ShouldContain("Ethiopia");
+        page.Find("#stats-origin-map svg").GetAttribute("aria-label")!.ShouldContain("Ethiopia");
         page.Find("#stats-processes").TextContent.ShouldContain("Washed");
         page.Find("#stats-spend").TextContent.ShouldContain("14");
     }

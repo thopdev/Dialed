@@ -1,0 +1,79 @@
+@using Dialed.Domain.Geography
+@inject IStringLocalizer<Strings> L
+
+@* A small world map with a marker for each origin country (#285). Offline: the land outline is bundled, nothing is fetched.
+   A text alternative names the countries; the lists next to the map on the screens say the same in words. *@
+@if (pins.Count > 0)
+{
+    <figure id="@Id" class="dialed-origin-map">
+        <svg viewBox="@ViewBox" role="img" aria-label="@Description" focusable="false">
+            @if (zoomed is { } shape)
+            {
+                <path class="dialed-origin-map-land dialed-origin-map-outline" d="@CountryShapes.Others" />
+                <path class="dialed-origin-map-country dialed-origin-map-outline" d="@shape.Path"><title>@pins[0].Label</title></path>
+            }
+            else
+            {
+                <path class="dialed-origin-map-land" d="@WorldMapLand.Path" />
+                @foreach (var pin in pins)
+                {
+                    <circle class="dialed-origin-map-pin" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(pin.Radius)"><title>@pin.Label</title></circle>
+                }
+            }
+        </svg>
+    </figure>
+}
+
+@code {
+    private sealed record Pin(double X, double Y, double Radius, string Label);
+
+    private List<Pin> pins = [];
+    private CountryShapes.Shape? zoomed;
+    private string ViewBox { get; set; } = "";
+
+    /// <summary>Country names as typed on the beans, each with how often it comes up (brews, beans); the dot grows with the count.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<(string Country, int Count)> Origins { get; set; } = [];
+
+    /// <summary>With a single country: zoom in on it and outline the country instead of dropping a marker on the world.</summary>
+    [Parameter]
+    public bool Zoom { get; set; }
+
+    [Parameter]
+    public string Id { get; set; } = "origin-map";
+
+    private string Description => string.Format(L["Map_Description"].Value, string.Join(", ", pins.Select(p => p.Label)));
+
+    protected override void OnParametersSet()
+    {
+        var byCountry = new Dictionary<CountryPlace, (string Typed, int Count)>();
+        foreach (var (country, count) in Origins)
+        {
+            if (CountryCatalog.Find(country) is { } place)
+            {
+                var known = byCountry.GetValueOrDefault(place);
+                byCountry[place] = (known.Typed ?? country.Trim(), known.Count + Math.Max(count, 1));
+            }
+        }
+
+        zoomed = null;
+        ViewBox = $"0 0 {Num(WorldMapProjection.Width)} {Num(WorldMapProjection.Height)}";
+        if (Zoom && byCountry.Count == 1 && CountryShapes.ByIso2.TryGetValue(byCountry.Keys.Single().Iso2, out var shape))
+        {
+            zoomed = shape;
+            // A window 1.5 times the country, in the 5:3 shape of the map, never narrower than a few hundred kilometres so a small country keeps its neighbours around it.
+            var width = Math.Max(Math.Max((shape.X1 - shape.X0) * 1.5, (shape.Y1 - shape.Y0) * 1.5 * 5 / 3), 45);
+            var height = width * 3 / 5;
+            ViewBox = $"{Num((shape.X0 + shape.X1) / 2 - width / 2)} {Num((shape.Y0 + shape.Y1) / 2 - height / 2)} {Num(width)} {Num(height)}";
+        }
+
+        var max = byCountry.Count == 0 ? 1 : byCountry.Values.Max(v => v.Count);
+        pins = [.. byCountry.OrderByDescending(p => p.Value.Count).Select(p =>
+        {
+            var (x, y) = WorldMapProjection.Project(p.Key.Latitude, p.Key.Longitude);
+            return new Pin(x, y, 7 + 9.0 * p.Value.Count / max, p.Value.Typed);
+        })];
+    }
+
+    private static string Num(double value) => value.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+}

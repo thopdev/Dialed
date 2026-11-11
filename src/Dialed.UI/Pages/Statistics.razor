@@ -60,6 +60,7 @@ else
     </section>
 
     <Favourites Id="stats-origins" Title="@L["Stats_Origins"]" Items="stats.Origins" />
+    <OriginMap Id="stats-origin-map" Origins="@([.. stats.Origins.Select(o => (o.Name, o.Brews))])" />
     <Favourites Id="stats-roasters" Title="@L["Stats_Roasters"]" Items="stats.Roasters" />
     <Favourites Id="stats-processes" Title="@L["Stats_Processes"]" Items="stats.Processes" />
 
