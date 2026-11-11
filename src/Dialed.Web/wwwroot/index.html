@@ -59,6 +59,8 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="Dialed.Web#[.{fingerprint}].styles.css" />
     <script type="importmap"></script>
+    <!-- First script on the page so JavaScript errors during startup are caught too (#91). -->
+    <script src="js/errors.js"></script>
 </head>
 
 <!-- Fluent UI builds light and dark brand themes from this colour (espresso brown) and follows the system mode. -->

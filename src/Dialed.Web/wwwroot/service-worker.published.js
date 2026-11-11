@@ -3,9 +3,25 @@
 // when the user accepts, sends SKIP_WAITING so the switch happens at a moment they choose.
 // Caching of API data is not done here - that is the local database's job (#37/#38).
 
+// A worker has no console anyone sees, so its errors go to the open pages, where js/errors.js reports them like page errors (#91).
+// Only the name and stack are posted; the page drops the message. Failed fetches are not reported: offline they are expected.
+function reportToPages(error) {
+    const report = {
+        type: 'dialed-sw-error',
+        name: error && typeof error.name === 'string' ? error.name : 'Error',
+        stack: error && typeof error.stack === 'string' ? error.stack : ''
+    };
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+        .then(pages => pages.forEach(page => page.postMessage(report)))
+        .catch(() => { });
+}
+const reported = work => work.catch(error => { reportToPages(error); throw error; });
+self.addEventListener('error', event => reportToPages(event.error));
+self.addEventListener('unhandledrejection', event => reportToPages(event.reason));
+
 self.importScripts('./service-worker-assets.js');
-self.addEventListener('install', event => event.waitUntil(onInstall()));
-self.addEventListener('activate', event => event.waitUntil(onActivate()));
+self.addEventListener('install', event => event.waitUntil(reported(onInstall())));
+self.addEventListener('activate', event => event.waitUntil(reported(onActivate())));
 self.addEventListener('fetch', event => event.respondWith(onFetch(event)));
 self.addEventListener('message', event => {
     if (event.data === 'SKIP_WAITING') {

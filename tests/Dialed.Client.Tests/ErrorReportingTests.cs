@@ -128,4 +128,71 @@ public sealed class ErrorReportingTests
         ErrorScrubber.Scrub(string.Concat(Enumerable.Repeat("word ", 20)), 20).Length.ShouldBe(20);
         ErrorScrubber.Scrub(null, 20).ShouldBe("");
     }
+
+    private const string ChromeStack =
+        "TypeError: Cannot read properties of undefined (reading 'thomas@example.com typed this')\n" +
+        "    at saveNote (https://dialed.example.com/js/platform.js?v=0194e0c5-7b0a-7c2e-8f5a-1b2c3d4e5f60:12:5)\n" +
+        "    at async https://dialed.example.com/_framework/blazor.webassembly.js:1:300";
+
+    private const string SafariStack =
+        "saveNote@https://dialed.example.com/js/platform.js:12:5\n" +
+        "@https://dialed.example.com/_framework/blazor.webassembly.js:1:300";
+
+    [Fact]
+    public async Task A_script_error_keeps_its_name_and_frames_but_not_its_message()
+    {
+        var (reporter, sink, _, _) = Make();
+
+        (await reporter.ReportScriptErrorAsync("script", "TypeError", ChromeStack)).ShouldBeTrue();
+
+        var report = sink.Reports.Single();
+        report.Kind.ShouldBe("script");
+        report.Type.ShouldBe("TypeError");
+        report.Message.ShouldBeNull();
+        report.Stack.ShouldNotBeNull();
+        report.Stack.ShouldBe("at saveNote (/js/platform.js:12:5)\nat async /_framework/blazor.webassembly.js:1:300");
+        report.Stack.ShouldNotContain("typed this");
+        report.Stack.ShouldNotContain("@example.com");
+        report.Stack.ShouldNotContain("dialed.example.com");
+    }
+
+    [Fact]
+    public void Firefox_and_Safari_frames_are_kept_too() =>
+        ScriptErrors.Frames(SafariStack).ShouldBe("saveNote@/js/platform.js:12:5\n@/_framework/blazor.webassembly.js:1:300");
+
+    [Theory]
+    [InlineData("TypeError", "TypeError")]
+    [InlineData("AbortError", "AbortError")]
+    [InlineData("Bad input from thomas@example.com", "Error")]
+    [InlineData("", "Error")]
+    [InlineData(null, "Error")]
+    public void A_script_error_name_that_could_hold_text_becomes_Error(string? name, string expected) =>
+        ScriptErrors.Name(name).ShouldBe(expected);
+
+    [Fact]
+    public async Task A_rejection_with_a_plain_value_is_reported_without_a_stack()
+    {
+        var (reporter, sink, _, _) = Make();
+
+        (await reporter.ReportScriptErrorAsync("rejection", "UnhandledRejection", "")).ShouldBeTrue();
+        (await reporter.ReportScriptErrorAsync("anything else", "Error", null)).ShouldBeTrue();
+
+        sink.Reports[0].Kind.ShouldBe("rejection");
+        sink.Reports[0].Stack.ShouldBeNull();
+        sink.Reports[1].Kind.ShouldBe("script");
+    }
+
+    [Fact]
+    public async Task Script_errors_follow_the_opt_out_and_the_same_error_limit()
+    {
+        var (reporter, sink, settings, clock) = Make();
+
+        (await reporter.ReportScriptErrorAsync("service-worker", "TypeError", ChromeStack)).ShouldBeTrue();
+        (await reporter.ReportScriptErrorAsync("service-worker", "TypeError", ChromeStack.Replace("typed this", "typed that", StringComparison.Ordinal))).ShouldBeFalse();
+        clock.Now = clock.Now.AddMinutes(2);
+        await settings.SetEnabledAsync(false);
+        (await reporter.ReportScriptErrorAsync("service-worker", "TypeError", ChromeStack)).ShouldBeFalse();
+
+        sink.Reports.Count.ShouldBe(1);
+    }
 }

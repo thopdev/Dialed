@@ -122,6 +122,21 @@ public sealed class ErrorReporter : IDisposable
         return SendAsync(new ErrorReport(kind, exception.GetType().FullName ?? "Exception", null, stack, AppVersion, time.GetUtcNow()), $"{kind}|{exception.GetType().Name}|{topFrame}");
     }
 
+    /// <summary>
+    /// Reports an error from JavaScript (#91): an uncaught error, an unhandled promise rejection or a service worker error. Only the error
+    /// name and the stack frames are kept; the message is dropped, also where a browser puts it on the first line of the stack.
+    /// </summary>
+    public Task<bool> ReportScriptErrorAsync(string kind, string? name, string? stack)
+    {
+        var safeKind = ScriptErrors.Kind(kind);
+        var type = ScriptErrors.Name(name);
+        var frames = ErrorScrubber.Scrub(ScriptErrors.Frames(stack), ErrorScrubber.MaxStackLength);
+        var topFrame = frames.Split('\n', 2)[0].Trim();
+        return SendAsync(
+            new ErrorReport(safeKind, type, null, frames.Length == 0 ? null : frames, AppVersion, time.GetUtcNow()),
+            $"{safeKind}|{type}|{topFrame}");
+    }
+
     /// <summary>Reports that changes keep failing to sync (counts only, no content).</summary>
     public Task<bool> ReportSyncFailureAsync(SyncResult result)
     {
@@ -170,6 +185,52 @@ public sealed class ErrorReporter : IDisposable
         {
             sync.SyncFailed -= OnSyncFailed;
         }
+    }
+}
+
+/// <summary>Turns what a browser says about a JavaScript error into something safe to report.</summary>
+public static partial class ScriptErrors
+{
+    public const int MaxFrames = 20;
+    private static readonly string[] Kinds = ["script", "rejection", "service-worker"];
+
+    // Chrome/Edge: "    at fn (https://host/js/a.js:1:2)". Firefox/Safari: "fn@https://host/js/a.js:1:2".
+    [GeneratedRegex(@"^\s*at\s+\S.*$|^[^\s@]*@\S+:\d+(:\d+)?$")]
+    private static partial Regex Frame();
+
+    [GeneratedRegex(@"https?://[^/\s)]+")]
+    private static partial Regex Origin();
+
+    // "a.js?v=123:12:5" keeps its line and column: only the query goes.
+    [GeneratedRegex(@"[?#][^\s:)]*")]
+    private static partial Regex Query();
+
+    [GeneratedRegex(@"^[A-Za-z][A-Za-z0-9_$.]{0,63}$")]
+    private static partial Regex SafeName();
+
+    /// <summary>One of the known kinds; anything else becomes "script".</summary>
+    public static string Kind(string? kind) => kind is not null && Kinds.Contains(kind, StringComparer.Ordinal) ? kind : "script";
+
+    /// <summary>The error's name (TypeError, AbortError...) when it looks like one; a custom name with spaces or text becomes "Error".</summary>
+    public static string Name(string? name) => name is not null && SafeName().IsMatch(name) ? name : "Error";
+
+    /// <summary>
+    /// Keeps only the lines that are stack frames, so the message (which can hold what the person typed) never leaves the device, and
+    /// drops the origin from URLs so the same error groups the same way on every host.
+    /// </summary>
+    public static string Frames(string? stack)
+    {
+        if (string.IsNullOrWhiteSpace(stack))
+        {
+            return "";
+        }
+
+        var frames = stack.Split('\n')
+            .Select(line => line.TrimEnd('\r'))
+            .Where(line => Frame().IsMatch(line))
+            .Take(MaxFrames)
+            .Select(line => Origin().Replace(Query().Replace(line.Trim(), ""), ""));
+        return string.Join('\n', frames);
     }
 }
 

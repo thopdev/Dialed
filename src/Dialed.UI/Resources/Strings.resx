@@ -813,6 +813,8 @@
   <data name="DialIn_Problem_QuotaUsed" xml:space="preserve"><value>You have used all suggestions for today. The advice above still works.</value></data>
   <data name="DialIn_Problem_Disabled" xml:space="preserve"><value>The assistant is switched off for now. The advice above still works.</value></data>
   <data name="DialIn_Problem_Unavailable" xml:space="preserve"><value>No answer from the assistant right now. The advice above still works.</value></data>
+  <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>syncing in another tab...</value></data>
+  <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Syncing in another tab</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Rename</value></data>
   <data name="Household_RenameNamed" xml:space="preserve"><value>Rename {0}</value></data>
   <data name="Household_Name" xml:space="preserve"><value>Household name</value></data>

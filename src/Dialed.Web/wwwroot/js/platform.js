@@ -417,6 +417,19 @@ export function reportError(report) {
     }
 }
 
+// Forwards JavaScript errors caught by js/errors.js (window errors, unhandled rejections, service worker errors) to .NET, which
+// scrubs, deduplicates and limits them like .NET errors. Returns whether the catcher was on the page.
+export function watchScriptErrors(dotNetRef) {
+    const catcher = window.dialedErrors;
+    if (!catcher) {
+        return false;
+    }
+    catcher.connect(report => {
+        dotNetRef.invokeMethodAsync('OnScriptError', report.kind, report.name, report.stack).catch(() => { });
+    });
+    return true;
+}
+
 // A short, anonymous description for feedback messages: device kind, OS and whether this is the installed app.
 export function describeDevice() {
     const ua = navigator.userAgent || '';
@@ -424,4 +437,37 @@ export function describeDevice() {
         : /Android/.test(ua) ? 'Android' : /Mac OS X/.test(ua) ? 'macOS' : /Windows/.test(ua) ? 'Windows' : 'other OS';
     const installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
     return `${deviceType()}, ${os.trim()}, ${installed ? 'installed app' : 'browser tab'}`;
+}
+
+// Cross-tab lock (#39): Web Locks, so only one tab syncs at a time. The browser frees a lock when its tab closes.
+// Without Web Locks (old browsers, insecure origins) every tab gets the lock, as before.
+const crossTabLocks = new Map();
+
+export function crossTabLockAcquire(id, name, wait) {
+    if (!navigator.locks?.request) return Promise.resolve(true);
+    const entry = { abort: new AbortController(), release: null };
+    crossTabLocks.set(id, entry);
+    return new Promise((resolve, reject) => {
+        const options = wait ? { signal: entry.abort.signal } : { ifAvailable: true };
+        navigator.locks.request(name, options, lock => {
+            if (!lock) {
+                crossTabLocks.delete(id);
+                resolve(false);
+                return undefined;
+            }
+            resolve(true);
+            // Held until crossTabLockRelease resolves this promise.
+            return new Promise(release => { entry.release = release; });
+        }).catch(error => {
+            crossTabLocks.delete(id);
+            reject(error);
+        });
+    });
+}
+
+export function crossTabLockRelease(id) {
+    const entry = crossTabLocks.get(id);
+    crossTabLocks.delete(id);
+    if (entry?.release) entry.release();
+    else entry?.abort.abort();
 }

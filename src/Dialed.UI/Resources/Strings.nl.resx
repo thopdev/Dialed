@@ -812,6 +812,8 @@
   <data name="DialIn_Problem_QuotaUsed" xml:space="preserve"><value>Je hebt alle suggesties van vandaag gebruikt. Het advies hierboven werkt nog steeds.</value></data>
   <data name="DialIn_Problem_Disabled" xml:space="preserve"><value>De assistent staat even uit. Het advies hierboven werkt nog steeds.</value></data>
   <data name="DialIn_Problem_Unavailable" xml:space="preserve"><value>De assistent geeft nu geen antwoord. Het advies hierboven werkt nog steeds.</value></data>
+  <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>synchroniseren in een ander tabblad...</value></data>
+  <data name="Sync_Indicator_OtherTab" xml:space="preserve"><value>Synchroniseren in een ander tabblad</value></data>
   <data name="Household_Rename" xml:space="preserve"><value>Hernoemen</value></data>
   <data name="Household_RenameNamed" xml:space="preserve"><value>{0} hernoemen</value></data>
   <data name="Household_Name" xml:space="preserve"><value>Naam van het huishouden</value></data>

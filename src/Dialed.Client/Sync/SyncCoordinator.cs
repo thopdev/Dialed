@@ -14,11 +14,16 @@ public enum SyncStatus
 
     /// <summary>Not signed in, so nothing is synced (everything stays on this device).</summary>
     NeedsSignIn,
+
+    /// <summary>Another tab of the app is syncing; this one syncs when that is done (only one tab syncs at a time).</summary>
+    SyncingElsewhere,
 }
 
 /// <summary>
 /// Decides when to sync and tells the UI how it is going. Syncs on start, when the app returns to the foreground, when the
 /// network comes back and shortly after a local change (debounced), plus on request (pull-to-refresh, "Sync now").
+/// Only one tab syncs at a time (<see cref="ICrossTabLock"/>): a tab that finds another one syncing waits for it in the background
+/// and then syncs itself.
 /// </summary>
 public sealed class SyncCoordinator : IDisposable
 {
@@ -29,9 +34,12 @@ public sealed class SyncCoordinator : IDisposable
     private readonly IAppLifecycle lifecycle;
     private readonly TimeProvider time;
     private readonly TimeSpan debounce;
+    private readonly ICrossTabLock tabLock;
     private readonly Lock gate = new();
     private CancellationTokenSource? pendingRequest;
     private CancellationTokenSource? retryTimer;
+    private CancellationTokenSource? otherTabWait;
+    private int running;
     private int consecutiveFailures;
     private bool started;
     private bool disposed;
@@ -43,7 +51,8 @@ public sealed class SyncCoordinator : IDisposable
         IConnectivity connectivity,
         IAppLifecycle lifecycle,
         TimeProvider time,
-        TimeSpan? debounce = null)
+        TimeSpan? debounce = null,
+        ICrossTabLock? tabLock = null)
     {
         this.engine = engine;
         this.state = state;
@@ -52,6 +61,7 @@ public sealed class SyncCoordinator : IDisposable
         this.lifecycle = lifecycle;
         this.time = time;
         this.debounce = debounce ?? TimeSpan.FromSeconds(3);
+        this.tabLock = tabLock ?? SingleWindowLock.Instance;
         engine.PullProgressed += OnPullProgressed;
     }
 
@@ -86,6 +96,9 @@ public sealed class SyncCoordinator : IDisposable
     public static TimeSpan BackoffDelay(int failures) =>
         TimeSpan.FromSeconds(Math.Min(300, 5 * Math.Pow(2, Math.Max(0, failures - 1))));
 
+    /// <summary>The name of the lock every tab takes while it syncs.</summary>
+    public const string LockName = "dialed-sync";
+
     /// <summary>Raised whenever anything above changes.</summary>
     public event Action? Changed;
 
@@ -112,21 +125,62 @@ public sealed class SyncCoordinator : IDisposable
         await SyncNowAsync();
     }
 
-    /// <summary>Syncs now. Returns without doing anything if a sync is already running.</summary>
-    public async Task<SyncResult> SyncNowAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Syncs now. Returns without doing anything if a sync is already running, here or in another tab (this tab then syncs once
+    /// the other one is done).
+    /// </summary>
+    public Task<SyncResult> SyncNowAsync(CancellationToken cancellationToken = default) => SyncAsync(heldLock: null, cancellationToken);
+
+    /// <summary>
+    /// One sync at a time in this tab (<see cref="running"/>), and across tabs with the cross-tab lock: <paramref name="heldLock"/>
+    /// when the caller already took it (after waiting for another tab), otherwise taken here.
+    /// </summary>
+    private async Task<SyncResult> SyncAsync(IAsyncDisposable? heldLock, CancellationToken cancellationToken)
     {
-        if (Status == SyncStatus.Syncing)
+        if ((heldLock is null && IsWaitingForOtherTab) || Interlocked.CompareExchange(ref running, 1, 0) != 0)
         {
+            if (heldLock is not null)
+            {
+                await heldLock.DisposeAsync();
+            }
+
             return SyncResult.AlreadyRunning;
         }
 
+        SyncResult result;
+        bool otherTabSyncing;
+        try
+        {
+            (result, otherTabSyncing) = await SyncHereAsync(heldLock, cancellationToken);
+        }
+        finally
+        {
+            if (heldLock is not null)
+            {
+                await heldLock.DisposeAsync();
+            }
+
+            Volatile.Write(ref running, 0);
+        }
+
+        // Only after this sync stopped counting as running, so the wait can start the next one.
+        if (otherTabSyncing)
+        {
+            WaitForOtherTab();
+        }
+
+        return result;
+    }
+
+    private async Task<(SyncResult Result, bool OtherTabSyncing)> SyncHereAsync(IAsyncDisposable? heldLock, CancellationToken cancellationToken)
+    {
         try
         {
             if (await tokens.GetAccessTokenAsync(cancellationToken) is null)
             {
                 Update(SyncStatus.NeedsSignIn);
                 await RefreshPendingAsync();
-                return new SyncResult(SyncOutcome.Offline);
+                return (new SyncResult(SyncOutcome.Offline), false);
             }
         }
         catch (SyncTransportException)
@@ -134,13 +188,20 @@ public sealed class SyncCoordinator : IDisposable
             // The sign-in could not be renewed right now (offline or server trouble): keep everything and try again later.
             Update(SyncStatus.Offline);
             ScheduleRetry();
-            return new SyncResult(SyncOutcome.Offline);
+            return (new SyncResult(SyncOutcome.Offline), false);
         }
 
         if (!connectivity.IsOnline)
         {
             Update(SyncStatus.Offline);
-            return new SyncResult(SyncOutcome.Offline);
+            return (new SyncResult(SyncOutcome.Offline), false);
+        }
+
+        // A lock taken here is freed when this method ends; one handed in is freed by the caller.
+        await using var ownLock = heldLock is null ? await tabLock.TryAcquireAsync(LockName, cancellationToken) : null;
+        if (heldLock is null && ownLock is null)
+        {
+            return (SyncResult.AlreadyRunning, true);
         }
 
         Update(SyncStatus.Syncing);
@@ -163,7 +224,7 @@ public sealed class SyncCoordinator : IDisposable
 
         if (result.Outcome == SyncOutcome.AlreadyRunning)
         {
-            return result;
+            return (result, false);
         }
 
         LastResult = result;
@@ -185,7 +246,7 @@ public sealed class SyncCoordinator : IDisposable
         RestoringCount = 0;
         await RefreshPendingAsync();
         Update(result.Outcome == SyncOutcome.Offline ? SyncStatus.Offline : SyncStatus.Idle);
-        return result;
+        return (result, false);
     }
 
     /// <summary>Syncs after the debounce time; several calls in a row become one sync.</summary>
@@ -219,6 +280,9 @@ public sealed class SyncCoordinator : IDisposable
             disposed = true;
             pendingRequest?.Cancel();
             pendingRequest?.Dispose();
+            otherTabWait?.Cancel();
+            otherTabWait?.Dispose();
+            otherTabWait = null;
             retryTimer?.Cancel();
             retryTimer?.Dispose();
         }
@@ -227,6 +291,86 @@ public sealed class SyncCoordinator : IDisposable
         engine.PullProgressed -= OnPullProgressed;
         connectivity.Changed -= OnConnectivityChanged;
         lifecycle.Resumed -= OnResumed;
+    }
+
+    private bool IsWaitingForOtherTab
+    {
+        get
+        {
+            lock (gate)
+            {
+                return otherTabWait is not null;
+            }
+        }
+    }
+
+    /// <summary>Another tab holds the sync lock: say so, wait until it is done, then sync here (its changes may be ours to pull).</summary>
+    private void WaitForOtherTab()
+    {
+        CancellationTokenSource wait;
+        lock (gate)
+        {
+            if (disposed || otherTabWait is not null)
+            {
+                return;
+            }
+
+            wait = otherTabWait = new CancellationTokenSource();
+        }
+
+        Update(SyncStatus.SyncingElsewhere);
+        _ = WaitForOtherTabAsync(wait);
+    }
+
+    private async Task WaitForOtherTabAsync(CancellationTokenSource wait)
+    {
+        IAsyncDisposable? held = null;
+        try
+        {
+            held = await tabLock.AcquireAsync(LockName, wait.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception)
+        {
+            // The lock itself failed; sync anyway below rather than stay stuck waiting.
+        }
+
+        bool current;
+        lock (gate)
+        {
+            current = otherTabWait == wait;
+            if (current)
+            {
+                otherTabWait = null;
+                wait.Dispose();
+            }
+        }
+
+        if (!current)
+        {
+            // Disposed meanwhile.
+            if (held is not null)
+            {
+                await held.DisposeAsync();
+            }
+
+            return;
+        }
+
+        held ??= await SingleWindowLock.Instance.AcquireAsync(LockName);
+        Update(SyncStatus.Idle);
+        try
+        {
+            // The other tab is done. Sync here while still holding the lock: freeing it and taking it again could find it not yet
+            // freed and mistake this tab for another one.
+            await SyncAsync(held, CancellationToken.None);
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     /// <summary>The server could not be reached: try again after an exponentially growing wait, so a flaky connection is not hammered.</summary>
