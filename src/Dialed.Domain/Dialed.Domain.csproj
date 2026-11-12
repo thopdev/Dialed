@@ -6,6 +6,7 @@
     <!-- Versioned reference data, bundled in the assembly so the app works offline. -->
     <EmbeddedResource Include="BrewMethods\brew-methods.json" LogicalName="Dialed.Domain.brew-methods.json" />
     <EmbeddedResource Include="BrewMethods\default-recipes.json" LogicalName="Dialed.Domain.default-recipes.json" />
+    <EmbeddedResource Include="BrewMethods\pour-routines.json" LogicalName="Dialed.Domain.pour-routines.json" />
   </ItemGroup>
 
   <ItemGroup>

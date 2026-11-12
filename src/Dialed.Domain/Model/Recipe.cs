@@ -10,8 +10,17 @@ public enum RecipeStepKind
     Wait,
 }
 
-/// <summary>One step of a recipe timeline. <see cref="WaterG"/> is the total water poured once the step is done.</summary>
-public sealed record RecipeStep(RecipeStepKind Kind, int AtS, int? DurationS = null, decimal? WaterG = null, string? Note = null);
+/// <summary>How the water is poured in a step: straight into the middle, in a spiral, in circles over the whole bed, or in short pulses.</summary>
+public enum PourPattern
+{
+    Centre,
+    Spiral,
+    Circles,
+    Pulse,
+}
+
+/// <summary>One step of a recipe timeline. <see cref="WaterG"/> is the total water poured once the step is done; <see cref="Pattern"/> is optional and only drawn.</summary>
+public sealed record RecipeStep(RecipeStepKind Kind, int AtS, int? DurationS = null, decimal? WaterG = null, string? Note = null, PourPattern? Pattern = null);
 
 /// <summary>
 /// How to brew one method. Only the parameters the method uses are filled in. Ratio is never stored: it is
