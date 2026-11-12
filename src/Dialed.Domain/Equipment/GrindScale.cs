@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace Dialed.Domain.Equipment;
 
@@ -25,6 +26,9 @@ public enum GrindValidation
 /// </summary>
 public sealed record GrindScale
 {
+    // [JsonConstructor]: the private constructor is how a scale is read back from JSON (sync, local storage, export). Without it a grinder
+    // with a scale could be saved but never loaded again on another device. The checks below also run for data read from outside.
+    [JsonConstructor]
     private GrindScale(GrindSettingKind kind, decimal min, decimal max, decimal step)
     {
         if (max <= min)
