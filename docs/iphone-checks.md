@@ -88,6 +88,14 @@ The production app only started caching itself in #283 (before that the service 
 - [ ] Brew history > a brew of mine > **Share a picture of this brew**: the iOS share sheet opens with a PNG (Save Image, Messages and Instagram accept it), the card is readable and not cut off, and long bean names wrap.
 - [ ] In the installed PWA and in Safari; in airplane mode the card still appears (nothing is fetched).
 
+## Bean card
+- [ ] Beans > a bean with an origin country > **share** icon in the header: the iOS share sheet opens with a PNG; the country is zoomed on the map, the stars match the rating, a long bean name wraps and nothing overlaps the footer.
+- [ ] Works in the installed PWA, in Safari and in airplane mode.
+
+## Gear upkeep push
+- [ ] Gear > a grinder with "or every (days)" set to 1 and serviced two days ago, Settings > Notifications > **A piece of gear is due for service** on: the next morning around 08:00 one notification names the gear and tapping it opens Gear.
+- [ ] Mark it serviced: no notification until it is due again; switching the switch off stops it.
+
 ## Accessibility (#49)
 - [ ] VoiceOver reads every control with a name, in light and dark mode: Home, Brew, Beans, Recipes, History, Settings, People, Scan.
 - [ ] The Copy button reads the item's name; feed rows read as one sentence; the rating reads "4 of 5 stars".
