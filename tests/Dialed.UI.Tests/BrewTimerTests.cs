@@ -126,12 +126,12 @@ public sealed class BrewTimerTests : UiTestContext
         await Advance(page, 20);
 
         page.Find("#timer-pause").Click();
-        page.Find("#timer-pause").TextContent.ShouldBe("Resume");
+        page.Find("#timer-pause").GetAttribute("aria-label").ShouldBe("Resume");
         await Advance(page, 60);
         page.Find("#timer-clock").TextContent.ShouldBe("0:20");
 
         page.Find("#timer-pause").Click();
-        page.Find("#timer-pause").TextContent.ShouldBe("Pause");
+        page.Find("#timer-pause").GetAttribute("aria-label").ShouldBe("Pause");
         await Advance(page, 10);
 
         page.Find("#timer-clock").TextContent.ShouldBe("0:30");
@@ -171,7 +171,7 @@ public sealed class BrewTimerTests : UiTestContext
         page.Find("#timer-focus").Click();
 
         page.Find(".dialed-timer").ClassList.ShouldContain("dialed-timer-focus");
-        page.Find("#timer-focus").TextContent.ShouldBe("Normal view");
+        page.Find("#timer-focus").GetAttribute("aria-label").ShouldBe("Normal view");
         page.Find("#timer-focus").GetAttribute("aria-pressed").ShouldBe("true");
         page.Find("#timer-start").ShouldNotBeNull();
         page.Find("#timer-clock").ShouldNotBeNull();

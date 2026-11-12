@@ -3458,3 +3458,65 @@ a.dialed-banner {
 .dialed-tips[open] > summary {
     margin-bottom: var(--dialed-space-3);
 }
+
+/* ---- Brew timer controls like a music player -------------------------------------------------------- */
+
+.dialed-transport {
+    position: sticky;
+    bottom: calc(-1 * var(--dialed-space-4));
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dialed-space-4);
+    align-self: stretch;
+    margin: var(--dialed-space-2) calc(-1 * var(--dialed-space-4)) calc(-1 * var(--dialed-space-4));
+    padding: var(--dialed-space-3) var(--dialed-space-4);
+    background: var(--colorNeutralBackground1);
+    border-top: 1px solid var(--colorNeutralStroke2);
+}
+
+.dialed-transport-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    padding: 0;
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: 50%;
+    background: var(--colorNeutralBackground1);
+    color: var(--colorNeutralForeground1);
+    cursor: pointer;
+}
+
+.dialed-transport-button:active {
+    background: var(--colorNeutralBackground1Pressed);
+}
+
+.dialed-transport-button[aria-pressed="true"]:not(.dialed-transport-main) {
+    border-color: var(--colorBrandStroke1);
+    color: var(--colorBrandForeground1);
+}
+
+.dialed-transport-main {
+    width: 5.5rem;
+    height: 5.5rem;
+    border-color: transparent;
+    background: var(--colorBrandBackground);
+    color: var(--colorNeutralForegroundOnBrand);
+}
+
+.dialed-transport-main:active {
+    background: var(--colorBrandBackgroundPressed);
+}
+
+.dialed-transport-button svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.dialed-transport-main svg {
+    width: 2.5rem;
+    height: 2.5rem;
+}

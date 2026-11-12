@@ -114,25 +114,39 @@ else
             <label class="dialed-check dialed-timer-voice"><input id="timer-voice" type="checkbox" checked="@Preferences.Profile.TimerVoice" @onchange="e => SetVoiceAsync((bool)e.Value!)" /> @L["Timer_Voice"]</label>
         }
 
-        <div class="dialed-form-actions dialed-timer-actions">
-            @if (!running)
-            {
-                <button type="button" id="timer-start" class="dialed-button dialed-button-primary" @onclick="StartAsync">@L["Timer_StartButton"]</button>
-            }
-            else
-            {
-                <button type="button" id="timer-finish" class="dialed-button dialed-button-primary" @onclick="FinishAsync">@L["Timer_Finish"]</button>
-                @if (!isEspresso)
-                {
-                    <button type="button" id="timer-pause" class="dialed-button" aria-pressed="@(paused ? "true" : "false")" @onclick="TogglePauseAsync">@L[paused ? "Timer_Resume" : "Timer_Pause"]</button>
-                }
-            }
-
-            <button type="button" id="timer-focus" class="dialed-button" aria-pressed="@(focus ? "true" : "false")" @onclick="@(() => focus = !focus)">@L[focus ? "Timer_FocusOff" : "Timer_FocusOn"]</button>
+        @* Controls like a music player: round icon buttons, a big play/pause in the middle. *@
+        <div class="dialed-transport" role="group" aria-label="@L["Timer_Controls"]">
+            <button type="button" id="timer-focus" class="dialed-transport-button" aria-label="@L[focus ? "Timer_FocusOff" : "Timer_FocusOn"]" title="@L[focus ? "Timer_FocusOff" : "Timer_FocusOn"]" aria-pressed="@(focus ? "true" : "false")" @onclick="@(() => focus = !focus)">
+                <FluentIcon Value="@FocusIcon" Color="Color.Custom" CustomColor="currentColor" />
+            </button>
 
             @if (running || elapsed > 0)
             {
-                <button type="button" id="timer-reset" class="dialed-button" @onclick="ResetAsync">@L["Timer_Reset"]</button>
+                <button type="button" id="timer-reset" class="dialed-transport-button" aria-label="@L["Timer_Reset"]" title="@L["Timer_Reset"]" @onclick="ResetAsync">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.ArrowCounterclockwise())" Color="Color.Custom" CustomColor="currentColor" />
+                </button>
+            }
+
+            @if (!running)
+            {
+                <button type="button" id="timer-start" class="dialed-transport-button dialed-transport-main" aria-label="@L["Timer_StartButton"]" title="@L["Timer_StartButton"]" @onclick="StartAsync">
+                    <FluentIcon Value="@(new Icons.Filled.Size32.Play())" Color="Color.Custom" CustomColor="currentColor" />
+                </button>
+            }
+            else if (isEspresso)
+            {
+                <button type="button" id="timer-finish" class="dialed-transport-button dialed-transport-main" aria-label="@L["Timer_Finish"]" title="@L["Timer_Finish"]" @onclick="FinishAsync">
+                    <FluentIcon Value="@(new Icons.Filled.Size24.Stop())" Color="Color.Custom" CustomColor="currentColor" />
+                </button>
+            }
+            else
+            {
+                <button type="button" id="timer-pause" class="dialed-transport-button dialed-transport-main" aria-label="@L[paused ? "Timer_Resume" : "Timer_Pause"]" title="@L[paused ? "Timer_Resume" : "Timer_Pause"]" aria-pressed="@(paused ? "true" : "false")" @onclick="TogglePauseAsync">
+                    <FluentIcon Value="@PlayPauseIcon" Color="Color.Custom" CustomColor="currentColor" />
+                </button>
+                <button type="button" id="timer-finish" class="dialed-transport-button" aria-label="@L["Timer_Finish"]" title="@L["Timer_Finish"]" @onclick="FinishAsync">
+                    <FluentIcon Value="@(new Icons.Regular.Size24.Checkmark())" Color="Color.Custom" CustomColor="currentColor" />
+                </button>
             }
         </div>
     </div>
@@ -151,6 +165,10 @@ else
     private bool speechSupported;
     private int lastCountdown;
     private bool paused;
+
+    private Icon FocusIcon => focus ? new Icons.Regular.Size24.FullScreenMinimize() : new Icons.Regular.Size24.FullScreenMaximize();
+
+    private Icon PlayPauseIcon => paused ? new Icons.Filled.Size32.Play() : new Icons.Filled.Size32.Pause();
     private bool focus;
     private DateTimeOffset pausedAt;
 
