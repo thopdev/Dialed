@@ -98,7 +98,7 @@
                 @foreach (var day in Days)
                 {
                     <section class="dialed-day-group" data-day="@day.Key.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" aria-labelledby="@($"day-{day.Key:yyyyMMdd}")">
-                        <h2 class="dialed-day-title" id="@($"day-{day.Key:yyyyMMdd}")">@DayTitle(day.Key)</h2>
+                        <h2 class="dialed-day-title" id="@($"day-{day.Key:yyyyMMdd}")"><strong>@DayTitle(day.Key)</strong> <span class="dialed-day-sub">@DaySub(day.Key, day.Count())</span></h2>
                         <div class="dialed-list dialed-list-cards">
                             @foreach (var brew in day)
                             {
@@ -192,7 +192,7 @@
                         <span class="dialed-muted" id="history-when">@WhenText(current.BrewedAt)</span>
                         @if (current.Rating is { } stars)
                         {
-                            <StarRating Value="stars" ReadOnly="true" />
+                            <RatingBadge Value="stars" />
                         }
                     </div>
                 </div>
@@ -375,6 +375,13 @@
         : day == Today.AddDays(-1) ? L["Day_Yesterday"].Value
         : day.Year == Today.Year ? day.ToString("dddd d MMMM", CultureInfo.CurrentCulture)
         : day.ToString("d MMMM yyyy", CultureInfo.CurrentCulture);
+
+    /// <summary>What goes next to a day heading: the date for Today and Yesterday (the other headings already are one) and how many brews.</summary>
+    private string DaySub(DateOnly day, int count)
+    {
+        var brewsText = string.Format(L[count == 1 ? "History_CountOne" : "History_Count"].Value, count);
+        return day == Today || day == Today.AddDays(-1) ? $"{day.ToString("ddd d MMM", CultureInfo.CurrentCulture)} · {brewsText}" : brewsText;
+    }
 
     private string WhenText(DateTimeOffset at)
     {

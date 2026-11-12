@@ -138,7 +138,7 @@ public sealed class BeanTests : UiTestContext
         form.Find("#bean-decaf").Change(true);
         form.Find("#bean-notes").Change(" Floral ");
         form.Find("#bean-visibility").Change("Private");
-        form.Find("[role=radio][aria-label='4 of 5 stars']").Click();
+        form.Find("[role=radio][aria-label='Really good, 4 of 5']").Click();
 
         form.Find("form").Submit();
 
