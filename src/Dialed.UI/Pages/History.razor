@@ -6,6 +6,7 @@
 @using Dialed.Client.Preferences
 @using Dialed.Domain.BrewMethods
 @using Dialed.Domain.Model
+@using Dialed.Domain.Statistics
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Brew> BrewStore
@@ -195,6 +196,10 @@
                         }
                     </div>
                 </div>
+                @if (CostText is { } cost)
+                {
+                    <p id="history-cost" class="dialed-muted">@string.Format(L["History_Cost"].Value, cost)</p>
+                }
                 <p class="dialed-person"><Avatar Name="@PersonName(current.CreatedBy)" Size="28" /> <span id="history-person-name">@PersonName(current.CreatedBy)</span></p>
             </Card>
 
@@ -397,6 +402,18 @@
     }
 
     /// <summary>Makes the picture of this brew (bean, method, numbers, rating) and hands it to the share sheet or a download.</summary>
+    /// <summary>What the coffee in this brew cost, from the price and weight of its bag.</summary>
+    private string? CostText
+    {
+        get
+        {
+            var bag = current is null ? null : bags.FirstOrDefault(b => b.Id == current.BagId);
+            return current is not null && bag is not null && CupCost.ForBrew(current, bag) is { } cents
+                ? $"{(cents / 100m).ToString("N2", CultureInfo.CurrentCulture)} {(string.IsNullOrWhiteSpace(bag.Currency) ? "EUR" : bag.Currency.ToUpperInvariant())}"
+                : null;
+        }
+    }
+
     private IReadOnlyList<Brew> Siblings => current is null ? [] : BrewHistory.SameBean(current, brews ?? [], bags);
 
     private string SiblingLabel(Brew brew) =>
