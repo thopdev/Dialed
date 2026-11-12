@@ -339,7 +339,7 @@
   <data name="Version_Label" xml:space="preserve"><value>Versie {0}</value></data>
   <data name="Version_Current" xml:space="preserve"><value>Huidig</value></data>
   <data name="Version_NoBrews" xml:space="preserve"><value>Nog geen brews</value></data>
-  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1} brew(s)</value></data>
+  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="Version_StepsChanged" xml:space="preserve"><value>Stappen gewijzigd</value></data>
   <data name="Version_GrinderChanged" xml:space="preserve"><value>Molen gewijzigd</value></data>
   <data name="Timer_Start" xml:space="preserve"><value>Timer</value></data>

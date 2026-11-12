@@ -340,7 +340,7 @@
   <data name="Version_Label" xml:space="preserve"><value>Version {0}</value></data>
   <data name="Version_Current" xml:space="preserve"><value>Current</value></data>
   <data name="Version_NoBrews" xml:space="preserve"><value>No brews yet</value></data>
-  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1} brew(s)</value></data>
+  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="Version_StepsChanged" xml:space="preserve"><value>Steps changed</value></data>
   <data name="Version_GrinderChanged" xml:space="preserve"><value>Grinder changed</value></data>
   <data name="Timer_Start" xml:space="preserve"><value>Timer</value></data>

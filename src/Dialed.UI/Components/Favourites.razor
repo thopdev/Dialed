@@ -16,7 +16,7 @@
                 <li class="dialed-stat-row">
                     @if (Href?.Invoke(item) is { } href)
                     {
-                        <a href="@href">@item.Name</a>
+                        <a class="dialed-hit-link" href="@href">@item.Name</a>
                     }
                     else
                     {
