@@ -246,4 +246,32 @@ public sealed class HomeBrewPolishTests : UiTestContext
 
         Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id)).FindAll("#brew-grind-drift").ShouldBeEmpty();
     }
+
+    // ---- Roast age tip ------------------------------------------------------------------------
+
+    [Fact]
+    public async Task The_bag_screen_says_where_the_bag_is_compared_with_the_age_of_your_best_brews()
+    {
+        var bean = await Beans.SaveAsync(new Bean { Name = "Kiambu" }, Ct);
+        var bag = await Bags.SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m, RoastDate = Today.AddDays(-4) }, Ct);
+        foreach (var daysAgo in new[] { 1, 2, 3 })
+        {
+            await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, Rating = 5, BrewedAt = DateTimeOffset.Now.AddDays(-daysAgo) }, Ct);
+        }
+
+        var page = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
+
+        var tip = page.WaitForElement("#brew-roast-tip");
+        tip.TextContent.ShouldContain("This bag is older than your best brews of this bean");
+        tip.TextContent.ShouldContain("1 to 3 days after roasting");
+    }
+
+    [Fact]
+    public async Task Without_enough_good_brews_there_is_no_roast_tip()
+    {
+        var bag = await NewBag();
+        await Brewed(bag, DateTimeOffset.Now.AddDays(-1), rating: 5);
+
+        Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id)).FindAll("#brew-roast-tip").ShouldBeEmpty();
+    }
 }

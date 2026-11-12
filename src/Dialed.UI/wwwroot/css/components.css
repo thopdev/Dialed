@@ -3257,3 +3257,17 @@ a.dialed-banner {
 .dialed-taste-fill.right {
     inset-inline-start: 50%;
 }
+
+.dialed-roast-tip {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-roast-tip p {
+    margin: var(--dialed-space-1) 0 0;
+}
+
+.dialed-content h2.dialed-roast-tip-title {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 600;
+}

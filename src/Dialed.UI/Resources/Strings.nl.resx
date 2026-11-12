@@ -158,6 +158,19 @@
   <data name="Barcode_UnknownTitle" xml:space="preserve"><value>Nieuwe barcode</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Bewaard in Dialed</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Deel een afbeelding van deze boon</value></data>
+  <data name="BeanCompare_Balanced" xml:space="preserve"><value>In balans</value></data>
+  <data name="BeanCompare_Brews" xml:space="preserve"><value>Brews</value></data>
+  <data name="BeanCompare_Good" xml:space="preserve"><value>4 sterren of meer</value></data>
+  <data name="BeanCompare_Hint" xml:space="preserve"><value>Smaak laat zien naar welke kant elke boon neigt in de brews waarbij iets niet klopte (daarvoor zijn twee van zulke brews nodig). Rijen die verschillen zijn gemarkeerd.</value></data>
+  <data name="BeanCompare_Last" xml:space="preserve"><value>Laatst gezet</value></data>
+  <data name="BeanCompare_Method" xml:space="preserve"><value>Favoriete methode</value></data>
+  <data name="BeanCompare_NotFound" xml:space="preserve"><value>Een van deze bonen bestaat niet meer.</value></data>
+  <data name="BeanCompare_Page" xml:space="preserve"><value>Bonen vergelijken</value></data>
+  <data name="BeanCompare_Pick" xml:space="preserve"><value>Kies een boon</value></data>
+  <data name="BeanCompare_Rating" xml:space="preserve"><value>Gemiddelde beoordeling</value></data>
+  <data name="BeanCompare_RatingValue" xml:space="preserve"><value>{0} ★ ({1} beoordeeld)</value></data>
+  <data name="BeanCompare_Title" xml:space="preserve"><value>Vergelijk met een andere boon</value></data>
+  <data name="BeanCompare_With" xml:space="preserve"><value>Vergelijk met</value></data>
   <data name="BeanForm_SectionBean" xml:space="preserve"><value>Boon</value></data>
   <data name="BeanForm_SectionOrigin" xml:space="preserve"><value>Herkomst</value></data>
   <data name="BeanForm_SectionRoast" xml:space="preserve"><value>Branding</value></data>
@@ -826,6 +839,12 @@
   <data name="RoastStyle_Espresso" xml:space="preserve"><value>Espresso</value></data>
   <data name="RoastStyle_Filter" xml:space="preserve"><value>Filter</value></data>
   <data name="RoastStyle_Omni" xml:space="preserve"><value>Omni</value></data>
+  <data name="RoastTip_After" xml:space="preserve"><value>Deze zak is ouder dan je beste brews van deze boon</value></data>
+  <data name="RoastTip_Before" xml:space="preserve"><value>Deze zak is jonger dan je beste brews van deze boon</value></data>
+  <data name="RoastTip_Inside" xml:space="preserve"><value>Deze zak zit in de leeftijd van je beste brews van deze boon</value></data>
+  <data name="RoastTip_Past" xml:space="preserve"><value>Je beste brews waren tot {0} dagen jonger. Probeer een fijnere maling als hij flets smaakt.</value></data>
+  <data name="RoastTip_Range" xml:space="preserve"><value>Je beste brews (4 sterren of meer, {3}) waren {0} tot {1} dagen na het roosteren, de meeste rond dag {2}.</value></data>
+  <data name="RoastTip_Wait" xml:space="preserve"><value>Hij kan nog verbeteren: je beste brews begonnen over {0} dagen.</value></data>
   <data name="Save" xml:space="preserve"><value>Opslaan</value></data>
   <data name="Scan_Again" xml:space="preserve"><value>Opnieuw scannen</value></data>
   <data name="Scan_BagHeading" xml:space="preserve"><value>Zak</value></data>
@@ -889,6 +908,11 @@
   <data name="Settings_StorageLater" xml:space="preserve"><value>De opslagstatus verschijnt hier zodra gegevens op dit apparaat worden bewaard.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Instellingen</value></data>
   <data name="Settings_Version" xml:space="preserve"><value>Versie {0}</value></data>
+  <data name="Shopping_Again" xml:space="preserve"><value>Opnieuw kopen: je gaf hem een goede beoordeling</value></data>
+  <data name="Shopping_Copy" xml:space="preserve"><value>Kopieer deze lijst</value></data>
+  <data name="Shopping_Low" xml:space="preserve"><value>Bijna op</value></data>
+  <data name="Shopping_Share" xml:space="preserve"><value>Deel de lijst</value></data>
+  <data name="Shopping_Title" xml:space="preserve"><value>Te kopen</value></data>
   <data name="Shot_InBand" xml:space="preserve"><value>Binnen het doelbereik</value></data>
   <data name="Shot_TooLong" xml:space="preserve"><value>Te lang</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Te kort</value></data>
