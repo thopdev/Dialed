@@ -4461,3 +4461,48 @@ a.dialed-banner {
     50% { transform: scaleY(1); }
 }
 
+
+/* Warm polish: More, Settings and People (cream and latte palette). */
+.dialed-card {
+    background: color-mix(in srgb, #e8cfa5 6%, var(--colorNeutralBackground1, #fff));
+}
+
+.dialed-more-group .dialed-list {
+    border-radius: var(--dialed-radius-xl);
+    background: color-mix(in srgb, #e8cfa5 6%, var(--colorNeutralBackground1, #fff));
+    box-shadow: var(--dialed-shadow-card);
+    padding: 0 var(--dialed-space-3);
+    overflow: hidden;
+}
+
+.dialed-more-icon,
+.dialed-settings-group-icon {
+    background: color-mix(in srgb, #3b2616 88%, var(--colorNeutralBackground1, #fff));
+    color: #e9c99b;
+}
+
+.dialed-settings-group-icon {
+    border-radius: 50%;
+}
+
+.dialed-settings-group-header h2,
+.dialed-friend-code h2,
+.dialed-people-section h2 {
+    font-family: var(--dialed-font-display);
+}
+
+.dialed-settings-card {
+    border-radius: var(--dialed-radius-xl);
+    box-shadow: var(--dialed-shadow-card);
+}
+
+.dialed-friend-code {
+    border-radius: var(--dialed-radius-xl);
+    box-shadow: var(--dialed-shadow-raised);
+}
+
+.dialed-friend-code .dialed-code {
+    border: 2px dashed #c9a77c;
+    background: color-mix(in srgb, #c9a77c 28%, var(--colorNeutralBackground1, #fff));
+    color: var(--colorNeutralForeground1, #2e2118);
+}
