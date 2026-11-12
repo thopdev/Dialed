@@ -1,13 +1,33 @@
 @inject IStringLocalizer<Strings> L
 
-@* A rating in little space, for the end of a list row: one star and the number. Read as "4 of 5 stars". *@
+@* A rating in little space, for list rows and detail headers: one cup filled to the rating and the number. Read as "4 of 5 stars". *@
 <span class="dialed-rating-badge" role="img" aria-label="@L["Rating_Value", Value, 5]">
-    <span class="dialed-rating-badge-star" aria-hidden="true"><FluentIcon Value="@(new Icons.Filled.Size16.Star())" Color="Color.Custom" CustomColor="currentColor" /></span>
+    <span class="dialed-rating-badge-star" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="20" height="20" focusable="false">
+            <defs>
+                <clipPath id="@ClipId"><path d="M7 13h22v8a9 9 0 0 1-9 9h-4a9 9 0 0 1-9-9z" /></clipPath>
+            </defs>
+            <g clip-path="url(#@ClipId)">
+                <rect x="6" y="@FillTop" width="24" height="@FillHeight" fill="currentColor" />
+            </g>
+            <path d="M7 13h22v8a9 9 0 0 1-9 9h-4a9 9 0 0 1-9-9zM29 16h2.5a4 4 0 0 1 0 8H28M6 35h26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </span>
     <span aria-hidden="true">@Value</span>
 </span>
 
 @code {
+    private static int counter;
+    private readonly string uid = $"rb{Interlocked.Increment(ref counter)}";
+
     /// <summary>1 to 5.</summary>
     [Parameter, EditorRequired]
     public int Value { get; set; }
+
+    private string ClipId => $"{uid}-clip";
+
+    /// <summary>The bowl is 13 to 30 tall; the coffee rises with the rating (1 = a fifth full, 5 = full).</summary>
+    private double FillHeight => 17 * (Math.Clamp(Value, 0, 5) / 5.0);
+
+    private string FillTop => (30 - FillHeight).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
 }

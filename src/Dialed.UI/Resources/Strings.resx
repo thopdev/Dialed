@@ -827,6 +827,7 @@
   <data name="QuickLog_RatingPrompt" xml:space="preserve"><value>Tap a cup</value></data>
   <data name="QuickLog_Stood" xml:space="preserve"><value>What stood out? Tap any</value></data>
   <data name="QuickLog_Title" xml:space="preserve"><value>How was it?</value></data>
+  <data name="Rating_Cup" xml:space="preserve"><value>{0}, {1} of 5</value></data>
   <data name="Rating_Label" xml:space="preserve"><value>Rating</value></data>
   <data name="Rating_Value" xml:space="preserve"><value>{0} of {1} stars</value><comment>{0} = given stars, {1} = maximum</comment></data>
   <data name="Recipe_Bean" xml:space="preserve"><value>Bean</value></data>

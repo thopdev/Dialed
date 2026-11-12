@@ -4206,3 +4206,23 @@ a.dialed-banner {
     to { opacity: 1; transform: scale(1); }
 }
 
+.dialed-cups-word {
+    margin: var(--dialed-space-1) 0 0;
+    text-align: center;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-weight: 700;
+    color: var(--colorBrandForeground1);
+}
+
+
+/* In detail headers the cup badge is bigger. */
+.dialed-brew-summary-text .dialed-rating-badge,
+.dialed-bean-hero .dialed-rating-badge {
+    font-size: var(--dialed-text-l);
+}
+
+.dialed-brew-summary-text .dialed-rating-badge svg,
+.dialed-bean-hero .dialed-rating-badge svg {
+    width: 1.75rem;
+    height: 1.75rem;
+}
