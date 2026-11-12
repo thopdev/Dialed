@@ -4226,3 +4226,11 @@ a.dialed-banner {
     width: 1.75rem;
     height: 1.75rem;
 }
+
+/* History day headings sit on the page colour (no white band) and keep the page's side margin. */
+.dialed-day-title {
+    background: var(--dialed-surface, var(--colorNeutralBackground1, #fff));
+    border-bottom: 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
