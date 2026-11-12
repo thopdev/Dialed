@@ -908,6 +908,11 @@
   <data name="Settings_StorageLater" xml:space="preserve"><value>Storage status appears here once data is kept on this device.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_Version" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="Shopping_Again" xml:space="preserve"><value>Buy again: you rated it well</value></data>
+  <data name="Shopping_Copy" xml:space="preserve"><value>Copy this list</value></data>
+  <data name="Shopping_Low" xml:space="preserve"><value>Running low</value></data>
+  <data name="Shopping_Share" xml:space="preserve"><value>Share the list</value></data>
+  <data name="Shopping_Title" xml:space="preserve"><value>To buy</value></data>
   <data name="Shot_InBand" xml:space="preserve"><value>In the target window</value></data>
   <data name="Shot_TooLong" xml:space="preserve"><value>Too long</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Too short</value></data>

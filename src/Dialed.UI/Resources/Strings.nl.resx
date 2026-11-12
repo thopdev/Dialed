@@ -908,6 +908,11 @@
   <data name="Settings_StorageLater" xml:space="preserve"><value>De opslagstatus verschijnt hier zodra gegevens op dit apparaat worden bewaard.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Instellingen</value></data>
   <data name="Settings_Version" xml:space="preserve"><value>Versie {0}</value></data>
+  <data name="Shopping_Again" xml:space="preserve"><value>Opnieuw kopen: je gaf hem een goede beoordeling</value></data>
+  <data name="Shopping_Copy" xml:space="preserve"><value>Kopieer deze lijst</value></data>
+  <data name="Shopping_Low" xml:space="preserve"><value>Bijna op</value></data>
+  <data name="Shopping_Share" xml:space="preserve"><value>Deel de lijst</value></data>
+  <data name="Shopping_Title" xml:space="preserve"><value>Te kopen</value></data>
   <data name="Shot_InBand" xml:space="preserve"><value>Binnen het doelbereik</value></data>
   <data name="Shot_TooLong" xml:space="preserve"><value>Te lang</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Te kort</value></data>
