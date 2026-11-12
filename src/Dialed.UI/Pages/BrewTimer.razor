@@ -43,7 +43,7 @@ else
         @if (!isEspresso && timeline.Steps.Count > 0)
         {
             <PourFigure Id="timer-figure" Fraction="@FigureFraction" Pattern="state.Current?.Pattern" Pouring="@(running && !paused && !state.IsFinished && state.Current is { Kind: RecipeStepKind.Bloom or RecipeStepKind.Pour })"
-                        Animated="@(running && !paused)" Cylinder="@(recipe.MethodCode is "aeropress" or "french-press")" />
+                        Animated="@(running && !paused)" ShowCup="true" Finished="@state.IsFinished" Cylinder="@(recipe.MethodCode is "aeropress" or "french-press")" />
         }
 
         @if (isEspresso)
