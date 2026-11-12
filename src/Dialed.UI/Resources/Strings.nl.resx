@@ -401,6 +401,16 @@
   <data name="Feedback_Template" xml:space="preserve"><value>Wat er gebeurde:&#10;&#10;Wat ik verwachtte:&#10;</value></data>
   <data name="Feedback_Title" xml:space="preserve"><value>Feedback</value></data>
   <data name="Feedback_Unavailable" xml:space="preserve"><value>Deze versie heeft nog geen feedbackadres.</value></data>
+  <data name="Flavor_Back" xml:space="preserve"><value>Terug naar het wiel</value></data>
+  <data name="Flavor_BackShort" xml:space="preserve"><value>tik om terug te gaan</value></data>
+  <data name="Flavor_Category_Floral" xml:space="preserve"><value>Bloemig</value></data>
+  <data name="Flavor_Category_Fruity" xml:space="preserve"><value>Fruitig</value></data>
+  <data name="Flavor_Category_GreenVegetative" xml:space="preserve"><value>Groen</value></data>
+  <data name="Flavor_Category_NuttyCocoa" xml:space="preserve"><value>Noot / cacao</value></data>
+  <data name="Flavor_Category_Roasted" xml:space="preserve"><value>Gebrand</value></data>
+  <data name="Flavor_Category_SourFermented" xml:space="preserve"><value>Zuur</value></data>
+  <data name="Flavor_Category_Spices" xml:space="preserve"><value>Kruiden</value></data>
+  <data name="Flavor_Category_Sweet" xml:space="preserve"><value>Zoet</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Smaaknotities per smaakgroep: {0}</value></data>
   <data name="Flavor_Floral" xml:space="preserve"><value>Bloemig</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruitig</value></data>
@@ -410,7 +420,11 @@
   <data name="Flavor_SourFermented" xml:space="preserve"><value>Zuur en gefermenteerd</value></data>
   <data name="Flavor_Spices" xml:space="preserve"><value>Kruiden</value></data>
   <data name="Flavor_Sweet" xml:space="preserve"><value>Zoet</value></data>
+  <data name="Flavor_TapSlice" xml:space="preserve"><value>tik op een stuk</value></data>
+  <data name="Flavor_Tasted" xml:space="preserve"><value>{0} geproefd</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Smaakwiel</value></data>
+  <data name="Flavor_WheelHint" xml:space="preserve"><value>Wat proef je? Tik op een stuk om in te zoomen.</value></data>
+  <data name="Flavor_ZoomHint" xml:space="preserve"><value>{0}: kies wat je herkent. Tik op het midden om terug te gaan.</value></data>
   <data name="Fresh_Past" xml:space="preserve"><value>Over zijn hoogtepunt</value></data>
   <data name="Fresh_Peak" xml:space="preserve"><value>Op zijn best</value></data>
   <data name="Fresh_Resting" xml:space="preserve"><value>Rust</value></data>

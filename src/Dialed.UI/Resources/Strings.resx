@@ -401,6 +401,16 @@
   <data name="Feedback_Template" xml:space="preserve"><value>What happened:&#10;&#10;What I expected:&#10;</value></data>
   <data name="Feedback_Title" xml:space="preserve"><value>Feedback</value></data>
   <data name="Feedback_Unavailable" xml:space="preserve"><value>This build has no feedback address yet.</value></data>
+  <data name="Flavor_Back" xml:space="preserve"><value>Back to the wheel</value></data>
+  <data name="Flavor_BackShort" xml:space="preserve"><value>tap to go back</value></data>
+  <data name="Flavor_Category_Floral" xml:space="preserve"><value>Floral</value></data>
+  <data name="Flavor_Category_Fruity" xml:space="preserve"><value>Fruity</value></data>
+  <data name="Flavor_Category_GreenVegetative" xml:space="preserve"><value>Green</value></data>
+  <data name="Flavor_Category_NuttyCocoa" xml:space="preserve"><value>Nutty / cocoa</value></data>
+  <data name="Flavor_Category_Roasted" xml:space="preserve"><value>Roasted</value></data>
+  <data name="Flavor_Category_SourFermented" xml:space="preserve"><value>Sour</value></data>
+  <data name="Flavor_Category_Spices" xml:space="preserve"><value>Spices</value></data>
+  <data name="Flavor_Category_Sweet" xml:space="preserve"><value>Sweet</value></data>
   <data name="Flavor_Description" xml:space="preserve"><value>Tasting notes by flavour: {0}</value></data>
   <data name="Flavor_Floral" xml:space="preserve"><value>Floral</value></data>
   <data name="Flavor_Fruity" xml:space="preserve"><value>Fruity</value></data>
@@ -410,7 +420,11 @@
   <data name="Flavor_SourFermented" xml:space="preserve"><value>Sour and fermented</value></data>
   <data name="Flavor_Spices" xml:space="preserve"><value>Spices</value></data>
   <data name="Flavor_Sweet" xml:space="preserve"><value>Sweet</value></data>
+  <data name="Flavor_TapSlice" xml:space="preserve"><value>tap a slice</value></data>
+  <data name="Flavor_Tasted" xml:space="preserve"><value>{0} tasted</value></data>
   <data name="Flavor_Title" xml:space="preserve"><value>Flavour wheel</value></data>
+  <data name="Flavor_WheelHint" xml:space="preserve"><value>What do you taste? Tap a slice to zoom in.</value></data>
+  <data name="Flavor_ZoomHint" xml:space="preserve"><value>{0}: pick what you recognise. Tap the middle to go back.</value></data>
   <data name="Fresh_Past" xml:space="preserve"><value>Past peak</value></data>
   <data name="Fresh_Peak" xml:space="preserve"><value>Peak</value></data>
   <data name="Fresh_Resting" xml:space="preserve"><value>Resting</value></data>

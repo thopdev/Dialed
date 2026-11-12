@@ -1,0 +1,117 @@
+@using System.Globalization
+@using Dialed.Domain.Flavors
+@inject IStringLocalizer<Strings> L
+
+@*
+    Tasting notes picked on a wheel. The first view shows the eight branches of the flavour wheel; tapping one zooms in so its notes fill the wheel,
+    and the middle goes back. Notes are plain text (the same list the chip input edits), so a note picked here and one typed there are the same.
+    Keyboard: every slice is a button (Tab, Enter or Space). The zoom animation is off for people who ask for reduced motion.
+*@
+<div class="dialed-flavor-picker" id="@Id">
+    <p class="dialed-fw-hint" id="@($"{Id}-hint")" aria-live="polite">@(zoom is { } z ? string.Format(L["Flavor_ZoomHint"].Value, L[$"Flavor_Category_{z}"].Value) : L["Flavor_WheelHint"].Value)</p>
+    <svg class="dialed-fw-wheel" viewBox="4 4 302 302" role="group" aria-labelledby="@($"{Id}-hint")">
+        <g @key="@(zoom?.ToString() ?? "overview")" class="dialed-fw-slices">
+            @for (var i = 0; i < Slices.Count; i++)
+            {
+                var index = i;
+                var slice = Slices[index];
+                <g class="dialed-fw-slice dialed-fw-@(((int)(zoom ?? slice.Category)).ToString(CultureInfo.InvariantCulture)) @(slice.On ? "on" : "")"
+                   role="button" tabindex="0" aria-label="@slice.Name" aria-pressed="@(zoom is null ? null : slice.On ? "true" : "false")"
+                   data-slice="@slice.Name"
+                   @onclick="() => PickAsync(slice)" @onkeydown="e => KeyAsync(e, slice)">
+                    <path d="@Arc(index, Slices.Count)" />
+                    @Txt(Label(index, Slices.Count).X, Label(index, Slices.Count).Y, null, slice.Name, middle: true)
+                </g>
+            }
+        </g>
+        <g class="dialed-fw-centre" role="button" tabindex="@(zoom is null ? -1 : 0)" aria-label="@L["Flavor_Back"]" aria-hidden="@(zoom is null ? "true" : null)"
+           @onclick="() => zoom = null" @onkeydown="BackKeyAsync">
+            <circle cx="155" cy="155" r="@(zoom is null ? 50 : 46)" class="dialed-fw-core @(zoom is { } zc ? $"dialed-fw-{(int)zc}" : "")" />
+            @if (zoom is { } zoomed)
+            {
+                @Txt("155", "150", "dialed-fw-core-title", "‹ " + L[$"Flavor_Category_{zoomed}"].Value)
+                @Txt("155", "168", "dialed-fw-core-sub", L["Flavor_BackShort"].Value)
+            }
+            else
+            {
+                @Txt("155", "150", "dialed-fw-core-title", string.Format(L["Flavor_Tasted"].Value, Values.Count))
+                @Txt("155", "168", "dialed-fw-core-sub", L["Flavor_TapSlice"].Value)
+            }
+        </g>
+    </svg>
+</div>
+
+@code {
+    private sealed record Slice(string Name, FlavorCategory Category, bool On, string? Note);
+
+    private static int counter;
+
+    private FlavorCategory? zoom;
+
+    [Parameter]
+    public string Id { get; set; } = $"flavor-{Interlocked.Increment(ref counter)}";
+
+    [Parameter]
+    public IReadOnlyList<string> Values { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<IReadOnlyList<string>> ValuesChanged { get; set; }
+
+    private static bool Dutch => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "nl";
+
+    private IReadOnlyList<Slice> Slices => zoom is { } category
+        ? [.. FlavorWheel.NotesOf(category, Dutch).Select(note => new Slice(note, category, Has(note), note))]
+        : [.. Enum.GetValues<FlavorCategory>().Select(c => new Slice(L[$"Flavor_Category_{c}"].Value, c, Values.Any(v => FlavorWheel.Classify(v) == c), null))];
+
+    private bool Has(string note) => Values.Any(v => string.Equals(v.Trim(), note, StringComparison.OrdinalIgnoreCase));
+
+    private async Task PickAsync(Slice slice)
+    {
+        if (zoom is null)
+        {
+            zoom = slice.Category;
+            return;
+        }
+
+        var note = slice.Note!;
+        IReadOnlyList<string> next = Has(note)
+            ? [.. Values.Where(v => !string.Equals(v.Trim(), note, StringComparison.OrdinalIgnoreCase))]
+            : [.. Values, note];
+        await ValuesChanged.InvokeAsync(next);
+    }
+
+    private Task KeyAsync(KeyboardEventArgs e, Slice slice) => e.Key is "Enter" or " " ? PickAsync(slice) : Task.CompletedTask;
+
+    private Task BackKeyAsync(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            zoom = null;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>An SVG text element (Razor reserves the text tag, so it is written as markup).</summary>
+    private static MarkupString Txt(string x, string y, string? cssClass, string content, bool middle = false) =>
+        new($"<text x=\"{x}\" y=\"{y}\" text-anchor=\"middle\"{(middle ? " dominant-baseline=\"middle\"" : "")}{(cssClass is null ? "" : $" class=\"{cssClass}\"")}>{System.Net.WebUtility.HtmlEncode(content)}</text>");
+
+    private static string F(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
+
+    /// <summary>A ring slice between the middle and the rim.</summary>
+    private static string Arc(int index, int count)
+    {
+        const double cx = 155, cy = 155, inner = 54, outer = 148;
+        var a0 = (-Math.PI / 2) + (index * 2 * Math.PI / count);
+        var a1 = (-Math.PI / 2) + ((index + 1) * 2 * Math.PI / count);
+        string P(double r, double a) => $"{F(cx + (r * Math.Cos(a)))},{F(cy + (r * Math.Sin(a)))}";
+        return $"M{P(inner, a0)} L{P(outer, a0)} A{outer},{outer} 0 0 1 {P(outer, a1)} L{P(inner, a1)} A{inner},{inner} 0 0 0 {P(inner, a0)}Z";
+    }
+
+    private static (string X, string Y) Label(int index, int count)
+    {
+        var mid = (-Math.PI / 2) + ((index + 0.5) * 2 * Math.PI / count);
+        const double r = 101;
+        return (F(155 + (r * Math.Cos(mid))), F(155 + (r * Math.Sin(mid))));
+    }
+}
