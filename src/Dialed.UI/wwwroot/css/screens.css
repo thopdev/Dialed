@@ -252,11 +252,11 @@
     flex: none;
 }
 
-.dialed-roast-light .dialed-thumb { background: color-mix(in srgb, #7a5337 14%, var(--colorNeutralBackground1, #fff)); color: var(--colorNeutralForeground1, #242424); }
-.dialed-roast-mediumlight .dialed-thumb { background: color-mix(in srgb, #7a5337 26%, var(--colorNeutralBackground1, #fff)); color: var(--colorNeutralForeground1, #242424); }
-.dialed-roast-medium .dialed-thumb { background: color-mix(in srgb, #7a5337 40%, var(--colorNeutralBackground1, #fff)); color: var(--colorNeutralForeground1, #242424); }
-.dialed-roast-mediumdark .dialed-thumb { background: color-mix(in srgb, #7a5337 58%, var(--colorNeutralBackground1, #fff)); color: #fff; }
-.dialed-roast-dark .dialed-thumb { background: color-mix(in srgb, #7a5337 78%, var(--colorNeutralBackground1, #fff)); color: #fff; }
+.dialed-roast-light .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-light-end), var(--dialed-roast-light-start)); color: var(--dialed-roast-light-fg); }
+.dialed-roast-mediumlight .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-mediumlight-end), var(--dialed-roast-mediumlight-start)); color: var(--dialed-roast-mediumlight-fg); }
+.dialed-roast-medium .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-medium-end), var(--dialed-roast-medium-start)); color: var(--dialed-roast-medium-fg); }
+.dialed-roast-mediumdark .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-mediumdark-end), var(--dialed-roast-mediumdark-start)); color: var(--dialed-roast-mediumdark-fg); }
+.dialed-roast-dark .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-dark-end), var(--dialed-roast-dark-start)); color: var(--dialed-roast-dark-fg); }
 
 /* Extra line in a list row: a meter or small chips. */
 .dialed-row-below {
