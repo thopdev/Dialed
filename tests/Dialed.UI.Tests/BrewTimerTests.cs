@@ -194,6 +194,22 @@ public sealed class BrewTimerTests : UiTestContext
     // ---- Pour figure --------------------------------------------------------------------------
 
     [Fact]
+    public async Task The_timer_shows_a_cup_that_fills_drips_while_running_and_gets_steam_when_done()
+    {
+        var page = RenderTimer(await V60());
+        page.FindAll("#timer-figure .dialed-pour-cup-coffee").Count.ShouldBe(1);
+        page.FindAll("#timer-figure .dialed-pour-steam").ShouldBeEmpty();
+
+        page.Find("#timer-start").Click();
+        page.FindAll("#timer-figure .dialed-pour-drip").Count.ShouldBe(1);
+
+        await Advance(page, 245);
+        page.FindAll("#timer-figure .dialed-pour-steam").Count.ShouldBe(1);
+        page.FindAll("#timer-figure .dialed-pour-crema").Count.ShouldBe(1);
+        page.FindAll("#timer-figure .dialed-pour-drip").ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task The_guided_timer_draws_the_water_level_and_animates_while_a_step_runs()
     {
         var page = RenderTimer(await V60());

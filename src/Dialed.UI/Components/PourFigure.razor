@@ -2,7 +2,7 @@
 @inject IStringLocalizer<Strings> L
 
 @* A small drawing of the brewer with the water level and how the water is poured. Animated on the timer while a step runs (the motion stops for people who ask for reduced motion), still elsewhere. *@
-<svg class="dialed-pour-figure @(Small ? "small" : "") @(Animated ? "animated" : "") dialed-pour-@(Effective.ToString().ToLowerInvariant())" viewBox="0 0 120 150" role="img" aria-label="@Description" id="@Id">
+<svg class="dialed-pour-figure @(Small ? "small" : "") @(Animated ? "animated" : "") dialed-pour-@(Effective.ToString().ToLowerInvariant())" viewBox="0 0 120 @(ShowCup ? 176 : 150)" role="img" aria-label="@Description" id="@Id">
     <defs>
         <clipPath id="@ClipId">
             @if (Cylinder)
@@ -13,6 +13,9 @@
             {
                 <path d="M14 42 L52 122 L68 122 L106 42 Z" />
             }
+        </clipPath>
+        <clipPath id="@CupClipId">
+            <path d="M42 134 h36 v14 a10 10 0 0 1 -10 10 h-16 a10 10 0 0 1 -10 -10 z" />
         </clipPath>
     </defs>
 
@@ -27,6 +30,30 @@
     else
     {
         <path class="dialed-pour-vessel" d="M14 42 L52 122 L68 122 L106 42 Z" />
+    }
+
+    @if (ShowCup)
+    {
+        @* The coffee that has dripped through collects in a cup below; when the brew is done it gets crema and a little steam. *@
+        <g clip-path="url(#@CupClipId)">
+            <rect class="dialed-pour-cup-coffee" x="40" y="134" width="40" height="24" style="transform: scaleY(@Level.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))" />
+            @if (Finished)
+            {
+                <ellipse class="dialed-pour-crema" cx="60" cy="@CoffeeTop" rx="17" ry="2.2" />
+            }
+        </g>
+        <path class="dialed-pour-cup" d="M42 134 h36 v14 a10 10 0 0 1 -10 10 h-16 a10 10 0 0 1 -10 -10 z" />
+        <path class="dialed-pour-cup" d="M78 140 h4 a6 6 0 0 1 0 12 h-4" />
+        <path class="dialed-pour-cup" d="M36 164 h48" />
+        @if (Animated && !Finished && Level < 1)
+        {
+            <line class="dialed-pour-drip" x1="60" y1="122" x2="60" y2="@CoffeeTop" />
+        }
+
+        @if (Finished)
+        {
+            <path class="dialed-pour-steam" d="M52 126 q3 -4 0 -8 M60 126 q3 -4 0 -8 M68 126 q3 -4 0 -8" />
+        }
     }
 
     @if (Pouring)
@@ -80,6 +107,14 @@
     [Parameter]
     public bool Small { get; set; }
 
+    /// <summary>Draws a cup under the brewer that fills with the coffee that has come through (the timer shows it).</summary>
+    [Parameter]
+    public bool ShowCup { get; set; }
+
+    /// <summary>The brew is done: the cup gets crema and a puff of steam.</summary>
+    [Parameter]
+    public bool Finished { get; set; }
+
     [Parameter]
     public string? Id { get; set; }
 
@@ -98,6 +133,11 @@
     }
 
     private string ClipId => $"{uid}-clip";
+
+    private string CupClipId => $"{uid}-cup";
+
+    /// <summary>Where the coffee surface is in the cup (bottom 158, top 134).</summary>
+    private string CoffeeTop => (158 - (24 * Level)).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
 
     private PourPattern Effective => Pattern ?? PourPattern.Centre;
 

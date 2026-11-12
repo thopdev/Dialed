@@ -3372,9 +3372,52 @@ a.dialed-banner {
     width: 3rem;
 }
 
+.dialed-pour-cup {
+    fill: none;
+    stroke: var(--colorNeutralForeground3);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dialed-pour-cup-coffee {
+    fill: var(--colorBrandBackground);
+    transform-origin: 0 158px;
+    transform-box: view-box;
+}
+
+.dialed-pour-crema {
+    fill: var(--colorNeutralForegroundOnBrand);
+    opacity: 0.4;
+}
+
+.dialed-pour-drip {
+    stroke: var(--colorBrandForeground1);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 2 5;
+}
+
+.dialed-pour-steam {
+    fill: none;
+    stroke: var(--colorNeutralForeground3);
+    stroke-width: 2;
+    stroke-linecap: round;
+    opacity: 0.7;
+}
+
 @media (prefers-reduced-motion: no-preference) {
-    .dialed-pour-water {
+    .dialed-pour-water,
+    .dialed-pour-cup-coffee {
         transition: transform 0.8s ease;
+    }
+
+    .dialed-pour-figure.animated .dialed-pour-drip {
+        animation: dialed-pour-flow 0.6s linear infinite;
+    }
+
+    .dialed-pour-steam {
+        animation: dialed-pour-puff 2.4s ease-out infinite;
     }
 
     .dialed-pour-figure.animated .dialed-pour-stream {
@@ -3397,6 +3440,12 @@ a.dialed-banner {
 
 @keyframes dialed-pour-flow {
     to { stroke-dashoffset: -18; }
+}
+
+@keyframes dialed-pour-puff {
+    0% { opacity: 0; transform: translateY(4px); }
+    40% { opacity: 0.8; }
+    100% { opacity: 0; transform: translateY(-6px); }
 }
 
 @keyframes dialed-pour-pulse {
@@ -3431,6 +3480,7 @@ a.dialed-banner {
 /* On the timer the drawing is smaller, so the step and the buttons stay on the first screen. */
 .dialed-timer .dialed-pour-figure {
     width: min(9rem, 40vw);
+    overflow: visible;
 }
 
 .dialed-timer .dialed-timer-step {
