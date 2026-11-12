@@ -4233,8 +4233,12 @@ a.dialed-banner {
     align-items: baseline;
     flex-wrap: wrap;
     gap: var(--dialed-space-2);
-    background: var(--dialed-surface, var(--colorNeutralBackground1, #fff));
+    margin-inline: 0;
+    padding: var(--dialed-space-2) var(--dialed-space-4);
     border-bottom: 0;
+    border-radius: var(--dialed-radius-l, 20px);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
 }
 
 .dialed-day-title strong {
