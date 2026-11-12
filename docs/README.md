@@ -23,6 +23,7 @@ Start with the [plan](PLAN.md) and the [architecture](architecture.md); decision
 | [push-notifications.md](push-notifications.md) | Web Push: follow and household events, low stock and peak alerts, keys, the stock alert job |
 | [public-profiles.md](public-profiles.md) | Opt-in public profiles, find people, reports, moderation with the admin key |
 | [look-and-feel.md](look-and-feel.md) | The warm roast style: palette, tokens, roast mood, cups, taste scales, flavour wheel, empty-state drawings, the stylesheet files and how to check a UI change |
+| [ui-notes.md](ui-notes.md) | Working notes for UI work: owner design preferences, how to run and screenshot the app, gotchas (gitignore, Razor, Fluent panels, dark mode, CSS conflicts), open ideas |
 | [insights.md](insights.md) | Offline maps, flavour wheel, calendar, milestones, dial-in trace, brew and bean cards, bean journey, gear upkeep, grind drift, recipe from best brews, tasting suggestions, taste profile, bean compare, water, roast age tip, shopping list, timer voice and controls, pour routines and the pour figure, quick log, cost per cup, dial-in coach, equipment shelf, backup and restore: what they read, where the code is, how to extend them |
 | [automerge.md](automerge.md) | Docs-only PRs from the owner merge themselves when `build-test` is green: the workflow and the settings to switch on |
 | [app-size.md](app-size.md) | What the first load downloads, how to measure it, and how fast the insight views are on a big household |
