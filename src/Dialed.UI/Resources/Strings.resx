@@ -286,6 +286,11 @@
   <data name="Chip_Add" xml:space="preserve"><value>Add</value></data>
   <data name="Chip_Remove" xml:space="preserve"><value>Remove {0}</value></data>
   <data name="Chip_Suggestions" xml:space="preserve"><value>Suggestions</value></data>
+  <data name="Coach_DialedIn" xml:space="preserve"><value>Dialled in</value></data>
+  <data name="Coach_DialedInHint" xml:space="preserve"><value>Your latest brew is rated well and tastes balanced. Save it as a recipe to keep it.</value></data>
+  <data name="Coach_Next" xml:space="preserve"><value>Brew the next step</value></data>
+  <data name="Coach_Progress" xml:space="preserve"><value>{0}: try {1}, best {2}</value></data>
+  <data name="Coach_Working" xml:space="preserve"><value>Dialling in this bean</value></data>
   <data name="Compare_Change" xml:space="preserve"><value>Change</value></data>
   <data name="Compare_Different" xml:space="preserve"><value>Different</value></data>
   <data name="Compare_Go" xml:space="preserve"><value>Compare</value></data>

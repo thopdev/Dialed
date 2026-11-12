@@ -3522,6 +3522,25 @@ a.dialed-banner {
     height: 2.5rem;
 }
 
+.dialed-coach {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+    border-inline-start: 4px solid var(--colorBrandStroke1);
+}
+
+.dialed-coach p {
+    margin: 0;
+}
+
+.dialed-content h2.dialed-coach-title {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 600;
+}
+
+
 /* ---- Home hero and stock ring (warm roast) ---------------------------------------------------------- */
 
 .dialed-home-hero {

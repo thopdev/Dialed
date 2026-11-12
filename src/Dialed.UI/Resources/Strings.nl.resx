@@ -286,6 +286,11 @@
   <data name="Chip_Add" xml:space="preserve"><value>Toevoegen</value></data>
   <data name="Chip_Remove" xml:space="preserve"><value>{0} verwijderen</value></data>
   <data name="Chip_Suggestions" xml:space="preserve"><value>Suggesties</value></data>
+  <data name="Coach_DialedIn" xml:space="preserve"><value>Ingesteld</value></data>
+  <data name="Coach_DialedInHint" xml:space="preserve"><value>Je laatste brew scoort goed en smaakt in balans. Bewaar hem als recept om hem te houden.</value></data>
+  <data name="Coach_Next" xml:space="preserve"><value>Brouw de volgende stap</value></data>
+  <data name="Coach_Progress" xml:space="preserve"><value>{0}: poging {1}, beste {2}</value></data>
+  <data name="Coach_Working" xml:space="preserve"><value>Deze boon instellen</value></data>
   <data name="Compare_Change" xml:space="preserve"><value>Verschil</value></data>
   <data name="Compare_Different" xml:space="preserve"><value>Anders</value></data>
   <data name="Compare_Go" xml:space="preserve"><value>Vergelijken</value></data>

@@ -125,6 +125,23 @@
                 <DialInAdviceCard Brew="logged" Scale="@loggedScale" />
             }
 
+            @if (coach is { Latest: not null } && (coach.Stage == CoachStage.Working || coach.Attempts >= 2))
+            {
+                <Card class="dialed-card dialed-coach" id="brew-coach">
+                    <h2 class="dialed-coach-title">@L[coach.Stage == CoachStage.DialedIn ? "Coach_DialedIn" : "Coach_Working"]</h2>
+                    <p id="brew-coach-progress">@string.Format(L["Coach_Progress"].Value, MethodName(coach.MethodCode!), coach.Attempts, coach.BestRating is { } best ? new string('★', best) : "–")</p>
+                    @if (coach.Stage == CoachStage.Working && coachNext is not null)
+                    {
+                        <p id="brew-coach-next"><strong>@L[$"DialIn_Kind_{coachNext.Kind}"]</strong></p>
+                        <a id="brew-coach-apply" class="dialed-button dialed-button-primary" href="@($"brew/{current.Id}/log/again/{coach.Latest.Id}?apply=primary")">@L["Coach_Next"]</a>
+                    }
+                    else if (coach.Stage == CoachStage.DialedIn)
+                    {
+                        <p class="dialed-muted">@L["Coach_DialedInHint"]</p>
+                    }
+                </Card>
+            }
+
             @if (last is not null)
             {
                 <div class="dialed-recipe-choice dialed-brew-again-row">
@@ -197,6 +214,8 @@
 
     private GrindDriftNote? drift;
     private RoastAgeTipResult? roastTip;
+    private CoachProgress? coach;
+    private DialInSuggestion? coachNext;
     private Recipe? lastRecipe;
 
     private int TipCount => (roastTip is not null ? 1 : 0) + (drift is not null ? 1 : 0);
@@ -233,6 +252,15 @@
         lastRecipe = last?.RecipeId is { } lastRecipeId ? recipes.FirstOrDefault(r => r.Id == lastRecipeId && !r.Deleted && r.Steps.Count > 0) : null;
         logged = current is null || Logged is null ? null : brews.FirstOrDefault(b => !b.Deleted && b.Id == Logged && b.BagId == current.Id && DialInHistory.NeedsAdvice(b));
         loggedScale = logged?.GrinderId is { } grinderId ? (await GearStore.GetAsync(grinderId))?.GrindScale : null;
+        coach = current is null ? null : DialInCoach.Build(current.Id, brews);
+        coachNext = null;
+        if (coach is { Stage: CoachStage.Working, Latest: { } coached } && Dialed.Domain.BrewMethods.BrewMethodCatalog.Default.Find(coached.MethodCode) is { } coachMethod)
+        {
+            var coachScale = coached.GrinderId is { } coachGrinder ? (await GearStore.GetAsync(coachGrinder))?.GrindScale : null;
+            var primary = DialInAdvisor.Advise(coachMethod, coached, coachScale).Primary;
+            coachNext = primary.Kind == SuggestionKind.Keep ? null : primary;
+        }
+
         drift = null;
         roastTip = current is null ? null : RoastAgeTip.Build(current.BeanId, bags ?? [], brews, current, DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
         if (current is not null)
