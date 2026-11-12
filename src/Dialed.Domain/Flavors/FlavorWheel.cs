@@ -52,6 +52,31 @@ public static class FlavorWheel
         return null;
     }
 
+    /// <summary>
+    /// The notes offered when you zoom into a branch of the wheel (eight per branch, the ones people write on a bag). Every one of them is
+    /// understood by <see cref="Classify"/> as belonging to that branch. <paramref name="dutch"/> gives the Dutch words.
+    /// </summary>
+    public static IReadOnlyList<string> NotesOf(FlavorCategory category, bool dutch = false) => (category, dutch) switch
+    {
+        (FlavorCategory.Fruity, false) => ["blueberry", "strawberry", "raspberry", "cherry", "citrus", "apple", "peach", "grape"],
+        (FlavorCategory.Fruity, true) => ["bosbes", "aardbei", "framboos", "kers", "citrus", "appel", "perzik", "druif"],
+        (FlavorCategory.Floral, false) => ["jasmine", "rose", "lavender", "hibiscus", "chamomile", "bergamot", "elderflower", "tea"],
+        (FlavorCategory.Floral, true) => ["jasmijn", "roos", "lavendel", "hibiscus", "kamille", "bergamot", "vlier", "thee"],
+        (FlavorCategory.Sweet, false) => ["honey", "caramel", "toffee", "maple syrup", "brown sugar", "vanilla", "molasses", "marshmallow"],
+        (FlavorCategory.Sweet, true) => ["honing", "karamel", "toffee", "ahornsiroop", "bruine suiker", "vanille", "melasse", "marshmallow"],
+        (FlavorCategory.NuttyCocoa, false) => ["hazelnut", "almond", "peanut", "walnut", "dark chocolate", "milk chocolate", "cocoa", "marzipan"],
+        (FlavorCategory.NuttyCocoa, true) => ["hazelnoot", "amandel", "pinda", "walnoot", "pure chocolade", "chocolade", "cacao", "marsepein"],
+        (FlavorCategory.Spices, false) => ["cinnamon", "clove", "nutmeg", "cardamom", "pepper", "anise", "ginger", "liquorice"],
+        (FlavorCategory.Spices, true) => ["kaneel", "kruidnagel", "nootmuskaat", "kardemom", "peper", "anijs", "gember", "drop"],
+        (FlavorCategory.Roasted, false) => ["toast", "smoky", "tobacco", "malt", "bread", "biscuit", "cedar", "burnt"],
+        (FlavorCategory.Roasted, true) => ["toast", "rokerig", "tabak", "mout", "brood", "koekje", "ceder", "verbrand"],
+        (FlavorCategory.GreenVegetative, false) => ["herbal", "grass", "hay", "olive", "pea", "cucumber", "earthy", "vegetal"],
+        (FlavorCategory.GreenVegetative, true) => ["kruidenachtig", "gras", "hooi", "olijf", "erwt", "komkommer", "aards", "groente"],
+        (FlavorCategory.SourFermented, false) => ["acidic", "tart", "winey", "fermented", "yoghurt", "kombucha", "vinegar", "whiskey"],
+        (FlavorCategory.SourFermented, true) => ["zuur", "wijnig", "gefermenteerd", "yoghurt", "kombucha", "azijn", "whisky", "wijn"],
+        _ => [],
+    };
+
     /// <summary>The count per branch for the given notes, biggest first (then in wheel order); branches without a note are left out.</summary>
     public static IReadOnlyList<FlavorShare> Tally(IEnumerable<string> notes)
     {

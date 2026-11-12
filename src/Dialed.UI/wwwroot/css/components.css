@@ -4024,3 +4024,134 @@ a.dialed-banner {
     color: inherit;
 }
 
+/* ---- Flavour picker: the wheel with a zoom ---------------------------------------------------------- */
+
+.dialed-flavor-picker {
+    display: grid;
+    justify-items: center;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-fw-hint {
+    margin: 0;
+    justify-self: start;
+    color: var(--colorNeutralForeground2);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-fw-wheel {
+    width: min(100%, 21rem);
+    height: auto;
+    overflow: visible;
+}
+
+.dialed-fw-slice {
+    cursor: pointer;
+    outline: none;
+}
+
+.dialed-fw-slice path {
+    fill: var(--dialed-flavor-0);
+    opacity: 0.28;
+    stroke: var(--colorNeutralBackground1);
+    stroke-width: 2;
+}
+
+.dialed-fw-slice text {
+    fill: var(--colorNeutralForeground1);
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.dialed-fw-slice.on path {
+    opacity: 1;
+}
+
+.dialed-fw-slice.on text {
+    fill: #fff;
+}
+
+.dialed-fw-slice:focus-visible path {
+    stroke: var(--colorStrokeFocus2);
+    stroke-width: 3;
+}
+
+.dialed-fw-core {
+    fill: var(--colorBrandBackground);
+}
+
+.dialed-fw-centre {
+    cursor: pointer;
+    outline: none;
+}
+
+.dialed-fw-centre:focus-visible .dialed-fw-core {
+    stroke: var(--colorStrokeFocus2);
+    stroke-width: 3;
+}
+
+.dialed-fw-core-title {
+    fill: var(--colorNeutralForegroundOnBrand);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.dialed-fw-core-sub {
+    fill: var(--colorNeutralForegroundOnBrand);
+    font-size: 9px;
+}
+
+.dialed-fw-slice.dialed-fw-0 path,
+.dialed-fw-core.dialed-fw-0 {
+    fill: var(--dialed-flavor-0);
+}
+
+.dialed-fw-slice.dialed-fw-1 path,
+.dialed-fw-core.dialed-fw-1 {
+    fill: var(--dialed-flavor-1);
+}
+
+.dialed-fw-slice.dialed-fw-2 path,
+.dialed-fw-core.dialed-fw-2 {
+    fill: var(--dialed-flavor-2);
+}
+
+.dialed-fw-slice.dialed-fw-3 path,
+.dialed-fw-core.dialed-fw-3 {
+    fill: var(--dialed-flavor-3);
+}
+
+.dialed-fw-slice.dialed-fw-4 path,
+.dialed-fw-core.dialed-fw-4 {
+    fill: var(--dialed-flavor-4);
+}
+
+.dialed-fw-slice.dialed-fw-5 path,
+.dialed-fw-core.dialed-fw-5 {
+    fill: var(--dialed-flavor-5);
+}
+
+.dialed-fw-slice.dialed-fw-6 path,
+.dialed-fw-core.dialed-fw-6 {
+    fill: var(--dialed-flavor-6);
+}
+
+.dialed-fw-slice.dialed-fw-7 path,
+.dialed-fw-core.dialed-fw-7 {
+    fill: var(--dialed-flavor-7);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-fw-slices {
+        transform-origin: 155px 155px;
+        animation: dialed-flavor-zoom 0.35s ease-out;
+    }
+}
+
+@keyframes dialed-flavor-zoom {
+    from { opacity: 0; transform: scale(0.55); }
+    to { opacity: 1; transform: scale(1); }
+}
+

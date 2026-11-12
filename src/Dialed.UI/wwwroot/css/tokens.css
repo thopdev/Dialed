@@ -59,6 +59,16 @@
     --dialed-roast-dark-end: #5b3a28;
     --dialed-roast-dark-fg: #f3e6d6;
 
+    /* Flavour wheel branches (same order as FlavorCategory): fruity, floral, sweet, nutty and cocoa, spices, roasted, green, sour */
+    --dialed-flavor-0: #b5483b;
+    --dialed-flavor-1: #b9739a;
+    --dialed-flavor-2: #c9923f;
+    --dialed-flavor-3: #8a5a3b;
+    --dialed-flavor-4: #a85f2c;
+    --dialed-flavor-5: #5b4030;
+    --dialed-flavor-6: #6f8f4a;
+    --dialed-flavor-7: #b8a63a;
+
     /* Elevation: a soft, warm lift (roasted-brown tinted, not grey) */
     --dialed-shadow-card: 0 1px 2px rgb(60 35 20 / 0.08), 0 6px 16px rgb(90 56 37 / 0.12);
     --dialed-shadow-raised: 0 8px 22px rgb(90 56 37 / 0.2);
