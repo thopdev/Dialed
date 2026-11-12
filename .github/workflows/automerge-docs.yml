@@ -1,0 +1,40 @@
+name: Auto-merge docs
+
+# Docs-only PRs from the repository owner merge themselves once the required checks are green.
+# Needs "Allow auto-merge" in the repository settings and `build-test` as a required check on main
+# (see docs/automerge.md). Docs paths are ignored by the deploy workflow, so a merge made with the
+# default token does not need to trigger anything.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  enable:
+    if: github.event.pull_request.user.login == github.repository_owner && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge when only documentation changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Only look at the list of changed files; no code from the PR is checked out or run.
+          files=$(gh api --paginate "repos/$REPO/pulls/$PR/files" --jq '.[].filename')
+          if [ -z "$files" ]; then
+            echo "No changed files."
+            exit 0
+          fi
+          other=$(printf '%s\n' "$files" | grep -vE '^(docs/.*|[^/]+\.md|.*/[^/]+\.md)$' || true)
+          if [ -n "$other" ]; then
+            echo "Not docs-only, leaving it for review:"
+            printf '%s\n' "$other"
+            exit 0
+          fi
+          gh pr merge "$PR" --repo "$REPO" --auto --merge
+          echo "Auto-merge enabled: it merges when the required checks pass."
