@@ -63,7 +63,7 @@ public sealed class HomeInventoryTests : UiTestContext
     }
 
     [Fact]
-    public async Task Brew_again_lists_the_last_three_brews_rated_four_or_more()
+    public async Task Brew_again_shows_the_newest_rated_four_or_more_as_the_pick_and_two_more_below()
     {
         var bag = await OpenBag();
         await Rated(bag, 5, minutesAgo: 40);
@@ -74,9 +74,9 @@ public sealed class HomeInventoryTests : UiTestContext
 
         var page = Render<Home>();
 
+        page.Find("#home-pick-again").GetAttribute("href").ShouldBe($"brew/{bag.Id}/log/again/{newest.Id}");
         var cards = page.FindAll("#home-brew-again .dialed-row");
-        cards.Count.ShouldBe(3);
-        cards[0].GetAttribute("href").ShouldBe($"brew/{bag.Id}/log/again/{newest.Id}");
+        cards.Count.ShouldBe(2);
         cards.ShouldAllBe(c => !c.TextContent.Contains("3/5"));
     }
 
@@ -86,7 +86,9 @@ public sealed class HomeInventoryTests : UiTestContext
         var finished = await OpenBag("Old", status: BagStatus.Finished);
         await Rated(finished, 5);
 
-        Render<Home>().FindAll("#home-brew-again").ShouldBeEmpty();
+        var page = Render<Home>();
+        page.FindAll("#home-pick").ShouldBeEmpty();
+        page.FindAll("#home-brew-again").ShouldBeEmpty();
     }
 
     // ---- Inventory ----------------------------------------------------------------------------

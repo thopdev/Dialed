@@ -127,11 +127,11 @@ public sealed class HomeBrewPolishTests : UiTestContext
         var bag = await NewBag();
         await Brewed(bag, DateTimeOffset.Now, rating: 5);
 
-        var row = Render<Home>().Find("#home-brew-again .dialed-row");
+        var pick = Render<Home>().Find("#home-pick");
 
-        row.QuerySelector(".dialed-row-subtitle")!.TextContent.ShouldBe("15 g → 250 g · Hario V60");
-        row.TextContent.ShouldNotContain("5/5");
-        row.QuerySelector("[role=img]")!.GetAttribute("aria-label").ShouldBe("5 of 5 stars");
+        pick.QuerySelector(".dialed-pick-detail")!.TextContent.ShouldContain("15 g → 250 g · Hario V60");
+        pick.TextContent.ShouldNotContain("5/5");
+        pick.QuerySelector("[role=img]")!.GetAttribute("aria-label").ShouldBe("5 of 5 stars");
     }
 
     // ---- Brew picker and bag ------------------------------------------------------------------
@@ -342,7 +342,7 @@ public sealed class HomeBrewPolishTests : UiTestContext
         timer.GetAttribute("href").ShouldBe($"brew/{guidedBag.Id}/timer/{guided.Id}");
         timer.GetAttribute("aria-label").ShouldBe("Start the timer for Gesha");
         page.FindAll($"[data-timer-for='{withoutSteps.Id}']").ShouldBeEmpty();
-        page.FindAll("#home-brew-again .dialed-row").Count.ShouldBe(2);
+        page.FindAll("#home-brew-again .dialed-row").Count.ShouldBe(1);
     }
 
     // ---- Cost per cup -------------------------------------------------------------------------

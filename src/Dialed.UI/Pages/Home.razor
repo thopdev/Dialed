@@ -89,9 +89,36 @@ else
 
     @if (again.Count > 0)
     {
+        var pick = again[0];
+        var pickGuided = GuidedRecipe(pick);
+        <section id="home-pick" class="dialed-pick" aria-labelledby="home-pick-title" data-brew="@pick.Id">
+            <svg class="dialed-pick-cup" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+                <path d="M15 4q2 2 0 4M21 4q2 2 0 4" class="dialed-pick-steam" />
+                <path d="M7 13h22v8a9 9 0 0 1-9 9h-4a9 9 0 0 1-9-9z" class="dialed-pick-bowl" />
+                <path d="M29 16h2.5a4 4 0 0 1 0 8H28M6 35h26" class="dialed-pick-line" />
+            </svg>
+            <div class="dialed-pick-text">
+                <p id="home-pick-title" class="dialed-pick-label">@L["Home_PickTitle"]</p>
+                <p class="dialed-pick-name">@BeanName(pick)</p>
+                <p class="dialed-pick-detail">@Describe(pick) · <RatingBadge Value="@(pick.Rating ?? 0)" /></p>
+            </div>
+            <div class="dialed-pick-actions">
+                <a id="home-pick-again" class="dialed-button dialed-button-primary" href="@($"brew/{pick.BagId}/log/again/{pick.Id}")">@L["Brew_Again"]</a>
+                @if (pickGuided is not null)
+                {
+                    <a class="dialed-transport-button dialed-transport-small" data-timer-for="@pick.Id" href="@($"brew/{pick.BagId}/timer/{pickGuided.Id}")" aria-label="@string.Format(L["Timer_StartFor"].Value, BeanName(pick))" title="@string.Format(L["Timer_StartFor"].Value, BeanName(pick))">
+                        <FluentIcon Value="@(new Icons.Regular.Size24.Timer())" Color="Color.Custom" CustomColor="currentColor" />
+                    </a>
+                }
+            </div>
+        </section>
+    }
+
+    @if (again.Count > 1)
+    {
         <SectionHeader Title="@L["Home_BrewAgain"]" />
         <div class="dialed-list" id="home-brew-again">
-            @foreach (var brew in again)
+            @foreach (var brew in again.Skip(1))
             {
                 var guided = GuidedRecipe(brew);
                 <div class="dialed-recipe-choice">
