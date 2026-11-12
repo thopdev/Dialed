@@ -148,6 +148,59 @@ test('the service worker caches the app shell and the barcode reader for offline
   expect(cached).toContain('/index.html');
 });
 
+test('a bean with an origin shows a zoomed map, and Statistics leads back to its beans', async ({ page }) => {
+  await skipSetup(page);
+  await page.locator('#home-first-bean').click();
+  await page.locator('#bean-name').fill('Guji Hambela');
+  await page.locator('#bean-country').fill('Ethiopia');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL(/\/beans\/[0-9a-f-]{36}$/);
+  // The bean page draws the country itself (zoomed in), not just a dot on the world.
+  await expect(page.locator('#bean-origin-map path.dialed-origin-map-country')).toHaveCount(1);
+
+  await page.getByRole('link', { name: 'Add bag' }).click();
+  await page.locator('#bag-weight').fill('250');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL(/\/bags\/[0-9a-f-]{36}$/);
+  await logBrew(page);
+
+  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Statistics' }).click();
+  for (const id of ['#stats-origin-map', '#stats-passport', '#stats-calendar', '#stats-milestones']) {
+    await expect(page.locator(id)).toBeVisible();
+  }
+  await expect(page.locator('#stats-origin-map svg')).toHaveAttribute('aria-label', /Ethiopia/);
+  // Nothing may be wider than the phone: the charts must shrink, not scroll the page sideways.
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+
+  await page.locator('#stats-origins a', { hasText: 'Ethiopia' }).click();
+  await expect(page).toHaveURL(/\/beans\?country=/);
+  await expect(page.locator('#bean-filters-toggle')).toContainText('Filters (1)');
+  await expect(page.getByText('Guji Hambela')).toBeVisible();
+});
+
+test('a brew can be shared as a picture card', async ({ page }) => {
+  // Force the download path: a CI browser has no share sheet to hand the file to.
+  await page.addInitScript(() => Object.defineProperty(navigator, 'canShare', { value: undefined }));
+  await skipSetup(page);
+  await addBeanAndBag(page, 'Card Roast');
+  await logBrew(page);
+  await page.getByRole('link', { name: 'More', exact: true }).click();
+  await page.getByRole('link', { name: 'Brew history' }).click();
+  await page.locator('.dialed-row-link').first().click();
+
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#history-share-card').click()]);
+
+  expect(download.suggestedFilename()).toBe('dialed-brew.png');
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(chunk as Buffer);
+  const bytes = Buffer.concat(chunks);
+  expect([...bytes.subarray(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]); // a PNG
+  expect(bytes.length).toBeGreaterThan(5_000); // an actual picture, not an empty canvas
+});
+
 test('settings page opens with every section', async ({ page }) => {
   await skipSetup(page);
 
