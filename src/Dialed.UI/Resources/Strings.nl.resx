@@ -240,6 +240,7 @@
   <data name="Brew_SelectPrompt" xml:space="preserve"><value>Selecteer een zak om te beginnen met zetten.</value></data>
   <data name="Brew_SinceRoast" xml:space="preserve"><value>Sinds branden</value></data>
   <data name="Brew_Taste" xml:space="preserve"><value>Hoe smaakte het?</value></data>
+  <data name="Brew_Water" xml:space="preserve"><value>Water</value></data>
   <data name="Brew_WithRecipe" xml:space="preserve"><value>Zetten met een recept</value></data>
   <data name="Brew_WithoutRecipe" xml:space="preserve"><value>Zetten zonder recept</value></data>
   <data name="Calendar_Description" xml:space="preserve"><value>{0} brews in de afgelopen {1} weken; drukste dag {2} met {3}</value></data>
@@ -1079,5 +1080,9 @@
   <data name="Visibility_Private" xml:space="preserve"><value>Alleen ik</value></data>
   <data name="Visibility_Public" xml:space="preserve"><value>Iedereen op Dialed</value></data>
   <data name="Visibility_PublicHint" xml:space="preserve"><value>Iedereen die Dialed gebruikt kan dit vinden en zien, zolang je openbare profiel aan staat in Instellingen. Brews en zakken kunnen nooit openbaar zijn.</value></data>
+  <data name="Water_Better" xml:space="preserve"><value>Je bakjes met {0} scoren gemiddeld {1}.</value></data>
+  <data name="Water_Unused" xml:space="preserve"><value>Nog niet gebruikt in een bakje. Kies hem bij het loggen van een bakje om te zien hoe hij het doet.</value></data>
+  <data name="Water_Used" xml:space="preserve"><value>Gebruikt in {0}, gemiddeld {1} sterren uit {2} beoordeeld.</value></data>
+  <data name="Water_UsedUnrated" xml:space="preserve"><value>Gebruikt in {0}, nog geen beoordeeld.</value></data>
   <data name="Yes" xml:space="preserve"><value>Ja</value></data>
 </root>
