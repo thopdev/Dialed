@@ -321,4 +321,45 @@ public sealed class HomeBrewPolishTests : UiTestContext
         again.WaitForElement("#brew-again");
         again.FindAll("#brew-again-timer").ShouldBeEmpty();
     }
+
+    // ---- Cost per cup -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task A_priced_bag_shows_its_usual_cup_on_the_bag_page_and_the_brew_its_cost_in_history()
+    {
+        var bean = await Beans.SaveAsync(new Bean { Name = "Kiambu" }, Ct);
+        var bag = await Bags.SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m, PriceCents = 2400, Currency = "EUR", Status = BagStatus.Open }, Ct);
+        var brew = await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, BrewedAt = DateTimeOffset.Now }, Ct);
+
+        var bagPage = Render<Bags>(p => p.Add(x => x.Id, bag.Id));
+        var history = Render<History>(p => p.Add(x => x.Id, brew.Id));
+
+        bagPage.WaitForElement(".dialed-stat-grid").TextContent.ShouldContain("1.44 EUR");
+        history.WaitForElement("#history-cost").TextContent.ShouldBe("The coffee in this brew cost about 1.44 EUR.");
+    }
+
+    [Fact]
+    public async Task Statistics_lists_the_average_cup_per_month()
+    {
+        var bean = await Beans.SaveAsync(new Bean { Name = "Kiambu" }, Ct);
+        var bag = await Bags.SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m, PriceCents = 2400, Currency = "EUR" }, Ct);
+        await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, BrewedAt = DateTimeOffset.Now }, Ct);
+        await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 20m, BrewedAt = DateTimeOffset.Now }, Ct);
+
+        var page = Render<Statistics>();
+
+        var row = page.WaitForElement("#stats-cup-cost .dialed-stat-row");
+        row.TextContent.ShouldContain("2 brews");
+        row.TextContent.ShouldContain("1.68 EUR");
+    }
+
+    [Fact]
+    public async Task Without_prices_there_is_no_cost_anywhere()
+    {
+        var bag = await NewBag();
+        var brew = await Brewed(bag, DateTimeOffset.Now);
+
+        Render<Statistics>().FindAll("#stats-cup-cost").ShouldBeEmpty();
+        Render<History>(p => p.Add(x => x.Id, brew.Id)).FindAll("#history-cost").ShouldBeEmpty();
+    }
 }
