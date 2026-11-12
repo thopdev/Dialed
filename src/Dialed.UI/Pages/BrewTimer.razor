@@ -345,7 +345,7 @@ else
         await StopLoopAsync(releaseWakeLock: true);
         running = false;
         Handoff.Set(RecipeId, seconds);
-        Navigation.NavigateTo($"brew/{BagId}/log/recipe/{RecipeId}");
+        Navigation.NavigateTo($"brew/{BagId}/log/recipe/{RecipeId}?quick=1");
     }
 
     private Task TogglePauseAsync()

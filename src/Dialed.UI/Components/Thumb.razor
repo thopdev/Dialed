@@ -1,15 +1,22 @@
 @inject Dialed.Client.PhotoService Photos
 
-@* A square thumbnail: the item's first photo when there is one, otherwise a calm placeholder with an icon. Decorative unless Alt is given. *@
+@* A square thumbnail: the item's first photo when there is one, otherwise a calm placeholder (a coffee bean, or the icon you give). Decorative unless Alt is given. *@
 <span class="dialed-thumb" style="--dialed-thumb-size: @(Size)px" @attributes="AdditionalAttributes">
     @if (uri is not null)
     {
         <img src="@uri" alt="@(Alt ?? "")" loading="lazy" />
     }
-    else if (Placeholder is not null)
+    else
     {
         <span class="dialed-thumb-placeholder" aria-hidden="true">
-            <FluentIcon Value="@Placeholder" Color="Color.Custom" CustomColor="currentColor" />
+            @if (Placeholder is not null)
+            {
+                <FluentIcon Value="@Placeholder" Color="Color.Custom" CustomColor="currentColor" />
+            }
+            else
+            {
+                <BeanIcon Size="@(Math.Max(20, Size / 2))" />
+            }
         </span>
     }
 </span>
@@ -23,7 +30,7 @@
     public string? PhotoId { get; set; }
 
     [Parameter]
-    public Icon? Placeholder { get; set; } = new Icons.Regular.Size24.Box();
+    public Icon? Placeholder { get; set; }
 
     [Parameter]
     public int Size { get; set; } = 56;
