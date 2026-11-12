@@ -26,7 +26,7 @@ public sealed class DemoDataSeederTests
         (await Rows("vendors")).Count.ShouldBe(4);
         (await Rows("beans")).Count.ShouldBe(5);
         (await Rows("bags")).Count.ShouldBe(5);
-        (await Rows("equipment")).Count.ShouldBe(5);
+        (await Rows("equipment")).Count.ShouldBe(7);
         (await Rows("recipes")).Count.ShouldBe(4);
         (await Rows("brews")).Count.ShouldBeGreaterThan(20);
     }

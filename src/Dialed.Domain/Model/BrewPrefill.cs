@@ -29,6 +29,7 @@ public static class BrewPrefill
         MethodCode = previous.MethodCode,
         RecipeId = previous.RecipeId,
         GrinderId = previous.GrinderId,
+        WaterId = previous.WaterId,
         BrewedAt = now,
         DrinkType = previous.DrinkType,
         MilkMl = previous.MilkMl,

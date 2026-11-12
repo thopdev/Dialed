@@ -240,6 +240,7 @@
   <data name="Brew_SelectPrompt" xml:space="preserve"><value>Select a bag to start a brew.</value></data>
   <data name="Brew_SinceRoast" xml:space="preserve"><value>Since roast</value></data>
   <data name="Brew_Taste" xml:space="preserve"><value>How did it taste?</value></data>
+  <data name="Brew_Water" xml:space="preserve"><value>Water</value></data>
   <data name="Brew_WithRecipe" xml:space="preserve"><value>Brew with a recipe</value></data>
   <data name="Brew_WithoutRecipe" xml:space="preserve"><value>Brew without a recipe</value></data>
   <data name="Calendar_Description" xml:space="preserve"><value>{0} brews in the last {1} weeks; busiest day {2} with {3}</value></data>
@@ -1083,5 +1084,9 @@
   <data name="Visibility_Private" xml:space="preserve"><value>Only me</value></data>
   <data name="Visibility_Public" xml:space="preserve"><value>Everyone on Dialed</value></data>
   <data name="Visibility_PublicHint" xml:space="preserve"><value>Everyone who uses Dialed can find and see this, as long as your public profile is switched on in Settings. Brews and bags can never be public.</value></data>
+  <data name="Water_Better" xml:space="preserve"><value>Your brews with {0} average {1}.</value></data>
+  <data name="Water_Unused" xml:space="preserve"><value>Not used in a brew yet. Pick it when you log a brew to see how it does.</value></data>
+  <data name="Water_Used" xml:space="preserve"><value>Used in {0}, average {1} stars from {2} rated.</value></data>
+  <data name="Water_UsedUnrated" xml:space="preserve"><value>Used in {0}, none rated yet.</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
 </root>
