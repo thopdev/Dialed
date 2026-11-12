@@ -212,7 +212,8 @@ button.dialed-chip::after {
 
 .dialed-empty-title {
     margin: 0 0 var(--dialed-space-1);
-    font-size: var(--dialed-text-l);
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-xl);
     color: var(--colorNeutralForeground1, #242424);
 }
 
@@ -4220,5 +4221,172 @@ a.dialed-banner {
     align-items: center;
     font-weight: 600;
     cursor: pointer;
+}
+
+/* ---- Empty-state drawings ------------------------------------------------------------------------- */
+
+.dialed-empty-art {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-art {
+    --dialed-art-stroke: var(--colorBrandForeground1);
+    overflow: visible;
+}
+
+.dialed-art .dialed-art-shadow {
+    fill: var(--colorNeutralForeground3);
+    opacity: 0.18;
+}
+
+.dialed-art .dialed-art-body,
+.dialed-art .dialed-art-flap {
+    fill: var(--colorNeutralBackground1);
+    stroke: var(--dialed-art-stroke);
+    stroke-width: 5;
+    stroke-linejoin: round;
+}
+
+.dialed-art .dialed-art-flap {
+    fill: var(--colorBrandBackground2);
+}
+
+.dialed-art .dialed-art-line,
+.dialed-art .dialed-art-saucer,
+.dialed-art .dialed-art-steam,
+.dialed-art .dialed-art-write {
+    fill: none;
+    stroke: var(--dialed-art-stroke);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dialed-art .dialed-art-steam,
+.dialed-art .dialed-art-write {
+    stroke: var(--colorBrandStroke2, var(--dialed-art-stroke));
+    opacity: 0.8;
+}
+
+.dialed-art .dialed-art-bean ellipse,
+.dialed-art .dialed-art-bean-fill {
+    fill: var(--colorBrandBackground);
+}
+
+.dialed-art .dialed-art-bean path {
+    fill: none;
+    stroke: var(--colorNeutralBackground1);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.dialed-art .dialed-art-bar1,
+.dialed-art .dialed-art-bar2,
+.dialed-art .dialed-art-bar3 {
+    transform-box: fill-box;
+    transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-art .dialed-art-steam {
+        animation: dialed-art-steam 2.8s ease-out infinite;
+    }
+
+    .dialed-art .dialed-art-bean {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: dialed-art-wobble 3s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-write {
+        stroke-dasharray: 44;
+        animation: dialed-art-write 3.6s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-line2 {
+        animation-delay: 0.5s;
+    }
+
+    .dialed-art .dialed-art-line3 {
+        animation-delay: 1s;
+    }
+
+    .dialed-art .dialed-art-cup-left {
+        transform-box: fill-box;
+        transform-origin: bottom right;
+        animation: dialed-art-clink-left 2.6s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-cup-right {
+        transform-box: fill-box;
+        transform-origin: bottom left;
+        animation: dialed-art-clink-right 2.6s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-lens {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: dialed-art-search 3.4s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-float {
+        animation: dialed-art-float 3.2s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-bar1,
+    .dialed-art .dialed-art-bar2,
+    .dialed-art .dialed-art-bar3 {
+        animation: dialed-art-grow 3s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-bar2 {
+        animation-delay: 0.25s;
+    }
+
+    .dialed-art .dialed-art-bar3 {
+        animation-delay: 0.5s;
+    }
+}
+
+@keyframes dialed-art-steam {
+    0% { opacity: 0; transform: translateY(6px); }
+    45% { opacity: 0.9; }
+    100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes dialed-art-wobble {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-12deg); }
+    75% { transform: rotate(12deg); }
+}
+
+@keyframes dialed-art-write {
+    0% { stroke-dashoffset: 44; }
+    50%, 100% { stroke-dashoffset: 0; }
+}
+
+@keyframes dialed-art-clink-left {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(4deg); }
+}
+
+@keyframes dialed-art-clink-right {
+    0%, 100% { transform: rotate(8deg); }
+    50% { transform: rotate(-4deg); }
+}
+
+@keyframes dialed-art-search {
+    0%, 100% { transform: translate(-6px, -4px) rotate(-6deg); }
+    50% { transform: translate(8px, 6px) rotate(6deg); }
+}
+
+@keyframes dialed-art-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes dialed-art-grow {
+    0%, 100% { transform: scaleY(0.55); }
+    50% { transform: scaleY(1); }
 }
 
