@@ -86,4 +86,35 @@ public sealed class DefaultRecipeCatalogTests
         Should.Throw<JsonException>(() => Parse("""{ "version": 1, "recipes": [ { "methodCode": "moka-pot", "name": "x", "tempC": 90 } ] }"""));
         Should.Throw<JsonException>(() => Parse("""{ "version": 1, "recipes": [ { "methodCode": "espresso", "name": "x", "surprise": 1 } ] }"""));
     }
+
+    [Fact]
+    public void Pour_routines_load_with_several_per_method_and_a_pattern_on_the_pours()
+    {
+        var routines = DefaultRecipeCatalog.Routines.Recipes;
+
+        routines.Select(r => r.Name).ShouldContain("4:6 method (Tetsu Kasuya)");
+        routines.Count(r => r.MethodCode == "v60").ShouldBe(3);
+        var fourSix = routines.Single(r => r.Name.StartsWith("4:6", StringComparison.Ordinal));
+        fourSix.Steps!.Where(s => s.Kind == RecipeStepKind.Pour).Select(s => s.WaterG).ShouldBe([60m, 120m, 180m, 240m, 300m]);
+        fourSix.Steps!.Where(s => s.Kind == RecipeStepKind.Pour).ShouldAllBe(s => s.Pattern != null);
+    }
+
+    [Fact]
+    public void Every_routine_ends_with_its_total_water_and_keeps_its_steps_in_order()
+    {
+        foreach (var routine in DefaultRecipeCatalog.Routines.Recipes.Where(r => r.Steps is { Count: > 0 }))
+        {
+            routine.Steps!.Select(s => s.AtS).ShouldBe(routine.Steps!.Select(s => s.AtS).Order(), routine.Name);
+            routine.Steps!.Where(s => s.WaterG is not null).Max(s => s.WaterG).ShouldBe(routine.WaterG, routine.Name);
+        }
+    }
+
+    [Fact]
+    public void A_routine_copied_as_a_recipe_keeps_its_steps_and_patterns()
+    {
+        var recipe = DefaultRecipeCatalog.Routines.Recipes.Single(r => r.Name.StartsWith("Ultimate", StringComparison.Ordinal)).ToRecipe();
+
+        recipe.Steps.First().Pattern.ShouldBe(PourPattern.Circles);
+        recipe.IsDefaultTemplate.ShouldBeFalse();
+    }
 }

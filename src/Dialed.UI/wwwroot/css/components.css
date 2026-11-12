@@ -3271,3 +3271,121 @@ a.dialed-banner {
     font-size: var(--dialed-text-m);
     font-weight: 600;
 }
+
+/* ---- Pour figure ------------------------------------------------------------------------------ */
+
+.dialed-pour-figure {
+    width: min(14rem, 50vw);
+    height: auto;
+}
+
+.dialed-pour-vessel {
+    fill: none;
+    stroke: var(--colorNeutralForeground3);
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
+.dialed-pour-water {
+    fill: var(--colorBrandBackground);
+    opacity: 0.45;
+    transform-origin: 0 122px;
+    transform-box: view-box;
+}
+
+.dialed-pour-bed {
+    fill: var(--colorNeutralForeground3);
+    opacity: 0.35;
+}
+
+.dialed-pour-kettle {
+    fill: var(--colorNeutralForeground3);
+}
+
+.dialed-pour-stream {
+    stroke: var(--colorBrandForeground1);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.dialed-pour-dot {
+    fill: var(--colorBrandForeground1);
+}
+
+.dialed-pour-track {
+    fill: none;
+    stroke: var(--colorBrandForeground1);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+    opacity: 0.5;
+}
+
+.dialed-pour-figure.small {
+    width: 3rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-pour-water {
+        transition: transform 0.8s ease;
+    }
+
+    .dialed-pour-figure.animated .dialed-pour-stream {
+        stroke-dasharray: 5 4;
+        animation: dialed-pour-flow 0.5s linear infinite;
+    }
+
+    .dialed-pour-figure.animated.dialed-pour-pulse .dialed-pour-stream {
+        animation: dialed-pour-flow 0.5s linear infinite, dialed-pour-pulse 1.2s ease-in-out infinite;
+    }
+
+    .dialed-pour-figure.animated.dialed-pour-spiral .dialed-pour-orbit {
+        animation: dialed-pour-spin 2.4s linear infinite;
+    }
+
+    .dialed-pour-figure.animated.dialed-pour-circles .dialed-pour-orbit {
+        animation: dialed-pour-spin 3.2s linear infinite;
+    }
+}
+
+@keyframes dialed-pour-flow {
+    to { stroke-dashoffset: -18; }
+}
+
+@keyframes dialed-pour-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.15; }
+}
+
+@keyframes dialed-pour-spin {
+    to { transform: rotate(360deg); }
+}
+
+.dialed-routine h2 {
+    margin: 0 0 var(--dialed-space-1);
+}
+
+.dialed-routine-figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-3);
+    margin: var(--dialed-space-2) 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-routine-figures li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: var(--dialed-text-s);
+}
+
+/* On the timer the drawing is smaller, so the step and the buttons stay on the first screen. */
+.dialed-timer .dialed-pour-figure {
+    width: min(9rem, 40vw);
+}
+
+.dialed-timer .dialed-timer-step {
+    line-height: 1.2;
+    text-align: center;
+}

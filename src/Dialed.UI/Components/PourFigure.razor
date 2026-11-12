@@ -1,0 +1,113 @@
+@using Dialed.Domain.Model
+@inject IStringLocalizer<Strings> L
+
+@* A small drawing of the brewer with the water level and how the water is poured. Animated on the timer while a step runs (the motion stops for people who ask for reduced motion), still elsewhere. *@
+<svg class="dialed-pour-figure @(Small ? "small" : "") @(Animated ? "animated" : "") dialed-pour-@(Effective.ToString().ToLowerInvariant())" viewBox="0 0 120 150" role="img" aria-label="@Description" id="@Id">
+    <defs>
+        <clipPath id="@ClipId">
+            @if (Cylinder)
+            {
+                <rect x="34" y="42" width="52" height="80" rx="3" />
+            }
+            else
+            {
+                <path d="M14 42 L52 122 L68 122 L106 42 Z" />
+            }
+        </clipPath>
+    </defs>
+
+    <g clip-path="url(#@ClipId)">
+        <rect class="dialed-pour-water" x="0" y="42" width="120" height="80" style="transform: scaleY(@Level.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))" />
+        <rect class="dialed-pour-bed" x="0" y="108" width="120" height="14" />
+    </g>
+    @if (Cylinder)
+    {
+        <rect class="dialed-pour-vessel" x="34" y="42" width="52" height="80" rx="3" />
+    }
+    else
+    {
+        <path class="dialed-pour-vessel" d="M14 42 L52 122 L68 122 L106 42 Z" />
+    }
+
+    @if (Pouring)
+    {
+        <path class="dialed-pour-kettle" d="M44 8 h32 a4 4 0 0 1 4 4 v6 h-40 v-6 a4 4 0 0 1 4 -4 z" />
+        @if (Effective is PourPattern.Centre or PourPattern.Pulse)
+        {
+            <line class="dialed-pour-stream" x1="60" y1="18" x2="60" y2="@StreamEnd" />
+        }
+        else if (Effective == PourPattern.Spiral)
+        {
+            <path class="dialed-pour-track" d="@SpiralPath" />
+            <g class="dialed-pour-orbit" style="transform-origin: 60px 62px">
+                <circle class="dialed-pour-dot" cx="72" cy="62" r="3" />
+            </g>
+        }
+        else
+        {
+            <circle class="dialed-pour-track" cx="60" cy="62" r="22" />
+            <g class="dialed-pour-orbit" style="transform-origin: 60px 62px">
+                <circle class="dialed-pour-dot" cx="82" cy="62" r="3" />
+            </g>
+        }
+    }
+</svg>
+
+@code {
+    private static int counter;
+    private readonly string uid = $"pf{Interlocked.Increment(ref counter)}";
+
+    /// <summary>How full the brewer is, 0 to 1 (water so far over the recipe's total water).</summary>
+    [Parameter]
+    public double Fraction { get; set; }
+
+    /// <summary>The pour pattern of the step; none draws only the brewer and the water.</summary>
+    [Parameter]
+    public PourPattern? Pattern { get; set; }
+
+    /// <summary>Whether water is being poured now (the stream and the pattern are drawn).</summary>
+    [Parameter]
+    public bool Pouring { get; set; }
+
+    [Parameter]
+    public bool Animated { get; set; }
+
+    /// <summary>A straight-sided brewer (AeroPress, French press, Clever) instead of a cone.</summary>
+    [Parameter]
+    public bool Cylinder { get; set; }
+
+    /// <summary>A thumbnail for lists.</summary>
+    [Parameter]
+    public bool Small { get; set; }
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>A dashed spiral from the middle outwards (Archimedean, about two and a half turns).</summary>
+    private static string SpiralPath { get; } = BuildSpiral();
+
+    private static string BuildSpiral()
+    {
+        var points = Enumerable.Range(0, 60).Select(i =>
+        {
+            var t = i / 59.0 * 5 * Math.PI;
+            var r = 2 + (t / (5 * Math.PI) * 20);
+            return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{60 + (r * Math.Cos(t)):0.#} {62 + (r * Math.Sin(t)):0.#}");
+        });
+        return "M" + string.Join(" L", points);
+    }
+
+    private string ClipId => $"{uid}-clip";
+
+    private PourPattern Effective => Pattern ?? PourPattern.Centre;
+
+    private double Level => double.IsNaN(Fraction) ? 0 : Math.Clamp(Fraction, 0, 1);
+
+    /// <summary>The stream ends at the water surface (or the bed when empty).</summary>
+    private int StreamEnd => (int)Math.Round(120 - (80 * Level));
+
+    private string Description =>
+        Pouring && Pattern is { } pattern
+            ? string.Format(L["Pour_Described"].Value, L[$"Pour_{pattern}"].Value, (int)Math.Round(Level * 100))
+            : string.Format(L["Pour_Level"].Value, (int)Math.Round(Level * 100));
+}

@@ -56,19 +56,22 @@ public sealed class DefaultRecipeCatalog
     {
         Version = version;
         Recipes = recipes;
-        byMethod = recipes.ToDictionary(r => r.MethodCode, StringComparer.OrdinalIgnoreCase);
+        byMethod = recipes.GroupBy(r => r.MethodCode, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
     }
 
     public int Version { get; }
 
     public IReadOnlyList<RecipeTemplate> Recipes { get; }
 
-    public static DefaultRecipeCatalog Default { get; } = LoadEmbedded();
+    public static DefaultRecipeCatalog Default { get; } = LoadEmbedded("default-recipes.json", onePerMethod: true);
+
+    /// <summary>Well-known pour routines (4:6, Hoffmann, Rao and others): several per method, with the pattern of each pour. Read-only; copy one to make it your own.</summary>
+    public static DefaultRecipeCatalog Routines { get; } = LoadEmbedded("pour-routines.json", onePerMethod: false);
 
     public RecipeTemplate? ForMethod(string methodCode) => byMethod.GetValueOrDefault(methodCode);
 
     /// <summary>Reads templates from JSON. Rejects unknown fields, unknown methods, duplicates, and values the method does not use.</summary>
-    public static DefaultRecipeCatalog Parse(Stream json, BrewMethodCatalog methods)
+    public static DefaultRecipeCatalog Parse(Stream json, BrewMethodCatalog methods, bool onePerMethod = true)
     {
         ArgumentNullException.ThrowIfNull(methods);
         var file = JsonSerializer.Deserialize<CatalogFile>(json, Options)
@@ -83,7 +86,7 @@ public sealed class DefaultRecipeCatalog
         {
             var method = methods.Find(recipe.MethodCode)
                 ?? throw new JsonException($"Default recipe '{recipe.Name}' uses unknown method '{recipe.MethodCode}'.");
-            if (!seen.Add(recipe.MethodCode))
+            if (!seen.Add(recipe.MethodCode) && onePerMethod)
             {
                 throw new JsonException($"More than one default recipe for '{recipe.MethodCode}'.");
             }
@@ -110,11 +113,11 @@ public sealed class DefaultRecipeCatalog
         }
     }
 
-    private static DefaultRecipeCatalog LoadEmbedded()
+    private static DefaultRecipeCatalog LoadEmbedded(string file, bool onePerMethod)
     {
-        using var stream = typeof(DefaultRecipeCatalog).Assembly.GetManifestResourceStream("Dialed.Domain.default-recipes.json")
-            ?? throw new InvalidOperationException("default-recipes.json is not embedded in Dialed.Domain.");
-        return Parse(stream, BrewMethodCatalog.Default);
+        using var stream = typeof(DefaultRecipeCatalog).Assembly.GetManifestResourceStream($"Dialed.Domain.{file}")
+            ?? throw new InvalidOperationException($"{file} is not embedded in Dialed.Domain.");
+        return Parse(stream, BrewMethodCatalog.Default, onePerMethod);
     }
 
     private sealed record CatalogFile(int Version, List<RecipeTemplate>? Recipes);

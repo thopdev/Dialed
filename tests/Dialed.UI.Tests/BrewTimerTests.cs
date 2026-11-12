@@ -116,6 +116,34 @@ public sealed class BrewTimerTests : UiTestContext
         sound.Cues.ShouldBe([SoundCue.Tick, SoundCue.Tick, SoundCue.Tick]);
     }
 
+    // ---- Pour figure --------------------------------------------------------------------------
+
+    [Fact]
+    public async Task The_guided_timer_draws_the_water_level_and_animates_while_a_step_runs()
+    {
+        var page = RenderTimer(await V60());
+        page.Find("#timer-figure").GetAttribute("aria-label").ShouldBe("Water at 0%");
+        page.Find("#timer-figure").ClassList.ShouldNotContain("animated");
+
+        page.Find("#timer-start").Click();
+        page.Find("#timer-figure").ClassList.ShouldContain("animated");
+        page.Find("#timer-figure").GetAttribute("aria-label").ShouldBe("Water at 19%");
+        page.FindAll("#timer-figure .dialed-pour-stream").Count.ShouldBe(1);
+
+        await Advance(page, 45);
+        page.Find("#timer-figure").GetAttribute("aria-label").ShouldBe("Water at 62%");
+
+        await Advance(page, 200);
+        page.Find("#timer-figure").GetAttribute("aria-label").ShouldBe("Water at 100%");
+        page.FindAll("#timer-figure .dialed-pour-stream").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task The_shot_timer_has_no_pour_figure()
+    {
+        RenderTimer(await Espresso()).FindAll("#timer-figure").ShouldBeEmpty();
+    }
+
     // ---- Guided timer -------------------------------------------------------------------------
 
     [Fact]

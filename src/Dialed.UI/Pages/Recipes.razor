@@ -111,6 +111,37 @@
         else if (Id == "templates")
         {
             <PageHeader Title="@L["Templates_Title"]" BackHref="recipes" />
+            <SectionHeader Title="@L["Routines_Title"]" />
+            <p class="dialed-muted">@L["Routines_Help"]</p>
+            @foreach (var routine in DefaultRecipeCatalog.Routines.Recipes)
+            {
+                var item = routine;
+                <Card>
+                    <div class="dialed-routine" data-routine="@item.Name">
+                        <h2>@item.Name</h2>
+                        <p class="dialed-muted">@MethodName(item.MethodCode) · @TemplateSummary(item)</p>
+                        @if ((item.Steps ?? []).Any(s => s.Kind is RecipeStepKind.Bloom or RecipeStepKind.Pour))
+                        {
+                            <ol class="dialed-routine-figures" aria-label="@L["Recipe_Steps"]">
+                                @foreach (var step in item.Steps!.Where(s => s.Kind is RecipeStepKind.Bloom or RecipeStepKind.Pour))
+                                {
+                                    <li>
+                                        <PourFigure Small="true" Pouring="true" Pattern="step.Pattern" Fraction="@(item.WaterG is > 0 ? (double)((step.WaterG ?? 0m) / item.WaterG.Value) : 0)" Cylinder="@(item.MethodCode is "aeropress" or "french-press")" />
+                                        <span class="dialed-muted">@(step.WaterG is { } water ? Units.Weight(water) : "")</span>
+                                    </li>
+                                }
+                            </ol>
+                        }
+                        @if (item.Notes is not null)
+                        {
+                            <p>@item.Notes</p>
+                        }
+                        <button type="button" class="dialed-button dialed-button-primary" @onclick="() => UseTemplateAsync(item)">@L["Templates_Use"]</button>
+                    </div>
+                </Card>
+            }
+
+            <SectionHeader Title="@L["Templates_Title"]" />
             <p class="dialed-muted">@string.Format(L["Templates_Help"].Value, DefaultRecipeCatalog.Default.Version)</p>
             @foreach (var template in DefaultRecipeCatalog.Default.Recipes)
             {
@@ -265,6 +296,10 @@
                     {
                         <li>
                             <span class="dialed-step-time">@Clock(step.AtS)</span>
+                            @if (step.Pattern is not null && step.Kind is RecipeStepKind.Bloom or RecipeStepKind.Pour)
+                            {
+                                <PourFigure Small="true" Pouring="true" Pattern="step.Pattern" Fraction="@(current.WaterG is > 0 ? (double)((step.WaterG ?? 0m) / current.WaterG.Value) : 0)" Cylinder="@(current.MethodCode is "aeropress" or "french-press")" />
+                            }
                             <span class="dialed-step-body">
                                 <span class="dialed-step-kind">@L[$"StepKind_{step.Kind}"]</span>
                                 @if (StepDetail(step) is { Length: > 0 } detail)
@@ -516,7 +551,7 @@
 
         if (template.DoseG is > 0m && (template.WaterG ?? template.YieldG) is { } l)
         {
-            parts.Add("1:" + Math.Round(l / template.DoseG.Value, 2).ToString("0.##", CultureInfo.InvariantCulture));
+            parts.Add("1:" + Math.Round(l / template.DoseG.Value, 1).ToString("0.#", CultureInfo.InvariantCulture));
         }
 
         if (template.TempC is { } temp)
