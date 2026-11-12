@@ -2,7 +2,7 @@
 
 ## What is automated
 
-- `AccessibilityTests` (bUnit) renders every main screen and fails on a form field without a label, a button or link without a name, an image without `alt`, or a stray icon that is neither hidden nor labeled. Add a screen to the list when you add one.
+- `AccessibilityTests` (bUnit) renders every main screen and fails on a form field without a label, a button or link without a name, an image without `alt`, or a stray icon that is neither hidden nor labeled. Add a screen to the list when you add one. Screens that only show something once there is data (the bean page with its journey, taste profile and recipe offer, the grind drift note, gear upkeep, tasting note suggestions, the notification switches) are audited with data in place, because an empty screen hides most of their controls.
 - `DesignSystemTests` keeps colours out of our own CSS: every colour comes from the Fluent `--color*` variables, which Fluent generates for both light and dark from the brand key colour. So dark mode and contrast follow the Fluent theme (its brand palettes are designed for WCAG AA text contrast).
 
 ## What the CSS does
