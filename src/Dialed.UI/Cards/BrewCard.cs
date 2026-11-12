@@ -6,7 +6,7 @@ using Dialed.Domain.Model;
 namespace Dialed.UI.Cards;
 
 /// <summary>What goes on a brew card: already in the person's language and units.</summary>
-public sealed record BrewCardContent(string Title, string? Subtitle, int? Rating, string Method, IReadOnlyList<(string Label, string Value)> Parameters, string? Notes, string Footer, RoastLevel? Roast = null);
+public sealed record BrewCardContent(string Title, string? Subtitle, int? Rating, string Method, IReadOnlyList<(string Label, string Value)> Parameters, string? Notes, string Footer, RoastLevel? Roast = null, DrinkType Drink = DrinkType.Filter);
 
 /// <summary>
 /// The picture you can share of a brew: bean, method, the numbers and the rating on a warm background. A plain SVG with fixed colours (it leaves the app as an image,
@@ -35,9 +35,20 @@ public static class BrewCard
         svg.Append(CultureInfo.InvariantCulture, $"<rect x=\"0\" y=\"0\" width=\"{Width}\" height=\"24\" fill=\"{Brown}\"/>");
         Text(svg, 80, 130, "Dialed", 44, Brown, bold: true);
 
-        Cup(svg, content.Rating, content.Roast);
+        var milk = DrinkTypes.UsesMilk(content.Drink);
+        Cup(svg, content.Rating, content.Roast, content.Drink);
+        var y = 715;
+        if (!milk && content.Rating is { } stars and >= 1 and <= 5)
+        {
+            // Without milk there is no foam to draw in: the rating is five small stars under the cup (drawn as shapes, so they look the same everywhere).
+            for (var i = 0; i < 5; i++)
+            {
+                Star(svg, (Width / 2) + ((i - 2) * 84), 695, 34, i < stars ? Gold : Line);
+            }
 
-        var y = 745;
+            y = 802;
+        }
+
         var titleLines = Wrap(content.Title, 24).Take(2).ToList();
         foreach (var line in titleLines)
         {
@@ -98,14 +109,29 @@ public static class BrewCard
         _ => "crema",
     };
 
-    private static void Cup(StringBuilder svg, int? rating, RoastLevel? roast)
+    private static void Cup(StringBuilder svg, int? rating, RoastLevel? roast, DrinkType drink)
     {
-        const int cx = 540, cy = 395;
+        const int cx = 540, cy = 370;
         var coffee = CoffeeColour(roast);
-        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"290\" fill=\"#efe5d8\"/>");
-        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"236\" fill=\"#ffffff\"/>");
-        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"204\" fill=\"{coffee}\"/>");
-        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"204\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\"0.25\" stroke-width=\"10\"/>");
+        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"270\" fill=\"#efe5d8\"/>");
+        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"220\" fill=\"#ffffff\"/>");
+        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"190\" fill=\"{coffee}\"/>");
+        svg.Append(CultureInfo.InvariantCulture, $"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"190\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\"0.25\" stroke-width=\"10\"/>");
+        if (!DrinkTypes.UsesMilk(drink))
+        {
+            // Filter, espresso and the rest: no milk, so no art. Espresso drinks get a layer of crema, filter coffee a soft shine.
+            if (drink is DrinkType.Espresso or DrinkType.Ristretto or DrinkType.Lungo or DrinkType.Americano)
+            {
+                svg.Append(CultureInfo.InvariantCulture, $"<g id=\"cup-crema\"><circle cx=\"{cx}\" cy=\"{cy}\" r=\"172\" fill=\"#c9964f\" fill-opacity=\"0.75\"/><path d=\"M{cx - 110} {cy + 20} A112 112 0 0 1 {cx + 70} {cy - 90}\" fill=\"none\" stroke=\"#fbf3e6\" stroke-opacity=\"0.45\" stroke-width=\"16\" stroke-linecap=\"round\"/></g>");
+            }
+            else
+            {
+                svg.Append(CultureInfo.InvariantCulture, $"<g id=\"cup-plain\"><path d=\"M{cx - 120} {cy - 40} A130 130 0 0 1 {cx + 20} {cy - 125}\" fill=\"none\" stroke=\"#ffffff\" stroke-opacity=\"0.3\" stroke-width=\"14\" stroke-linecap=\"round\"/></g>");
+            }
+
+            return;
+        }
+
         svg.Append(CultureInfo.InvariantCulture, $"<g id=\"latte-art-{ArtName(rating)}\" fill=\"#fbf3e6\" stroke=\"#fbf3e6\" stroke-linecap=\"round\" stroke-linejoin=\"round\">");
         switch (ArtName(rating))
         {
@@ -142,13 +168,24 @@ public static class BrewCard
         svg.Append("</g>");
     }
 
+    private static void Star(StringBuilder svg, int cx, int cy, int radius, string fill)
+    {
+        var points = Enumerable.Range(0, 10).Select(i =>
+        {
+            var angle = (-Math.PI / 2) + (i * Math.PI / 5);
+            var r = i % 2 == 0 ? radius : radius * 0.45;
+            return string.Create(CultureInfo.InvariantCulture, $"{cx + (r * Math.Cos(angle)):0.#},{cy + (r * Math.Sin(angle)):0.#}");
+        });
+        svg.Append(CultureInfo.InvariantCulture, $"<polygon points=\"{string.Join(' ', points)}\" fill=\"{fill}\"/>");
+    }
+
     private static void Heart(StringBuilder svg, int cx, int cy, int size) =>
         svg.Append(CultureInfo.InvariantCulture,
             $"<path d=\"M{cx} {cy + (size * 0.9):0} C{cx - (size * 1.5):0} {cy - (size * 0.1):0} {cx - (size * 0.6):0} {cy - (size * 1.0):0} {cx} {cy - (size * 0.35):0} C{cx + (size * 0.6):0} {cy - (size * 1.0):0} {cx + (size * 1.5):0} {cy - (size * 0.1):0} {cx} {cy + (size * 0.9):0}Z\" stroke=\"none\"/>");
 
-    private static void Text(StringBuilder svg, int x, int y, string text, int size, string fill, bool bold = false, bool italic = false, bool anchorEnd = false) =>
+    private static void Text(StringBuilder svg, int x, int y, string text, int size, string fill, bool bold = false, bool italic = false, bool anchorEnd = false, bool anchorMiddle = false) =>
         svg.Append(CultureInfo.InvariantCulture,
-            $"<text x=\"{x}\" y=\"{y}\" font-size=\"{size}\" fill=\"{fill}\"{(bold ? " font-weight=\"700\"" : "")}{(italic ? " font-style=\"italic\"" : "")}{(anchorEnd ? " text-anchor=\"end\"" : "")}>{SecurityElement.Escape(text)}</text>");
+            $"<text x=\"{x}\" y=\"{y}\" font-size=\"{size}\" fill=\"{fill}\"{(bold ? " font-weight=\"700\"" : "")}{(italic ? " font-style=\"italic\"" : "")}{(anchorEnd ? " text-anchor=\"end\"" : anchorMiddle ? " text-anchor=\"middle\"" : "")}>{SecurityElement.Escape(text)}</text>");
 
     private static string Truncate(string text, int max) => text.Length <= max ? text : text[..(max - 1)] + "…";
 

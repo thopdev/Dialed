@@ -12,7 +12,7 @@ public sealed class BrewCardTests : UiTestContext
     private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;
 
     private static BrewCardContent Content(string title = "Ethiopia Guji", int? rating = 4) =>
-        new(title, "Ethiopia, Guji", rating, "Hario V60", [("Dose", "18 g"), ("Water", "288 g"), ("Time", "3:02")], "blueberry · jasmine", "Brewed 11 Nov 2026 with Dialed");
+        new(title, "Ethiopia, Guji", rating, "Flat white", [("Dose", "18 g"), ("Water", "288 g"), ("Time", "3:02")], "blueberry · jasmine", "Brewed 11 Nov 2026 with Dialed", Drink: Domain.Model.DrinkType.FlatWhite);
 
     [Fact]
     public void The_card_is_a_valid_svg_of_the_share_size_with_the_text_on_it()
@@ -23,11 +23,12 @@ public sealed class BrewCardTests : UiTestContext
         xml.Attribute("width")!.Value.ShouldBe("1080");
         xml.Attribute("height")!.Value.ShouldBe("1350");
         svg.ShouldContain("Ethiopia Guji");
-        svg.ShouldContain("Hario V60");
+        svg.ShouldContain("Flat white");
         svg.ShouldContain("288 g");
         svg.ShouldContain("blueberry · jasmine");
         svg.ShouldContain("4 / 5");
         svg.ShouldContain("latte-art-tulip");
+        svg.ShouldNotContain("<polygon");
     }
 
     [Fact]
@@ -61,6 +62,28 @@ public sealed class BrewCardTests : UiTestContext
         System.Xml.Linq.XDocument.Parse(svg).ShouldNotBeNull();
         svg.ShouldContain($"latte-art-{art}");
     }
+
+    [Theory]
+    [InlineData(Domain.Model.DrinkType.Filter, "cup-plain")]
+    [InlineData(Domain.Model.DrinkType.Espresso, "cup-crema")]
+    [InlineData(Domain.Model.DrinkType.ColdBrew, "cup-plain")]
+    public void Drinks_without_milk_get_no_latte_art_but_five_stars_for_the_rating(Domain.Model.DrinkType drink, string cup)
+    {
+        var svg = BrewCard.Build(Content(rating: 4) with { Drink = drink });
+
+        System.Xml.Linq.XDocument.Parse(svg).ShouldNotBeNull();
+        svg.ShouldNotContain("latte-art");
+        svg.ShouldContain(cup);
+        System.Xml.Linq.XDocument.Parse(svg).Descendants().Count(e => e.Name.LocalName == "polygon").ShouldBe(5);
+        svg.ShouldContain("4 / 5");
+    }
+
+    [Theory]
+    [InlineData(Domain.Model.DrinkType.Cortado)]
+    [InlineData(Domain.Model.DrinkType.Cappuccino)]
+    [InlineData(Domain.Model.DrinkType.Latte)]
+    public void Milk_drinks_all_get_latte_art(Domain.Model.DrinkType drink) =>
+        BrewCard.Build(Content(rating: 5) with { Drink = drink }).ShouldContain("latte-art-rosetta");
 
     [Fact]
     public void The_roast_level_colours_the_coffee_and_no_rating_gives_plain_crema_without_a_score()

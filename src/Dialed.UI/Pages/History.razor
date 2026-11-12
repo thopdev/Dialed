@@ -451,7 +451,8 @@
                 parameters,
                 bean is { TastingNotes.Count: > 0 } ? string.Join(" · ", bean.TastingNotes) : current.Notes,
                 string.Format(L["Card_Footer"].Value, current.BrewedAt.ToLocalTime().ToString("d MMM yyyy", CultureInfo.CurrentCulture)),
-                bean?.RoastLevel));
+                bean?.RoastLevel,
+                current.DrinkType));
             var png = await Images.SvgToPngAsync(svg, Dialed.UI.Cards.BrewCard.Width, Dialed.UI.Cards.BrewCard.Height);
             if (png is null)
             {
