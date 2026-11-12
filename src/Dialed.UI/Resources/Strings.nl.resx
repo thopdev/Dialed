@@ -1056,6 +1056,7 @@
   <data name="Timer_StartFor" xml:space="preserve"><value>Start de timer voor {0}</value></data>
   <data name="Timer_Target" xml:space="preserve"><value>Giet tot {0}</value></data>
   <data name="Timer_Voice" xml:space="preserve"><value>Zeg de stappen hardop</value></data>
+  <data name="Tips_Title" xml:space="preserve"><value>Tips voor deze zak ({0})</value></data>
   <data name="Units_Imperial" xml:space="preserve"><value>Imperiaal (oz, fl oz, °F)</value></data>
   <data name="Units_Metric" xml:space="preserve"><value>Metrisch (g, ml, °C)</value></data>
   <data name="Units_Title" xml:space="preserve"><value>Eenheden</value></data>

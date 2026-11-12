@@ -274,4 +274,51 @@ public sealed class HomeBrewPolishTests : UiTestContext
 
         Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id)).FindAll("#brew-roast-tip").ShouldBeEmpty();
     }
+
+    // ---- Start faster -------------------------------------------------------------------------
+
+    [Fact]
+    public async Task Tips_share_one_collapsed_row_with_their_count()
+    {
+        var bean = await Beans.SaveAsync(new Bean { Name = "Kiambu" }, Ct);
+        var bag = await Bags.SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m, RoastDate = Today.AddDays(-4) }, Ct);
+        foreach (var (daysAgo, grind) in new[] { (12, 26m), (8, 24m), (4, 23m), (1, 22m) })
+        {
+            await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, GrindSetting = grind, Rating = 5, BrewedAt = DateTimeOffset.Now.AddDays(-daysAgo) }, Ct);
+        }
+
+        var page = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
+
+        var tips = page.WaitForElement("#brew-tips");
+        tips.HasAttribute("open").ShouldBeFalse();
+        tips.QuerySelector("summary")!.TextContent.ShouldBe("Tips for this bag (2)");
+        tips.QuerySelector("#brew-roast-tip").ShouldNotBeNull();
+        tips.QuerySelector("#brew-grind-drift").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Without_tips_there_is_no_tips_row()
+    {
+        var bag = await NewBag();
+
+        Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id)).FindAll("#brew-tips").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Brew_again_offers_the_timer_when_the_last_brew_used_a_recipe_with_steps()
+    {
+        var bag = await NewBag();
+        var recipes = Services.GetRequiredService<IRepository<Recipe>>();
+        var guided = await recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning", DoseG = 15m, WaterG = 250m, Steps = [new RecipeStep(RecipeStepKind.Bloom, 0, 30, 45m)] }, Ct);
+        var plain = await recipes.SaveAsync(new Recipe { MethodCode = "espresso", Name = "House", DoseG = 18m, YieldG = 36m }, Ct);
+        await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, RecipeId = guided.Id, BrewedAt = DateTimeOffset.Now.AddMinutes(-5) }, Ct);
+
+        Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id)).WaitForElement("#brew-again-timer").GetAttribute("href").ShouldBe($"brew/{bag.Id}/timer/{guided.Id}");
+
+        await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "espresso", DoseG = 18m, RecipeId = plain.Id, BrewedAt = DateTimeOffset.Now }, Ct);
+
+        var again = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
+        again.WaitForElement("#brew-again");
+        again.FindAll("#brew-again-timer").ShouldBeEmpty();
+    }
 }
