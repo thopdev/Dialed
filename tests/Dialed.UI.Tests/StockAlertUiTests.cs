@@ -53,6 +53,23 @@ public sealed class StockAlertUiTests : UiTestContext
     }
 
     [Fact]
+    public async Task The_service_switch_starts_off_and_is_sent_to_the_server_without_touching_the_others()
+    {
+        var panel = await PanelOn();
+        panel.Find("#push-service").HasAttribute("checked").ShouldBeFalse();
+        panel.Find("#push-peak").Change(true);
+        panel.WaitForAssertion(() => PushServer.Peak.ShouldBeTrue());
+
+        panel.Find("#push-service").Change(true);
+
+        panel.WaitForAssertion(() => PushServer.Service.ShouldBeTrue());
+        PushServer.Peak.ShouldBeTrue();
+        panel.Find("#push-peak").Change(false);
+        panel.WaitForAssertion(() => PushServer.Peak.ShouldBeFalse());
+        PushServer.Service.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task The_follow_and_household_switches_keep_the_stock_ones_as_they_are()
     {
         var panel = await PanelOn();

@@ -127,6 +127,15 @@ public static class PushText
     {
         var nl = string.Equals(language, "nl", StringComparison.OrdinalIgnoreCase);
         var many = beanNames.Count > 1;
+        if (kind == PushKind.ServiceDue)
+        {
+            return new(
+                nl ? "Onderhoud nodig" : "Service due",
+                many ? (nl ? $"{beanNames.Count} stuks gear hebben onderhoud nodig." : $"{beanNames.Count} pieces of gear are due for service.") : (nl ? $"{beanNames[0]} heeft onderhoud nodig." : $"{beanNames[0]} is due for service."),
+                "gear",
+                "service-due");
+        }
+
         if (kind == PushKind.PeakSoon)
         {
             return new(

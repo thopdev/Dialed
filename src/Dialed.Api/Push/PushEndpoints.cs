@@ -11,9 +11,9 @@ public sealed record PushSubscribeRequest(string Endpoint, string P256dh, string
 
 public sealed record PushUnsubscribeRequest(string Endpoint);
 
-public sealed record PushSettingsDto(bool Follows, bool Household, int Devices, bool LowStock = false, bool Peak = false);
+public sealed record PushSettingsDto(bool Follows, bool Household, int Devices, bool LowStock = false, bool Peak = false, bool Service = false);
 
-public sealed record PushSettingsRequest(bool Follows, bool Household, bool LowStock = false, bool Peak = false, Dialed.Domain.Inventory.InventorySettings? Inventory = null, string? TimeZone = null);
+public sealed record PushSettingsRequest(bool Follows, bool Household, bool LowStock = false, bool Peak = false, Dialed.Domain.Inventory.InventorySettings? Inventory = null, string? TimeZone = null, bool Service = false);
 
 public static class PushEndpoints
 {
@@ -85,7 +85,7 @@ public static class PushEndpoints
         {
             var userId = UserId(user);
             var settings = await store.GetSettingsAsync(userId, ct);
-            return Results.Ok(new PushSettingsDto(settings.Follows, settings.Household, (await store.ListAsync(userId, ct)).Count, settings.LowStock, settings.Peak));
+            return Results.Ok(new PushSettingsDto(settings.Follows, settings.Household, (await store.ListAsync(userId, ct)).Count, settings.LowStock, settings.Peak, settings.Service));
         });
 
         group.MapPut("/settings", async (PushSettingsRequest request, ClaimsPrincipal user, IPushStore store, CancellationToken ct) =>
@@ -98,8 +98,8 @@ public static class PushEndpoints
 
             // Only a time zone this server knows is kept; the stock alerts fall back to UTC without one.
             var zone = request.TimeZone is { Length: > 0 and <= 64 } id && TimeZoneInfo.TryFindSystemTimeZoneById(id, out _) ? id : null;
-            await store.SaveSettingsAsync(userId, new PushSettings(request.Follows, request.Household, request.LowStock, request.Peak, request.Inventory, zone), ct);
-            return Results.Ok(new PushSettingsDto(request.Follows, request.Household, (await store.ListAsync(userId, ct)).Count, request.LowStock, request.Peak));
+            await store.SaveSettingsAsync(userId, new PushSettings(request.Follows, request.Household, request.LowStock, request.Peak, request.Inventory, zone, request.Service), ct);
+            return Results.Ok(new PushSettingsDto(request.Follows, request.Household, (await store.ListAsync(userId, ct)).Count, request.LowStock, request.Peak, request.Service));
         });
 
         return endpoints;
