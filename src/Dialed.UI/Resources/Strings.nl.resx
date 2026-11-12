@@ -217,6 +217,8 @@
   <data name="Beans_SelectPrompt" xml:space="preserve"><value>Selecteer een zak om de details te zien.</value></data>
   <data name="Beans_Sort" xml:space="preserve"><value>Sorteren op</value></data>
   <data name="Beans_Stock" xml:space="preserve"><value>Voorraad</value></data>
+  <data name="BestBrew_Hint" xml:space="preserve"><value>Het midden van wat je gebruikte in {0} met 4 sterren of meer.</value></data>
+  <data name="BestBrew_Title" xml:space="preserve"><value>Maak een recept van je beste bakjes</value></data>
   <data name="Brew_Again" xml:space="preserve"><value>Opnieuw zetten</value></data>
   <data name="Brew_Days" xml:space="preserve"><value>{0} d</value></data>
   <data name="Brew_DoseRequired" xml:space="preserve"><value>Vul de dosis in.</value></data>
