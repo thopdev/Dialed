@@ -1049,4 +1049,13 @@
   <data name="Compare_Pick" xml:space="preserve"><value>Kies een brew</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Deel een afbeelding van deze boon</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Bewaard in Dialed</value></data>
+  <data name="Journey_Title" xml:space="preserve"><value>Levensloop</value></data>
+  <data name="Journey_Purchased" xml:space="preserve"><value>Gekocht</value></data>
+  <data name="Journey_Roasted" xml:space="preserve"><value>Gebrand</value></data>
+  <data name="Journey_PeakStarts" xml:space="preserve"><value>Piekperiode begint</value></data>
+  <data name="Journey_PeakEnds" xml:space="preserve"><value>Piekperiode eindigt</value></data>
+  <data name="Journey_FirstBrew" xml:space="preserve"><value>Eerste brew</value></data>
+  <data name="Journey_Finished" xml:space="preserve"><value>Laatste brew, zak op</value></data>
+  <data name="Journey_Bag" xml:space="preserve"><value>Zak van {0}</value></data>
+  <data name="Journey_Upcoming" xml:space="preserve"><value>Straks</value></data>
 </root>

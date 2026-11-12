@@ -1050,4 +1050,13 @@
   <data name="Compare_Pick" xml:space="preserve"><value>Choose a brew</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Share a picture of this bean</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Kept in Dialed</value></data>
+  <data name="Journey_Title" xml:space="preserve"><value>Journey</value></data>
+  <data name="Journey_Purchased" xml:space="preserve"><value>Bought</value></data>
+  <data name="Journey_Roasted" xml:space="preserve"><value>Roasted</value></data>
+  <data name="Journey_PeakStarts" xml:space="preserve"><value>Peak window starts</value></data>
+  <data name="Journey_PeakEnds" xml:space="preserve"><value>Peak window ends</value></data>
+  <data name="Journey_FirstBrew" xml:space="preserve"><value>First brew</value></data>
+  <data name="Journey_Finished" xml:space="preserve"><value>Last brew, bag finished</value></data>
+  <data name="Journey_Bag" xml:space="preserve"><value>{0} bag</value></data>
+  <data name="Journey_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
 </root>
