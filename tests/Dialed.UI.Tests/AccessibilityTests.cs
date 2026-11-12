@@ -195,4 +195,81 @@ public sealed class AccessibilityTests : UiTestContext
         panel.Find("#household-delete").Click();
         Problems(panel).Distinct().ToList().ShouldBeEmpty("delete confirmation");
     }
+
+    // ---- Round 3 screens with data: bean page extras, drift note, gear upkeep, suggestions, notification switches ----
+
+    private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;
+
+    private async Task<(Bean Bean, Bag Bag)> BeanWithOffBrews()
+    {
+        var bean = await Services.GetRequiredService<Dialed.Client.Data.IRepository<Bean>>().SaveAsync(new Bean { Name = "Kiambu", Origin = new BeanOrigin(Country: "Kenya"), TastingNotes = ["blackcurrant"] }, Ct);
+        var bag = await Services.GetRequiredService<Dialed.Client.Data.IRepository<Bag>>().SaveAsync(new Bag { BeanId = bean.Id, WeightG = 250m, RoastDate = DateOnly.FromDateTime(DateTime.Now).AddDays(-12) }, Ct);
+        var brews = Services.GetRequiredService<Dialed.Client.Data.IRepository<Brew>>();
+        foreach (var (days, grind, rating) in new[] { (12, 26m, 5), (8, 24m, 4), (4, 23m, 4), (1, 22m, 5) })
+        {
+            await brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, WaterG = 250m, GrindSetting = grind, Rating = rating, Taste = new Taste(Acidity: -1), BrewedAt = DateTimeOffset.Now.AddDays(-days) }, Ct);
+        }
+
+        return (bean, bag);
+    }
+
+    [Fact]
+    public async Task The_bean_page_with_its_journey_taste_profile_and_recipe_offer_is_labeled()
+    {
+        var (bean, _) = await BeanWithOffBrews();
+        var page = Render<Beans>(p => p.Add(x => x.Id, bean.Id));
+        page.WaitForElement("#bean-recipe-from-best");
+
+        page.FindAll("#bean-share-card").ShouldHaveSingleItem().GetAttribute("aria-label").ShouldNotBeNullOrWhiteSpace();
+        page.FindAll("#bean-taste-profile [role=img]").ShouldAllBe(r => !string.IsNullOrWhiteSpace(r.GetAttribute("aria-label")));
+        Problems(page).Distinct().ToList().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task The_grind_drift_note_is_labeled_and_has_a_heading()
+    {
+        var (_, bag) = await BeanWithOffBrews();
+        var page = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
+
+        var note = page.WaitForElement("#brew-grind-drift");
+        note.QuerySelector("h2").ShouldNotBeNull();
+        Problems(page).Distinct().ToList().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Gear_upkeep_on_the_list_the_detail_and_the_form_is_labeled()
+    {
+        var gear = Services.GetRequiredService<Dialed.Client.Data.IRepository<EquipmentItem>>();
+        var grinder = await gear.SaveAsync(new EquipmentItem { Kind = EquipmentKind.Grinder, Brand = "Eureka", Model = "Mignon", ServiceEveryDays = 7, ServicedOn = DateOnly.FromDateTime(DateTime.Now).AddDays(-9) }, Ct);
+
+        var list = Render<Gear>();
+        list.WaitForElement(".dialed-chip-warning");
+        var detail = Render<Gear>(p => p.Add(x => x.Id, grinder.Id));
+        detail.WaitForElement("#gear-upkeep-status");
+        var form = Render<EquipmentForm>(p => p.Add(x => x.Item, grinder));
+
+        Problems(list).Concat(Problems(detail)).Concat(Problems(form)).Distinct().ToList().ShouldBeEmpty();
+        form.Find("#gear-every-days").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Tasting_note_suggestions_are_a_labeled_list_of_buttons()
+    {
+        var input = Render<ChipInput>(p => p.Add(x => x.Label, "Tasting notes").Add(x => x.SuggestFlavors, true));
+        input.Find("input").Input("blu");
+
+        input.Find(".dialed-chip-suggestions").GetAttribute("aria-label").ShouldNotBeNullOrWhiteSpace();
+        Problems(input).Distinct().ToList().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task The_notification_switches_including_service_due_are_labeled()
+    {
+        await Services.GetRequiredService<Dialed.Client.Account.AuthSession>().SetAsync(new Dialed.Client.Account.SessionTokens("a", DateTimeOffset.MaxValue, "r", "u1", "Thomas", "h-u1"), Ct);
+        var panel = Render<NotificationsPanel>();
+        panel.Find("#push-enable").Click();
+        panel.WaitForElement("#push-service");
+
+        Problems(panel).Distinct().ToList().ShouldBeEmpty();
+    }
 }
