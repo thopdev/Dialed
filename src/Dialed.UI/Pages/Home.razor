@@ -179,7 +179,7 @@ else
         brewsToday = todays.Count;
         lastToday = todays.FirstOrDefault();
         var recipes = await RecipeStore.ListAsync();
-        gearDue = [.. (await GearStore.ListAsync()).Where(g => !g.Deleted && GearWear.Evaluate(g, brews, recipes).State == WearState.Due)];
+        gearDue = [.. (await GearStore.ListAsync()).Where(g => !g.Deleted && GearWear.Evaluate(g, brews, recipes, today).State == WearState.Due)];
     }
 
     private void OnChanged() => _ = InvokeAsync(async () =>

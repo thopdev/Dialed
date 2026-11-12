@@ -58,6 +58,8 @@
         <input id="gear-every-brews" type="number" inputmode="numeric" min="1" max="100000" step="1" @bind="everyBrews" />
         <label for="gear-every-kg">@L["Gear_EveryKg"]</label>
         <input id="gear-every-kg" type="number" inputmode="numeric" min="1" max="100000" step="1" @bind="everyKg" />
+        <label for="gear-every-days">@L["Gear_EveryDays"]</label>
+        <input id="gear-every-days" type="number" inputmode="numeric" min="1" max="3650" step="1" @bind="everyDays" />
     </fieldset>
 
     <div class="dialed-field">
@@ -83,6 +85,7 @@
     private string? notes;
     private int? everyBrews;
     private int? everyKg;
+    private int? everyDays;
     private IReadOnlyList<string> photoIds = [];
     private GrindSettingKind scaleKind = GrindSettingKind.Clicks;
     private decimal? scaleMin;
@@ -118,6 +121,7 @@
         notes = Item?.Notes;
         everyBrews = Item?.ServiceEveryBrews;
         everyKg = Item?.ServiceEveryKg;
+        everyDays = Item?.ServiceEveryDays;
         photoIds = Item?.PhotoIds ?? [];
         if (Item?.GrindScale is { } scale)
         {
@@ -157,6 +161,7 @@
             Notes = Clean(notes),
             ServiceEveryBrews = everyBrews is > 0 ? everyBrews : null,
             ServiceEveryKg = everyKg is > 0 ? everyKg : null,
+            ServiceEveryDays = everyDays is > 0 ? everyDays : null,
             PhotoIds = photoIds,
         };
         await OnSubmit.InvokeAsync(item);

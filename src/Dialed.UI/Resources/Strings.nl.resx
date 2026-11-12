@@ -1058,4 +1058,6 @@
   <data name="Gear_ServiceSoon" xml:space="preserve"><value>Binnenkort onderhoud</value></data>
   <data name="Gear_MarkServiced" xml:space="preserve"><value>Vandaag onderhoud gedaan</value></data>
   <data name="Home_GearDue" xml:space="preserve"><value>Onderhoud nodig: {0}</value></data>
+  <data name="Gear_EveryDays" xml:space="preserve"><value>of elke (dagen, 7 = wekelijks)</value></data>
+  <data name="Gear_DaysUsed" xml:space="preserve"><value>dag {0} van {1}</value></data>
 </root>

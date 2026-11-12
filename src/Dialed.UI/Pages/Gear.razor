@@ -254,11 +254,16 @@
         await LoadAsync();
     }
 
-    private GearWearStatus WearOf(EquipmentItem item) => GearWear.Evaluate(item, brews, recipes);
+    private GearWearStatus WearOf(EquipmentItem item) => GearWear.Evaluate(item, brews, recipes, DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
 
     private string UsageText(EquipmentItem item, GearWearStatus wear)
     {
         var amounts = $"{L.Count("Brews", wear.Brews)} · {wear.Kilograms.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture)} kg";
+        if (item.ServiceEveryDays is > 0)
+        {
+            amounts += $" · {string.Format(L["Gear_DaysUsed"].Value, wear.Days, item.ServiceEveryDays)}";
+        }
+
         return item.ServicedOn is { } since
             ? string.Format(L["Gear_UsageSince"].Value, amounts, since.ToString("d MMM yyyy", System.Globalization.CultureInfo.CurrentCulture))
             : string.Format(L["Gear_UsageSoFar"].Value, amounts);

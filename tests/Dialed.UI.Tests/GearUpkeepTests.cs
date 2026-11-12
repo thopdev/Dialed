@@ -41,12 +41,15 @@ public sealed class GearUpkeepTests : UiTestContext
         form.Find("form").Submit();
         form.Find("#gear-every-brews").Change("100");
         form.Find("#gear-every-kg").Change("250");
+        form.Find("#gear-every-days").Change("7");
         form.Find("form").Submit();
 
         saved[0].ServiceEveryBrews.ShouldBeNull();
         saved[0].ServiceEveryKg.ShouldBeNull();
         saved[1].ServiceEveryBrews.ShouldBe(100);
         saved[1].ServiceEveryKg.ShouldBe(250);
+        saved[0].ServiceEveryDays.ShouldBeNull();
+        saved[1].ServiceEveryDays.ShouldBe(7);
     }
 
     [Fact]

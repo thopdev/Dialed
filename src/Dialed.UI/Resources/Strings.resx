@@ -1059,4 +1059,6 @@
   <data name="Gear_ServiceSoon" xml:space="preserve"><value>Service soon</value></data>
   <data name="Gear_MarkServiced" xml:space="preserve"><value>Mark as serviced today</value></data>
   <data name="Home_GearDue" xml:space="preserve"><value>Service due: {0}</value></data>
+  <data name="Gear_EveryDays" xml:space="preserve"><value>or every (days, 7 = weekly)</value></data>
+  <data name="Gear_DaysUsed" xml:space="preserve"><value>day {0} of {1}</value></data>
 </root>

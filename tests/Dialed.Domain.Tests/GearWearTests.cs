@@ -7,8 +7,8 @@ public sealed class GearWearTests
 {
     private static readonly DateOnly Today = new(2026, 11, 11);
 
-    private static EquipmentItem Grinder(int? everyBrews = null, int? everyKg = null, DateOnly? servicedOn = null) =>
-        new() { Id = "g1", Kind = EquipmentKind.Grinder, Brand = "Eureka", ServiceEveryBrews = everyBrews, ServiceEveryKg = everyKg, ServicedOn = servicedOn };
+    private static EquipmentItem Grinder(int? everyBrews = null, int? everyKg = null, DateOnly? servicedOn = null, int? everyDays = null) =>
+        new() { Id = "g1", Kind = EquipmentKind.Grinder, Brand = "Eureka", ServiceEveryBrews = everyBrews, ServiceEveryKg = everyKg, ServiceEveryDays = everyDays, ServicedOn = servicedOn };
 
     private static Brew Brewed(DateOnly day, string? grinder = "g1", string? recipe = null, decimal dose = 18m, bool deleted = false) => new()
     {
@@ -68,5 +68,34 @@ public sealed class GearWearTests
 
         GearWear.Evaluate(brewer, brews, recipes).Brews.ShouldBe(2); // via recipe r1, not deleted
         GearWear.Evaluate(Grinder(everyBrews: 10), brews, recipes).Brews.ShouldBe(3); // own grinder id, deleted one not counted (it has g1 too)
+    }
+
+    [Fact]
+    public void A_weekly_interval_counts_days_since_the_service_even_without_brews()
+    {
+        var serviced = Today.AddDays(-3);
+        GearWear.Evaluate(Grinder(servicedOn: serviced, everyDays: 7), [], [], Today).State.ShouldBe(WearState.Ok);
+        GearWear.Evaluate(Grinder(servicedOn: Today.AddDays(-9), everyDays: 10), [], [], Today).State.ShouldBe(WearState.Soon);
+
+        var due = GearWear.Evaluate(Grinder(servicedOn: Today.AddDays(-7), everyDays: 7), [], [], Today);
+        due.State.ShouldBe(WearState.Due);
+        due.Days.ShouldBe(7);
+        due.Fraction.ShouldBe(1.0);
+    }
+
+    [Fact]
+    public void Never_serviced_gear_counts_days_from_when_it_was_added()
+    {
+        var item = Grinder(everyDays: 7) with { CreatedAt = new DateTimeOffset(Today.AddDays(-10).ToDateTime(new TimeOnly(12, 0)), TimeZoneInfo.Local.GetUtcOffset(Today.AddDays(-10).ToDateTime(new TimeOnly(12, 0)))) };
+
+        GearWear.Evaluate(item, [], [], Today).State.ShouldBe(WearState.Due);
+    }
+
+    [Fact]
+    public void Days_and_brews_together_use_whichever_is_further_along()
+    {
+        var status = GearWear.Evaluate(Grinder(everyBrews: 100, servicedOn: Today.AddDays(-5), everyDays: 7), Many(10, Today.AddDays(-4)), [], Today);
+
+        status.Fraction.ShouldBe(5.0 / 7.0, 0.001);
     }
 }
