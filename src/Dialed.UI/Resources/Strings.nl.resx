@@ -496,6 +496,7 @@
   <data name="Home_NoBrewsToday" xml:space="preserve"><value>Vandaag nog niets gezet.</value></data>
   <data name="Home_NoOpenBags" xml:space="preserve"><value>Geen geopende zakken.</value></data>
   <data name="Home_OpenBags" xml:space="preserve"><value>Geopende zakken</value></data>
+  <data name="Home_PickTitle" xml:space="preserve"><value>Jouw keuze van vandaag</value></data>
   <data name="Home_Recent" xml:space="preserve"><value>Recent gezet</value></data>
   <data name="Home_RemainingOf" xml:space="preserve"><value>Koffie over in {0}</value></data>
   <data name="Home_ScanBag" xml:space="preserve"><value>Zak scannen</value></data>

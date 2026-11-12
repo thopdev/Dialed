@@ -496,6 +496,7 @@
   <data name="Home_NoBrewsToday" xml:space="preserve"><value>No brews yet today.</value></data>
   <data name="Home_NoOpenBags" xml:space="preserve"><value>No open bags.</value></data>
   <data name="Home_OpenBags" xml:space="preserve"><value>Open bags</value></data>
+  <data name="Home_PickTitle" xml:space="preserve"><value>Today's pick</value></data>
   <data name="Home_Recent" xml:space="preserve"><value>Recent brews</value></data>
   <data name="Home_RemainingOf" xml:space="preserve"><value>Coffee left in {0}</value></data>
   <data name="Home_ScanBag" xml:space="preserve"><value>Scan bag</value></data>

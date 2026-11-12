@@ -3588,6 +3588,38 @@ a.dialed-banner {
     color: var(--colorNeutralForeground2);
 }
 
+/* ---- Pick of the day on Home ------------------------------------------------------------------------ */
+
+.dialed-pick {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--dialed-space-3) var(--dialed-space-4);
+    align-items: center;
+    margin: var(--dialed-space-5) 0 var(--dialed-space-3);
+    padding: var(--dialed-space-4);
+    border-radius: var(--dialed-radius-xl, 24px);
+    background: linear-gradient(150deg, var(--colorBrandBackgroundPressed, #5a3825), var(--colorBrandBackground, #7f5d47));
+    color: var(--colorNeutralForegroundOnBrand, #fff);
+    box-shadow: var(--dialed-shadow-card);
+}
+
+.dialed-pick-cup {
+    width: 4.5rem;
+    height: 4.5rem;
+    overflow: visible;
+}
+
+.dialed-pick-cup .dialed-pick-bowl {
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+}
+
+.dialed-pick-cup .dialed-pick-line,
+.dialed-pick-cup .dialed-pick-steam {
+}
+
 /* ---- Cups and taste scales (quick log) --------------------------------------------------------- */
 
 .dialed-cups {
@@ -3623,6 +3655,63 @@ a.dialed-banner {
     stroke-width: 2.2;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+
+.dialed-pick-cup .dialed-pick-steam {
+    opacity: 0.7;
+}
+
+.dialed-pick-text p {
+    margin: 0;
+}
+
+.dialed-pick-label {
+    font-size: var(--dialed-text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.dialed-pick-name {
+    margin-block: var(--dialed-space-1) !important;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-xl);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.dialed-pick-detail {
+    font-size: var(--dialed-text-s);
+    opacity: 0.9;
+}
+
+.dialed-pick-detail .dialed-rating-badge {
+    color: inherit;
+}
+
+.dialed-pick-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-pick-actions .dialed-button-primary {
+    flex: 1;
+    background: var(--colorNeutralForegroundOnBrand, #fff);
+    color: var(--colorBrandBackgroundPressed, #5a3825);
+    box-shadow: 0 6px 16px rgb(60 35 20 / 0.28);
+}
+
+.dialed-pick-actions .dialed-transport-button {
+    background: transparent;
+    color: inherit;
+    border-color: currentColor;
+}
+
+
+.dialed-pick-detail .dialed-rating-badge-star {
+    color: inherit;
 }
 
 .dialed-cup .dialed-cup-steam {
