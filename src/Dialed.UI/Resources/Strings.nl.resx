@@ -1080,7 +1080,7 @@
   <data name="Visibility_Private" xml:space="preserve"><value>Alleen ik</value></data>
   <data name="Visibility_Public" xml:space="preserve"><value>Iedereen op Dialed</value></data>
   <data name="Visibility_PublicHint" xml:space="preserve"><value>Iedereen die Dialed gebruikt kan dit vinden en zien, zolang je openbare profiel aan staat in Instellingen. Brews en zakken kunnen nooit openbaar zijn.</value></data>
-  <data name="Water_Better" xml:space="preserve"><value>Je bakjes met {0} scoren gemiddeld {1}.</value></data>
+  <data name="Water_Better" xml:space="preserve"><value>Je brews met {0} scoren gemiddeld {1}.</value></data>
   <data name="Water_Unused" xml:space="preserve"><value>Nog niet gebruikt in een bakje. Kies hem bij het loggen van een bakje om te zien hoe hij het doet.</value></data>
   <data name="Water_Used" xml:space="preserve"><value>Gebruikt in {0}, gemiddeld {1} sterren uit {2} beoordeeld.</value></data>
   <data name="Water_UsedUnrated" xml:space="preserve"><value>Gebruikt in {0}, nog geen beoordeeld.</value></data>
