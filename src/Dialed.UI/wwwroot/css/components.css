@@ -3627,13 +3627,56 @@ a.dialed-banner {
     filter: drop-shadow(0 3px 4px rgb(90 56 37 / 0.3));
 }
 
-.dialed-cup.on .dialed-cup-bowl {
+.dialed-cup .dialed-cup-coffee {
     fill: var(--colorBrandBackground);
+    transform: scaleY(0);
+    transform-origin: 0 31px;
+}
+
+.dialed-cup .dialed-cup-crema {
+    fill: var(--colorNeutralForegroundOnBrand);
+    opacity: 0;
+}
+
+.dialed-cup.on .dialed-cup-coffee {
+    transform: scaleY(1);
+    animation: dialed-cup-pour 0.45s ease-out backwards;
+    animation-delay: calc(var(--dialed-cup-index) * 70ms);
+}
+
+.dialed-cup.on .dialed-cup-crema {
+    opacity: 0.35;
+    animation: dialed-cup-crema 0.45s ease-out backwards;
+    animation-delay: calc(var(--dialed-cup-index) * 70ms + 0.2s);
+}
+
+.dialed-cup.on .dialed-cup-bowl {
     stroke: var(--colorBrandBackground);
 }
 
 .dialed-cup.on .dialed-cup-steam {
     opacity: 0.7;
+}
+
+/* The cup you just picked puffs a little steam. */
+.dialed-cup[aria-checked="true"] .dialed-cup-steam {
+    animation: dialed-cup-steam 0.9s ease-out 0.4s backwards;
+}
+
+@keyframes dialed-cup-pour {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+}
+
+@keyframes dialed-cup-crema {
+    from { opacity: 0; }
+    to { opacity: 0.35; }
+}
+
+@keyframes dialed-cup-steam {
+    0% { opacity: 0; transform: translateY(3px); }
+    50% { opacity: 0.9; }
+    100% { opacity: 0.7; transform: translateY(0); }
 }
 
 .dialed-cup:focus-visible,
@@ -3643,7 +3686,11 @@ a.dialed-banner {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dialed-cup {
+    .dialed-cup,
+    .dialed-cup .dialed-cup-coffee,
+    .dialed-cup .dialed-cup-crema,
+    .dialed-cup .dialed-cup-steam {
+        animation: none !important;
         transition: none;
     }
 }
