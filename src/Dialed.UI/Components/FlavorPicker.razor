@@ -9,7 +9,7 @@
 *@
 <div class="dialed-flavor-picker" id="@Id">
     <p class="dialed-fw-hint" id="@($"{Id}-hint")" aria-live="polite">@(zoom is { } z ? string.Format(L["Flavor_ZoomHint"].Value, L[$"Flavor_Category_{z}"].Value) : L["Flavor_WheelHint"].Value)</p>
-    <svg class="dialed-fw-wheel" viewBox="0 0 310 310" role="group" aria-labelledby="@($"{Id}-hint")">
+    <svg class="dialed-fw-wheel" viewBox="4 4 302 302" role="group" aria-labelledby="@($"{Id}-hint")">
         <g @key="@(zoom?.ToString() ?? "overview")" class="dialed-fw-slices">
             @for (var i = 0; i < Slices.Count; i++)
             {
