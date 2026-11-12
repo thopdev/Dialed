@@ -67,6 +67,7 @@
         }
         else
         {
+            <div id="brew-mood" class="dialed-mood dialed-mood-@MoodOf(current.BeanId)">
             <PageHeader Title="@BeanName(current.BeanId)" BackHref="brew" />
 
             @if (currentStock is not null)
@@ -171,6 +172,7 @@
             <div class="dialed-form-actions">
                 <a id="brew-blank" class="dialed-button" href="@($"brew/{current.Id}/log")">@L["Brew_WithoutRecipe"]</a>
             </div>
+            </div>
         }
     </Detail>
 </ListDetailLayout>
@@ -252,6 +254,9 @@
         await LoadAsync();
         StateHasChanged();
     });
+
+    /// <summary>The roast level the bag screen takes its colours from ("unknown" keeps the brand brown).</summary>
+    private string MoodOf(string beanId) => beans.FirstOrDefault(b => b.Id == beanId)?.RoastLevel?.ToString().ToLowerInvariant() ?? "unknown";
 
     private string BeanName(string beanId) => beans.FirstOrDefault(b => b.Id == beanId)?.Name ?? L["Bag_UnknownBean"].Value;
 
