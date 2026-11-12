@@ -169,9 +169,19 @@ h1[tabindex="-1"]:focus {
     display: none;
     flex-direction: column;
     border-right: 1px solid var(--colorNeutralStroke2, #e0e0e0);
-    background: var(--colorNeutralBackground2, #fafafa);
+    background: color-mix(in srgb, #e8cfa5 9%, var(--colorNeutralBackground2, #fafafa));
     padding: max(16px, env(safe-area-inset-top)) 8px 16px max(8px, env(safe-area-inset-left));
     overflow-y: auto;
+}
+
+/* The nav list takes the colour of the sidebar instead of Fluent's own panel. */
+.dialed-sidebar nav.fluent-nav,
+.dialed-sidebar nav.fluent-nav a.fluent-navitem:not(.active, :hover) {
+    background: transparent;
+}
+
+.dialed-sidebar nav.fluent-nav a.fluent-navitem.active {
+    background: color-mix(in srgb, #c9a77c 22%, var(--colorNeutralBackground2, #fafafa));
 }
 
 .dialed-sidebar-brand {
