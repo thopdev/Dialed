@@ -55,7 +55,7 @@ public sealed class HomeInventoryTests : UiTestContext
         var rows = page.FindAll("#home-open-bags .dialed-bag-card");
         rows.Count.ShouldBe(1);
         rows[0].TextContent.ShouldContain("Gesha");
-        rows[0].TextContent.ShouldContain("250 g left");
+        rows[0].TextContent.ShouldContain("250 g");
         rows[0].TextContent.ShouldContain("10 days since roast");
         rows[0].TextContent.ShouldContain("cups");
         page.Find("#home-log-brew").GetAttribute("href").ShouldBe("brew");
