@@ -4105,7 +4105,7 @@ a.dialed-banner {
 .dialed-fw-slice path {
     fill: var(--dialed-flavor-0);
     opacity: 0.28;
-    stroke: var(--dialed-surface, var(--colorNeutralBackground1));
+    stroke: var(--dialed-fw-gap, var(--dialed-surface, var(--colorNeutralBackground1)));
     stroke-width: 8;
     stroke-linejoin: round;
 }
@@ -4205,6 +4205,22 @@ a.dialed-banner {
 @keyframes dialed-flavor-zoom {
     from { opacity: 0; transform: scale(0.55); }
     to { opacity: 1; transform: scale(1); }
+}
+
+.dialed-quick-notes {
+    --dialed-fw-gap: var(--colorNeutralBackground1);
+    padding: var(--dialed-space-3);
+    border-radius: var(--dialed-radius-xl, 24px);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-quick-notes summary {
+    min-height: var(--dialed-touch-target);
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /* ---- Empty-state drawings ------------------------------------------------------------------------- */
