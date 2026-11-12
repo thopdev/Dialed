@@ -88,29 +88,35 @@
                 </Card>
             }
 
-            @if (roastTip is not null)
+            @if (TipCount > 0)
             {
-                <Card class="dialed-card dialed-roast-tip" id="brew-roast-tip">
-                    <h2 class="dialed-roast-tip-title">@L[$"RoastTip_{roastTip.Position}"]</h2>
-                    <p>@string.Format(L["RoastTip_Range"].Value, roastTip.FromDays, roastTip.ToDays, roastTip.MedianDays, L.Count("Brews", roastTip.Brews))</p>
-                    @if (roastTip.Position != RoastAgePosition.Inside)
-                    {
-                        <p class="dialed-muted">@string.Format(L[roastTip.Position == RoastAgePosition.Before ? "RoastTip_Wait" : "RoastTip_Past"].Value, roastTip.DaysAway)</p>
-                    }
-                </Card>
-            }
+                <details id="brew-tips" class="dialed-tips">
+                    <summary>@string.Format(L["Tips_Title"].Value, TipCount)</summary>
+                @if (roastTip is not null)
+                {
+                    <Card class="dialed-card dialed-roast-tip" id="brew-roast-tip">
+                        <h2 class="dialed-roast-tip-title">@L[$"RoastTip_{roastTip.Position}"]</h2>
+                        <p>@string.Format(L["RoastTip_Range"].Value, roastTip.FromDays, roastTip.ToDays, roastTip.MedianDays, L.Count("Brews", roastTip.Brews))</p>
+                        @if (roastTip.Position != RoastAgePosition.Inside)
+                        {
+                            <p class="dialed-muted">@string.Format(L[roastTip.Position == RoastAgePosition.Before ? "RoastTip_Wait" : "RoastTip_Past"].Value, roastTip.DaysAway)</p>
+                        }
+                    </Card>
+                }
 
-            @if (drift is not null)
-            {
-                <Card class="dialed-card dialed-drift" id="brew-grind-drift">
-                    <h2 class="dialed-drift-title">@L[drift.Finer ? "Drift_TitleFiner" : "Drift_TitleCoarser"]</h2>
-                    <p>@string.Format(L["Drift_Text"].Value, GrindScale.Format(drift.From), GrindScale.Format(drift.To), drift.Days, drift.Brews)</p>
-                    @if (drift.Suggested is { } suggested)
-                    {
-                        <p id="brew-grind-drift-try"><strong>@string.Format(L["Drift_Try"].Value, GrindScale.Format(suggested))</strong></p>
-                    }
-                    <p class="dialed-muted">@L["Drift_Why"]</p>
-                </Card>
+                @if (drift is not null)
+                {
+                    <Card class="dialed-card dialed-drift" id="brew-grind-drift">
+                        <h2 class="dialed-drift-title">@L[drift.Finer ? "Drift_TitleFiner" : "Drift_TitleCoarser"]</h2>
+                        <p>@string.Format(L["Drift_Text"].Value, GrindScale.Format(drift.From), GrindScale.Format(drift.To), drift.Days, drift.Brews)</p>
+                        @if (drift.Suggested is { } suggested)
+                        {
+                            <p id="brew-grind-drift-try"><strong>@string.Format(L["Drift_Try"].Value, GrindScale.Format(suggested))</strong></p>
+                        }
+                        <p class="dialed-muted">@L["Drift_Why"]</p>
+                    </Card>
+                }
+                </details>
             }
 
             @if (logged is not null)
@@ -120,14 +126,23 @@
 
             @if (last is not null)
             {
-                <a id="brew-again" class="dialed-card dialed-card-link dialed-brew-again" href="@($"brew/{current.Id}/log/again/{last.Id}")">
-                    <MethodIcon Code="@last.MethodCode" />
-                    <span class="dialed-row-text">
-                        <span class="dialed-row-title">@L["Brew_Again"]</span>
-                        <span class="dialed-row-subtitle">@Describe(last)</span>
-                    </span>
-                    <span class="dialed-row-chevron" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.ChevronRight())" Color="Color.Custom" CustomColor="currentColor" /></span>
-                </a>
+                <div class="dialed-recipe-choice dialed-brew-again-row">
+                    <a id="brew-again" class="dialed-card dialed-card-link dialed-brew-again" href="@($"brew/{current.Id}/log/again/{last.Id}")">
+                        <MethodIcon Code="@last.MethodCode" />
+                        <span class="dialed-row-text">
+                            <span class="dialed-row-title">@L["Brew_Again"]</span>
+                            <span class="dialed-row-subtitle">@Describe(last)</span>
+                        </span>
+                        <span class="dialed-row-chevron" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.ChevronRight())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                    </a>
+                    @if (lastRecipe is not null)
+                    {
+                        <a id="brew-again-timer" class="dialed-button dialed-button-icon" href="@($"brew/{current.Id}/timer/{lastRecipe.Id}")" aria-label="@string.Format(L["Timer_StartFor"].Value, lastRecipe.Name)">
+                            <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.Timer())" Color="Color.Custom" CustomColor="currentColor" /></span>
+                            @L["Timer_Start"]
+                        </a>
+                    }
+                </div>
             }
 
             <SectionHeader Title="@L["Brew_WithRecipe"]" />
@@ -180,6 +195,9 @@
 
     private GrindDriftNote? drift;
     private RoastAgeTipResult? roastTip;
+    private Recipe? lastRecipe;
+
+    private int TipCount => (roastTip is not null ? 1 : 0) + (drift is not null ? 1 : 0);
     private Brew? logged;
     private Dialed.Domain.Equipment.GrindScale? loggedScale;
 
@@ -210,6 +228,7 @@
         current = BagId is null ? null : bags.FirstOrDefault(b => b.Id == BagId);
         currentStock = current is null ? null : stock.FirstOrDefault(s => s.Bag.Id == current.Id);
         last = current is null ? null : BrewPrefill.Last(current.Id, brews);
+        lastRecipe = last?.RecipeId is { } lastRecipeId ? recipes.FirstOrDefault(r => r.Id == lastRecipeId && !r.Deleted && r.Steps.Count > 0) : null;
         logged = current is null || Logged is null ? null : brews.FirstOrDefault(b => !b.Deleted && b.Id == Logged && b.BagId == current.Id && DialInHistory.NeedsAdvice(b));
         loggedScale = logged?.GrinderId is { } grinderId ? (await GearStore.GetAsync(grinderId))?.GrindScale : null;
         drift = null;
