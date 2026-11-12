@@ -31,6 +31,7 @@ internal static class PlatformServices
         services.AddSingleton<IPushNotifications, BrowserPushNotifications>();
         services.AddSingleton<IBarcodeScanner, BrowserBarcodeScanner>();
         services.AddSingleton<ISoundCue, BrowserSoundCue>();
+        services.AddSingleton<ISpeechCue, BrowserSpeechCue>();
         services.AddSingleton<BrowserAppLifecycle>();
         services.AddSingleton<IAppLifecycle>(sp => sp.GetRequiredService<BrowserAppLifecycle>());
         return services;

@@ -10,6 +10,8 @@
 @inject IRepository<Recipe> RecipeStore
 @inject IWakeLock WakeLock
 @inject ISoundCue Sound
+@inject ISpeechCue Speech
+@inject IUserPreferences Preferences
 @inject BrewTimerHandoff Handoff
 @inject UnitFormatter Units
 @inject NavigationManager Navigation
@@ -97,6 +99,11 @@ else
             </ol>
         }
 
+        @if (speechSupported && !isEspresso)
+        {
+            <label class="dialed-check dialed-timer-voice"><input id="timer-voice" type="checkbox" checked="@Preferences.Profile.TimerVoice" @onchange="e => SetVoiceAsync((bool)e.Value!)" /> @L["Timer_Voice"]</label>
+        }
+
         <div class="dialed-form-actions dialed-timer-actions">
             @if (!running)
             {
@@ -125,6 +132,8 @@ else
     private int elapsed;
     private int stepKey;
     private bool doneCued;
+    private bool speechSupported;
+    private int lastCountdown;
     private DateTimeOffset startedAt;
     private TimerState state = new BrewTimeline([]).At(0);
     private CancellationTokenSource? loop;
@@ -141,6 +150,7 @@ else
     protected override async Task OnParametersSetAsync()
     {
         loading = true;
+        speechSupported = await SafeAsync(() => Speech.IsSupportedAsync());
         await StopLoopAsync(releaseWakeLock: true);
         running = false;
         elapsed = 0;
@@ -174,6 +184,11 @@ else
         // Both calls need to come from this tap: browsers only allow audio and wake locks after a user gesture.
         await SafeAsync(() => WakeLock.AcquireAsync());
         await SafeAsync(() => Sound.PlayAsync(SoundCue.Tick));
+        lastCountdown = 0;
+        if (!isEspresso && state.Current is { } first)
+        {
+            await SayAsync(StepPhrase(first));
+        }
 
         loop = new CancellationTokenSource();
         _ = RunAsync(loop.Token);
@@ -210,6 +225,17 @@ else
         if (!isEspresso && timeline.StepStartedBetween(previous, elapsed))
         {
             stepKey++;
+            lastCountdown = 0;
+            await SafeAsync(() => Sound.PlayAsync(SoundCue.Tick));
+            if (state.Current is { } current)
+            {
+                await SayAsync(StepPhrase(current));
+            }
+        }
+        else if (!isEspresso && state.SecondsToNext is >= 1 and <= 3 and var left && left != lastCountdown)
+        {
+            // Three, two, one: a tick for each of the last seconds before the next step.
+            lastCountdown = left;
             await SafeAsync(() => Sound.PlayAsync(SoundCue.Tick));
         }
 
@@ -217,9 +243,43 @@ else
         {
             doneCued = true;
             await SafeAsync(() => Sound.PlayAsync(SoundCue.Done));
+            await SayAsync(L["Timer_SayDone"].Value);
         }
 
         StateHasChanged();
+    }
+
+    private async Task SetVoiceAsync(bool on)
+    {
+        await Preferences.SetProfileAsync(Preferences.Profile with { TimerVoice = on });
+        if (on && running && state.Current is { } current)
+        {
+            // Called from this tap, so the browser lets the first phrase through.
+            await SayAsync(StepPhrase(current));
+        }
+    }
+
+    /// <summary>"Pour, to 150 grams" (or just "Bloom" without a target), in the language of the app.</summary>
+    private string StepPhrase(RecipeStep step)
+    {
+        var name = L[$"StepKind_{step.Kind}"].Value;
+        if (step.WaterG is not { } water)
+        {
+            return name;
+        }
+
+        // Said, not written: "150 grams", never "150 g".
+        var number = Math.Round(Units.ToDisplayWeight(water), 1).ToString("0.#", System.Globalization.CultureInfo.CurrentCulture);
+        var amount = string.Format(L[Units.System == Dialed.Domain.Units.UnitSystem.Metric ? "Timer_SayGrams" : "Timer_SayOunces"].Value, number);
+        return string.Format(L["Timer_SayStep"].Value, name, amount);
+    }
+
+    private async Task SayAsync(string text)
+    {
+        if (speechSupported && Preferences.Profile.TimerVoice)
+        {
+            await SafeAsync(() => Speech.SpeakAsync(text, System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "nl" ? "nl" : "en"));
+        }
     }
 
     private async Task FinishAsync()
@@ -269,15 +329,15 @@ else
         }
     }
 
-    private static async Task SafeAsync(Func<Task<bool>> action)
+    private static async Task<bool> SafeAsync(Func<Task<bool>> action)
     {
         try
         {
-            await action();
+            return await action();
         }
         catch (Exception)
         {
-            // Ignored on purpose.
+            return false;
         }
     }
 

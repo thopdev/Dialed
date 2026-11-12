@@ -32,6 +32,8 @@ Setup: one iPhone, ideally an iPad too, two accounts that follow each other (Ali
 
 ## Brewing
 - [ ] Timer: the screen stays awake while a recipe runs (wake lock), and the step sound plays; check with the silent switch on and off.
+- [ ] Timer voice: switch **Say the steps out loud** on, start a recipe: the first step is spoken ("Bloom, up to 45 grams") from the tap, then each step as it starts and "Done" at the end, in the app language (try Dutch). Check with the silent switch on and off, and that speech and the beeps do not talk over each other.
+- [ ] Timer countdown: three quick ticks in the last three seconds before each step.
 - [ ] After a sour or bitter brew, **Apply to next brew** opens the form with the change filled in (#237).
 - [ ] **Suggest a recipe** on a bean page with a grinder that has a grind scale: the numbers have reasons; **Save as recipe** works and opens the recipe (#240).
 - [ ] **Ask the assistant** after a 2-star sour shot answers; in airplane mode it says so and the built-in advice stays (#250).

@@ -379,6 +379,25 @@ export async function playCue(cue) {
 }
 
 
+// ---- Spoken cues (speech synthesis, no audio files) ---------------------------------------------------
+
+export function speechSupported() {
+    return 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+}
+
+export function speak(text, language) {
+    if (!speechSupported() || !text) return;
+    // Like the beeps, these are functional: say them even when the iPhone's ring/silent switch is on silent where the browser allows it.
+    if (navigator.audioSession) {
+        navigator.audioSession.type = 'playback';
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language === 'nl' ? 'nl-NL' : 'en-US';
+    utterance.rate = 1.05;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+}
+
 // ---- Error reports (#91, ADR-0012) -------------------------------------------------------------------
 const errorReportingKey = 'dialed.errorReporting.v1';
 
