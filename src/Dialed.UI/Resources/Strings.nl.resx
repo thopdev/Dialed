@@ -993,6 +993,10 @@
   <data name="Sync_State_Syncing" xml:space="preserve"><value>synchroniseren...</value></data>
   <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>synchroniseren in een ander tabblad...</value></data>
   <data name="Sync_Status" xml:space="preserve"><value>Synchronisatie: {0}</value></data>
+  <data name="TasteProfile_Balanced" xml:space="preserve"><value>{0}: ongeveer in balans</value></data>
+  <data name="TasteProfile_Hint" xml:space="preserve"><value>Uit de {0} waarbij iets niet klopte: naar welke kant hij neigt.</value></data>
+  <data name="TasteProfile_Leans" xml:space="preserve"><value>{0}: neigt naar {1}</value></data>
+  <data name="TasteProfile_Title" xml:space="preserve"><value>Hoe hij meestal smaakt</value></data>
   <data name="Taste_Acidity" xml:space="preserve"><value>Zuurgraad</value></data>
   <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
   <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>

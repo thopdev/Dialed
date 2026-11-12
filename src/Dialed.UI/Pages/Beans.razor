@@ -351,6 +351,13 @@
                 <BeanJourneyList Events="currentJourney" />
             }
 
+            @if (tasteProfile is not null)
+            {
+                <SectionHeader Title="@L["TasteProfile_Title"]" />
+                <p class="dialed-muted">@string.Format(L["TasteProfile_Hint"].Value, L.Count("Brews", tasteProfile.Brews))</p>
+                <TasteProfileBars Result="tasteProfile" />
+            }
+
             @if (currentTrace.Count > 0)
             {
                 <SectionHeader Title="@L["Bean_DialInTrace"]" />
@@ -394,6 +401,7 @@
     private IReadOnlyList<DialInSeries> currentTrace = [];
     private IReadOnlyList<JourneyEvent> currentJourney = [];
     private BestBrewRecipeResult? bestBrews;
+    private BeanTasteResult? tasteProfile;
     private bool showFilters;
     private Recipe? bestRecipe;
     private string search = "";
@@ -492,6 +500,7 @@
             var bagIds = currentBags.Select(b => b.Id).ToHashSet();
             currentBrews = [.. brews.Where(b => !b.Deleted && bagIds.Contains(b.BagId)).OrderByDescending(b => b.BrewedAt).Take(5)];
             currentTrace = DialInTrace.Build(brews.Where(b => bagIds.Contains(b.BagId)));
+            tasteProfile = BeanTasteProfile.Build(bagIds, brews);
             currentJourney = BeanJourney.Build(current, currentBags, brews, Preferences.Inventory, today);
         }
         else
@@ -500,6 +509,7 @@
             currentBrews = [];
             currentTrace = [];
             currentJourney = [];
+            tasteProfile = null;
         }
         var allRecipes = await RecipeStore.ListAsync();
         bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, allRecipes);

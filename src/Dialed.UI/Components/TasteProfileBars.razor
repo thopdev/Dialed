@@ -1,0 +1,42 @@
+@using Dialed.Domain.Statistics
+@inject IStringLocalizer<Strings> L
+
+@* How a bean tends to come out: one bar per taste axis, filling from the middle (balanced) towards the side it leans to. *@
+<div class="dialed-taste-profile" id="@Id">
+    @foreach (var axis in Result.Axes)
+    {
+        var (low, high) = Ends(axis.Axis);
+        var percent = (int)Math.Round(Math.Clamp(Math.Abs(axis.Average), 0, 2) / 2 * 50);
+        <div class="dialed-taste-row" role="img" aria-label="@Describe(axis, low, high)">
+            <span class="dialed-taste-end" aria-hidden="true">@low</span>
+            <span class="dialed-taste-track" aria-hidden="true">
+                <span class="dialed-taste-fill @(axis.Average < 0 ? "left" : "right")" style="width: @(percent)%"></span>
+            </span>
+            <span class="dialed-taste-end" aria-hidden="true">@high</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public BeanTasteResult Result { get; set; } = default!;
+
+    [Parameter]
+    public string Id { get; set; } = "bean-taste-profile";
+
+    private (string Low, string High) Ends(TasteAxis axis) => axis switch
+    {
+        TasteAxis.Acidity => (L["Taste_Sour"].Value, L["Taste_Bitter"].Value),
+        TasteAxis.Strength => (L["Taste_Weak"].Value, L["Taste_Strong"].Value),
+        TasteAxis.Body => (L["Taste_Thin"].Value, L["Taste_Heavy"].Value),
+        _ => (L["Taste_Flat"].Value, L["Taste_Sweet"].Value),
+    };
+
+    private string Describe(TasteLean lean, string low, string high)
+    {
+        var name = L[$"Taste_{lean.Axis}"].Value;
+        return lean.IsNoticeable
+            ? string.Format(L["TasteProfile_Leans"].Value, name, lean.Average < 0 ? low : high)
+            : string.Format(L["TasteProfile_Balanced"].Value, name);
+    }
+}

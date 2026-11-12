@@ -993,6 +993,10 @@
   <data name="Sync_State_Syncing" xml:space="preserve"><value>syncing...</value></data>
   <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>syncing in another tab...</value></data>
   <data name="Sync_Status" xml:space="preserve"><value>Sync: {0}</value></data>
+  <data name="TasteProfile_Balanced" xml:space="preserve"><value>{0}: about balanced</value></data>
+  <data name="TasteProfile_Hint" xml:space="preserve"><value>From the {0} where something was off: which way it leans.</value></data>
+  <data name="TasteProfile_Leans" xml:space="preserve"><value>{0}: leans {1}</value></data>
+  <data name="TasteProfile_Title" xml:space="preserve"><value>How it tends to taste</value></data>
   <data name="Taste_Acidity" xml:space="preserve"><value>Acidity</value></data>
   <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
   <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>
