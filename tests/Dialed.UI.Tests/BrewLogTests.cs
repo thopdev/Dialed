@@ -389,4 +389,81 @@ public sealed class BrewLogTests : UiTestContext
     {
         Render<BrewLog>(p => p.Add(x => x.BagId, "nope")).Markup.ShouldContain("no longer exists");
     }
+
+    // ---- Quick log after the timer ------------------------------------------------------------
+
+    private async Task<(Bag Bag, Recipe Recipe)> BagAndRecipe()
+    {
+        var (_, bag) = await SomeBag();
+        var recipe = await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning", DoseG = 15m, WaterG = 250m }, Ct);
+        return (bag, recipe);
+    }
+
+    private IRenderedComponent<BrewLog> RenderQuick(Bag bag, Recipe recipe)
+    {
+        Services.GetRequiredService<NavigationManager>().NavigateTo($"brew/{bag.Id}/log/recipe/{recipe.Id}?quick=1");
+        return Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.RecipeId, recipe.Id));
+    }
+
+    [Fact]
+    public async Task After_the_timer_the_log_asks_only_for_a_rating_and_how_it_tasted_and_saves_in_one_tap()
+    {
+        var (bag, recipe) = await BagAndRecipe();
+        var page = RenderQuick(bag, recipe);
+
+        page.WaitForElement("#quick-log");
+        page.FindAll("#brew-dose").ShouldBeEmpty();
+        page.FindAll("#quick-log .dialed-star").Count.ShouldBe(5);
+        page.FindAll("#quick-log .dialed-star")[3].Click();
+        page.Find("[data-axis=acidity] .dialed-chip").Click();
+        page.FindAll("[data-axis=body] .dialed-chip")[1].Click();
+        page.Find("#quick-log-save").Click();
+
+        page.WaitForAssertion(() => Services.GetRequiredService<NavigationManager>().Uri.ShouldContain("brew/"));
+        var saved = (await Brews.ListAsync(Ct)).ShouldHaveSingleItem();
+        (saved.Rating, saved.DoseG, saved.RecipeId).ShouldBe((4, 15m, recipe.Id));
+        (saved.Taste.Acidity, saved.Taste.Body, saved.Taste.Strength).ShouldBe((-1, 1, 0));
+    }
+
+    [Fact]
+    public async Task A_taste_chip_tapped_twice_turns_off_and_the_other_side_switches()
+    {
+        var (bag, recipe) = await BagAndRecipe();
+        var page = RenderQuick(bag, recipe);
+        page.WaitForElement("#quick-log");
+
+        page.FindAll("[data-axis=strength] .dialed-chip")[0].Click();
+        page.FindAll("[data-axis=strength] .dialed-chip")[0].Click();
+        page.FindAll("[data-axis=strength] .dialed-chip").Select(c => c.GetAttribute("aria-pressed")).ShouldBe(["false", "false"]);
+
+        page.FindAll("[data-axis=strength] .dialed-chip")[0].Click();
+        page.FindAll("[data-axis=strength] .dialed-chip")[1].Click();
+        page.FindAll("[data-axis=strength] .dialed-chip").Select(c => c.GetAttribute("aria-pressed")).ShouldBe(["false", "true"]);
+    }
+
+    [Fact]
+    public async Task More_details_shows_the_whole_form_with_the_answers_so_far()
+    {
+        var (bag, recipe) = await BagAndRecipe();
+        var page = RenderQuick(bag, recipe);
+        page.WaitForElement("#quick-log");
+        page.FindAll("#quick-log .dialed-star")[4].Click();
+
+        page.Find("#quick-log-more").Click();
+
+        page.FindAll("#quick-log").ShouldBeEmpty();
+        page.Find("#brew-dose").GetAttribute("value").ShouldBe("15");
+        page.Markup.ShouldContain("Save brew");
+    }
+
+    [Fact]
+    public async Task Without_the_quick_flag_or_without_a_dose_the_whole_form_shows()
+    {
+        var (bag, recipe) = await BagAndRecipe();
+
+        Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.RecipeId, recipe.Id)).WaitForElement("#brew-dose");
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo($"brew/{bag.Id}/log?quick=1");
+        Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id)).WaitForElement("#brew-dose");
+    }
 }

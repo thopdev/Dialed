@@ -3520,3 +3520,109 @@ a.dialed-banner {
     width: 2.5rem;
     height: 2.5rem;
 }
+
+/* ---- Quick log after the timer ---------------------------------------------------------------------- */
+
+.dialed-quick-log {
+    display: grid;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-quick-log-title {
+    margin: 0;
+}
+
+.dialed-quick-taste {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--dialed-space-2);
+}
+
+.dialed-quick-pair {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: var(--dialed-space-2);
+    padding: var(--dialed-space-1);
+    border-radius: var(--borderRadiusXLarge);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-quick-pair .dialed-chip {
+    flex: 1;
+    justify-content: center;
+    min-height: 3rem;
+    border-radius: var(--borderRadiusLarge);
+    border-color: transparent;
+    background: transparent;
+    font-size: var(--dialed-text-m);
+    font-weight: 600;
+}
+
+.dialed-quick-pair .dialed-chip.selected {
+    background: var(--colorBrandBackground);
+    color: var(--colorNeutralForegroundOnBrand);
+    box-shadow: var(--dialed-shadow-raised, none);
+}
+
+.dialed-quick-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-3);
+    border-radius: var(--dialed-radius-xl, var(--borderRadiusXLarge));
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-quick-summary-text {
+    display: grid;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-quick-summary-title {
+    font-weight: 600;
+}
+
+.dialed-quick-rating {
+    display: grid;
+    justify-items: center;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-quick-rating .dialed-stars {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.dialed-quick-rating .dialed-star {
+    width: 3.5rem;
+    height: 3.5rem;
+}
+
+.dialed-quick-rating .dialed-star svg {
+    width: 3rem !important;
+    height: 3rem !important;
+}
+
+.dialed-quick-rating .dialed-star.on {
+    color: var(--colorBrandForeground1);
+    filter: drop-shadow(0 2px 3px rgb(90 56 37 / 0.3));
+}
+
+.dialed-quick-rating-word {
+    margin: 0;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    min-height: 1.5rem;
+    font-weight: 700;
+    font-size: var(--dialed-text-l);
+    color: var(--colorBrandForeground1);
+}
+
+.dialed-quick-subtitle {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 500;
+    color: var(--colorNeutralForeground2);
+}
