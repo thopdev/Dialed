@@ -3712,3 +3712,85 @@ a.dialed-banner {
     box-shadow: var(--dialed-shadow-raised, none);
 }
 
+/* ---- Roast mood: a bean's screens take the colour of its roast ------------------------------------- */
+
+.dialed-mood {
+    --dialed-mood-start: var(--colorBrandBackgroundPressed);
+    --dialed-mood-end: var(--colorBrandBackground);
+    --dialed-mood-fg: var(--colorNeutralForegroundOnBrand);
+}
+
+.dialed-mood-light {
+    --dialed-mood-start: var(--dialed-roast-light-start);
+    --dialed-mood-end: var(--dialed-roast-light-end);
+    --dialed-mood-fg: var(--dialed-roast-light-fg);
+}
+
+.dialed-mood-mediumlight {
+    --dialed-mood-start: var(--dialed-roast-mediumlight-start);
+    --dialed-mood-end: var(--dialed-roast-mediumlight-end);
+    --dialed-mood-fg: var(--dialed-roast-mediumlight-fg);
+}
+
+.dialed-mood-medium {
+    --dialed-mood-start: var(--dialed-roast-medium-start);
+    --dialed-mood-end: var(--dialed-roast-medium-end);
+    --dialed-mood-fg: var(--dialed-roast-medium-fg);
+}
+
+.dialed-mood-mediumdark {
+    --dialed-mood-start: var(--dialed-roast-mediumdark-start);
+    --dialed-mood-end: var(--dialed-roast-mediumdark-end);
+    --dialed-mood-fg: var(--dialed-roast-mediumdark-fg);
+}
+
+.dialed-mood-dark {
+    --dialed-mood-start: var(--dialed-roast-dark-start);
+    --dialed-mood-end: var(--dialed-roast-dark-end);
+    --dialed-mood-fg: var(--dialed-roast-dark-fg);
+}
+
+/* The bag screen: the header becomes a roast-coloured hero and the summary card floats over it. */
+#brew-mood > .dialed-page-header {
+    margin: calc(-1 * max(12px, env(safe-area-inset-top))) -16px 0;
+    padding: max(16px, env(safe-area-inset-top)) 1.25rem 2.75rem;
+    border-radius: 0 0 var(--dialed-radius-xl, 24px) var(--dialed-radius-xl, 24px);
+    background: linear-gradient(160deg, var(--dialed-mood-start), var(--dialed-mood-end));
+    color: var(--dialed-mood-fg);
+}
+
+#brew-mood > .dialed-page-header .dialed-back {
+    color: inherit;
+}
+
+#brew-mood > .dialed-brew-bag {
+    position: relative;
+    margin-top: -2rem;
+}
+
+#brew-mood .dialed-meter-fill {
+    background: var(--dialed-mood-start);
+}
+
+#brew-mood .dialed-form-actions .dialed-button-primary,
+#brew-mood .dialed-recipe-choice .dialed-button {
+    border-color: var(--dialed-mood-start);
+}
+
+/* The bean page: its hero card gets the roast colour as a soft wash. */
+.dialed-bean-hero.dialed-mood {
+    border-radius: var(--dialed-radius-xl, 24px);
+    padding: var(--dialed-space-4);
+    background: linear-gradient(160deg, var(--dialed-mood-start), var(--dialed-mood-end));
+    color: var(--dialed-mood-fg);
+}
+
+.dialed-bean-hero.dialed-mood a {
+    color: inherit;
+}
+
+.dialed-bean-hero.dialed-mood .dialed-bean-hero-text *,
+.dialed-bean-hero.dialed-mood .dialed-star {
+    color: inherit;
+}
+

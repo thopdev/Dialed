@@ -212,7 +212,7 @@
                 </div>
             }
 
-            <div class="dialed-bean-hero" id="bean-hero">
+            <div class="dialed-bean-hero dialed-mood dialed-mood-@(current.RoastLevel?.ToString().ToLowerInvariant() ?? "unknown")" id="bean-hero">
                 <RoastThumb PhotoId="@current.PhotoIds.FirstOrDefault()" Level="@current.RoastLevel" Size="96" />
                 <div class="dialed-bean-hero-text">
                     @if (RoasterName(current) is { } roaster)
