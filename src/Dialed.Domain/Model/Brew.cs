@@ -50,6 +50,9 @@ public sealed record Brew : SyncEntity
 
     public string? GrinderId { get; init; }
 
+    /// <summary>The water used, a piece of gear of kind <see cref="EquipmentKind.Water"/> (tap, filtered, a mineral recipe).</summary>
+    public string? WaterId { get; init; }
+
     public DateTimeOffset BrewedAt { get; init; }
 
     public DrinkType DrinkType { get; init; } = DrinkType.Filter;

@@ -164,6 +164,10 @@
                         <button id="gear-mark-serviced" type="button" class="dialed-button" @onclick="MarkServicedAsync">@L["Gear_MarkServiced"]</button>
                     </div>
                 }
+                @if (current.Kind == EquipmentKind.Water)
+                {
+                    <p id="gear-water-stats" class="dialed-water-stats">@WaterText(current)</p>
+                }
                 @if (current.Notes is not null)
                 {
                     <p class="dialed-vendor-notes">@current.Notes</p>
@@ -255,6 +259,32 @@
     }
 
     private GearWearStatus WearOf(EquipmentItem item) => GearWear.Evaluate(item, brews, recipes, DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
+
+    private string WaterText(EquipmentItem item)
+    {
+        var all = WaterStats.Build(brews);
+        var mine = all.FirstOrDefault(w => w.WaterId == item.Id);
+        if (mine is null)
+        {
+            return L["Water_Unused"].Value;
+        }
+
+        var text = mine.AverageRating is { } average
+            ? string.Format(L["Water_Used"].Value, L.Count("Brews", mine.Brews), average.ToString("0.0", System.Globalization.CultureInfo.CurrentCulture), mine.Rated)
+            : string.Format(L["Water_UsedUnrated"].Value, L.Count("Brews", mine.Brews));
+        var others = all.Where(w => w.WaterId != item.Id && w.AverageRating is not null).ToList();
+        if (mine.AverageRating is { } own && others.Count > 0)
+        {
+            var best = others.MaxBy(w => w.AverageRating)!;
+            if (best.AverageRating > own)
+            {
+                var name = items?.FirstOrDefault(i => i.Id == best.WaterId) is { } other ? Title(other) : "?";
+                text += " " + string.Format(L["Water_Better"].Value, name, best.AverageRating!.Value.ToString("0.0", System.Globalization.CultureInfo.CurrentCulture));
+            }
+        }
+
+        return text;
+    }
 
     private string UsageText(EquipmentItem item, GearWearStatus wear)
     {

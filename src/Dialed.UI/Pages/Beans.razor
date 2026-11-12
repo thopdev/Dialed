@@ -351,6 +351,33 @@
                 <BeanJourneyList Events="currentJourney" />
             }
 
+            @if (otherBeans.Count > 0)
+            {
+                <SectionHeader Title="@L["BeanCompare_Title"]" />
+                <div id="bean-compare" class="dialed-form">
+                    <div class="dialed-field">
+                        <label for="bean-compare-with">@L["BeanCompare_With"]</label>
+                        <select id="bean-compare-with" @bind="compareWith">
+                            <option value="">@L["BeanCompare_Pick"]</option>
+                            @foreach (var other in otherBeans)
+                            {
+                                <option value="@other.Id">@other.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="dialed-form-actions">
+                        <button id="bean-compare-go" type="button" class="dialed-button" disabled="@(compareWith == "")" @onclick="CompareBeansAsync">@L["Compare_Go"]</button>
+                    </div>
+                </div>
+            }
+
+            @if (tasteProfile is not null)
+            {
+                <SectionHeader Title="@L["TasteProfile_Title"]" />
+                <p class="dialed-muted">@string.Format(L["TasteProfile_Hint"].Value, L.Count("Brews", tasteProfile.Brews))</p>
+                <TasteProfileBars Result="tasteProfile" />
+            }
+
             @if (currentTrace.Count > 0)
             {
                 <SectionHeader Title="@L["Bean_DialInTrace"]" />
@@ -394,6 +421,10 @@
     private IReadOnlyList<DialInSeries> currentTrace = [];
     private IReadOnlyList<JourneyEvent> currentJourney = [];
     private BestBrewRecipeResult? bestBrews;
+    private BeanTasteResult? tasteProfile;
+    private string compareWith = "";
+
+    private IReadOnlyList<Bean> otherBeans => current is null ? [] : [.. (beans ?? []).Where(b => !b.Deleted && b.Id != current.Id).OrderBy(b => b.Name, StringComparer.OrdinalIgnoreCase)];
     private bool showFilters;
     private Recipe? bestRecipe;
     private string search = "";
@@ -492,6 +523,7 @@
             var bagIds = currentBags.Select(b => b.Id).ToHashSet();
             currentBrews = [.. brews.Where(b => !b.Deleted && bagIds.Contains(b.BagId)).OrderByDescending(b => b.BrewedAt).Take(5)];
             currentTrace = DialInTrace.Build(brews.Where(b => bagIds.Contains(b.BagId)));
+            tasteProfile = BeanTasteProfile.Build(bagIds, brews);
             currentJourney = BeanJourney.Build(current, currentBags, brews, Preferences.Inventory, today);
         }
         else
@@ -500,6 +532,7 @@
             currentBrews = [];
             currentTrace = [];
             currentJourney = [];
+            tasteProfile = null;
         }
         var allRecipes = await RecipeStore.ListAsync();
         bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, allRecipes);
@@ -550,6 +583,16 @@
     }
 
     /// <summary>Makes the picture of this bean (name, roaster, origin on a map, rating, facts, tasting notes) and hands it to the share sheet or a download.</summary>
+    private Task CompareBeansAsync()
+    {
+        if (current is not null && compareWith != "")
+        {
+            Navigation.NavigateTo($"beans/compare/{current.Id}/{compareWith}");
+        }
+
+        return Task.CompletedTask;
+    }
+
     private async Task RecipeFromBestAsync()
     {
         if (bestBrews is null)

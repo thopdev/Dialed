@@ -158,6 +158,19 @@
   <data name="Barcode_UnknownTitle" xml:space="preserve"><value>Nieuwe barcode</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Bewaard in Dialed</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Deel een afbeelding van deze boon</value></data>
+  <data name="BeanCompare_Balanced" xml:space="preserve"><value>In balans</value></data>
+  <data name="BeanCompare_Brews" xml:space="preserve"><value>Brews</value></data>
+  <data name="BeanCompare_Good" xml:space="preserve"><value>4 sterren of meer</value></data>
+  <data name="BeanCompare_Hint" xml:space="preserve"><value>Smaak laat zien naar welke kant elke boon neigt in de brews waarbij iets niet klopte (daarvoor zijn twee van zulke brews nodig). Rijen die verschillen zijn gemarkeerd.</value></data>
+  <data name="BeanCompare_Last" xml:space="preserve"><value>Laatst gezet</value></data>
+  <data name="BeanCompare_Method" xml:space="preserve"><value>Favoriete methode</value></data>
+  <data name="BeanCompare_NotFound" xml:space="preserve"><value>Een van deze bonen bestaat niet meer.</value></data>
+  <data name="BeanCompare_Page" xml:space="preserve"><value>Bonen vergelijken</value></data>
+  <data name="BeanCompare_Pick" xml:space="preserve"><value>Kies een boon</value></data>
+  <data name="BeanCompare_Rating" xml:space="preserve"><value>Gemiddelde beoordeling</value></data>
+  <data name="BeanCompare_RatingValue" xml:space="preserve"><value>{0} ★ ({1} beoordeeld)</value></data>
+  <data name="BeanCompare_Title" xml:space="preserve"><value>Vergelijk met een andere boon</value></data>
+  <data name="BeanCompare_With" xml:space="preserve"><value>Vergelijk met</value></data>
   <data name="BeanForm_SectionBean" xml:space="preserve"><value>Boon</value></data>
   <data name="BeanForm_SectionOrigin" xml:space="preserve"><value>Herkomst</value></data>
   <data name="BeanForm_SectionRoast" xml:space="preserve"><value>Branding</value></data>
@@ -218,12 +231,12 @@
   <data name="Beans_Sort" xml:space="preserve"><value>Sorteren op</value></data>
   <data name="Beans_Stock" xml:space="preserve"><value>Voorraad</value></data>
   <data name="BestBrew_Hint" xml:space="preserve"><value>Het midden van wat je gebruikte in {0} met 4 sterren of meer.</value></data>
-  <data name="BestBrew_Title" xml:space="preserve"><value>Maak een recept van je beste bakjes</value></data>
+  <data name="BestBrew_Title" xml:space="preserve"><value>Maak een recept van je beste brews</value></data>
   <data name="Brew_Again" xml:space="preserve"><value>Opnieuw zetten</value></data>
   <data name="Brew_Days" xml:space="preserve"><value>{0} d</value></data>
   <data name="Brew_DoseRequired" xml:space="preserve"><value>Vul de dosis in.</value></data>
   <data name="Brew_Drink" xml:space="preserve"><value>Drankje</value></data>
-  <data name="Brew_Empty" xml:space="preserve"><value>Je gezette koppen verschijnen hier.</value></data>
+  <data name="Brew_Empty" xml:space="preserve"><value>Je brews verschijnen hier.</value></data>
   <data name="Brew_Left" xml:space="preserve"><value>{0} over</value></data>
   <data name="Brew_LogTitle" xml:space="preserve"><value>Een brew loggen</value></data>
   <data name="Brew_Milk" xml:space="preserve"><value>Melk</value></data>
@@ -240,6 +253,7 @@
   <data name="Brew_SelectPrompt" xml:space="preserve"><value>Selecteer een zak om te beginnen met zetten.</value></data>
   <data name="Brew_SinceRoast" xml:space="preserve"><value>Sinds branden</value></data>
   <data name="Brew_Taste" xml:space="preserve"><value>Hoe smaakte het?</value></data>
+  <data name="Brew_Water" xml:space="preserve"><value>Water</value></data>
   <data name="Brew_WithRecipe" xml:space="preserve"><value>Zetten met een recept</value></data>
   <data name="Brew_WithoutRecipe" xml:space="preserve"><value>Zetten zonder recept</value></data>
   <data name="Calendar_Description" xml:space="preserve"><value>{0} brews in de afgelopen {1} weken; drukste dag {2} met {3}</value></data>
@@ -327,7 +341,7 @@
   <data name="DialIn_Settled" xml:space="preserve"><value>De laatste drie brews hadden bijna dezelfde maalstand: deze is ingesteld.</value></data>
   <data name="DialIn_Title" xml:space="preserve"><value>Wat te proberen</value></data>
   <data name="Dismiss" xml:space="preserve"><value>Sluiten</value></data>
-  <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} bakjes uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>
+  <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} brews uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>
   <data name="Drift_TitleCoarser" xml:space="preserve"><value>Je maling schuift steeds grover</value></data>
   <data name="Drift_TitleFiner" xml:space="preserve"><value>Je maling schuift steeds fijner</value></data>
   <data name="Drift_Try" xml:space="preserve"><value>Vandaag wijst de trend naar {0}.</value></data>
@@ -825,6 +839,12 @@
   <data name="RoastStyle_Espresso" xml:space="preserve"><value>Espresso</value></data>
   <data name="RoastStyle_Filter" xml:space="preserve"><value>Filter</value></data>
   <data name="RoastStyle_Omni" xml:space="preserve"><value>Omni</value></data>
+  <data name="RoastTip_After" xml:space="preserve"><value>Deze zak is ouder dan je beste brews van deze boon</value></data>
+  <data name="RoastTip_Before" xml:space="preserve"><value>Deze zak is jonger dan je beste brews van deze boon</value></data>
+  <data name="RoastTip_Inside" xml:space="preserve"><value>Deze zak zit in de leeftijd van je beste brews van deze boon</value></data>
+  <data name="RoastTip_Past" xml:space="preserve"><value>Je beste brews waren tot {0} dagen jonger. Probeer een fijnere maling als hij flets smaakt.</value></data>
+  <data name="RoastTip_Range" xml:space="preserve"><value>Je beste brews (4 sterren of meer, {3}) waren {0} tot {1} dagen na het roosteren, de meeste rond dag {2}.</value></data>
+  <data name="RoastTip_Wait" xml:space="preserve"><value>Hij kan nog verbeteren: je beste brews begonnen over {0} dagen.</value></data>
   <data name="Save" xml:space="preserve"><value>Opslaan</value></data>
   <data name="Scan_Again" xml:space="preserve"><value>Opnieuw scannen</value></data>
   <data name="Scan_BagHeading" xml:space="preserve"><value>Zak</value></data>
@@ -888,6 +908,11 @@
   <data name="Settings_StorageLater" xml:space="preserve"><value>De opslagstatus verschijnt hier zodra gegevens op dit apparaat worden bewaard.</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Instellingen</value></data>
   <data name="Settings_Version" xml:space="preserve"><value>Versie {0}</value></data>
+  <data name="Shopping_Again" xml:space="preserve"><value>Opnieuw kopen: je gaf hem een goede beoordeling</value></data>
+  <data name="Shopping_Copy" xml:space="preserve"><value>Kopieer deze lijst</value></data>
+  <data name="Shopping_Low" xml:space="preserve"><value>Bijna op</value></data>
+  <data name="Shopping_Share" xml:space="preserve"><value>Deel de lijst</value></data>
+  <data name="Shopping_Title" xml:space="preserve"><value>Te kopen</value></data>
   <data name="Shot_InBand" xml:space="preserve"><value>Binnen het doelbereik</value></data>
   <data name="Shot_TooLong" xml:space="preserve"><value>Te lang</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Te kort</value></data>
@@ -993,6 +1018,10 @@
   <data name="Sync_State_Syncing" xml:space="preserve"><value>synchroniseren...</value></data>
   <data name="Sync_State_SyncingElsewhere" xml:space="preserve"><value>synchroniseren in een ander tabblad...</value></data>
   <data name="Sync_Status" xml:space="preserve"><value>Synchronisatie: {0}</value></data>
+  <data name="TasteProfile_Balanced" xml:space="preserve"><value>{0}: ongeveer in balans</value></data>
+  <data name="TasteProfile_Hint" xml:space="preserve"><value>Uit de {0} waarbij iets niet klopte: naar welke kant hij neigt.</value></data>
+  <data name="TasteProfile_Leans" xml:space="preserve"><value>{0}: neigt naar {1}</value></data>
+  <data name="TasteProfile_Title" xml:space="preserve"><value>Hoe hij meestal smaakt</value></data>
   <data name="Taste_Acidity" xml:space="preserve"><value>Zuurgraad</value></data>
   <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
   <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>
@@ -1079,5 +1108,9 @@
   <data name="Visibility_Private" xml:space="preserve"><value>Alleen ik</value></data>
   <data name="Visibility_Public" xml:space="preserve"><value>Iedereen op Dialed</value></data>
   <data name="Visibility_PublicHint" xml:space="preserve"><value>Iedereen die Dialed gebruikt kan dit vinden en zien, zolang je openbare profiel aan staat in Instellingen. Brews en zakken kunnen nooit openbaar zijn.</value></data>
+  <data name="Water_Better" xml:space="preserve"><value>Je brews met {0} scoren gemiddeld {1}.</value></data>
+  <data name="Water_Unused" xml:space="preserve"><value>Nog niet gebruikt in een bakje. Kies hem bij het loggen van een bakje om te zien hoe hij het doet.</value></data>
+  <data name="Water_Used" xml:space="preserve"><value>Gebruikt in {0}, gemiddeld {1} sterren uit {2} beoordeeld.</value></data>
+  <data name="Water_UsedUnrated" xml:space="preserve"><value>Gebruikt in {0}, nog geen beoordeeld.</value></data>
   <data name="Yes" xml:space="preserve"><value>Ja</value></data>
 </root>

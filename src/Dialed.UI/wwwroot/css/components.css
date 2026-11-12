@@ -1146,7 +1146,7 @@ button.dialed-chip::after {
     height: 0.5rem;
     overflow: hidden;
     border-radius: var(--dialed-radius-pill);
-    background: var(--colorNeutralBackground5, #e0e0e0);
+    background: var(--colorNeutralBackground6, #e0e0e0);
 }
 
 .dialed-meter-fill {
@@ -3198,6 +3198,75 @@ a.dialed-banner {
 }
 
 .dialed-content h2.dialed-drift-title {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 600;
+}
+
+/* ---- Taste profile ----------------------------------------------------------------------------- */
+
+.dialed-taste-profile {
+    display: grid;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-taste-row {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr 4.5rem;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-taste-end {
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-taste-end:last-child {
+    text-align: end;
+}
+
+.dialed-taste-track {
+    position: relative;
+    height: 0.5rem;
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorNeutralBackground6);
+}
+
+.dialed-taste-track::before {
+    content: "";
+    position: absolute;
+    inset-block: -0.25rem;
+    inset-inline-start: 50%;
+    width: 2px;
+    background: var(--colorNeutralStroke1);
+}
+
+.dialed-taste-fill {
+    position: absolute;
+    inset-block: 0;
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorBrandBackground);
+}
+
+.dialed-taste-fill.left {
+    inset-inline-end: 50%;
+}
+
+.dialed-taste-fill.right {
+    inset-inline-start: 50%;
+}
+
+.dialed-roast-tip {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-roast-tip p {
+    margin: var(--dialed-space-1) 0 0;
+}
+
+.dialed-content h2.dialed-roast-tip-title {
     margin: 0;
     font-size: var(--dialed-text-m);
     font-weight: 600;

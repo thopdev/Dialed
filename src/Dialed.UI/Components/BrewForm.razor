@@ -88,6 +88,20 @@
         </select>
     </div>
 
+    @if (WaterOptions.Any())
+    {
+        <div class="dialed-field">
+            <label for="brew-water">@L["Brew_Water"]</label>
+            <select id="brew-water" @bind="waterId">
+                <option value="">@L["Bean_None"]</option>
+                @foreach (var gear in WaterOptions)
+                {
+                    <option value="@gear.Id">@(string.IsNullOrWhiteSpace(gear.Model) ? gear.Brand : $"{gear.Brand} {gear.Model}")</option>
+                }
+            </select>
+        </div>
+    }
+
     @if (Uses(BrewParameter.Grind) && SelectedGrinder?.GrindScale is { } scale)
     {
         <GrindSettingInput Label="@L["Recipe_Grind"]" Scale="scale" @bind-Value="grind" />
@@ -167,6 +181,7 @@
     private decimal? dose;
     private decimal? liquid;
     private string grinderId = "";
+    private string waterId = "";
     private decimal? grind;
     private decimal? temp;
     private int? timeS;
@@ -196,6 +211,8 @@
     public EventCallback OnCancel { get; set; }
 
     private IEnumerable<EquipmentItem> Grinders => Gear.Where(g => g.Kind == EquipmentKind.Grinder);
+
+    private IEnumerable<EquipmentItem> WaterOptions => Gear.Where(g => g.Kind == EquipmentKind.Water);
 
     private EquipmentItem? SelectedGrinder => Gear.FirstOrDefault(g => g.Id == grinderId);
 
@@ -227,6 +244,7 @@
         var liquidG = Initial.WaterG ?? Initial.YieldG;
         liquid = liquidG is { } g ? Math.Round(Units.ToDisplayWeight(g), 1) : null;
         grinderId = Initial.GrinderId ?? "";
+        waterId = Initial.WaterId ?? "";
         grind = Initial.GrindSetting;
         temp = Initial.TempC is { } c ? Math.Round(Units.ToDisplayTemperature(c), 1) : null;
         timeS = Initial.TimeS;
@@ -275,6 +293,7 @@
             WaterG = UsesLiquid && water ? liquidG : null,
             YieldG = UsesLiquid && !water ? liquidG : null,
             GrinderId = grinderId == "" ? null : grinderId,
+            WaterId = waterId == "" ? null : waterId,
             GrindSetting = Uses(BrewParameter.Grind) && SelectedGrinder?.GrindScale is not null ? grind : null,
             TempC = Uses(BrewParameter.Temperature) && temp is { } t ? Math.Round(Units.FromDisplayTemperature(t), 1) : null,
             TimeS = Uses(BrewParameter.Time) ? timeS : null,

@@ -64,7 +64,7 @@ public sealed class DemoDataSeeder(ISyncStore store, TimeProvider time, ILogger<
         var kenyaBag = new Bag { Id = "demo-bag-kenya", BeanId = kenya.Id, SellerId = friedhats.Id, PriceCents = 1850, Currency = "EUR", WeightG = 250m, RoastDate = today.AddDays(-12), PurchasedOn = today.AddDays(-10), OpenedOn = today.AddDays(-8), Status = BagStatus.Open };
         var kenyaOld = new Bag { Id = "demo-bag-kenya-old", BeanId = kenya.Id, SellerId = friedhats.Id, PriceCents = 1850, Currency = "EUR", WeightG = 250m, RoastDate = today.AddDays(-40), PurchasedOn = today.AddDays(-38), OpenedOn = today.AddDays(-32), FinishedOn = today.AddDays(-10), Status = BagStatus.Finished };
         var ethiopiaBag = new Bag { Id = "demo-bag-ethiopia", BeanId = ethiopia.Id, SellerId = shop.Id, PriceCents = 2100, Currency = "EUR", WeightG = 250m, RoastDate = today.AddDays(-5), PurchasedOn = today.AddDays(-3), Status = BagStatus.Sealed };
-        var brazilBag = new Bag { Id = "demo-bag-brazil", BeanId = brazil.Id, SellerId = lot61.Id, PriceCents = 2900, Currency = "EUR", WeightG = 500m, RoastDate = today.AddDays(-26), PurchasedOn = today.AddDays(-24), OpenedOn = today.AddDays(-19), Status = BagStatus.Open };
+        var brazilBag = new Bag { Id = "demo-bag-brazil", BeanId = brazil.Id, SellerId = lot61.Id, PriceCents = 2100, Currency = "EUR", WeightG = 350m, RoastDate = today.AddDays(-26), PurchasedOn = today.AddDays(-24), OpenedOn = today.AddDays(-19), Status = BagStatus.Open };
         var decafBag = new Bag { Id = "demo-bag-decaf", BeanId = decaf.Id, SellerId = friedhats.Id, PriceCents = 1650, Currency = "EUR", WeightG = 250m, RoastDate = today.AddDays(-55), PurchasedOn = today.AddDays(-52), FrozenOn = today.AddDays(-50), Storage = BagStorage.Freezer, Status = BagStatus.Frozen };
         foreach (var bag in new[] { kenyaBag, kenyaOld, ethiopiaBag, brazilBag, decafBag })
         {
@@ -77,7 +77,9 @@ public sealed class DemoDataSeeder(ISyncStore store, TimeProvider time, ILogger<
         var v60 = new EquipmentItem { Id = "demo-gear-v60", Kind = EquipmentKind.Brewer, Brand = "Hario", Model = "V60 02" };
         var lelit = new EquipmentItem { Id = "demo-gear-lelit", Kind = EquipmentKind.EspressoMachine, Brand = "Lelit", Model = "Bianca V3" };
         var kettle = new EquipmentItem { Id = "demo-gear-kettle", Kind = EquipmentKind.Kettle, Brand = "Fellow", Model = "Stagg EKG" };
-        foreach (var item in new[] { comandante, eureka, v60, lelit, kettle })
+        var tapWater = new EquipmentItem { Id = "demo-gear-tap", Kind = EquipmentKind.Water, Brand = "Tap water", Model = "Amsterdam", Notes = "Hard: about 8 GH." };
+        var softWater = new EquipmentItem { Id = "demo-gear-soft-water", Kind = EquipmentKind.Water, Brand = "Soft mix", Model = "Third Wave style", Notes = "Distilled water with Epsom salt and baking soda." };
+        foreach (var item in new[] { comandante, eureka, v60, lelit, kettle, tapWater, softWater })
         {
             await Put("equipment", item);
         }
@@ -102,7 +104,7 @@ public sealed class DemoDataSeeder(ISyncStore store, TimeProvider time, ILogger<
         };
         Brew Pour(int daysAgo, int hour, int rating) => new()
         {
-            Id = $"demo-brew-v60-{daysAgo}-{hour}", BagId = kenyaBag.Id, MethodCode = "v60", RecipeId = v60New.Id, GrinderId = comandante.Id, BrewedAt = At(daysAgo, hour),
+            Id = $"demo-brew-v60-{daysAgo}-{hour}", BagId = kenyaBag.Id, MethodCode = "v60", RecipeId = v60New.Id, GrinderId = comandante.Id, WaterId = tapWater.Id, BrewedAt = At(daysAgo, hour),
             DrinkType = DrinkType.Filter, DoseG = 15m, WaterG = 250m, GrindSetting = 22m, TempC = 94m, TimeS = 190, Rating = rating,
         };
 
@@ -110,11 +112,11 @@ public sealed class DemoDataSeeder(ISyncStore store, TimeProvider time, ILogger<
         [
             Shot(0, 7, 5) with { YieldG = 37m, TimeS = 29, Taste = new Taste(Body: 1, Sweetness: 1), Notes = "Best shot of the bag so far. Syrupy, long chocolate finish." },
             Shot(0, 13, 4) with { DrinkType = DrinkType.FlatWhite, MilkMl = 120, MilkType = MilkType.Oat },
-            Pour(0, 9, 5) with { Taste = new Taste(Acidity: 1, Sweetness: 1), Notes = "Juicy blackcurrant, clean finish." },
+            Pour(0, 9, 5) with { WaterId = softWater.Id, Taste = new Taste(Acidity: 1, Sweetness: 1), Notes = "Juicy blackcurrant, clean finish." },
             Shot(1, 7, 3) with { TimeS = 24, YieldG = 40m, GrindSetting = 2.75m, Taste = new Taste(Acidity: 1, Strength: -1, Body: -1), Notes = "Ran fast, a bit thin." },
             Shot(1, 15, 4) with { DrinkType = DrinkType.Cappuccino, MilkMl = 150, MilkType = MilkType.Whole },
             Shot(2, 7, 2) with { TimeS = 35, YieldG = 32m, GrindSetting = 2.25m, Taste = new Taste(Acidity: -1, Strength: 2, Body: 1, Sweetness: -1), Notes = "Choked, bitter." },
-            Pour(2, 9, 4) with { TimeS = 205, GrindSetting = 23m },
+            Pour(2, 9, 4) with { TimeS = 205, GrindSetting = 23m, WaterId = softWater.Id },
             Pour(4, 9, 3) with { GrindSetting = 24m, TempC = 96m, Taste = new Taste(Acidity: 2, Strength: -1, Body: -1, Sweetness: -1), Notes = "Sour and thin; go finer." },
             Pour(8, 10, 4) with { GrindSetting = 26m },
             .. Enumerable.Range(3, 11).Select(day => Shot(day, 7, day % 3 == 0 ? 4 : 3)),
