@@ -799,7 +799,7 @@
   <data name="QuickLog_Rating3" xml:space="preserve"><value>Prima</value></data>
   <data name="QuickLog_Rating4" xml:space="preserve"><value>Erg goed</value></data>
   <data name="QuickLog_Rating5" xml:space="preserve"><value>Perfect</value></data>
-  <data name="QuickLog_RatingPrompt" xml:space="preserve"><value>Tik op een ster</value></data>
+  <data name="QuickLog_RatingPrompt" xml:space="preserve"><value>Tik op een kopje</value></data>
   <data name="QuickLog_Stood" xml:space="preserve"><value>Wat viel op? Tik wat past</value></data>
   <data name="QuickLog_Title" xml:space="preserve"><value>Hoe was het?</value></data>
   <data name="Rating_Label" xml:space="preserve"><value>Beoordeling</value></data>
@@ -1054,6 +1054,11 @@
   <data name="TasteProfile_Hint" xml:space="preserve"><value>Uit de {0} waarbij iets niet klopte: naar welke kant hij neigt.</value></data>
   <data name="TasteProfile_Leans" xml:space="preserve"><value>{0}: neigt naar {1}</value></data>
   <data name="TasteProfile_Title" xml:space="preserve"><value>Hoe hij meestal smaakt</value></data>
+  <data name="TasteScale_ABit" xml:space="preserve"><value>Een beetje</value></data>
+  <data name="TasteScale_ABitOf" xml:space="preserve"><value>Een beetje {0}</value></data>
+  <data name="TasteScale_Balanced" xml:space="preserve"><value>In balans</value></data>
+  <data name="TasteScale_Very" xml:space="preserve"><value>Erg</value></data>
+  <data name="TasteScale_VeryOf" xml:space="preserve"><value>Erg {0}</value></data>
   <data name="Taste_Acidity" xml:space="preserve"><value>Zuurgraad</value></data>
   <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
   <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>
