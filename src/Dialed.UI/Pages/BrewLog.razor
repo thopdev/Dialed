@@ -40,7 +40,34 @@ else
         <p id="brew-advice-applied" class="dialed-muted" role="status">@string.Format(L["DialIn_Applied"].Value, L[$"DialIn_Kind_{kind}"].Value)</p>
     }
 
-    <BrewForm Initial="initial" Gear="gear" OnSubmit="SaveAsync" OnCancel="@(() => Navigation.NavigateTo($"brew/{BagId}"))" />
+    @if (QuickMode)
+    {
+        <section id="quick-log" class="dialed-quick-log" aria-labelledby="quick-log-title">
+            <h2 id="quick-log-title" class="dialed-quick-log-title">@L["QuickLog_Title"]</h2>
+            <div class="dialed-field">
+                <label>@L["Bean_Rating"]</label>
+                <StarRating @bind-Value="quickRating" />
+            </div>
+            <div class="dialed-quick-taste" role="group" aria-label="@L["Brew_Taste"]">
+                @foreach (var axis in QuickAxes)
+                {
+                    var current = axis.Get();
+                    <div class="dialed-quick-pair" data-axis="@axis.Id">
+                        <Chip Selected="@(current < 0)" OnClick="@(() => Toggle(axis, -1))">@L[axis.Low]</Chip>
+                        <Chip Selected="@(current > 0)" OnClick="@(() => Toggle(axis, 1))">@L[axis.High]</Chip>
+                    </div>
+                }
+            </div>
+            <div class="dialed-form-actions">
+                <button id="quick-log-save" type="button" class="dialed-button dialed-button-primary" @onclick="QuickSaveAsync">@L["Save"]</button>
+                <button id="quick-log-more" type="button" class="dialed-button" @onclick="ShowAll">@L["QuickLog_More"]</button>
+            </div>
+        </section>
+    }
+    else
+    {
+        <BrewForm Initial="initial" Gear="gear" OnSubmit="SaveAsync" OnCancel="@(() => Navigation.NavigateTo($"brew/{BagId}"))" />
+    }
 }
 
 @code {
@@ -72,6 +99,46 @@ else
     public string? ApplyTo { get; set; }
 
     private SuggestionKind? appliedKind;
+
+    /// <summary>A finished timer opens the log in its short form: just the rating and how it tasted. "More details" shows the whole form.</summary>
+    [SupplyParameterFromQuery(Name = "quick")]
+    public string? Quick { get; set; }
+
+    private bool showAll;
+    private int quickRating;
+    private int acidity;
+    private int strength;
+    private int body;
+    private int sweetness;
+
+    private bool QuickMode => !showAll && Quick == "1" && initial is { DoseG: > 0m };
+
+    private sealed record QuickAxis(string Id, string Low, string High, Func<int> Get, Action<int> Set);
+
+    private IReadOnlyList<QuickAxis> QuickAxes =>
+    [
+        new("acidity", "Taste_Sour", "Taste_Bitter", () => acidity, v => acidity = v),
+        new("strength", "Taste_Weak", "Taste_Strong", () => strength, v => strength = v),
+        new("body", "Taste_Thin", "Taste_Heavy", () => body, v => body = v),
+        new("sweetness", "Taste_Flat", "Taste_Sweet", () => sweetness, v => sweetness = v),
+    ];
+
+    /// <summary>Tapping the chip that is on turns it off; tapping the other one of the pair switches sides.</summary>
+    private static void Toggle(QuickAxis axis, int side) => axis.Set(axis.Get() == side ? 0 : side);
+
+    private Brew WithQuickAnswers(Brew brew) => brew with
+    {
+        Rating = quickRating > 0 ? quickRating : null,
+        Taste = new Taste(acidity, strength, body, sweetness),
+    };
+
+    private Task QuickSaveAsync() => SaveAsync(WithQuickAnswers(initial!));
+
+    private void ShowAll()
+    {
+        initial = WithQuickAnswers(initial!);
+        showAll = true;
+    }
 
     protected override async Task OnParametersSetAsync()
     {

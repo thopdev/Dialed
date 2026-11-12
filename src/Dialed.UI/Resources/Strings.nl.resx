@@ -781,6 +781,8 @@
   <data name="Push_Switches" xml:space="preserve"><value>Laat me weten wanneer</value></data>
   <data name="Push_Title" xml:space="preserve"><value>Meldingen</value></data>
   <data name="Push_Unsupported" xml:space="preserve"><value>Deze browser kan geen meldingen ontvangen.</value></data>
+  <data name="QuickLog_More" xml:space="preserve"><value>Meer details</value></data>
+  <data name="QuickLog_Title" xml:space="preserve"><value>Hoe was het?</value></data>
   <data name="Rating_Label" xml:space="preserve"><value>Beoordeling</value></data>
   <data name="Rating_Value" xml:space="preserve"><value>{0} van {1} sterren</value></data>
   <data name="Recipe_Bean" xml:space="preserve"><value>Boon</value></data>

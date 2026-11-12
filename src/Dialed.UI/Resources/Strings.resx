@@ -781,6 +781,8 @@
   <data name="Push_Switches" xml:space="preserve"><value>Tell me when</value></data>
   <data name="Push_Title" xml:space="preserve"><value>Notifications</value></data>
   <data name="Push_Unsupported" xml:space="preserve"><value>This browser cannot receive notifications.</value></data>
+  <data name="QuickLog_More" xml:space="preserve"><value>More details</value></data>
+  <data name="QuickLog_Title" xml:space="preserve"><value>How was it?</value></data>
   <data name="Rating_Label" xml:space="preserve"><value>Rating</value></data>
   <data name="Rating_Value" xml:space="preserve"><value>{0} of {1} stars</value><comment>{0} = given stars, {1} = maximum</comment></data>
   <data name="Recipe_Bean" xml:space="preserve"><value>Bean</value></data>

@@ -3520,3 +3520,25 @@ a.dialed-banner {
     width: 2.5rem;
     height: 2.5rem;
 }
+
+/* ---- Quick log after the timer ---------------------------------------------------------------------- */
+
+.dialed-quick-log {
+    display: grid;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-quick-log-title {
+    margin: 0;
+}
+
+.dialed-quick-taste {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--dialed-space-2);
+}
+
+.dialed-quick-pair {
+    display: flex;
+    gap: var(--dialed-space-2);
+}
