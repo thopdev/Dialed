@@ -75,10 +75,8 @@
         if (Zoom && byCountry.Count == 1 && CountryShapes.ByIso2.TryGetValue(byCountry.Keys.Single().Iso2, out var shape))
         {
             zoomed = shape;
-            // A window 1.5 times the country, in the 5:3 shape of the map, never narrower than a few hundred kilometres so a small country keeps its neighbours around it.
-            var width = Math.Max(Math.Max((shape.X1 - shape.X0) * 1.5, (shape.Y1 - shape.Y0) * 1.5 * 5 / 3), 45);
-            var height = width * 3 / 5;
-            ViewBox = $"{Num((shape.X0 + shape.X1) / 2 - width / 2)} {Num((shape.Y0 + shape.Y1) / 2 - height / 2)} {Num(width)} {Num(height)}";
+            var window = MapView.Zoom(shape);
+            ViewBox = $"{Num(window.X)} {Num(window.Y)} {Num(window.Width)} {Num(window.Height)}";
         }
 
         var max = byCountry.Count == 0 ? 1 : byCountry.Values.Max(v => v.Count);

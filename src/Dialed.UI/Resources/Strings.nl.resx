@@ -1047,4 +1047,6 @@
   <data name="Compare_Rating" xml:space="preserve"><value>Beoordeling</value></data>
   <data name="Compare_NotFound" xml:space="preserve"><value>Een van deze brews bestaat niet meer.</value></data>
   <data name="Compare_Pick" xml:space="preserve"><value>Kies een brew</value></data>
+  <data name="BeanCard_Share" xml:space="preserve"><value>Deel een afbeelding van deze boon</value></data>
+  <data name="BeanCard_Footer" xml:space="preserve"><value>Bewaard in Dialed</value></data>
 </root>
