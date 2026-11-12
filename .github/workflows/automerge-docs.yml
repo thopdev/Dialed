@@ -10,7 +10,8 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
 
 permissions:
-  contents: read
+  # Turning on auto-merge is a GraphQL mergePullRequest call, which needs write access to contents as well as to pull requests.
+  contents: write
   pull-requests: write
 
 jobs:
