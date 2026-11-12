@@ -4462,32 +4462,33 @@ a.dialed-banner {
 }
 
 
-/* Warm polish: More, Settings and People. */
+/* Warm polish: More, Settings and People (cream and latte palette). */
+.dialed-card {
+    background: color-mix(in srgb, #e8cfa5 6%, var(--colorNeutralBackground1, #fff));
+}
+
 .dialed-more-group .dialed-list {
     border-radius: var(--dialed-radius-xl);
-    background: var(--colorNeutralBackground1, #fff);
+    background: color-mix(in srgb, #e8cfa5 6%, var(--colorNeutralBackground1, #fff));
     box-shadow: var(--dialed-shadow-card);
     padding: 0 var(--dialed-space-3);
     overflow: hidden;
 }
 
-.dialed-more-icon {
-    background: var(--dialed-roast-light-start, #f1dcc0);
-    color: var(--dialed-roast-dark-start, #6b4426);
-}
-
-.dialed-more-group:nth-of-type(2n) .dialed-more-icon {
-    background: var(--dialed-roast-medium-start, #e3bf8f);
-}
-
-.dialed-settings-group-header h2 {
-    font-family: var(--dialed-font-display);
+.dialed-more-icon,
+.dialed-settings-group-icon {
+    background: color-mix(in srgb, #3b2616 88%, var(--colorNeutralBackground1, #fff));
+    color: #e9c99b;
 }
 
 .dialed-settings-group-icon {
-    background: var(--dialed-roast-light-start, #f1dcc0);
-    color: var(--dialed-roast-dark-start, #6b4426);
     border-radius: 50%;
+}
+
+.dialed-settings-group-header h2,
+.dialed-friend-code h2,
+.dialed-people-section h2 {
+    font-family: var(--dialed-font-display);
 }
 
 .dialed-settings-card {
@@ -4500,16 +4501,8 @@ a.dialed-banner {
     box-shadow: var(--dialed-shadow-raised);
 }
 
-.dialed-friend-code h2 {
-    font-family: var(--dialed-font-display);
-}
-
 .dialed-friend-code .dialed-code {
-    border: 2px dashed var(--colorNeutralStroke1, #d1d1d1);
-    background: var(--dialed-roast-light-start, #f1dcc0);
-    color: var(--dialed-roast-dark-start, #4a2c17);
-}
-
-.dialed-people-section h2 {
-    font-family: var(--dialed-font-display);
+    border: 2px dashed #c9a77c;
+    background: color-mix(in srgb, #c9a77c 28%, var(--colorNeutralBackground1, #fff));
+    color: var(--colorNeutralForeground1, #2e2118);
 }
