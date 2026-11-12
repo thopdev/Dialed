@@ -138,7 +138,7 @@ public sealed class RecipeVersionTests : UiTestContext
         items[0].TextContent.ShouldContain("No brews yet");
         items[0].GetAttribute("aria-current").ShouldBe("page");
         items[1].TextContent.ShouldContain("Version 1");
-        items[1].TextContent.ShouldContain("4.0 ★ · 2 brew(s)");
+        items[1].TextContent.ShouldContain("4.0 ★ · 2 brews");
     }
 
     [Fact]
