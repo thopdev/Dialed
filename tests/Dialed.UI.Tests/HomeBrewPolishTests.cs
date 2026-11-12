@@ -215,4 +215,35 @@ public sealed class HomeBrewPolishTests : UiTestContext
         form.Find("#brew-dose-error").TextContent.ShouldBe("Enter the dose.");
         form.FindAll("#brew-ratio").ShouldBeEmpty();
     }
+
+    // ---- Grind drift --------------------------------------------------------------------------
+
+    private async Task Ground(Bag bag, int daysAgo, decimal setting) =>
+        await Brews.SaveAsync(new Brew { BagId = bag.Id, MethodCode = "v60", DoseG = 15m, GrindSetting = setting, BrewedAt = DateTimeOffset.Now.AddDays(-daysAgo) }, Ct);
+
+    [Fact]
+    public async Task A_grind_that_keeps_moving_finer_shows_a_drift_note_on_the_bag_screen()
+    {
+        var bag = await NewBag();
+        await Ground(bag, 12, 20m);
+        await Ground(bag, 8, 19m);
+        await Ground(bag, 4, 18m);
+
+        var page = Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id));
+
+        var note = page.Find("#brew-grind-drift");
+        note.QuerySelector("h2")!.TextContent.ShouldBe("Your grind is drifting finer");
+        note.TextContent.ShouldContain("from 20 to 18 in 8 days");
+        page.Find("#brew-grind-drift-try").TextContent.ShouldContain("Today the trend points to");
+    }
+
+    [Fact]
+    public async Task Without_a_drift_the_bag_screen_has_no_note()
+    {
+        var bag = await NewBag();
+        await Ground(bag, 8, 18m);
+        await Ground(bag, 4, 18m);
+
+        Render<BrewHome>(p => p.Add(x => x.BagId, bag.Id)).FindAll("#brew-grind-drift").ShouldBeEmpty();
+    }
 }

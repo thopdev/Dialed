@@ -1049,6 +1049,11 @@
   <data name="Compare_Pick" xml:space="preserve"><value>Kies een brew</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Deel een afbeelding van deze boon</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Bewaard in Dialed</value></data>
+  <data name="Drift_TitleFiner" xml:space="preserve"><value>Je maling schuift steeds fijner</value></data>
+  <data name="Drift_TitleCoarser" xml:space="preserve"><value>Je maling schuift steeds grover</value></data>
+  <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} bakjes uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>
+  <data name="Drift_Try" xml:space="preserve"><value>Vandaag wijst de trend naar {0}.</value></data>
+  <data name="Drift_Why" xml:space="preserve"><value>Bonen veranderen met de tijd, daarom malen veel mensen fijner om de smaak te houden. Zie dit als hint, niet als regel.</value></data>
   <data name="Gear_Upkeep" xml:space="preserve"><value>Onderhoud</value></data>
   <data name="Gear_UpkeepHelp" xml:space="preserve"><value>Krijg een seintje om te ontkalken, schoon te maken of messen te vervangen. Het gebruik telt vanaf de dag dat je onderhoud markeert.</value></data>
   <data name="Gear_EveryBrews" xml:space="preserve"><value>Onderhoud elke (brews)</value></data>
