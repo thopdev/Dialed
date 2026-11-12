@@ -829,6 +829,7 @@
   <data name="QuickLog_RatingPrompt" xml:space="preserve"><value>Tik op een kopje</value></data>
   <data name="QuickLog_Stood" xml:space="preserve"><value>Wat viel op? Tik wat past</value></data>
   <data name="QuickLog_Title" xml:space="preserve"><value>Hoe was het?</value></data>
+  <data name="Rating_Cup" xml:space="preserve"><value>{0}, {1} van 5</value></data>
   <data name="Rating_Label" xml:space="preserve"><value>Beoordeling</value></data>
   <data name="Rating_Value" xml:space="preserve"><value>{0} van {1} sterren</value></data>
   <data name="Recipe_Bean" xml:space="preserve"><value>Boon</value></data>

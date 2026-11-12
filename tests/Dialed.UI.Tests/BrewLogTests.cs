@@ -104,7 +104,7 @@ public sealed class BrewLogTests : UiTestContext
         form.Find("#brew-liquid").Change("40");
         form.Find("#brew-time").Change("31");
         form.Find("#brew-notes").Change(" a bit harsh ");
-        form.Find("[role=radio][aria-label='4 of 5 stars']").Click();
+        form.Find("[role=radio][aria-label='Really good, 4 of 5']").Click();
         form.FindAll(".dialed-taste input[type=range]")[0].Change("1");
         form.FindAll(".dialed-taste input[type=range]")[1].Change("-1");
 
@@ -304,7 +304,7 @@ public sealed class BrewLogTests : UiTestContext
         var recipe = await Recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning", DoseG = 15m, WaterG = 240m, TempC = 94m, TimeS = 180 }, Ct);
         var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.RecipeId, recipe.Id));
 
-        page.Find("[aria-label='2 of 5 stars']").Click();
+        page.Find("[role=radio][aria-label='Not great, 2 of 5']").Click();
         page.Find("form").Submit();
 
         var saved = (await Brews.ListAsync(Ct)).Single();
@@ -338,7 +338,7 @@ public sealed class BrewLogTests : UiTestContext
         Services.GetRequiredService<NavigationManager>().NavigateTo($"/brew/{bag.Id}/log/again/{previous.Id}?apply=primary");
         var page = Render<BrewLog>(p => p.Add(x => x.BagId, bag.Id).Add(x => x.BrewId, previous.Id));
 
-        page.Find("[aria-label='4 of 5 stars']").Click();
+        page.Find("[role=radio][aria-label='Really good, 4 of 5']").Click();
         page.Find("form").Submit();
 
         var next = (await Brews.ListAsync(Ct)).Single(b => b.Id != previous.Id);

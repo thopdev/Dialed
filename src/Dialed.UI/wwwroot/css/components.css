@@ -4207,12 +4207,58 @@ a.dialed-banner {
     to { opacity: 1; transform: scale(1); }
 }
 
+.dialed-cups-word {
+    margin: var(--dialed-space-1) 0 0;
+    text-align: center;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-weight: 700;
+    color: var(--colorBrandForeground1);
+}
+
+
+/* In detail headers the cup badge is bigger. */
+.dialed-brew-summary-text .dialed-rating-badge,
+.dialed-bean-hero .dialed-rating-badge {
+    font-size: var(--dialed-text-l);
+}
+
+.dialed-brew-summary-text .dialed-rating-badge svg,
+.dialed-bean-hero .dialed-rating-badge svg {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+/* History day headings: a big serif day with the date and the number of brews next to it, on the page colour. */
+.dialed-day-title {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    margin-inline: 0;
+    padding: var(--dialed-space-2) var(--dialed-space-4);
+    border-bottom: 0;
+    border-radius: var(--dialed-radius-l, 20px);
+}
+
 .dialed-quick-notes {
     --dialed-fw-gap: var(--colorNeutralBackground1);
     padding: var(--dialed-space-3);
     border-radius: var(--dialed-radius-xl, 24px);
     background: var(--colorNeutralBackground1);
     box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-day-title strong {
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-xl);
+    font-weight: 700;
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-day-sub {
+    font-size: var(--dialed-text-s);
+    font-weight: 400;
+    color: var(--colorNeutralForeground2);
 }
 
 .dialed-quick-notes summary {

@@ -13,7 +13,7 @@
                 class="dialed-cup @(current <= Value ? "on" : "")"
                 role="radio"
                 aria-checked="@(current == Value ? "true" : "false")"
-                aria-label="@L[$"QuickLog_Rating{current}"]"
+                aria-label="@string.Format(L["Rating_Cup"].Value, L[$"QuickLog_Rating{current}"].Value, current)"
                 @onclick="() => Select(current)">
             <svg viewBox="0 0 40 40" width="100%" height="100%" aria-hidden="true" focusable="false">
                 <path d="M15 4q2 2 0 4M21 4q2 2 0 4" class="dialed-cup-steam" />
@@ -24,10 +24,18 @@
         </button>
     }
 </span>
+@if (ShowWord)
+{
+    <p class="dialed-cups-word" aria-live="polite">@(Value > 0 ? L[$"QuickLog_Rating{Value}"].Value : L["QuickLog_RatingPrompt"].Value)</p>
+}
 
 @code {
     [Parameter]
     public int Value { get; set; }
+
+    /// <summary>Show the word for the rating under the cups ("Really good"), as the forms do.</summary>
+    [Parameter]
+    public bool ShowWord { get; set; }
 
     [Parameter]
     public EventCallback<int> ValueChanged { get; set; }
