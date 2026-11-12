@@ -1047,6 +1047,19 @@
   <data name="Compare_Rating" xml:space="preserve"><value>Beoordeling</value></data>
   <data name="Compare_NotFound" xml:space="preserve"><value>Een van deze brews bestaat niet meer.</value></data>
   <data name="Compare_Pick" xml:space="preserve"><value>Kies een brew</value></data>
+  <data name="Gear_Upkeep" xml:space="preserve"><value>Onderhoud</value></data>
+  <data name="Gear_UpkeepHelp" xml:space="preserve"><value>Krijg een seintje om te ontkalken, schoon te maken of messen te vervangen. Het gebruik telt vanaf de dag dat je onderhoud markeert.</value></data>
+  <data name="Gear_EveryBrews" xml:space="preserve"><value>Onderhoud elke (brews)</value></data>
+  <data name="Gear_EveryKg" xml:space="preserve"><value>of elke (kg koffie)</value></data>
+  <data name="Gear_UpkeepMeter" xml:space="preserve"><value>Gebruik sinds het laatste onderhoud</value></data>
+  <data name="Gear_UsageSince" xml:space="preserve"><value>{0} sinds {1}</value></data>
+  <data name="Gear_UsageSoFar" xml:space="preserve"><value>{0} tot nu toe</value></data>
+  <data name="Gear_ServiceDue" xml:space="preserve"><value>Onderhoud nodig</value></data>
+  <data name="Gear_ServiceSoon" xml:space="preserve"><value>Binnenkort onderhoud</value></data>
+  <data name="Gear_MarkServiced" xml:space="preserve"><value>Vandaag onderhoud gedaan</value></data>
+  <data name="Home_GearDue" xml:space="preserve"><value>Onderhoud nodig: {0}</value></data>
+  <data name="Gear_EveryDays" xml:space="preserve"><value>of elke (dagen, 7 = wekelijks)</value></data>
+  <data name="Gear_DaysUsed" xml:space="preserve"><value>dag {0} van {1}</value></data>
   <data name="Journey_Title" xml:space="preserve"><value>Levensloop</value></data>
   <data name="Journey_Purchased" xml:space="preserve"><value>Gekocht</value></data>
   <data name="Journey_Roasted" xml:space="preserve"><value>Gebrand</value></data>
