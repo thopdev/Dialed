@@ -340,7 +340,7 @@
   <data name="Version_Label" xml:space="preserve"><value>Version {0}</value></data>
   <data name="Version_Current" xml:space="preserve"><value>Current</value></data>
   <data name="Version_NoBrews" xml:space="preserve"><value>No brews yet</value></data>
-  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1} brew(s)</value></data>
+  <data name="Version_Stats" xml:space="preserve"><value>{0} · {1}</value></data>
   <data name="Version_StepsChanged" xml:space="preserve"><value>Steps changed</value></data>
   <data name="Version_GrinderChanged" xml:space="preserve"><value>Grinder changed</value></data>
   <data name="Timer_Start" xml:space="preserve"><value>Timer</value></data>
@@ -1053,6 +1053,19 @@
   <data name="Drift_Text" xml:space="preserve"><value>Over your last {3} brews of this bag the setting went from {0} to {1} in {2} days.</value></data>
   <data name="Drift_Try" xml:space="preserve"><value>Today the trend points to {0}.</value></data>
   <data name="Drift_Why" xml:space="preserve"><value>Beans change as they age, so many people grind finer to keep the taste. Use this as a hint, not a rule.</value></data>
+  <data name="Gear_Upkeep" xml:space="preserve"><value>Upkeep</value></data>
+  <data name="Gear_UpkeepHelp" xml:space="preserve"><value>Get a nudge to descale, clean or replace burrs. Usage is counted from the day you mark it serviced.</value></data>
+  <data name="Gear_EveryBrews" xml:space="preserve"><value>Service every (brews)</value></data>
+  <data name="Gear_EveryKg" xml:space="preserve"><value>or every (kg of coffee)</value></data>
+  <data name="Gear_UpkeepMeter" xml:space="preserve"><value>Used since the last service</value></data>
+  <data name="Gear_UsageSince" xml:space="preserve"><value>{0} since {1}</value></data>
+  <data name="Gear_UsageSoFar" xml:space="preserve"><value>{0} so far</value></data>
+  <data name="Gear_ServiceDue" xml:space="preserve"><value>Service due</value></data>
+  <data name="Gear_ServiceSoon" xml:space="preserve"><value>Service soon</value></data>
+  <data name="Gear_MarkServiced" xml:space="preserve"><value>Mark as serviced today</value></data>
+  <data name="Home_GearDue" xml:space="preserve"><value>Service due: {0}</value></data>
+  <data name="Gear_EveryDays" xml:space="preserve"><value>or every (days, 7 = weekly)</value></data>
+  <data name="Gear_DaysUsed" xml:space="preserve"><value>day {0} of {1}</value></data>
   <data name="Journey_Title" xml:space="preserve"><value>Journey</value></data>
   <data name="Journey_Purchased" xml:space="preserve"><value>Bought</value></data>
   <data name="Journey_Roasted" xml:space="preserve"><value>Roasted</value></data>
