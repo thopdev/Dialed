@@ -22,6 +22,7 @@ Start with the [plan](PLAN.md) and the [architecture](architecture.md); decision
 | [photo-uploads.md](photo-uploads.md) | Photo upload queue and short-lived URLs |
 | [push-notifications.md](push-notifications.md) | Web Push: follow and household events, low stock and peak alerts, keys, the stock alert job |
 | [public-profiles.md](public-profiles.md) | Opt-in public profiles, find people, reports, moderation with the admin key |
+| [insights.md](insights.md) | Offline maps, flavour wheel, calendar, milestones, dial-in trace and the brew card: what they read, where the code is, how to extend them |
 | [catalog.md](catalog.md) | The shared bean and roaster catalog: what goes in, the 2-person rule, moderation, where it is used |
 
 ## Quality, security and operations
