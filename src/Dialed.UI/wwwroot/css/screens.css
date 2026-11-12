@@ -252,11 +252,11 @@
     flex: none;
 }
 
-.dialed-roast-light .dialed-thumb { background: var(--colorPaletteYellowBackground2, #fef7b2); color: var(--colorPaletteYellowForeground2, #817400); }
-.dialed-roast-mediumlight .dialed-thumb { background: var(--colorPaletteMarigoldBackground2, #f9e2ae); color: var(--colorPaletteMarigoldForeground2, #835b00); }
-.dialed-roast-medium .dialed-thumb { background: var(--colorPalettePeachBackground2, #ffddb3); color: var(--colorPalettePeachForeground2, #8f4e00); }
-.dialed-roast-mediumdark .dialed-thumb { background: var(--colorPaletteDarkOrangeBackground2, #f4bfab); color: var(--colorPaletteDarkOrangeForeground2, #7a2101); }
-.dialed-roast-dark .dialed-thumb { background: var(--colorPaletteBrownBackground2, #ddc3b0); color: var(--colorPaletteBrownForeground2, #50301a); }
+.dialed-roast-light .dialed-thumb { background: color-mix(in srgb, #7a5337 14%, var(--colorNeutralBackground1, #fff)); color: var(--colorNeutralForeground1, #242424); }
+.dialed-roast-mediumlight .dialed-thumb { background: color-mix(in srgb, #7a5337 26%, var(--colorNeutralBackground1, #fff)); color: var(--colorNeutralForeground1, #242424); }
+.dialed-roast-medium .dialed-thumb { background: color-mix(in srgb, #7a5337 40%, var(--colorNeutralBackground1, #fff)); color: var(--colorNeutralForeground1, #242424); }
+.dialed-roast-mediumdark .dialed-thumb { background: color-mix(in srgb, #7a5337 58%, var(--colorNeutralBackground1, #fff)); color: #fff; }
+.dialed-roast-dark .dialed-thumb { background: color-mix(in srgb, #7a5337 78%, var(--colorNeutralBackground1, #fff)); color: #fff; }
 
 /* Extra line in a list row: a meter or small chips. */
 .dialed-row-below {
