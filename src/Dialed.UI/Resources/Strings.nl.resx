@@ -218,12 +218,12 @@
   <data name="Beans_Sort" xml:space="preserve"><value>Sorteren op</value></data>
   <data name="Beans_Stock" xml:space="preserve"><value>Voorraad</value></data>
   <data name="BestBrew_Hint" xml:space="preserve"><value>Het midden van wat je gebruikte in {0} met 4 sterren of meer.</value></data>
-  <data name="BestBrew_Title" xml:space="preserve"><value>Maak een recept van je beste bakjes</value></data>
+  <data name="BestBrew_Title" xml:space="preserve"><value>Maak een recept van je beste brews</value></data>
   <data name="Brew_Again" xml:space="preserve"><value>Opnieuw zetten</value></data>
   <data name="Brew_Days" xml:space="preserve"><value>{0} d</value></data>
   <data name="Brew_DoseRequired" xml:space="preserve"><value>Vul de dosis in.</value></data>
   <data name="Brew_Drink" xml:space="preserve"><value>Drankje</value></data>
-  <data name="Brew_Empty" xml:space="preserve"><value>Je gezette koppen verschijnen hier.</value></data>
+  <data name="Brew_Empty" xml:space="preserve"><value>Je brews verschijnen hier.</value></data>
   <data name="Brew_Left" xml:space="preserve"><value>{0} over</value></data>
   <data name="Brew_LogTitle" xml:space="preserve"><value>Een brew loggen</value></data>
   <data name="Brew_Milk" xml:space="preserve"><value>Melk</value></data>
@@ -327,7 +327,7 @@
   <data name="DialIn_Settled" xml:space="preserve"><value>De laatste drie brews hadden bijna dezelfde maalstand: deze is ingesteld.</value></data>
   <data name="DialIn_Title" xml:space="preserve"><value>Wat te proberen</value></data>
   <data name="Dismiss" xml:space="preserve"><value>Sluiten</value></data>
-  <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} bakjes uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>
+  <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} brews uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>
   <data name="Drift_TitleCoarser" xml:space="preserve"><value>Je maling schuift steeds grover</value></data>
   <data name="Drift_TitleFiner" xml:space="preserve"><value>Je maling schuift steeds fijner</value></data>
   <data name="Drift_Try" xml:space="preserve"><value>Vandaag wijst de trend naar {0}.</value></data>
