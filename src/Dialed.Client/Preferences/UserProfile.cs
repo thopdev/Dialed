@@ -8,7 +8,8 @@ public sealed record UserProfile(
     Visibility DefaultVisibility,
     IReadOnlyList<string> FavouriteMethods,
     bool OnboardingDone,
-    string? AvatarPhotoId = null)
+    string? AvatarPhotoId = null,
+    bool TimerVoice = false)
 {
     public static UserProfile Default { get; } = new("", Visibility.Household, [], false);
 
@@ -18,7 +19,8 @@ public sealed record UserProfile(
         && DefaultVisibility == other.DefaultVisibility
         && OnboardingDone == other.OnboardingDone
         && AvatarPhotoId == other.AvatarPhotoId
+        && TimerVoice == other.TimerVoice
         && FavouriteMethods.SequenceEqual(other.FavouriteMethods);
 
-    public override int GetHashCode() => HashCode.Combine(DisplayName, DefaultVisibility, OnboardingDone, FavouriteMethods.Count, AvatarPhotoId);
+    public override int GetHashCode() => HashCode.Combine(DisplayName, DefaultVisibility, OnboardingDone, FavouriteMethods.Count, AvatarPhotoId, TimerVoice);
 }

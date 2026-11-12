@@ -16,12 +16,14 @@ public sealed class BrewTimerTests : UiTestContext
     private readonly ManualClock clock = new();
     private readonly RecordingSound sound = new();
     private readonly RecordingWakeLock wake = new();
+    private readonly RecordingSpeech speech = new();
 
     public BrewTimerTests()
     {
         Services.AddSingleton<TimeProvider>(clock);
         Services.AddSingleton<ISoundCue>(sound);
         Services.AddSingleton<IWakeLock>(wake);
+        Services.AddSingleton<ISpeechCue>(speech);
     }
 
     private IRepository<Recipe> Recipes => Services.GetRequiredService<IRepository<Recipe>>();
@@ -45,6 +47,73 @@ public sealed class BrewTimerTests : UiTestContext
     {
         clock.Now = clock.Now.AddSeconds(seconds);
         await page.InvokeAsync(() => page.Instance.Refresh());
+    }
+
+    // ---- Voice and countdown ------------------------------------------------------------------
+
+    [Fact]
+    public async Task The_voice_switch_is_off_by_default_remembered_and_only_for_guided_timers()
+    {
+        var page = RenderTimer(await V60());
+        page.Find("#timer-voice").HasAttribute("checked").ShouldBeFalse();
+
+        page.Find("#timer-voice").Change(true);
+
+        Services.GetRequiredService<Dialed.Client.Preferences.IUserPreferences>().Profile.TimerVoice.ShouldBeTrue();
+        RenderTimer(await V60()).Find("#timer-voice").HasAttribute("checked").ShouldBeTrue();
+        RenderTimer(await Espresso()).FindAll("#timer-voice").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Without_speech_support_there_is_no_switch()
+    {
+        speech.Supported = false;
+
+        RenderTimer(await V60()).FindAll("#timer-voice").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task With_the_voice_on_each_step_is_said_with_its_target_and_the_end_too()
+    {
+        var page = RenderTimer(await V60());
+        page.Find("#timer-voice").Change(true);
+
+        page.Find("#timer-start").Click();
+        await Advance(page, 45);
+        await Advance(page, 45);
+        await Advance(page, 90);
+
+        speech.Said.Select(s => s.Text).ShouldBe(["Bloom, up to 45 grams", "Pour, up to 150 grams", "Pour, up to 240 grams", "Done"]);
+        speech.Said.ShouldAllBe(s => s.Language == "en");
+    }
+
+    [Fact]
+    public async Task With_the_voice_off_nothing_is_said()
+    {
+        var page = RenderTimer(await V60());
+
+        page.Find("#timer-start").Click();
+        await Advance(page, 45);
+
+        speech.Said.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task The_last_three_seconds_before_a_step_tick_once_each()
+    {
+        var page = RenderTimer(await V60());
+        page.Find("#timer-start").Click();
+        sound.Cues.Clear();
+        var start = clock.Now;
+
+        foreach (var second in new[] { 41, 42, 42, 43, 44 })
+        {
+            clock.Now = start + TimeSpan.FromSeconds(second);
+            await page.InvokeAsync(() => page.Instance.Refresh());
+        }
+
+        // 42, 43 and 44 seconds are 3, 2 and 1 seconds before the pour at 45; the repeat of 42 does not tick again.
+        sound.Cues.ShouldBe([SoundCue.Tick, SoundCue.Tick, SoundCue.Tick]);
     }
 
     // ---- Guided timer -------------------------------------------------------------------------
@@ -276,6 +345,21 @@ public sealed class BrewTimerTests : UiTestContext
         }
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class RecordingSpeech : ISpeechCue
+    {
+        public bool Supported { get; set; } = true;
+
+        public List<(string Text, string Language)> Said { get; } = [];
+
+        public Task<bool> IsSupportedAsync() => Task.FromResult(Supported);
+
+        public Task SpeakAsync(string text, string language)
+        {
+            Said.Add((text, language));
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class RecordingSound : ISoundCue

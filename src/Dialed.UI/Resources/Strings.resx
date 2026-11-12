@@ -1023,10 +1023,15 @@
   <data name="Timer_Progress" xml:space="preserve"><value>Brew progress</value></data>
   <data name="Timer_ProgressValue" xml:space="preserve"><value>{0} of {1}</value></data>
   <data name="Timer_Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Timer_SayDone" xml:space="preserve"><value>Done</value></data>
+  <data name="Timer_SayGrams" xml:space="preserve"><value>{0} grams</value></data>
+  <data name="Timer_SayOunces" xml:space="preserve"><value>{0} ounces</value></data>
+  <data name="Timer_SayStep" xml:space="preserve"><value>{0}, up to {1}</value></data>
   <data name="Timer_Start" xml:space="preserve"><value>Timer</value></data>
   <data name="Timer_StartButton" xml:space="preserve"><value>Start</value></data>
   <data name="Timer_StartFor" xml:space="preserve"><value>Start the timer for {0}</value></data>
   <data name="Timer_Target" xml:space="preserve"><value>Pour to {0}</value></data>
+  <data name="Timer_Voice" xml:space="preserve"><value>Say the steps out loud</value></data>
   <data name="Units_Imperial" xml:space="preserve"><value>Imperial (oz, fl oz, °F)</value></data>
   <data name="Units_Metric" xml:space="preserve"><value>Metric (g, ml, °C)</value></data>
   <data name="Units_Title" xml:space="preserve"><value>Units</value></data>
