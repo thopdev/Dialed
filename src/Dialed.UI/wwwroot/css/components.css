@@ -1631,6 +1631,27 @@ button.dialed-chip::after {
     margin: var(--dialed-space-3) 0;
 }
 
+/* The same card as a button: full width, text from the start, wraps instead of running off the screen. */
+button.dialed-best-recipe {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+button.dialed-best-recipe .dialed-row-text {
+    min-width: 0;
+}
+
+button.dialed-best-recipe .dialed-row-title,
+button.dialed-best-recipe .dialed-row-subtitle {
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
+}
+
 /* Bag detail */
 .dialed-bag-summary {
     display: flex;

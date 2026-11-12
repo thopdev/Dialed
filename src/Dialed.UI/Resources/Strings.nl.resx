@@ -7,6 +7,8 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="App_Name" xml:space="preserve"><value>Dialed</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>Krijg elke kop perfect ingesteld.</value></data>
+  <data name="BestBrew_Hint" xml:space="preserve"><value>Het midden van wat je gebruikte in {0} met 4 sterren of meer.</value></data>
+  <data name="BestBrew_Title" xml:space="preserve"><value>Maak een recept van je beste bakjes</value></data>
   <data name="PageTitle_Format" xml:space="preserve"><value>{0} · Dialed</value></data>
   <data name="Nav_Label" xml:space="preserve"><value>Hoofdnavigatie</value></data>
   <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>

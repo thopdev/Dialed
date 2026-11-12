@@ -7,6 +7,7 @@
 @using Dialed.Domain.BrewMethods
 @using Dialed.Domain.Inventory
 @using Dialed.Domain.Model
+@using Dialed.Domain.Recipes
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Bean> BeanStore
@@ -299,6 +300,17 @@
                 </a>
             }
 
+            @if (bestBrews is not null)
+            {
+                <button id="bean-recipe-from-best" type="button" class="dialed-card dialed-card-link dialed-best-recipe" @onclick="RecipeFromBestAsync">
+                    <MethodIcon Code="@bestBrews.Draft.MethodCode" />
+                    <span class="dialed-row-text">
+                        <span class="dialed-row-title">@L["BestBrew_Title"]</span>
+                        <span class="dialed-row-subtitle">@string.Format(L["BestBrew_Hint"].Value, L.Count("Brews", bestBrews.Brews))</span>
+                    </span>
+                </button>
+            }
+
             <RecipeSuggestionPanel Bean="current" />
 
             <SectionHeader Title="@L["Bean_BagsHeading"]">
@@ -381,6 +393,7 @@
     private IReadOnlyList<Brew> currentBrews = [];
     private IReadOnlyList<DialInSeries> currentTrace = [];
     private IReadOnlyList<JourneyEvent> currentJourney = [];
+    private BestBrewRecipeResult? bestBrews;
     private bool showFilters;
     private Recipe? bestRecipe;
     private string search = "";
@@ -488,7 +501,9 @@
             currentTrace = [];
             currentJourney = [];
         }
-        bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, await RecipeStore.ListAsync());
+        var allRecipes = await RecipeStore.ListAsync();
+        bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, allRecipes);
+        bestBrews = current is null ? null : BestBrewRecipe.Build(current, currentBags, await BrewStore.ListAsync(), allRecipes);
     }
 
     private void OnStoreChanged() => _ = InvokeAsync(async () =>
@@ -535,6 +550,17 @@
     }
 
     /// <summary>Makes the picture of this bean (name, roaster, origin on a map, rating, facts, tasting notes) and hands it to the share sheet or a download.</summary>
+    private async Task RecipeFromBestAsync()
+    {
+        if (bestBrews is null)
+        {
+            return;
+        }
+
+        var saved = await RecipeStore.SaveAsync(bestBrews.Draft);
+        Navigation.NavigateTo($"recipes/{saved.Id}");
+    }
+
     private async Task ShareCardAsync()
     {
         if (current is null || sharing)
