@@ -4104,8 +4104,9 @@ a.dialed-banner {
 .dialed-fw-slice path {
     fill: var(--dialed-flavor-0);
     opacity: 0.28;
-    stroke: var(--colorNeutralBackground1);
-    stroke-width: 2;
+    stroke: var(--dialed-surface, var(--colorNeutralBackground1));
+    stroke-width: 8;
+    stroke-linejoin: round;
 }
 
 .dialed-fw-slice text {
