@@ -122,6 +122,7 @@ public abstract class UiTestContext : BunitContext
         Services.AddSingleton<IImageRenderer>(ImageRenderer);
         Services.AddSingleton(new AccountDataApi(new HttpClient(DataServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<AccountDataService>();
+        Services.AddSingleton<Dialed.Client.Backup.BackupService>();
         Services.AddSingleton<PasskeyManager>();
         Services.AddSingleton(new FriendsApi(new HttpClient(FriendsServer) { BaseAddress = new Uri("https://api.test/") }, Tokens));
         Services.AddSingleton<FriendCopyService>();
