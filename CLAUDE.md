@@ -23,6 +23,7 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 - Fix CI failures and merge conflicts without being asked. Do not ask for iPhone testing you can do yourself; list real-device checks (wake lock, silent switch, storage eviction, passkeys on device) as manual steps in the PR.
 - Do not request computer-use access. Do not enter credentials anywhere.
 - User-only items: merging PRs, branch protection, Dependabot decisions, Azure setup, iPhone checks.
+- Docs-only PRs (only `docs/` or `*.md`) from Thomas auto-merge once `build-test` is green (`docs/automerge.md`); keep docs changes in their own PR so they qualify.
 - Commits and PRs end with the attribution lines the session provides.
 - UI PRs show what changed: a "Screenshots" section in the PR description with before (current `main`) and after at iPhone width (about 390 px), light mode, plus a short GIF for anything interactive. Dark mode and iPad go in one collapsed sheet. Keep the images on the code-free `pr-media` branch (one folder per PR, never merged) and link them with `?raw=true`.
 
