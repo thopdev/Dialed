@@ -28,7 +28,7 @@ public enum PushAvailability
     On,
 }
 
-public sealed record PushState(PushAvailability Availability, bool Follows = true, bool Household = true, bool LowStock = false, bool Peak = false);
+public sealed record PushState(PushAvailability Availability, bool Follows = true, bool Household = true, bool LowStock = false, bool Peak = false, bool Service = false);
 
 /// <summary>
 /// Turning notifications on and off for this device (#100) and the per-type switches. Each device registers its own subscription;
@@ -61,7 +61,7 @@ public sealed class PushNotificationService(IPushNotifications platform, IPushAp
         {
             var settings = await api.GetSettingsAsync(cancellationToken);
             var subscribed = permission == PushPermission.Granted && await platform.GetSubscriptionAsync(cancellationToken) is not null;
-            return new PushState(subscribed ? PushAvailability.On : PushAvailability.Off, settings.Follows, settings.Household, settings.LowStock, settings.Peak);
+            return new PushState(subscribed ? PushAvailability.On : PushAvailability.Off, settings.Follows, settings.Household, settings.LowStock, settings.Peak, settings.Service);
         }
         catch (Exception e) when (e is AccountApiException or AccountRefusedException)
         {
@@ -113,9 +113,9 @@ public sealed class PushNotificationService(IPushNotifications platform, IPushAp
         try
         {
             var current = await api.GetSettingsAsync(cancellationToken);
-            if (current.LowStock || current.Peak)
+            if (current.LowStock || current.Peak || current.Service)
             {
-                await api.SaveSettingsAsync(current.Follows, current.Household, current.LowStock, current.Peak, preferences?.Inventory, await platform.GetTimeZoneAsync(cancellationToken), cancellationToken);
+                await api.SaveSettingsAsync(current.Follows, current.Household, current.LowStock, current.Peak, preferences?.Inventory, await platform.GetTimeZoneAsync(cancellationToken), current.Service, cancellationToken);
             }
         }
         catch (Exception e) when (e is AccountApiException or AccountRefusedException)
@@ -156,11 +156,11 @@ public sealed class PushNotificationService(IPushNotifications platform, IPushAp
         }
     }
 
-    public async Task<PushState> SaveSwitchesAsync(bool follows, bool household, bool lowStock = false, bool peak = false, CancellationToken cancellationToken = default)
+    public async Task<PushState> SaveSwitchesAsync(bool follows, bool household, bool lowStock = false, bool peak = false, bool service = false, CancellationToken cancellationToken = default)
     {
         try
         {
-            await api.SaveSettingsAsync(follows, household, lowStock, peak, preferences?.Inventory, await platform.GetTimeZoneAsync(cancellationToken), cancellationToken);
+            await api.SaveSettingsAsync(follows, household, lowStock, peak, preferences?.Inventory, await platform.GetTimeZoneAsync(cancellationToken), service, cancellationToken);
         }
         catch (Exception e) when (e is AccountApiException or AccountRefusedException)
         {

@@ -31,6 +31,12 @@ Two more switches in Settings > Notifications, both **off** until switched on.
 - **Quiet**: `StockAlertService` looks at a person once per local day, when their local time is between 08:00 and 21:00 (never at night), and sends at most one low-stock and one peak notification, combined ("3 bags are running low", or the bean name for one). Each member of a household is judged and notified separately, in the language their device registered.
 - **The job**: `StockAlertWorker` (a hosted service) wakes every hour and calls `StockAlertService.RunAsync`. In Azure a timer-triggered Function does that instead (#260). State is in memory by default (`InMemoryPushStore`), so a restart forgets devices, switches and what was announced. Set `Push:StorePath` (for example `Push__StorePath=/var/lib/dialed/push.json`) to keep it all in one JSON file (`FilePushStore`): written atomically after every change, readable by its owner only, and an unreadable file just starts an empty store. That is for development and a single instance (the file holds push endpoints and keys); the Cosmos store (#260) replaces it in Azure. Note the rest of the data (beans and bags) is in memory in this build, so after a restart the sync store is empty until devices sync again.
 - **Tap**: opens `inventory?show=low` or `inventory?show=peak`, the Inventory screen filtered to those bags, with a way back to all.
+
+## Gear service due
+
+- Gear with an upkeep interval (every N brews, kg or days, see the Gear screen) can send **"Eureka Mignon is due for service"** (tag `service-due`, opens Gear). It has its own switch (`PushSettings.Service`, off until switched on) and uses the same daily job and quiet hours as the stock alerts.
+- The server judges with the same `GearWear` code as the app (`GearAlerts.Evaluate`), reading the household's `equipment`, `brews` and `recipes`.
+- Once per service: the remembered key is `householdId/gearId/servicedOn` (`StockAlertMemory.Gear`), so marking the gear serviced re-arms it for the next time it comes due. Switching the alert off forgets what was told.
 - **Privacy**: the payload is a title and one line with a bean name or a count; the time zone and thresholds are stored with the subscription settings and removed with them.
 
 ## Keys and configuration

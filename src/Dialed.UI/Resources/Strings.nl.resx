@@ -19,6 +19,7 @@
   <data name="Beans_Empty" xml:space="preserve"><value>Nog geen bonen. Voeg je eerste zak toe om te beginnen.</value></data>
   <data name="Beans_SelectPrompt" xml:space="preserve"><value>Selecteer een zak om de details te zien.</value></data>
   <data name="Beans_Detail" xml:space="preserve"><value>Zak {0}</value></data>
+  <data name="Push_Service" xml:space="preserve"><value>Een stuk gear heeft onderhoud nodig</value></data>
   <data name="Recipes_Empty" xml:space="preserve"><value>Je recepten verschijnen hier.</value></data>
   <data name="People_Empty" xml:space="preserve"><value>Je huishouden en vrienden verschijnen hier.</value></data>
   <data name="More_Diagnostics" xml:space="preserve"><value>Diagnostiek</value></data>

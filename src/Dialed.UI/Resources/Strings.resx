@@ -19,6 +19,7 @@
   <data name="Beans_Empty" xml:space="preserve"><value>No beans yet. Add your first bag to get started.</value></data>
   <data name="Beans_SelectPrompt" xml:space="preserve"><value>Select a bag to see its details.</value></data>
   <data name="Beans_Detail" xml:space="preserve"><value>Bag {0}</value><comment>{0} = bag id (placeholder until #48)</comment></data>
+  <data name="Push_Service" xml:space="preserve"><value>A piece of gear is due for service</value></data>
   <data name="Recipes_Empty" xml:space="preserve"><value>Your recipes will show up here.</value></data>
   <data name="People_Empty" xml:space="preserve"><value>Your household and friends will show up here.</value></data>
   <data name="More_Diagnostics" xml:space="preserve"><value>Diagnostics</value></data>

@@ -9,7 +9,7 @@ public sealed record PushSubscription(string UserId, string Endpoint, string P25
 /// What a person wants to hear about. Follow and household notifications are on until switched off; the stock alerts (#259) are off until
 /// switched on. For those the app sends what the server needs to judge a bag the way the app does: the inventory settings and the time zone.
 /// </summary>
-public sealed record PushSettings(bool Follows = true, bool Household = true, bool LowStock = false, bool Peak = false, InventorySettings? Inventory = null, string? TimeZone = null);
+public sealed record PushSettings(bool Follows = true, bool Household = true, bool LowStock = false, bool Peak = false, InventorySettings? Inventory = null, string? TimeZone = null, bool Service = false);
 
 /// <summary>What the stock alert job remembers about one person: the last local day they were looked at, and which bags they were told about.</summary>
 public sealed record StockAlertState(DateOnly? LastHandled, StockAlertMemory Memory)
@@ -38,6 +38,7 @@ public enum PushKind
     LowStock,
     Peak,
     PeakSoon,
+    ServiceDue,
 }
 
 public interface IPushSender
@@ -76,7 +77,7 @@ public sealed record PushStoreSnapshot(
     IReadOnlyDictionary<string, PushSettings> Settings,
     IReadOnlyDictionary<string, PushAlertStateData> AlertStates);
 
-public sealed record PushAlertStateData(DateOnly? LastHandled, IReadOnlyList<string> Low, IReadOnlyList<string> Peak, IReadOnlyList<string>? PeakSoon = null);
+public sealed record PushAlertStateData(DateOnly? LastHandled, IReadOnlyList<string> Low, IReadOnlyList<string> Peak, IReadOnlyList<string>? PeakSoon = null, IReadOnlyList<string>? Gear = null);
 
 public class InMemoryPushStore : IPushStore
 {
@@ -97,7 +98,7 @@ public class InMemoryPushStore : IPushStore
             return new PushStoreSnapshot(
                 [.. byEndpoint.Values],
                 new Dictionary<string, PushSettings>(settings),
-                alertStates.ToDictionary(a => a.Key, a => new PushAlertStateData(a.Value.LastHandled, [.. a.Value.Memory.Low], [.. a.Value.Memory.Peak], [.. a.Value.Memory.PeakSoon])));
+                alertStates.ToDictionary(a => a.Key, a => new PushAlertStateData(a.Value.LastHandled, [.. a.Value.Memory.Low], [.. a.Value.Memory.Peak], [.. a.Value.Memory.PeakSoon], [.. a.Value.Memory.Gear])));
         }
     }
 
@@ -120,7 +121,7 @@ public class InMemoryPushStore : IPushStore
 
             foreach (var (user, value) in snapshot.AlertStates)
             {
-                alertStates[user] = new StockAlertState(value.LastHandled, new StockAlertMemory(new HashSet<string>(value.Low, StringComparer.Ordinal), new HashSet<string>(value.Peak, StringComparer.Ordinal)) { PeakSoon = new HashSet<string>(value.PeakSoon ?? [], StringComparer.Ordinal) });
+                alertStates[user] = new StockAlertState(value.LastHandled, new StockAlertMemory(new HashSet<string>(value.Low, StringComparer.Ordinal), new HashSet<string>(value.Peak, StringComparer.Ordinal)) { PeakSoon = new HashSet<string>(value.PeakSoon ?? [], StringComparer.Ordinal), Gear = new HashSet<string>(value.Gear ?? [], StringComparer.Ordinal) });
             }
         }
     }
