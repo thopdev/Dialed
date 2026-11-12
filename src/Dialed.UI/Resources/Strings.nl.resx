@@ -1049,6 +1049,7 @@
   <data name="Compare_Pick" xml:space="preserve"><value>Kies een brew</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Deel een afbeelding van deze boon</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Bewaard in Dialed</value></data>
+  <data name="Chip_Suggestions" xml:space="preserve"><value>Suggesties</value></data>
   <data name="Drift_TitleFiner" xml:space="preserve"><value>Je maling schuift steeds fijner</value></data>
   <data name="Drift_TitleCoarser" xml:space="preserve"><value>Je maling schuift steeds grover</value></data>
   <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} bakjes uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>

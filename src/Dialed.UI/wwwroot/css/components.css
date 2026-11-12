@@ -662,6 +662,15 @@ button.dialed-chip::after {
     list-style: none;
 }
 
+.dialed-chip-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
 .dialed-chip-list li {
     display: flex;
     align-items: center;
