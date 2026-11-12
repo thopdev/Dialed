@@ -13,7 +13,7 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 - Azure is not available: build against interfaces with in-memory fakes (email sender, AI client, storage); Azure-only work is filed as an issue and documented, not done.
 
 ## UI conventions
-- Every UI string goes in **both** `src/Dialed.UI/Resources/Strings.resx` and `Strings.nl.resx` (parity is tested). Append new entries before `</root>`; on merge conflicts keep both sides.
+- Every UI string goes in **both** `src/Dialed.UI/Resources/Strings.resx` and `Strings.nl.resx` (parity is tested). Insert new entries at their alphabetical place by key (both files are sorted and a test checks it), so different PRs rarely touch the same lines; on merge conflicts keep both sides.
 - Colours only from Fluent `--color*` variables; spacing and type from `tokens.css` (`--dialed-*`). Touch targets at least 44 px, sizes in `rem`. See `docs/accessibility.md`: every control needs an accessible name; add new screens to `AccessibilityTests`.
 - Reuse components in `src/Dialed.UI/Components` (Card, ListRow, Chip, EmptyState, Avatar, Thumb, StatTile, Meter, SectionHeader...).
 - Test ids: screens use stable `id`s (`#scan-save`, `#settings-feedback`) that UI tests rely on.
