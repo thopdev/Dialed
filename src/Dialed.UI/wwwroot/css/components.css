@@ -3317,6 +3317,7 @@ a.dialed-banner {
 
 .dialed-timer-focus .dialed-timer-target {
     font-size: var(--dialed-text-l);
+}
 
 /* ---- Bag screen: tips in one collapsed row ------------------------------------------------------ */
 
