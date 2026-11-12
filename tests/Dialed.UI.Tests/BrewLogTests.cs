@@ -413,8 +413,8 @@ public sealed class BrewLogTests : UiTestContext
 
         page.WaitForElement("#quick-log");
         page.FindAll("#brew-dose").ShouldBeEmpty();
-        page.FindAll("#quick-log .dialed-face").Count.ShouldBe(5);
-        page.FindAll("#quick-log .dialed-face")[3].Click();
+        page.FindAll("#quick-log .dialed-cup").Count.ShouldBe(5);
+        page.FindAll("#quick-log .dialed-cup")[3].Click();
         page.FindAll("[data-axis=acidity] .dialed-scale-step")[1].Click();
         page.FindAll("[data-axis=body] .dialed-scale-step")[3].Click();
         page.Find("#quick-log-save").Click();
@@ -444,16 +444,16 @@ public sealed class BrewLogTests : UiTestContext
     }
 
     [Fact]
-    public async Task A_face_tapped_twice_clears_the_rating()
+    public async Task The_last_cup_tapped_twice_clears_the_rating()
     {
         var (bag, recipe) = await BagAndRecipe();
         var page = RenderQuick(bag, recipe);
         page.WaitForElement("#quick-log");
 
-        page.FindAll("#quick-log .dialed-face")[4].Click();
+        page.FindAll("#quick-log .dialed-cup")[4].Click();
         page.Find("#quick-rating-word").TextContent.ShouldBe("Perfect");
-        page.FindAll("#quick-log .dialed-face")[4].Click();
-        page.Find("#quick-rating-word").TextContent.ShouldBe("Tap a face");
+        page.FindAll("#quick-log .dialed-cup")[4].Click();
+        page.Find("#quick-rating-word").TextContent.ShouldBe("Tap a cup");
     }
 
     [Fact]
@@ -462,7 +462,7 @@ public sealed class BrewLogTests : UiTestContext
         var (bag, recipe) = await BagAndRecipe();
         var page = RenderQuick(bag, recipe);
         page.WaitForElement("#quick-log");
-        page.FindAll("#quick-log .dialed-face")[4].Click();
+        page.FindAll("#quick-log .dialed-cup")[4].Click();
 
         page.Find("#quick-log-more").Click();
 

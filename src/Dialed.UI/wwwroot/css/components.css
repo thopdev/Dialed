@@ -3581,65 +3581,69 @@ a.dialed-banner {
     color: var(--colorNeutralForeground2);
 }
 
-/* ---- Faces and taste scales (quick log) --------------------------------------------------------- */
+/* ---- Cups and taste scales (quick log) --------------------------------------------------------- */
 
-.dialed-faces {
+.dialed-cups {
     display: flex;
     justify-content: space-between;
     gap: var(--dialed-space-2);
     width: 100%;
 }
 
-.dialed-face {
+.dialed-cup {
     flex: 1;
     max-width: 4rem;
     aspect-ratio: 1;
     min-width: var(--dialed-touch-target);
     padding: 0;
     border: 0;
-    border-radius: 50%;
     background: transparent;
-    color: var(--colorBrandForeground1);
+    color: var(--colorNeutralForeground3);
     cursor: pointer;
     transition: transform 0.12s ease;
 }
 
-.dialed-face .dialed-face-disc {
-    fill: var(--colorNeutralBackground1);
-    stroke: var(--colorNeutralStroke2);
-    stroke-width: 1.5;
+.dialed-cup svg {
+    overflow: visible;
 }
 
-.dialed-face .dialed-face-feature {
-    fill: currentColor;
-}
-
-.dialed-face .dialed-face-mouth {
+.dialed-cup .dialed-cup-bowl,
+.dialed-cup .dialed-cup-handle,
+.dialed-cup .dialed-cup-saucer,
+.dialed-cup .dialed-cup-steam {
     fill: none;
     stroke: currentColor;
-    stroke-width: 2.6;
+    stroke-width: 2.2;
     stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
-.dialed-face.on {
-    transform: scale(1.12);
-    color: var(--colorNeutralForegroundOnBrand);
-    filter: drop-shadow(0 4px 8px rgb(90 56 37 / 0.35));
+.dialed-cup .dialed-cup-steam {
+    opacity: 0;
 }
 
-.dialed-face.on .dialed-face-disc {
+.dialed-cup.on {
+    color: var(--colorBrandForeground1);
+    filter: drop-shadow(0 3px 4px rgb(90 56 37 / 0.3));
+}
+
+.dialed-cup.on .dialed-cup-bowl {
     fill: var(--colorBrandBackground);
     stroke: var(--colorBrandBackground);
 }
 
-.dialed-face:focus-visible,
+.dialed-cup.on .dialed-cup-steam {
+    opacity: 0.7;
+}
+
+.dialed-cup:focus-visible,
 .dialed-scale-step:focus-visible {
     outline: 2px solid var(--colorStrokeFocus2);
     outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dialed-face {
+    .dialed-cup {
         transition: none;
     }
 }

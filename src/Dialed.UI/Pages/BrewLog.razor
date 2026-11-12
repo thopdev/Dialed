@@ -52,7 +52,7 @@ else
                 </span>
             </div>
             <div class="dialed-quick-rating">
-                <FaceRating @bind-Value="quickRating" />
+                <CupRating @bind-Value="quickRating" />
                 <p id="quick-rating-word" class="dialed-quick-rating-word" aria-live="polite">@(quickRating > 0 ? L[$"QuickLog_Rating{quickRating}"].Value : L["QuickLog_RatingPrompt"].Value)</p>
             </div>
             <h3 class="dialed-quick-subtitle">@L["Brew_Taste"]</h3>
