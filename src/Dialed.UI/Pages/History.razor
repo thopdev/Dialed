@@ -99,7 +99,7 @@
                 {
                     <section class="dialed-day-group" data-day="@day.Key.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)" aria-labelledby="@($"day-{day.Key:yyyyMMdd}")">
                         <h2 class="dialed-day-title" id="@($"day-{day.Key:yyyyMMdd}")">@DayTitle(day.Key)</h2>
-                        <div class="dialed-list">
+                        <div class="dialed-list dialed-list-cards">
                             @foreach (var brew in day)
                             {
                                 <ListRow Title="@BeanOf(brew)" Subtitle="@Subtitle(brew)" Href="@($"history/{brew.Id}")" data-brew="@brew.Id">

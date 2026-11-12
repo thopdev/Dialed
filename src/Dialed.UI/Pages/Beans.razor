@@ -117,9 +117,10 @@
             }
             else
             {
-                <div class="dialed-list">
+                <div class="dialed-list dialed-list-cards">
                     @foreach (var bean in Visible)
                     {
+                        <div class="dialed-bean-row dialed-mood dialed-mood-@(bean.RoastLevel?.ToString().ToLowerInvariant() ?? "unknown")">
                         <ListRow Title="@bean.Name" Subtitle="@Subtitle(bean)" Href="@($"beans/{bean.Id}")" data-bean="@bean.Id">
                             <Leading><RoastThumb PhotoId="@bean.PhotoIds.FirstOrDefault()" Level="@bean.RoastLevel" /></Leading>
                             <Below>
@@ -145,6 +146,7 @@
                                 }
                             </Trailing>
                         </ListRow>
+                        </div>
                     }
                 </div>
             }
