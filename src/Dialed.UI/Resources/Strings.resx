@@ -1048,4 +1048,9 @@
   <data name="Compare_Rating" xml:space="preserve"><value>Rating</value></data>
   <data name="Compare_NotFound" xml:space="preserve"><value>One of these brews no longer exists.</value></data>
   <data name="Compare_Pick" xml:space="preserve"><value>Choose a brew</value></data>
+  <data name="Drift_TitleFiner" xml:space="preserve"><value>Your grind is drifting finer</value></data>
+  <data name="Drift_TitleCoarser" xml:space="preserve"><value>Your grind is drifting coarser</value></data>
+  <data name="Drift_Text" xml:space="preserve"><value>Over your last {3} brews of this bag the setting went from {0} to {1} in {2} days.</value></data>
+  <data name="Drift_Try" xml:space="preserve"><value>Today the trend points to {0}.</value></data>
+  <data name="Drift_Why" xml:space="preserve"><value>Beans change as they age, so many people grind finer to keep the taste. Use this as a hint, not a rule.</value></data>
 </root>

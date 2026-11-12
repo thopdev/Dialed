@@ -1047,4 +1047,9 @@
   <data name="Compare_Rating" xml:space="preserve"><value>Beoordeling</value></data>
   <data name="Compare_NotFound" xml:space="preserve"><value>Een van deze brews bestaat niet meer.</value></data>
   <data name="Compare_Pick" xml:space="preserve"><value>Kies een brew</value></data>
+  <data name="Drift_TitleFiner" xml:space="preserve"><value>Je maling schuift steeds fijner</value></data>
+  <data name="Drift_TitleCoarser" xml:space="preserve"><value>Je maling schuift steeds grover</value></data>
+  <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} bakjes uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>
+  <data name="Drift_Try" xml:space="preserve"><value>Vandaag wijst de trend naar {0}.</value></data>
+  <data name="Drift_Why" xml:space="preserve"><value>Bonen veranderen met de tijd, daarom malen veel mensen fijner om de smaak te houden. Zie dit als hint, niet als regel.</value></data>
 </root>
