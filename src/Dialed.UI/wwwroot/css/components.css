@@ -3546,33 +3546,6 @@ a.dialed-banner {
     gap: var(--dialed-space-2);
 }
 
-.dialed-quick-pair {
-    display: flex;
-    grid-column: 1 / -1;
-    gap: var(--dialed-space-2);
-    padding: var(--dialed-space-1);
-    border-radius: var(--borderRadiusXLarge);
-    background: var(--colorNeutralBackground1);
-    box-shadow: var(--dialed-shadow-card, none);
-}
-
-.dialed-quick-pair .dialed-chip {
-    flex: 1;
-    justify-content: center;
-    min-height: 3rem;
-    border-radius: var(--borderRadiusLarge);
-    border-color: transparent;
-    background: transparent;
-    font-size: var(--dialed-text-m);
-    font-weight: 600;
-}
-
-.dialed-quick-pair .dialed-chip.selected {
-    background: var(--colorBrandBackground);
-    color: var(--colorNeutralForegroundOnBrand);
-    box-shadow: var(--dialed-shadow-raised, none);
-}
-
 .dialed-quick-summary {
     display: flex;
     align-items: center;
@@ -3594,29 +3567,9 @@ a.dialed-banner {
 
 .dialed-quick-rating {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     gap: var(--dialed-space-1);
-}
-
-.dialed-quick-rating .dialed-stars {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
-
-.dialed-quick-rating .dialed-star {
-    width: 3.5rem;
-    height: 3.5rem;
-}
-
-.dialed-quick-rating .dialed-star svg {
-    width: 3rem !important;
-    height: 3rem !important;
-}
-
-.dialed-quick-rating .dialed-star.on {
-    color: var(--colorBrandForeground1);
-    filter: drop-shadow(0 2px 3px rgb(90 56 37 / 0.3));
 }
 
 .dialed-quick-rating-word {
@@ -3665,6 +3618,38 @@ a.dialed-banner {
 
 .dialed-pick-cup .dialed-pick-line,
 .dialed-pick-cup .dialed-pick-steam {
+}
+
+/* ---- Cups and taste scales (quick log) --------------------------------------------------------- */
+
+.dialed-cups {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--dialed-space-2);
+    width: 100%;
+}
+
+.dialed-cup {
+    flex: 1;
+    max-width: 4rem;
+    aspect-ratio: 1;
+    min-width: var(--dialed-touch-target);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--colorNeutralForeground3);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+
+.dialed-cup svg {
+    overflow: visible;
+}
+
+.dialed-cup .dialed-cup-bowl,
+.dialed-cup .dialed-cup-handle,
+.dialed-cup .dialed-cup-saucer,
+.dialed-cup .dialed-cup-steam {
     fill: none;
     stroke: currentColor;
     stroke-width: 2.2;
@@ -3728,3 +3713,91 @@ a.dialed-banner {
 .dialed-pick-detail .dialed-rating-badge-star {
     color: inherit;
 }
+
+.dialed-cup .dialed-cup-steam {
+    opacity: 0;
+}
+
+.dialed-cup.on {
+    color: var(--colorBrandForeground1);
+    filter: drop-shadow(0 3px 4px rgb(90 56 37 / 0.3));
+}
+
+.dialed-cup.on .dialed-cup-bowl {
+    fill: var(--colorBrandBackground);
+    stroke: var(--colorBrandBackground);
+}
+
+.dialed-cup.on .dialed-cup-steam {
+    opacity: 0.7;
+}
+
+.dialed-cup:focus-visible,
+.dialed-scale-step:focus-visible {
+    outline: 2px solid var(--colorStrokeFocus2);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dialed-cup {
+        transition: none;
+    }
+}
+
+.dialed-quick-taste {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--dialed-space-4);
+}
+
+.dialed-scale {
+    display: grid;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-scale-ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-scale-name {
+    font-weight: 600;
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-scale-steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--dialed-space-1);
+    padding: var(--dialed-space-1);
+    border-radius: var(--dialed-radius-l);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-scale-step {
+    min-height: var(--dialed-touch-target);
+    padding: 0 2px;
+    border: 0;
+    border-radius: var(--dialed-radius-m);
+    background: transparent;
+    color: var(--colorNeutralForeground2);
+    font: inherit;
+    font-size: var(--dialed-text-xs);
+    cursor: pointer;
+}
+
+.dialed-scale-step.mid {
+    font-weight: 600;
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-scale-step.on {
+    background: var(--colorBrandBackground);
+    color: var(--colorNeutralForegroundOnBrand);
+    font-weight: 700;
+    box-shadow: var(--dialed-shadow-raised, none);
+}
+
