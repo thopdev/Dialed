@@ -1,0 +1,770 @@
+/* Friends, households, AI assistants, offline scans, public profiles and the shared catalog.
+   Loaded after the files above it in index.html: keep the order. */
+
+/* ---- Copy from a friend (#77) ----------------------------------------------------------------- */
+
+.dialed-copied-from {
+    margin: calc(-1 * var(--dialed-space-2)) 0 var(--dialed-space-3);
+    font-size: var(--dialed-text-s);
+}
+
+.friend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    padding: var(--dialed-space-2) var(--dialed-space-1);
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.friend-row .friend-item {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.friend-copied {
+    text-decoration: none;
+}
+
+/* ---- Household invites (#71) ------------------------------------------------------------------ */
+
+#household-open-invites-title {
+    margin: var(--dialed-space-4) 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+#household-open-invites {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.household-open-invite {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.household-invite-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-size: var(--dialed-text-s);
+}
+
+.household-invite-info .dialed-code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: var(--dialed-text-m);
+    letter-spacing: 0.08em;
+}
+
+/* ---- Creating, renaming and deleting households (#70) ------------------------------------------- */
+
+.household-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+}
+
+.household-heading h3 {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.household-manage {
+    margin-top: var(--dialed-space-4);
+    padding-top: var(--dialed-space-3);
+    border-top: 1px solid var(--colorNeutralStroke2);
+}
+
+#household-rename-form {
+    margin-bottom: var(--dialed-space-3);
+}
+
+#household-create-hint {
+    margin: var(--dialed-space-1) 0 0;
+    font-size: var(--dialed-text-s);
+}
+
+.household-delete-confirmation {
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorPaletteRedBorder2);
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorPaletteRedBackground1);
+}
+
+.household-delete-confirmation p {
+    margin: 0 0 var(--dialed-space-3);
+    color: var(--colorNeutralForeground1);
+}
+
+/* ---- Storage and sync notes (#114) ------------------------------------------------------------ */
+
+.dialed-sync-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-sync-stuck {
+    background: var(--colorPaletteMarigoldBackground1, #fff9f5);
+    color: var(--colorPaletteMarigoldForeground2, #bc4b09);
+    border: 1px solid var(--colorPaletteMarigoldBorder1, #f9d3b4);
+}
+
+#storage-warning {
+    margin-bottom: var(--dialed-space-3);
+}
+
+/* ---- Dial-in actions (#86) ------------------------------------------------------------------- */
+
+.dialed-dialin-actions {
+    margin: var(--dialed-space-2) 0 0;
+}
+
+/* ---- Suggest a recipe (#87) -------------------------------------------------------------------- */
+
+.dialed-suggest {
+    margin: var(--dialed-space-4) 0;
+}
+
+.dialed-suggest-list {
+    margin: 0;
+}
+
+.dialed-suggest-row {
+    display: flex;
+    flex-direction: column;
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.dialed-suggest-row dt {
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-suggest-row dd {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+/* ---- Dial-in assistant (#86) ------------------------------------------------------------------ */
+
+.dialed-dialin-ai {
+    margin: var(--dialed-space-3) 0 0;
+    padding-top: var(--dialed-space-3);
+    border-top: 1px solid var(--colorNeutralStroke2);
+}
+
+.dialed-dialin-ai > .dialed-muted {
+    margin: var(--dialed-space-2) 0 0;
+}
+
+.dialed-dialin-ai-result {
+    padding: var(--dialed-space-3) var(--dialed-space-4);
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorBrandBackground2);
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-dialin-ai-result h3 {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+}
+
+.dialed-dialin-ai-result > .dialed-muted {
+    margin: 0;
+}
+
+.dialed-dialin-ai-result .dialed-muted {
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-dialin-ai + .dialed-dialin-actions {
+    margin-top: var(--dialed-space-4);
+}
+
+.dialed-dialin {
+    margin-bottom: var(--dialed-space-4);
+}
+
+/* ---- Offline label scans (#83) ----------------------------------------------------------------- */
+
+.dialed-scan-pending {
+    margin: var(--dialed-space-4) 0;
+}
+
+.dialed-scan-pending h2 {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-scan-pending ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* The status gets the full width; the buttons wrap under the text instead of squeezing it. */
+.scan-pending-row {
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2) var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+    border-bottom: 1px solid var(--colorNeutralStroke2, #e0e0e0);
+}
+
+.scan-pending-row .dialed-row-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.scan-pending-row .dialed-row-title,
+.scan-pending-row .dialed-row-subtitle {
+    white-space: normal;
+}
+
+.scan-pending-actions {
+    display: flex;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-scans-note {
+    margin: var(--dialed-space-2) 0;
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-scans-note a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+}
+
+/* Public profiles and reports (#106) */
+#friend-actions {
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: var(--dialed-space-3);
+}
+
+.report:has(.report-form) {
+    flex: 1 1 100%;
+}
+
+.report-form {
+    width: 100%;
+}
+
+.friend-row:has(.report-form) {
+    flex-wrap: wrap;
+}
+
+.friend-row .report-form {
+    flex: 1 1 100%;
+}
+
+.people-find-row {
+    color: var(--colorNeutralForeground1);
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    min-height: var(--dialed-touch-target);
+    text-decoration: none;
+}
+
+
+.dialed-barcode-video {
+    display: block;
+    width: 100%;
+    max-height: 50vh;
+    margin: 0 0 var(--dialed-space-3);
+    border-radius: var(--dialed-radius-m, 0.75rem);
+    background: var(--colorNeutralBackground3);
+    object-fit: cover;
+}
+
+.dialed-barcode-video[hidden] {
+    display: none;
+}
+
+.barcode-choices {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.barcode-attach-bean,
+.barcode-match {
+    width: 100%;
+    min-height: var(--dialed-touch-target);
+    text-align: start;
+}
+
+#barcode-unknown h2,
+#barcode-matches h2,
+#barcode-attach-title {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-l);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+#barcode-retry {
+    margin-top: var(--dialed-space-3);
+}
+
+.barcode-bean-list {
+    display: grid;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* The shared catalog (#105) */
+.dialed-catalog {
+    margin: 0 0 var(--dialed-space-3);
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2);
+    border-radius: var(--dialed-radius-m, 0.75rem);
+    background: var(--colorNeutralBackground2);
+}
+
+.dialed-catalog h3 {
+    margin: 0 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.catalog-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+}
+
+.catalog-text {
+    display: grid;
+    min-width: 0;
+}
+
+.catalog-name,
+.catalog-detail {
+    overflow-wrap: anywhere;
+}
+
+.dialed-picker-catalog .dialed-picker-detail {
+    font-style: italic;
+}
+
+.catalog-use {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Filtered inventory from a stock notification (#259) */
+#stock-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+}
+
+#stock-filter .dialed-section-link {
+    white-space: nowrap;
+}
+
+/* The owner's moderation screen */
+.admin-report,
+.admin-person,
+.admin-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+}
+
+.admin-text {
+    display: grid;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.admin-note {
+    font-style: italic;
+}
+
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    justify-content: flex-end;
+}
+
+.admin-key {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--dialed-text-s);
+}
+
+#admin-hidden-title,
+#admin-merges-title {
+    margin: var(--dialed-space-4) 0 var(--dialed-space-2);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-origin-map {
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-origin-map svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--borderRadiusMedium);
+    background: var(--colorNeutralBackground2);
+}
+
+.dialed-origin-map-land {
+    fill: var(--colorNeutralBackground6);
+    stroke: none;
+}
+
+.dialed-origin-map-pin {
+    fill: var(--colorBrandForeground1);
+    fill-opacity: 1;
+    stroke: var(--colorNeutralBackground1);
+    stroke-width: 2;
+}
+
+.dialed-origin-map-outline {
+    stroke: var(--colorNeutralBackground2);
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+}
+
+.dialed-origin-map-country {
+    fill: var(--colorBrandForeground1);
+    fill-opacity: 0.8;
+}
+
+.dialed-flavor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-4);
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-flavor svg {
+    flex: 0 0 9rem;
+    width: 9rem;
+    height: auto;
+}
+
+.dialed-flavor-total {
+    fill: var(--colorNeutralForeground1);
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.dialed-flavor-legend {
+    flex: 1 1 10rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-flavor-legend li {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    min-height: 1.75rem;
+}
+
+.dialed-flavor-swatch {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: var(--borderRadiusCircular);
+}
+
+.dialed-flavor-slice {
+    stroke: var(--colorNeutralForeground3);
+}
+
+.dialed-flavor-slice.dialed-flavor-fruity {
+    stroke: var(--colorPaletteCranberryBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-fruity {
+    background: var(--colorPaletteCranberryBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-floral {
+    stroke: var(--colorPaletteLilacBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-floral {
+    background: var(--colorPaletteLilacBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-sweet {
+    stroke: var(--colorPaletteGoldBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-sweet {
+    background: var(--colorPaletteGoldBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-nuttycocoa {
+    stroke: var(--colorPaletteBrownBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-nuttycocoa {
+    background: var(--colorPaletteBrownBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-spices {
+    stroke: var(--colorPalettePeachBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-spices {
+    background: var(--colorPalettePeachBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-green {
+    stroke: var(--colorPaletteForestBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-green {
+    background: var(--colorPaletteForestBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-sourfermented {
+    stroke: var(--colorPaletteLavenderBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-sourfermented {
+    background: var(--colorPaletteLavenderBackground2);
+}
+
+.dialed-flavor-slice.dialed-flavor-roasted {
+    stroke: var(--colorPalettePlatinumBackground2);
+}
+
+.dialed-flavor-swatch.dialed-flavor-roasted {
+    background: var(--colorPalettePlatinumBackground2);
+}
+
+.dialed-origin-map-hit {
+    fill: transparent;
+}
+
+.dialed-origin-map-link {
+    cursor: pointer;
+}
+
+.dialed-origin-map-link:focus-visible .dialed-origin-map-pin {
+    stroke: var(--colorStrokeFocus2);
+    stroke-width: 4;
+}
+
+.dialed-passport-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-passport-stamp {
+    padding: var(--dialed-space-1) var(--dialed-space-3);
+    border: 1px dashed var(--colorNeutralStroke1);
+    border-radius: var(--borderRadiusCircular);
+    color: var(--colorNeutralForeground3);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-passport-tried {
+    border: 1px solid var(--colorBrandStroke1);
+    background: var(--colorBrandBackground2);
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-passport-more summary {
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.dialed-calendar {
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-calendar > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.dialed-calendar-label {
+    fill: var(--colorNeutralForeground3);
+    font-size: 10px;
+}
+
+.dialed-calendar-day {
+    fill: var(--colorBrandBackground);
+}
+
+.dialed-calendar-l0 {
+    fill: var(--colorNeutralBackground6);
+}
+
+.dialed-calendar-l1 {
+    fill-opacity: 0.3;
+}
+
+.dialed-calendar-l2 {
+    fill-opacity: 0.5;
+}
+
+.dialed-calendar-l3 {
+    fill-opacity: 0.75;
+}
+
+.dialed-calendar-l4 {
+    fill-opacity: 1;
+}
+
+.dialed-calendar-roast {
+    fill: var(--colorPaletteMarigoldBackground3);
+    stroke: var(--colorNeutralBackground1);
+    stroke-width: 1;
+}
+
+.dialed-calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    margin-top: var(--dialed-space-2);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-calendar-roast-key {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    margin-inline-start: var(--dialed-space-3);
+}
+
+.dialed-dialin {
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+}
+
+.dialed-dialin-title {
+    font-weight: 600;
+}
+
+.dialed-dialin svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.dialed-dialin-axis {
+    fill: var(--colorNeutralForeground3);
+    font-size: 11px;
+}
+
+.dialed-dialin-grid {
+    stroke: var(--colorNeutralStroke2);
+    stroke-width: 1;
+}
+
+.dialed-dialin-line {
+    fill: none;
+    stroke: var(--colorNeutralStroke1);
+    stroke-width: 1.5;
+}
+
+.dialed-dialin-dot {
+    fill: var(--colorBrandForeground1);
+}
+
+.dialed-dialin-unrated {
+    fill: var(--colorNeutralBackground1);
+    stroke: var(--colorNeutralStroke1);
+    stroke-width: 1.5;
+}
+
+.dialed-dialin-best {
+    fill: none;
+    stroke: var(--colorBrandForeground1);
+    stroke-width: 2;
+}
+
+.dialed-dialin-axis-label {
+    margin: 0;
+    font-size: var(--dialed-text-s);
+    text-align: right;
+}
+
+.dialed-dialin-best-line {
+    margin: var(--dialed-space-1) 0 0;
+}
+
+.dialed-compare-brews th[scope="col"] {
+    font-size: var(--dialed-text-s);
+    font-weight: 600;
+}
+
+.dialed-compare-notes {
+    display: grid;
+    gap: var(--dialed-space-3);
+}
+
+/* A text link in a sentence or a list row: looks the same, but the tappable area reaches 44 px. */
+.dialed-hit-link {
+    position: relative;
+}
+
+.dialed-hit-link::after {
+    content: "";
+    position: absolute;
+    inset: -12px -4px;
+}
+
+/* The file picker looks like our other secondary buttons. */
+input[type="file"]::file-selector-button {
+    min-height: var(--dialed-touch-target);
+    margin-inline-end: var(--dialed-space-3);
+    padding: 0 var(--dialed-space-4);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorNeutralBackground1);
+    color: var(--colorNeutralForeground1);
+    font: inherit;
+    font-weight: var(--dialed-weight-semibold);
+    cursor: pointer;
+}

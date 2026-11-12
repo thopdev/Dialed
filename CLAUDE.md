@@ -15,6 +15,7 @@ Dialed is a coffee app: a Blazor WebAssembly PWA (Fluent UI Blazor, .NET 10, MAU
 ## UI conventions
 - Every UI string goes in **both** `src/Dialed.UI/Resources/Strings.resx` and `Strings.nl.resx` (parity is tested). Insert new entries at their alphabetical place by key (both files are sorted and a test checks it), so different PRs rarely touch the same lines; on merge conflicts keep both sides.
 - Colours only from Fluent `--color*` variables; spacing and type from `tokens.css` (`--dialed-*`). Touch targets at least 44 px, sizes in `rem`. See `docs/accessibility.md`: every control needs an accessible name; add new screens to `AccessibilityTests`.
+- CSS lives in `src/Dialed.UI/wwwroot/css`: `tokens`, `shell`, `components` (core components and forms), `screens` (Home, Beans, Recipes, History, Settings, More, People), `social`, `insights`, `warm-look`. They load in that order from `index.html` (a test checks every file is linked). Put new rules in the file of their area, not at the end of one shared file, so PRs rarely conflict.
 - Reuse components in `src/Dialed.UI/Components` (Card, ListRow, Chip, EmptyState, Avatar, Thumb, StatTile, Meter, SectionHeader...).
 - Test ids: screens use stable `id`s (`#scan-save`, `#settings-feedback`) that UI tests rely on.
 
