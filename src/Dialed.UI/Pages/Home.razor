@@ -20,7 +20,17 @@
 @inject TimeProvider Time
 @inject NavigationManager Navigation
 
-<PageHeader Title="@Greeting" />
+@if (stock is null || beanCount == 0)
+{
+    <PageHeader Title="@Greeting" />
+}
+else
+{
+    <header class="dialed-home-hero">
+        <h1 id="home-title" tabindex="-1">@Greeting</h1>
+        <p id="home-status" class="dialed-home-status">@Status</p>
+    </header>
+}
 
 @if (stock is null)
 {
@@ -34,8 +44,6 @@ else if (beanCount == 0)
 }
 else
 {
-    <p id="home-status" class="dialed-home-status">@Status</p>
-
     <div class="dialed-home-actions">
         <a id="home-log-brew" class="dialed-button dialed-button-primary dialed-button-icon" href="brew">
             <span class="dialed-button-glyph" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.DrinkCoffee())" Color="Color.Custom" CustomColor="currentColor" /></span>
