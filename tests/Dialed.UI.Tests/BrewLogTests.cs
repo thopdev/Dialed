@@ -457,6 +457,23 @@ public sealed class BrewLogTests : UiTestContext
     }
 
     [Fact]
+    public async Task Notes_picked_on_the_wheel_in_the_quick_log_are_saved_with_the_brew()
+    {
+        var (bag, recipe) = await BagAndRecipe();
+        var page = RenderQuick(bag, recipe);
+        page.WaitForElement("#quick-log");
+
+        page.Find("#quick-flavor-picker [data-slice='Fruity']").Click();
+        page.Find("#quick-flavor-picker [data-slice='blueberry']").Click();
+        page.Find("#quick-flavor-picker [data-slice='citrus']").Click();
+        page.Find("#quick-notes summary").TextContent.ShouldContain("Tasting notes: 2");
+        page.Find("#quick-log-save").Click();
+
+        page.WaitForAssertion(() => Services.GetRequiredService<NavigationManager>().Uri.ShouldContain("brew/"));
+        (await Brews.ListAsync(Ct)).ShouldHaveSingleItem().Notes.ShouldBe("blueberry, citrus");
+    }
+
+    [Fact]
     public async Task More_details_shows_the_whole_form_with_the_answers_so_far()
     {
         var (bag, recipe) = await BagAndRecipe();
