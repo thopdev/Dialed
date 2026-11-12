@@ -18,6 +18,8 @@
 @inject TimeProvider Time
 @inject UnitFormatter Units
 @inject NavigationManager Navigation
+@inject Dialed.Client.Platform.IFileExport Files
+@inject Dialed.Client.Platform.IImageRenderer Images
 
 <ListDetailLayout HasSelection="@(Id is not null)">
     <List>
@@ -171,6 +173,9 @@
         {
             <PageHeader Title="@current.Name" BackHref="beans">
                 <Actions>
+                    <button type="button" id="bean-share-card" class="dialed-icon-button" aria-label="@L["BeanCard_Share"]" title="@L["BeanCard_Share"]" disabled="@sharing" @onclick="ShareCardAsync">
+                        <FluentIcon Value="@(new Icons.Regular.Size24.Share())" Color="Color.Custom" CustomColor="currentColor" />
+                    </button>
                     <button type="button" id="bean-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
                         <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
                     </button>
@@ -386,6 +391,7 @@
     private bool? stockFilter;
     private BeanSort sort = BeanSort.Name;
     private bool editing;
+    private bool sharing;
     private bool confirmingDelete;
     private string? error;
 
@@ -526,6 +532,49 @@
         }
 
         return facts;
+    }
+
+    /// <summary>Makes the picture of this bean (name, roaster, origin on a map, rating, facts, tasting notes) and hands it to the share sheet or a download.</summary>
+    private async Task ShareCardAsync()
+    {
+        if (current is null || sharing)
+        {
+            return;
+        }
+
+        sharing = true;
+        error = null;
+        try
+        {
+            var origin = string.Join(", ", new[] { current.Origin.Country, current.Origin.Region }.Where(p => !string.IsNullOrWhiteSpace(p)));
+            var facts = KeyFacts(current);
+            if (current.Varieties.Count > 0)
+            {
+                facts.Add((L["Bean_Varieties"].Value, string.Join(", ", current.Varieties)));
+            }
+
+            var svg = Dialed.UI.Cards.BeanCard.Build(new Dialed.UI.Cards.BeanCardContent(
+                current.Name,
+                RoasterName(current),
+                origin.Length > 0 ? origin : null,
+                current.Rating,
+                Dialed.Domain.Geography.CountryCatalog.Find(current.Origin.Country)?.Iso2,
+                facts,
+                current.TastingNotes.Count > 0 ? string.Join(" · ", current.TastingNotes) : null,
+                L["BeanCard_Footer"].Value));
+            var png = await Images.SvgToPngAsync(svg, Dialed.UI.Cards.BeanCard.Width, Dialed.UI.Cards.BeanCard.Height);
+            if (png is null)
+            {
+                error = L["Card_Failed"].Value;
+                return;
+            }
+
+            await Files.SaveAsync("dialed-bean.png", "image/png", png);
+        }
+        finally
+        {
+            sharing = false;
+        }
     }
 
     private static string Date(DateOnly date) => date.ToString("d MMM yyyy", CultureInfo.CurrentCulture);

@@ -49,8 +49,9 @@ public static class BrewCard
 
         if (content.Rating is { } rating and >= 1 and <= 5)
         {
+            // Five dim stars with the lit ones drawn exactly over them, so the spacing is the font's own.
+            Text(svg, 80, y + 20, "★★★★★", 72, Line);
             Text(svg, 80, y + 20, new string('★', rating), 72, Gold);
-            Text(svg, 80 + (rating * 62) + 10, y + 20, new string('★', 5 - rating), 72, Line);
             y += 110;
         }
 

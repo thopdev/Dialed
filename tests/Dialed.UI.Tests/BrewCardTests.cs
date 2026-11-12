@@ -48,6 +48,14 @@ public sealed class BrewCardTests : UiTestContext
     }
 
     [Fact]
+    public void A_rating_under_five_draws_the_lit_stars_over_five_dim_ones_so_they_cannot_overlap_wrongly()
+    {
+        var stars = System.Xml.Linq.XDocument.Parse(BrewCard.Build(Content(rating: 3))).Descendants().Where(e => e.Name.LocalName == "text" && e.Value.Contains('★')).Select(e => e.Value).ToList();
+
+        stars.ShouldBe(["★★★★★", "★★★"]);
+    }
+
+    [Fact]
     public void Without_a_rating_there_are_no_stars()
     {
         BrewCard.Build(Content(rating: null)).ShouldNotContain("★");

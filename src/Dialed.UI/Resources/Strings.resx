@@ -1048,6 +1048,8 @@
   <data name="Compare_Rating" xml:space="preserve"><value>Rating</value></data>
   <data name="Compare_NotFound" xml:space="preserve"><value>One of these brews no longer exists.</value></data>
   <data name="Compare_Pick" xml:space="preserve"><value>Choose a brew</value></data>
+  <data name="BeanCard_Share" xml:space="preserve"><value>Share a picture of this bean</value></data>
+  <data name="BeanCard_Footer" xml:space="preserve"><value>Kept in Dialed</value></data>
   <data name="Chip_Suggestions" xml:space="preserve"><value>Suggestions</value></data>
   <data name="Drift_TitleFiner" xml:space="preserve"><value>Your grind is drifting finer</value></data>
   <data name="Drift_TitleCoarser" xml:space="preserve"><value>Your grind is drifting coarser</value></data>
