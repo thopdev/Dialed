@@ -1146,7 +1146,7 @@ button.dialed-chip::after {
     height: 0.5rem;
     overflow: hidden;
     border-radius: var(--dialed-radius-pill);
-    background: var(--colorNeutralBackground5, #e0e0e0);
+    background: var(--colorNeutralBackground6, #e0e0e0);
 }
 
 .dialed-meter-fill {
