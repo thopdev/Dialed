@@ -3522,6 +3522,13 @@ a.dialed-banner {
     height: 2.5rem;
 }
 
+.dialed-transport-small {
+    flex: none;
+    width: var(--dialed-touch-target);
+    height: var(--dialed-touch-target);
+    text-decoration: none;
+}
+
 /* ---- Quick log after the timer ---------------------------------------------------------------------- */
 
 .dialed-quick-log {
