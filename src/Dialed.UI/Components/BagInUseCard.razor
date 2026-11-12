@@ -11,6 +11,7 @@
             <span class="dialed-bag-card-title">@Name</span>
             <span class="dialed-bag-card-subtitle">@Subtitle</span>
         </span>
+        <StockRing Label="@string.Format(L["Home_RemainingOf"].Value, Name)" Fraction="@Fraction" Tone="@Tone" ValueText="@LeftOf" Text="@Units.Weight(Stock.RemainingG)" />
         <span class="dialed-bag-card-chips">
             @if (Stock.IsLow)
             {
@@ -21,14 +22,6 @@
                 <Chip>@L[$"Fresh_{Stock.Freshness}"]</Chip>
             }
         </span>
-    </span>
-    <Meter Label="@string.Format(L["Home_RemainingOf"].Value, Name)" Fraction="@Fraction" Tone="@Tone" ValueText="@LeftOf" />
-    <span class="dialed-bag-card-meta">
-        <span>@string.Format(L["Brew_Left"].Value, Units.Weight(Stock.RemainingG))</span>
-        @if (Stock.Cups is { } cups)
-        {
-            <span>@string.Format(L["Stock_Cups"].Value, cups)</span>
-        }
     </span>
 </a>
 
@@ -42,7 +35,14 @@
 
     private string Name => Stock.BeanName.Length > 0 ? Stock.BeanName : L["Bag_UnknownBean"].Value;
 
-    private string Subtitle => Stock.AgeDays is { } age ? string.Format(L["Stock_DaysSinceRoast"].Value, age) : L["Fresh_Unknown"].Value;
+    private string Subtitle
+    {
+        get
+        {
+            var age = Stock.AgeDays is { } days ? string.Format(L["Stock_DaysSinceRoast"].Value, days) : L["Fresh_Unknown"].Value;
+            return Stock.Cups is { } cups ? $"{age} · {string.Format(L["Stock_Cups"].Value, cups)}" : age;
+        }
+    }
 
     private double Fraction => Stock.Bag.WeightG > 0 ? (double)(Stock.RemainingG / Stock.Bag.WeightG) : 0;
 

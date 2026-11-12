@@ -3540,6 +3540,81 @@ a.dialed-banner {
     font-weight: 600;
 }
 
+
+/* ---- Home hero and stock ring (warm roast) ---------------------------------------------------------- */
+
+.dialed-home-hero {
+    margin: calc(-1 * max(12px, env(safe-area-inset-top))) -16px 0;
+    padding: max(28px, calc(env(safe-area-inset-top) + 16px)) 1.25rem 3.5rem;
+    border-radius: 0 0 var(--dialed-radius-xl, 24px) var(--dialed-radius-xl, 24px);
+    background: linear-gradient(160deg, var(--colorBrandBackgroundPressed, #5a3825), var(--colorBrandBackground, #7f5d47));
+    color: var(--colorNeutralForegroundOnBrand, #fff);
+}
+
+.dialed-home-hero h1 {
+    margin: 0;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-2xl);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.dialed-home-hero h1:focus {
+    outline: none;
+}
+
+.dialed-home-hero .dialed-home-status {
+    margin: var(--dialed-space-1) 0 0;
+    color: inherit;
+    opacity: 0.85;
+    font-size: var(--dialed-text-s);
+}
+
+/* The actions float over the lower edge of the hero. */
+.dialed-home-hero + .dialed-home-actions {
+    position: relative;
+    margin-top: -2.5rem;
+}
+
+.dialed-home-hero + .dialed-home-actions .dialed-button-primary {
+    background: var(--colorNeutralForegroundOnBrand, #fff);
+    color: var(--colorBrandBackgroundPressed, #5a3825);
+    box-shadow: 0 8px 22px rgb(60 35 20 / 0.28);
+}
+
+.dialed-ring {
+    --dialed-ring-color: var(--colorBrandBackground);
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 50%;
+    background: conic-gradient(var(--dialed-ring-color) var(--dialed-ring-value), var(--colorNeutralBackground6) 0);
+}
+
+.dialed-ring-warning {
+    --dialed-ring-color: var(--colorPaletteDarkOrangeBackground3, #c8873f);
+}
+
+.dialed-ring-danger {
+    --dialed-ring-color: var(--colorPaletteRedBackground3);
+}
+
+.dialed-ring-inner {
+    display: grid;
+    place-items: center;
+    width: 2.95rem;
+    height: 2.95rem;
+    border-radius: 50%;
+    background: var(--colorNeutralBackground1);
+    font-size: var(--dialed-text-xs);
+    font-weight: 700;
+    text-align: center;
+}
+
+
+
 .dialed-transport-small {
     flex: none;
     width: var(--dialed-touch-target);
