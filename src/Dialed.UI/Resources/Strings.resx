@@ -1048,6 +1048,7 @@
   <data name="Compare_Rating" xml:space="preserve"><value>Rating</value></data>
   <data name="Compare_NotFound" xml:space="preserve"><value>One of these brews no longer exists.</value></data>
   <data name="Compare_Pick" xml:space="preserve"><value>Choose a brew</value></data>
+  <data name="Chip_Suggestions" xml:space="preserve"><value>Suggestions</value></data>
   <data name="Drift_TitleFiner" xml:space="preserve"><value>Your grind is drifting finer</value></data>
   <data name="Drift_TitleCoarser" xml:space="preserve"><value>Your grind is drifting coarser</value></data>
   <data name="Drift_Text" xml:space="preserve"><value>Over your last {3} brews of this bag the setting went from {0} to {1} in {2} days.</value></data>

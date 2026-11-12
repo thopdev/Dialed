@@ -37,6 +37,34 @@ public sealed class BeanTests : UiTestContext
     }
 
     [Fact]
+    public void ChipInput_offers_flavour_suggestions_that_add_a_note_when_tapped()
+    {
+        IReadOnlyList<string> values = [];
+        var input = Render<ChipInput>(p => p
+            .Add(x => x.Label, "Tasting notes")
+            .Add(x => x.SuggestFlavors, true)
+            .Add(x => x.Values, values)
+            .Add(x => x.ValuesChanged, EventCallback.Factory.Create<IReadOnlyList<string>>(this, v => values = v)));
+        input.FindAll(".dialed-chip-suggestions").ShouldBeEmpty();
+
+        input.Find("input").Input("blue");
+        input.FindAll(".dialed-chip-suggestions button").Select(b => b.TextContent.Trim()).ShouldBe(["blueberry"]);
+        input.Find(".dialed-chip-suggestions button").Click();
+
+        values.ShouldBe(["blueberry"]);
+    }
+
+    [Fact]
+    public void ChipInput_without_flavour_suggestions_stays_plain()
+    {
+        var input = Render<ChipInput>(p => p.Add(x => x.Label, "Varieties"));
+
+        input.Find("input").Input("blue");
+
+        input.FindAll(".dialed-chip-suggestions").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void ChipInput_removes_a_value()
     {
         IReadOnlyList<string> values = ["Gesha", "Bourbon"];
