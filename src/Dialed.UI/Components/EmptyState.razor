@@ -1,6 +1,10 @@
 @* Friendly "nothing here yet": optional icon, title, message and a call-to-action (ChildContent). *@
 <div class="dialed-empty">
-    @if (Icon is not null)
+    @if (Chosen is { } art)
+    {
+        <span class="dialed-empty-icon dialed-empty-art" aria-hidden="true"><EmptyArt Kind="art" /></span>
+    }
+    else if (Icon is not null)
     {
         <span class="dialed-empty-icon" aria-hidden="true">
             <FluentIcon Value="@Icon" Color="Color.Custom" CustomColor="currentColor" Width="48px" />
@@ -24,6 +28,12 @@
     [Parameter]
     public Icon? Icon { get; set; }
 
+    /// <summary>A drawing for this screen; when not set, one is chosen to match the icon.</summary>
+    [Parameter]
+    public EmptyArtKind? Art { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    private EmptyArtKind? Chosen => Art ?? (Icon is null ? null : EmptyArt.For(Icon.Name));
 }
