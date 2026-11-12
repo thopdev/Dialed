@@ -3544,7 +3544,8 @@ a.dialed-banner {
     gap: var(--dialed-space-2);
     padding: var(--dialed-space-1);
     border-radius: var(--borderRadiusXLarge);
-    background: var(--dialed-surface-tray, var(--colorNeutralBackground6));
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
 }
 
 .dialed-quick-pair .dialed-chip {
