@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "recipes": [
+    { "methodCode": "v60", "name": "4:6 method (Tetsu Kasuya)", "doseG": 20, "waterG": 300, "tempC": 93, "timeS": 210, "filter": "Paper",
+      "notes": "Five equal pours of 60 g. The first two decide sweetness and acidity: pour the first 40 percent in two goes and the balance shifts (a smaller first pour is sweeter, a larger one brighter). The last three decide strength: more pours, stronger coffee. Wait for the water to drain a little between pours. Medium-coarse grind. Patterns are a suggestion.",
+      "steps": [
+        { "kind": "pour", "atS": 0, "durationS": 10, "waterG": 60, "pattern": "centre", "note": "Acidity" },
+        { "kind": "pour", "atS": 45, "durationS": 10, "waterG": 120, "pattern": "centre", "note": "Sweetness" },
+        { "kind": "pour", "atS": 90, "durationS": 10, "waterG": 180, "pattern": "spiral", "note": "Strength" },
+        { "kind": "pour", "atS": 130, "durationS": 10, "waterG": 240, "pattern": "spiral" },
+        { "kind": "pour", "atS": 165, "durationS": 10, "waterG": 300, "pattern": "spiral" },
+        { "kind": "wait", "atS": 175, "durationS": 35, "note": "Let it drain" }
+      ] },
+    { "methodCode": "v60", "name": "Ultimate V60 (James Hoffmann)", "doseG": 15, "waterG": 250, "tempC": 100, "timeS": 210, "filter": "Paper",
+      "notes": "Bloom with twice to three times the coffee weight and stir so every grain is wet, pour to 60 percent, then to the full amount, then a gentle swirl to flatten the bed. A medium-fine grind and water just off the boil. Aim for a drawdown that is done around 3:30.",
+      "steps": [
+        { "kind": "bloom", "atS": 0, "durationS": 30, "waterG": 45, "pattern": "circles", "note": "Stir gently, then wait" },
+        { "kind": "pour", "atS": 45, "durationS": 30, "waterG": 150, "pattern": "spiral", "note": "Up to 60 percent" },
+        { "kind": "pour", "atS": 75, "durationS": 30, "waterG": 250, "pattern": "spiral", "note": "To the full amount" },
+        { "kind": "swirl", "atS": 105, "durationS": 10, "note": "Swirl the dripper" },
+        { "kind": "wait", "atS": 115, "durationS": 95, "note": "Drawdown" }
+      ] },
+    { "methodCode": "v60", "name": "Single pour V60 (Scott Rao)", "doseG": 20, "waterG": 320, "tempC": 96, "timeS": 180, "filter": "Paper",
+      "notes": "A bloom of about 50 g with a stir, then one slow, steady pour in a spiral, keeping the water level constant. A gentle stir and a spin at the end flatten the bed so the drawdown is even.",
+      "steps": [
+        { "kind": "bloom", "atS": 0, "durationS": 30, "waterG": 50, "pattern": "centre", "note": "Stir to wet all grounds" },
+        { "kind": "pour", "atS": 45, "durationS": 60, "waterG": 320, "pattern": "spiral", "note": "One slow pour" },
+        { "kind": "stir", "atS": 110, "durationS": 5, "note": "Gentle stir" },
+        { "kind": "swirl", "atS": 120, "durationS": 5, "note": "Spin the dripper" },
+        { "kind": "wait", "atS": 125, "durationS": 55, "note": "Drawdown" }
+      ] },
+    { "methodCode": "aeropress", "name": "Inverted AeroPress", "doseG": 15, "waterG": 200, "tempC": 88, "timeS": 120, "filter": "Paper",
+      "notes": "Inverted: put the plunger in a little to seal it, add the coffee and all the water, stir, steep, then flip onto your cup and press slowly for about 30 seconds.",
+      "steps": [
+        { "kind": "pour", "atS": 0, "durationS": 20, "waterG": 200, "pattern": "circles", "note": "All the water" },
+        { "kind": "stir", "atS": 20, "durationS": 10, "note": "Stir three times" },
+        { "kind": "wait", "atS": 30, "durationS": 55, "note": "Steep, then flip" },
+        { "kind": "press", "atS": 90, "durationS": 30, "note": "Press slowly" }
+      ] },
+    { "methodCode": "french-press", "name": "French press, 4 minutes", "doseG": 30, "waterG": 500, "tempC": 95, "timeS": 240,
+      "notes": "Pour all the water over the coffee in circles, put the lid on without pressing, and wait. At four minutes break the crust with a spoon, skim off the foam, wait a few more minutes for the grounds to settle and press gently, or just pour. Coarse grind." }
+  ]
+}

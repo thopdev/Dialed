@@ -721,6 +721,13 @@
   <data name="Picker_Clear" xml:space="preserve"><value>Selectie wissen</value></data>
   <data name="Picker_Create" xml:space="preserve"><value>"{0}" aanmaken</value></data>
   <data name="Picker_Placeholder" xml:space="preserve"><value>Zoek of voeg toe</value></data>
+  <data name="Pour_Centre" xml:space="preserve"><value>In het midden</value></data>
+  <data name="Pour_Circles" xml:space="preserve"><value>In cirkels</value></data>
+  <data name="Pour_Described" xml:space="preserve"><value>Giet {0}, water op {1}%</value></data>
+  <data name="Pour_Level" xml:space="preserve"><value>Water op {0}%</value></data>
+  <data name="Pour_Pattern" xml:space="preserve"><value>Giet patroon</value></data>
+  <data name="Pour_Pulse" xml:space="preserve"><value>In pulsen</value></data>
+  <data name="Pour_Spiral" xml:space="preserve"><value>In een spiraal</value></data>
   <data name="Privacy_AI" xml:space="preserve"><value>Als je om dial-in advies vraagt, worden de gegevens die daarvoor nodig zijn (bijvoorbeeld de boon, de methode, je maalstand en smaaknotities) verstuurd naar een Claude-model dat draait op Microsoft Foundry in Azure. Ze worden gebruikt om je te antwoorden en niet om modellen te trainen. Er wordt niets verstuurd tenzij je erom vraagt.</value></data>
   <data name="Privacy_AI_Title" xml:space="preserve"><value>AI-suggesties</value></data>
   <data name="Privacy_Account" xml:space="preserve"><value>Je account bevat je naam, e-mailadres en je passkeys (alleen het openbare deel; het geheim verlaat je apparaat nooit). Herstelcodes worden als hash bewaard. Er is geen wachtwoord.</value></data>
@@ -845,6 +852,8 @@
   <data name="RoastTip_Past" xml:space="preserve"><value>Je beste brews waren tot {0} dagen jonger. Probeer een fijnere maling als hij flets smaakt.</value></data>
   <data name="RoastTip_Range" xml:space="preserve"><value>Je beste brews (4 sterren of meer, {3}) waren {0} tot {1} dagen na het roosteren, de meeste rond dag {2}.</value></data>
   <data name="RoastTip_Wait" xml:space="preserve"><value>Hij kan nog verbeteren: je beste brews begonnen over {0} dagen.</value></data>
+  <data name="Routines_Help" xml:space="preserve"><value>Bekende giet-routines. Kopieer er een naar je recepten en pas hem aan; de figuren tonen het waterniveau en hoe je elke stap giet.</value></data>
+  <data name="Routines_Title" xml:space="preserve"><value>Giet-routines</value></data>
   <data name="Save" xml:space="preserve"><value>Opslaan</value></data>
   <data name="Scan_Again" xml:space="preserve"><value>Opnieuw scannen</value></data>
   <data name="Scan_BagHeading" xml:space="preserve"><value>Zak</value></data>

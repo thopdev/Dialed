@@ -159,6 +159,19 @@
                         <label for="@($"step-water-{index}")">@L["Step_Water"] (@Units.WeightLabel)</label>
                         <input id="@($"step-water-{index}")" type="number" min="0" step="any" inputmode="decimal" @bind="step.Water" @bind:event="onchange" />
                     </div>
+                    @if (step.Kind is RecipeStepKind.Bloom or RecipeStepKind.Pour)
+                    {
+                        <div class="dialed-field">
+                            <label for="@($"step-pattern-{index}")">@L["Pour_Pattern"]</label>
+                            <select id="@($"step-pattern-{index}")" @bind="step.Pattern">
+                                <option value="">@L["Bean_None"]</option>
+                                @foreach (var pattern in Enum.GetValues<PourPattern>())
+                                {
+                                    <option value="@pattern">@L[$"Pour_{pattern}"]</option>
+                                }
+                            </select>
+                        </div>
+                    }
                     <div class="dialed-field">
                         <label for="@($"step-note-{index}")">@L["Step_Note"]</label>
                         <input id="@($"step-note-{index}")" type="text" @bind="step.Note" autocomplete="off" />
@@ -211,6 +224,8 @@
         public decimal? Water { get; set; }
 
         public string? Note { get; set; }
+
+        public PourPattern? Pattern { get; set; }
     }
 
     private string name = "";
@@ -317,7 +332,7 @@
         steps.Clear();
         foreach (var step in Recipe?.Steps ?? [])
         {
-            steps.Add(new StepRow { Kind = step.Kind, AtS = step.AtS, DurationS = step.DurationS, Water = Show(step.WaterG), Note = step.Note });
+            steps.Add(new StepRow { Kind = step.Kind, AtS = step.AtS, DurationS = step.DurationS, Water = Show(step.WaterG), Note = step.Note, Pattern = step.Pattern });
         }
     }
 
@@ -389,7 +404,7 @@
             PreinfusionS = Uses(BrewParameter.Preinfusion) ? preinfusionS : null,
             Filter = Uses(BrewParameter.Filter) ? Clean(filter) : null,
             Steps = useSteps
-                ? [.. steps.OrderBy(s => s.AtS ?? 0).Select(s => new RecipeStep(s.Kind, s.AtS ?? 0, s.DurationS, Store(s.Water), Clean(s.Note)))]
+                ? [.. steps.OrderBy(s => s.AtS ?? 0).Select(s => new RecipeStep(s.Kind, s.AtS ?? 0, s.DurationS, Store(s.Water), Clean(s.Note), s.Kind is RecipeStepKind.Bloom or RecipeStepKind.Pour ? s.Pattern : null))]
                 : [],
             Notes = Clean(notes),
             Visibility = visibility,

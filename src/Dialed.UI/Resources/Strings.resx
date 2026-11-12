@@ -721,6 +721,13 @@
   <data name="Picker_Clear" xml:space="preserve"><value>Remove selection</value></data>
   <data name="Picker_Create" xml:space="preserve"><value>Create "{0}"</value></data>
   <data name="Picker_Placeholder" xml:space="preserve"><value>Search or add</value></data>
+  <data name="Pour_Centre" xml:space="preserve"><value>In the centre</value></data>
+  <data name="Pour_Circles" xml:space="preserve"><value>In circles</value></data>
+  <data name="Pour_Described" xml:space="preserve"><value>Pouring {0}, water at {1}%</value></data>
+  <data name="Pour_Level" xml:space="preserve"><value>Water at {0}%</value></data>
+  <data name="Pour_Pattern" xml:space="preserve"><value>Pour pattern</value></data>
+  <data name="Pour_Pulse" xml:space="preserve"><value>In pulses</value></data>
+  <data name="Pour_Spiral" xml:space="preserve"><value>In a spiral</value></data>
   <data name="Privacy_AI" xml:space="preserve"><value>When you ask for dial-in advice, the data needed for that question (for example the bean, the method, your grind setting and taste notes) is sent to a Claude model hosted on Microsoft Foundry in Azure. It is used to answer you and is not used to train models. Nothing is sent unless you ask.</value></data>
   <data name="Privacy_AI_Title" xml:space="preserve"><value>AI suggestions</value></data>
   <data name="Privacy_Account" xml:space="preserve"><value>Your account holds your name, email address and your passkeys (only the public part; the secret never leaves your device). Recovery codes are stored as hashes. There is no password.</value></data>
@@ -845,6 +852,8 @@
   <data name="RoastTip_Past" xml:space="preserve"><value>Your best brews were up to {0} days younger. Try a finer grind if it tastes flat.</value></data>
   <data name="RoastTip_Range" xml:space="preserve"><value>Your best brews (rated 4 stars or more, {3}) were {0} to {1} days after roasting, most around day {2}.</value></data>
   <data name="RoastTip_Wait" xml:space="preserve"><value>It may still improve: your best brews started {0} days from now.</value></data>
+  <data name="Routines_Help" xml:space="preserve"><value>Well-known pour routines. Copy one to your recipes and change it; the figures show the water level and how to pour each step.</value></data>
+  <data name="Routines_Title" xml:space="preserve"><value>Pour routines</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="Scan_Again" xml:space="preserve"><value>Scan again</value></data>
   <data name="Scan_BagHeading" xml:space="preserve"><value>Bag</value></data>

@@ -40,6 +40,12 @@ else
                    ValueText="@string.Format(L["Timer_ProgressValue"].Value, Clock(elapsed), Clock(total))" />
         }
 
+        @if (!isEspresso && timeline.Steps.Count > 0)
+        {
+            <PourFigure Id="timer-figure" Fraction="@FigureFraction" Pattern="state.Current?.Pattern" Pouring="@(running && !paused && !state.IsFinished && state.Current is { Kind: RecipeStepKind.Bloom or RecipeStepKind.Pour })"
+                        Animated="@(running && !paused)" Cylinder="@(recipe.MethodCode is "aeropress" or "french-press")" />
+        }
+
         @if (isEspresso)
         {
             <p id="timer-band" class="dialed-timer-sub">@string.Format(L["Timer_Band"].Value, band.LowerS, band.UpperS)</p>
@@ -162,6 +168,9 @@ else
             return target - before is > 0m and var add ? add : null;
         }
     }
+
+    /// <summary>Water so far over the recipe's total water: how full the drawing is.</summary>
+    private double FigureFraction => running && recipe?.WaterG is > 0 && state.TargetWaterG is { } water ? (double)(water / recipe.WaterG.Value) : 0;
     private DateTimeOffset startedAt;
     private TimerState state = new BrewTimeline([]).At(0);
     private CancellationTokenSource? loop;
