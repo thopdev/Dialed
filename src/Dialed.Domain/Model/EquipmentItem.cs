@@ -27,5 +27,14 @@ public sealed record EquipmentItem : SyncEntity
 
     public string? Notes { get; init; }
 
+    /// <summary>Optional upkeep: service (descale, clean, replace burrs) after this many brews since <see cref="ServicedOn"/>.</summary>
+    public int? ServiceEveryBrews { get; init; }
+
+    /// <summary>Optional upkeep: service after this many kilograms of coffee since <see cref="ServicedOn"/>.</summary>
+    public int? ServiceEveryKg { get; init; }
+
+    /// <summary>When it was last serviced; usage is counted after this date. Without a date, everything ever brewed counts.</summary>
+    public DateOnly? ServicedOn { get; init; }
+
     public IReadOnlyList<string> PhotoIds { get; init; } = [];
 }

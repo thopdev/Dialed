@@ -51,6 +51,15 @@
         </fieldset>
     }
 
+    <fieldset class="dialed-field" id="gear-upkeep">
+        <legend>@L["Gear_Upkeep"]</legend>
+        <p class="dialed-muted">@L["Gear_UpkeepHelp"]</p>
+        <label for="gear-every-brews">@L["Gear_EveryBrews"]</label>
+        <input id="gear-every-brews" type="number" inputmode="numeric" min="1" max="100000" step="1" @bind="everyBrews" />
+        <label for="gear-every-kg">@L["Gear_EveryKg"]</label>
+        <input id="gear-every-kg" type="number" inputmode="numeric" min="1" max="100000" step="1" @bind="everyKg" />
+    </fieldset>
+
     <div class="dialed-field">
         <label>@L["Photo_Title"]</label>
         <PhotoStrip PhotoIds="@photoIds" PhotoIdsChanged="@(v => photoIds = v)" Label="@L["Photo_Title"].Value" />
@@ -72,6 +81,8 @@
     private string brand = "";
     private string? model;
     private string? notes;
+    private int? everyBrews;
+    private int? everyKg;
     private IReadOnlyList<string> photoIds = [];
     private GrindSettingKind scaleKind = GrindSettingKind.Clicks;
     private decimal? scaleMin;
@@ -105,6 +116,8 @@
         brand = Item?.Brand ?? "";
         model = Item?.Model;
         notes = Item?.Notes;
+        everyBrews = Item?.ServiceEveryBrews;
+        everyKg = Item?.ServiceEveryKg;
         photoIds = Item?.PhotoIds ?? [];
         if (Item?.GrindScale is { } scale)
         {
@@ -142,6 +155,8 @@
             Model = Clean(model),
             GrindScale = kind == EquipmentKind.Grinder ? scale : null,
             Notes = Clean(notes),
+            ServiceEveryBrews = everyBrews is > 0 ? everyBrews : null,
+            ServiceEveryKg = everyKg is > 0 ? everyKg : null,
             PhotoIds = photoIds,
         };
         await OnSubmit.InvokeAsync(item);

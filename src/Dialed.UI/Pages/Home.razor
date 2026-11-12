@@ -4,6 +4,7 @@
 @using Dialed.Client.Data
 @using Dialed.Client.Preferences
 @using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Equipment
 @using Dialed.Domain.Inventory
 @using Dialed.Domain.Model
 @implements IDisposable
@@ -11,6 +12,8 @@
 @inject IRepository<Bag> BagStore
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Brew> BrewStore
+@inject IRepository<EquipmentItem> GearStore
+@inject IRepository<Recipe> RecipeStore
 @inject IUserPreferences Preferences
 @inject AuthSession Session
 @inject UnitFormatter Units
@@ -48,6 +51,13 @@ else
         </a>
     </div>
     <p id="home-scan-hint" class="dialed-home-hint">@L["Home_ScanHint"]</p>
+
+    @if (gearDue.Count > 0)
+    {
+        <a id="home-gear-due" class="dialed-banner dialed-banner-warning" href="@($"equipment/{gearDue[0].Id}")">
+            <span class="dialed-banner-message">@string.Format(L["Home_GearDue"].Value, string.Join(", ", gearDue.Select(g => string.IsNullOrWhiteSpace(g.Model) ? g.Brand : $"{g.Brand} {g.Model}")))</span>
+        </a>
+    }
 
     <SectionHeader Title="@L["Home_OpenBags"]">
         <Actions><a id="home-inventory" class="dialed-section-link" href="inventory">@L["Stock_Title"]</a></Actions>
@@ -109,6 +119,7 @@ else
     private IReadOnlyList<Brew> again = [];
     private IReadOnlyList<Brew> recent = [];
     private int brewsToday;
+    private IReadOnlyList<EquipmentItem> gearDue = [];
     private Brew? lastToday;
     private int beanCount;
     private Dictionary<string, Bean> beansById = [];
@@ -167,6 +178,8 @@ else
         var todays = live.Where(b => DateOnly.FromDateTime(b.BrewedAt.ToLocalTime().DateTime) == today).ToList();
         brewsToday = todays.Count;
         lastToday = todays.FirstOrDefault();
+        var recipes = await RecipeStore.ListAsync();
+        gearDue = [.. (await GearStore.ListAsync()).Where(g => !g.Deleted && GearWear.Evaluate(g, brews, recipes).State == WearState.Due)];
     }
 
     private void OnChanged() => _ = InvokeAsync(async () =>

@@ -3048,3 +3048,26 @@ a.people-row-name {
     display: grid;
     gap: var(--dialed-space-3);
 }
+
+/* ---- Gear upkeep ------------------------------------------------------------------------------- */
+
+.dialed-chip-warning {
+    border-color: var(--colorPaletteMarigoldBorder2);
+    background: var(--colorPaletteMarigoldBackground2);
+    color: var(--colorPaletteMarigoldForeground2);
+}
+
+.dialed-upkeep {
+    display: grid;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-3) 0;
+}
+
+.dialed-upkeep p {
+    margin: 0;
+}
+
+a.dialed-banner {
+    color: inherit;
+    text-decoration: none;
+}
