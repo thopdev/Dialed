@@ -210,7 +210,7 @@
                     <span class="dialed-recipe-hero-method">@MethodName(current.MethodCode)</span>
                     @if (BeanName(current.BeanId) is { } bean)
                     {
-                        <a href="@($"beans/{current.BeanId}")">@bean</a>
+                        <a class="dialed-hit-link" href="@($"beans/{current.BeanId}")">@bean</a>
                     }
                     <span class="dialed-muted" id="recipe-stats">@StatsText(current)</span>
                 </div>
@@ -635,7 +635,7 @@
         var stats = RecipeVersions.Stats(version.Id, brews);
         return stats.BrewCount == 0
             ? L["Version_NoBrews"].Value
-            : string.Format(L["Version_Stats"].Value, stats.AverageRating is { } avg ? $"{avg:0.0} ★" : "–", stats.BrewCount);
+            : string.Format(L["Version_Stats"].Value, stats.AverageRating is { } avg ? $"{avg:0.0} ★" : "–", L.Count("Brews", stats.BrewCount));
     }
 
     private List<string> Changes(Recipe version)

@@ -8,6 +8,9 @@
 @inject IStringLocalizer<Strings> L
 @inject IRepository<EquipmentItem> GearStore
 @inject IRepository<MethodDefault> DefaultStore
+@inject IRepository<Brew> BrewStore
+@inject IRepository<Recipe> RecipeStore
+@inject TimeProvider Time
 @inject NavigationManager Navigation
 
 <ListDetailLayout HasSelection="@(Id is not null)">
@@ -41,7 +44,14 @@
             <div class="dialed-list">
                 @foreach (var item in Visible)
                 {
-                    <ListRow Title="@Title(item)" Subtitle="@L[$"EquipmentKind_{item.Kind}"].Value" Href="@($"equipment/{item.Id}")" />
+                    <ListRow Title="@Title(item)" Subtitle="@L[$"EquipmentKind_{item.Kind}"].Value" Href="@($"equipment/{item.Id}")">
+                        <Trailing>
+                            @if (WearOf(item).State is WearState.Due or WearState.Soon)
+                            {
+                                <span class="dialed-chip @(WearOf(item).State == WearState.Due ? "dialed-chip-warning" : "")">@L[WearOf(item).State == WearState.Due ? "Gear_ServiceDue" : "Gear_ServiceSoon"]</span>
+                            }
+                        </Trailing>
+                    </ListRow>
                 }
             </div>
             <div class="dialed-list">
@@ -144,6 +154,16 @@
                     }
                 </dl>
                 <PhotoStrip PhotoIds="@current.PhotoIds" ReadOnly="true" Label="@L["Photo_Title"].Value" />
+                @if (WearOf(current) is { State: not WearState.None } wear)
+                {
+                    <div id="gear-upkeep-status" class="dialed-upkeep">
+                        <strong>@L["Gear_Upkeep"]</strong>
+                        <Meter Label="@L["Gear_UpkeepMeter"].Value" Fraction="wear.Fraction" Tone="@(wear.State == WearState.Due ? Meter.MeterTone.Danger : wear.State == WearState.Soon ? Meter.MeterTone.Warning : Meter.MeterTone.Normal)"
+                               ValueText="@UsageText(current, wear)" />
+                        <p id="gear-upkeep-usage">@UsageText(current, wear)@(wear.State == WearState.Due ? $" · {L["Gear_ServiceDue"].Value}" : wear.State == WearState.Soon ? $" · {L["Gear_ServiceSoon"].Value}" : "")</p>
+                        <button id="gear-mark-serviced" type="button" class="dialed-button" @onclick="MarkServicedAsync">@L["Gear_MarkServiced"]</button>
+                    </div>
+                }
                 @if (current.Notes is not null)
                 {
                     <p class="dialed-vendor-notes">@current.Notes</p>
@@ -156,6 +176,8 @@
 @code {
     private IReadOnlyList<EquipmentItem>? items;
     private IReadOnlyList<MethodDefault> defaults = [];
+    private IReadOnlyList<Brew> brews = [];
+    private IReadOnlyList<Recipe> recipes = [];
     private EquipmentItem? current;
     private string kindFilter = "";
     private bool editing;
@@ -194,6 +216,8 @@
     {
         items = await GearStore.ListAsync();
         defaults = await DefaultStore.ListAsync();
+        brews = await BrewStore.ListAsync();
+        recipes = await RecipeStore.ListAsync();
         current = Id is null or "new" or "defaults" ? null : items.FirstOrDefault(i => i.Id == Id);
     }
 
@@ -227,6 +251,41 @@
         }
 
         editing = false;
+        await LoadAsync();
+    }
+
+    private GearWearStatus WearOf(EquipmentItem item) => GearWear.Evaluate(item, brews, recipes, DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
+
+    private string UsageText(EquipmentItem item, GearWearStatus wear)
+    {
+        var amounts = $"{L.Count("Brews", wear.Brews)} · {wear.Kilograms.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture)} kg";
+        if (item.ServiceEveryDays is > 0)
+        {
+            amounts += $" · {string.Format(L["Gear_DaysUsed"].Value, wear.Days, item.ServiceEveryDays)}";
+        }
+
+        return item.ServicedOn is { } since
+            ? string.Format(L["Gear_UsageSince"].Value, amounts, since.ToString("d MMM yyyy", System.Globalization.CultureInfo.CurrentCulture))
+            : string.Format(L["Gear_UsageSoFar"].Value, amounts);
+    }
+
+    private async Task MarkServicedAsync()
+    {
+        if (current is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await GearStore.SaveAsync(current with { ServicedOn = DateOnly.FromDateTime(Time.GetLocalNow().DateTime) });
+            error = null;
+        }
+        catch (ConflictException)
+        {
+            error = L["Error_Conflict"];
+        }
+
         await LoadAsync();
     }
 

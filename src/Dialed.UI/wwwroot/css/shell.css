@@ -46,6 +46,21 @@ html, body {
     margin: 0;
     font-size: 1.75rem;
     font-weight: 700;
+    line-height: 1.25; /* a long bean name that wraps must not open a gap between its lines */
+}
+
+/* Section headings inside a page (Statistics, Privacy, ...) were the browser's default size, bigger than the page title. Components later in the cascade (components.css) keep their own heading sizes. */
+.dialed-content h2 {
+    margin: var(--dialed-space-5, 24px) 0 var(--dialed-space-2, 8px);
+    font-size: var(--dialed-text-l, 1.25rem);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.dialed-content h3 {
+    margin: var(--dialed-space-4, 16px) 0 var(--dialed-space-1, 4px);
+    font-size: var(--dialed-text-m, 1rem);
+    font-weight: 600;
 }
 
 /* FocusOnNavigate moves focus to the title so screen readers start there; the title is not a control, so no ring. */

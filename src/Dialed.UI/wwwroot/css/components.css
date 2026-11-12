@@ -2950,7 +2950,7 @@ a.people-row-name {
 }
 
 .dialed-calendar-l0 {
-    fill: var(--colorNeutralBackground5);
+    fill: var(--colorNeutralBackground6);
 }
 
 .dialed-calendar-l1 {
@@ -3058,6 +3058,31 @@ a.people-row-name {
     gap: var(--dialed-space-3);
 }
 
+/* A text link in a sentence or a list row: looks the same, but the tappable area reaches 44 px. */
+.dialed-hit-link {
+    position: relative;
+}
+
+.dialed-hit-link::after {
+    content: "";
+    position: absolute;
+    inset: -12px -4px;
+}
+
+/* The file picker looks like our other secondary buttons. */
+input[type="file"]::file-selector-button {
+    min-height: var(--dialed-touch-target);
+    margin-inline-end: var(--dialed-space-3);
+    padding: 0 var(--dialed-space-4);
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--dialed-radius-pill);
+    background: var(--colorNeutralBackground1);
+    color: var(--colorNeutralForeground1);
+    font: inherit;
+    font-weight: var(--dialed-weight-semibold);
+    cursor: pointer;
+}
+
 /* ---- Bean journey ------------------------------------------------------------------------------ */
 
 .dialed-journey {
@@ -3117,4 +3142,27 @@ a.people-row-name {
     margin: var(--dialed-space-4) 0 var(--dialed-space-1);
     font-size: var(--dialed-text-m);
     font-weight: var(--dialed-weight-semibold);
+}
+
+/* ---- Gear upkeep ------------------------------------------------------------------------------- */
+
+.dialed-chip-warning {
+    border-color: var(--colorPaletteMarigoldBorder2);
+    background: var(--colorPaletteMarigoldBackground2);
+    color: var(--colorPaletteMarigoldForeground2);
+}
+
+.dialed-upkeep {
+    display: grid;
+    gap: var(--dialed-space-2);
+    margin: var(--dialed-space-3) 0;
+}
+
+.dialed-upkeep p {
+    margin: 0;
+}
+
+a.dialed-banner {
+    color: inherit;
+    text-decoration: none;
 }
