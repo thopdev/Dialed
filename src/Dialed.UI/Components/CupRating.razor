@@ -1,0 +1,36 @@
+@inject IStringLocalizer<Strings> L
+
+@*
+    A 1 to 5 rating as five coffee cups that fill up, like stars but in the spirit of the app. Editable: a radio group of big buttons
+    (arrow keys and VoiceOver work), each named with its word ("Poor" ... "Perfect"). The rating is the number of full cups; tapping
+    the last full cup again clears the rating. Value 0 = not rated.
+*@
+<span class="dialed-cups" role="radiogroup" aria-label="@L["Rating_Label"]">
+    @for (var cup = 1; cup <= 5; cup++)
+    {
+        var current = cup;
+        <button type="button"
+                class="dialed-cup @(current <= Value ? "on" : "")"
+                role="radio"
+                aria-checked="@(current == Value ? "true" : "false")"
+                aria-label="@L[$"QuickLog_Rating{current}"]"
+                @onclick="() => Select(current)">
+            <svg viewBox="0 0 40 40" width="100%" height="100%" aria-hidden="true" focusable="false">
+                <path d="M15 4q2 2 0 4M21 4q2 2 0 4" class="dialed-cup-steam" />
+                <path d="M7 13h22v8a9 9 0 0 1-9 9h-4a9 9 0 0 1-9-9z" class="dialed-cup-bowl" />
+                <path d="M29 16h2.5a4 4 0 0 1 0 8H28" class="dialed-cup-handle" />
+                <path d="M6 35h26" class="dialed-cup-saucer" />
+            </svg>
+        </button>
+    }
+</span>
+
+@code {
+    [Parameter]
+    public int Value { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
+
+    private Task Select(int cup) => ValueChanged.InvokeAsync(cup == Value ? 0 : cup);
+}
