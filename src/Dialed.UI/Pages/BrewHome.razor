@@ -88,6 +88,18 @@
                 </Card>
             }
 
+            @if (roastTip is not null)
+            {
+                <Card class="dialed-card dialed-roast-tip" id="brew-roast-tip">
+                    <h2 class="dialed-roast-tip-title">@L[$"RoastTip_{roastTip.Position}"]</h2>
+                    <p>@string.Format(L["RoastTip_Range"].Value, roastTip.FromDays, roastTip.ToDays, roastTip.MedianDays, L.Count("Brews", roastTip.Brews))</p>
+                    @if (roastTip.Position != RoastAgePosition.Inside)
+                    {
+                        <p class="dialed-muted">@string.Format(L[roastTip.Position == RoastAgePosition.Before ? "RoastTip_Wait" : "RoastTip_Past"].Value, roastTip.DaysAway)</p>
+                    }
+                </Card>
+            }
+
             @if (drift is not null)
             {
                 <Card class="dialed-card dialed-drift" id="brew-grind-drift">
@@ -167,6 +179,7 @@
     public string? Logged { get; set; }
 
     private GrindDriftNote? drift;
+    private RoastAgeTipResult? roastTip;
     private Brew? logged;
     private Dialed.Domain.Equipment.GrindScale? loggedScale;
 
@@ -200,6 +213,7 @@
         logged = current is null || Logged is null ? null : brews.FirstOrDefault(b => !b.Deleted && b.Id == Logged && b.BagId == current.Id && DialInHistory.NeedsAdvice(b));
         loggedScale = logged?.GrinderId is { } grinderId ? (await GearStore.GetAsync(grinderId))?.GrindScale : null;
         drift = null;
+        roastTip = current is null ? null : RoastAgeTip.Build(current.BeanId, bags ?? [], brews, current, DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
         if (current is not null)
         {
             var newest = brews.Where(b => !b.Deleted && b.BagId == current.Id && b.GrindSetting is not null).OrderByDescending(b => b.BrewedAt).FirstOrDefault();
