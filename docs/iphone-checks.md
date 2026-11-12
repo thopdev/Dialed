@@ -70,6 +70,20 @@ Needs a deployed API with real VAPID keys (#260), or the API run locally and rea
 - [ ] Scan a label of a bean I do not have: catalog candidates appear under the match section and **Use this** fills the origin fields.
 - [ ] In airplane mode none of this shows and adding a bean works as before.
 
+## Round 2: offline cache, maps and insights
+The production app only started caching itself in #283 (before that the service worker could not install), so these are the first real offline checks. Do the first block on a **fresh install**: delete the Home Screen app, clear Safari website data for the site, add it again.
+
+- [ ] Open the installed app once online and use it for a minute. Turn on airplane mode, force-quit the app and open it again: it starts and shows your data (no blank page, no "no connection" browser page).
+- [ ] Offline: Beans > **Scan barcode** opens the camera and reads a barcode (the reader is cached; it needs no network).
+- [ ] After a new version is deployed, the **Update available** banner appears once and **Update** reloads into the new version.
+- [ ] Beans > a bean with an origin: the **map is zoomed on the country** and readable at your text size; light and dark mode.
+- [ ] Statistics: the **origins map**, **Countries tried** (flags show; "Still to try" opens and closes), **flavour wheel**, **brewing calendar** and **Milestones** all fit the screen width with no sideways scrolling, in light and dark mode, and at the largest text size.
+- [ ] Statistics > tap an origin name (and a marker): Beans opens already filtered to that country, with **Filters (1)**; clearing the Country filter shows all beans again.
+- [ ] A bean with three or more brews that have a grind setting shows the **Dial-in trace**; long-press a dot shows its details (or just check the text under the chart).
+- [ ] A friend's profile (Beans tab) shows the origin map; a profile without origins shows none.
+- [ ] VoiceOver reads the maps and charts as one description each ("Map with a marker for each origin: ...", "Grind setting over 8 brews, from 22 to 16") and the legends as lists.
+- [ ] Settings > Notifications > **Peak** on: a bag whose rest window ends tomorrow gives "reaches its peak tomorrow" the day before (needs the push keys of #260 to deliver for real).
+
 ## Brew card
 - [ ] Brew history > a brew of mine > **Share a picture of this brew**: the iOS share sheet opens with a PNG (Save Image, Messages and Instagram accept it), the card is readable and not cut off, and long bean names wrap.
 - [ ] In the installed PWA and in Safari; in airplane mode the card still appears (nothing is fetched).
