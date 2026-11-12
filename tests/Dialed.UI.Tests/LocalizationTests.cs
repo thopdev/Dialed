@@ -36,6 +36,29 @@ public sealed partial class LocalizationTests
         dutch.Where(p => string.IsNullOrWhiteSpace(p.Value)).ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData("Strings.resx")]
+    [InlineData("Strings.nl.resx")]
+    public void Resource_entries_are_sorted_by_key_so_new_strings_do_not_collide_in_merges(string file)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "Dialed.slnx")))
+        {
+            dir = dir.Parent;
+        }
+
+        dir.ShouldNotBeNull();
+        var keys = DataName().Matches(File.ReadAllText(Path.Combine(dir.FullName, "src", "Dialed.UI", "Resources", file)))
+            .Select(m => m.Groups[1].Value).ToList();
+
+        keys.Count.ShouldBeGreaterThan(500);
+        var firstOutOfPlace = keys.Zip(keys.Skip(1)).FirstOrDefault(p => string.CompareOrdinal(p.First, p.Second) > 0);
+        firstOutOfPlace.ShouldBe(default, $"{file}: keep the entries sorted by key (ordinal). Insert new strings at their alphabetical place, not before </root>; '{firstOutOfPlace.Second}' comes after '{firstOutOfPlace.First}'.");
+    }
+
+    [GeneratedRegex(@"^  <data name=""([^""]+)""", RegexOptions.Multiline)]
+    private static partial Regex DataName();
+
     [Fact]
     public void Translations_keep_the_same_placeholders()
     {
