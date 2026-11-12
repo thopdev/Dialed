@@ -55,3 +55,20 @@ On the bean page, a bean with at least two dated steps shows a timeline (`BeanJo
 
 ## Tasting note suggestions
 While typing tasting notes on the bean form, `FlavorWheel.Suggest` offers the known flavour words that start with what was typed (English and Dutch, shortest first, without notes already chosen). These are the same words the flavour wheel can place, so suggested notes always show up in the wheel. Teach it a word by adding it to `FlavorWheel.Build`.
+
+## Taste profile and comparing beans
+- `BeanTasteProfile` averages each taste axis (-2 to +2, 0 balanced) over a bean's brews that were not balanced, since a brew with no feedback looks the same as a balanced one. It needs two such brews and shows as bars on the bean page ("How it tends to taste"): sour/bitter, weak/strong, thin/heavy, flat/sweet.
+- `BeanSummaries.Build` sums up a bean (brews, average rating, brews rated 4 or more, favourite method, last brewed, taste lean). The bean page's "Compare with another bean" opens `/beans/compare/{first}/{second}`, a table of two beans with the rows that differ highlighted.
+
+## Water
+Gear of kind Water (tap, filtered, a mineral recipe) can be chosen on a brew (`Brew.WaterId`, shown only when you have Water gear; "Brew again" keeps it). `WaterStats.Build` averages the rating per water, and the water's gear page says how its brews did and which other water scored higher.
+
+## Roast age tip
+`RoastAgeTip.Build` looks at a bean's brews rated 4 or more, works out the bag's age at each (frozen days not counted), and the bag screen says whether the bag in hand is inside, younger or older than that range. At least three such brews with a roast date are needed. It reports what happened, not why.
+
+## Shopping list
+`ShoppingList.Build` puts a bean on the Inventory screen's "To buy" list when everything left of it is an open bag below the low-stock threshold, or when it is all gone and your brews of it average 4 stars or more. Beans with a sealed, frozen or healthy open bag are left off. "Share the list" uses the share sheet (`IShareService`) or shows the text to copy.
+
+## Brew timer voice
+On guided timers (not the espresso shot timer) the switch "Say the steps out loud" speaks each step with its target ("Pour, up to 150 grams", said in grams or ounces) and "Done", in the app language, through the `ISpeechCue` platform interface (web: speech synthesis, `speak` in `platform.js`). It is off by default and remembered in the profile (`UserProfile.TimerVoice`). Independent of it, the last three seconds before each step tick once each. Real-device checks are in [iphone-checks.md](iphone-checks.md).
+
