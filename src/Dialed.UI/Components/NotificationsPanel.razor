@@ -42,10 +42,11 @@
                 <p id="push-status" role="status">@L["Push_On"]</p>
                 <fieldset id="push-switches">
                     <legend>@L["Push_Switches"]</legend>
-                    <label class="dialed-check"><input id="push-follows" type="checkbox" checked="@state.Follows" disabled="@busy" @onchange="e => SwitchAsync(follows: (bool)e.Value!, household: state.Household, low: state.LowStock, peak: state.Peak)" /> @L["Push_Follows"]</label>
-                    <label class="dialed-check"><input id="push-household" type="checkbox" checked="@state.Household" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: (bool)e.Value!, low: state.LowStock, peak: state.Peak)" /> @L["Push_Household"]</label>
-                    <label class="dialed-check"><input id="push-low" type="checkbox" checked="@state.LowStock" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: state.Household, low: (bool)e.Value!, peak: state.Peak)" /> @L["Push_LowStock"]</label>
-                    <label class="dialed-check"><input id="push-peak" type="checkbox" checked="@state.Peak" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: state.Household, low: state.LowStock, peak: (bool)e.Value!)" /> @L["Push_Peak"]</label>
+                    <label class="dialed-check"><input id="push-follows" type="checkbox" checked="@state.Follows" disabled="@busy" @onchange="e => SwitchAsync(follows: (bool)e.Value!, household: state.Household, low: state.LowStock, peak: state.Peak, service: state.Service)" /> @L["Push_Follows"]</label>
+                    <label class="dialed-check"><input id="push-household" type="checkbox" checked="@state.Household" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: (bool)e.Value!, low: state.LowStock, peak: state.Peak, service: state.Service)" /> @L["Push_Household"]</label>
+                    <label class="dialed-check"><input id="push-low" type="checkbox" checked="@state.LowStock" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: state.Household, low: (bool)e.Value!, peak: state.Peak, service: state.Service)" /> @L["Push_LowStock"]</label>
+                    <label class="dialed-check"><input id="push-peak" type="checkbox" checked="@state.Peak" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: state.Household, low: state.LowStock, peak: (bool)e.Value!, service: state.Service)" /> @L["Push_Peak"]</label>
+                    <label class="dialed-check"><input id="push-service" type="checkbox" checked="@state.Service" disabled="@busy" @onchange="e => SwitchAsync(follows: state.Follows, household: state.Household, low: state.LowStock, peak: state.Peak, service: (bool)e.Value!)" /> @L["Push_Service"]</label>
                     <p class="dialed-muted">@L["Push_StockHint"]</p>
                 </fieldset>
                 <button id="push-disable" type="button" class="dialed-button" disabled="@busy" @onclick="DisableAsync">@L["Push_Disable"]</button>
@@ -85,7 +86,7 @@
 
     private Task DisableAsync() => RunAsync(() => Push.DisableAsync());
 
-    private Task SwitchAsync(bool follows, bool household, bool low, bool peak) => RunAsync(() => Push.SaveSwitchesAsync(follows, household, low, peak));
+    private Task SwitchAsync(bool follows, bool household, bool low, bool peak, bool service) => RunAsync(() => Push.SaveSwitchesAsync(follows, household, low, peak, service));
 
     private async Task RunAsync(Func<Task<PushState>> action)
     {

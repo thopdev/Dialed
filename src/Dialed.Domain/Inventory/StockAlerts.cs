@@ -18,6 +18,9 @@ public sealed record StockAlertMemory(IReadOnlySet<string> Low, IReadOnlySet<str
 
     /// <summary>Bags already told "peak starts tomorrow". Kept apart from <see cref="Peak"/> so the heads-up and the peak itself are each sent once.</summary>
     public IReadOnlySet<string> PeakSoon { get; init; } = new HashSet<string>();
+
+    /// <summary>Gear already told "service due", as <c>householdId/gearId/servicedOn</c>: marking it serviced makes a new key and re-arms it.</summary>
+    public IReadOnlySet<string> Gear { get; init; } = new HashSet<string>();
 }
 
 /// <summary>The bags to tell a person about now, and what to remember for next time.</summary>

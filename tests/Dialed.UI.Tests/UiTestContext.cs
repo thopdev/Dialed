@@ -598,6 +598,8 @@ public abstract class UiTestContext : BunitContext
 
         public bool Peak { get; private set; }
 
+        public bool Service { get; private set; }
+
         public Dialed.Domain.Inventory.InventorySettings? Inventory { get; private set; }
 
         public string? SentTimeZone { get; private set; }
@@ -639,13 +641,14 @@ public abstract class UiTestContext : BunitContext
         public Task<Dialed.Client.Push.PushSettings> GetSettingsAsync(CancellationToken cancellationToken = default)
         {
             Check();
-            return Task.FromResult(new Dialed.Client.Push.PushSettings(Follows, Household, Registered.Count - Removed.Count, LowStock, Peak));
+            return Task.FromResult(new Dialed.Client.Push.PushSettings(Follows, Household, Registered.Count - Removed.Count, LowStock, Peak, Service));
         }
 
-        public Task<Dialed.Client.Push.PushSettings> SaveSettingsAsync(bool follows, bool household, bool lowStock, bool peak, Dialed.Domain.Inventory.InventorySettings? inventory, string? timeZone, CancellationToken cancellationToken = default)
+        public Task<Dialed.Client.Push.PushSettings> SaveSettingsAsync(bool follows, bool household, bool lowStock, bool peak, Dialed.Domain.Inventory.InventorySettings? inventory, string? timeZone, bool service = false, CancellationToken cancellationToken = default)
         {
             Check();
             SaveCalls++;
+            Service = service;
             Follows = follows;
             Household = household;
             LowStock = lowStock;

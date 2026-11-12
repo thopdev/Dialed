@@ -752,6 +752,7 @@
   <data name="Push_On" xml:space="preserve"><value>Notifications are on for this device.</value></data>
   <data name="Push_Peak" xml:space="preserve"><value>A bag is at its peak</value></data>
   <data name="Push_ServerUnavailable" xml:space="preserve"><value>Notifications are not available right now. Try again later.</value></data>
+  <data name="Push_Service" xml:space="preserve"><value>A piece of gear is due for service</value></data>
   <data name="Push_SignedOut" xml:space="preserve"><value>Sign in to get notifications.</value></data>
   <data name="Push_StockHint" xml:space="preserve"><value>Low stock and peak alerts come at most once a day, around 8:00 in your time zone, and never at night. They use the thresholds and rest times from Settings &gt; Inventory.</value></data>
   <data name="Push_Switches" xml:space="preserve"><value>Tell me when</value></data>

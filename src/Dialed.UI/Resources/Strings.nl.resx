@@ -752,6 +752,7 @@
   <data name="Push_On" xml:space="preserve"><value>Meldingen staan aan op dit toestel.</value></data>
   <data name="Push_Peak" xml:space="preserve"><value>Een zak op zijn best is</value></data>
   <data name="Push_ServerUnavailable" xml:space="preserve"><value>Meldingen zijn nu niet beschikbaar. Probeer het later opnieuw.</value></data>
+  <data name="Push_Service" xml:space="preserve"><value>Een stuk gear heeft onderhoud nodig</value></data>
   <data name="Push_SignedOut" xml:space="preserve"><value>Meld je aan om meldingen te krijgen.</value></data>
   <data name="Push_StockHint" xml:space="preserve"><value>Meldingen over bijna op en op zijn best komen hooguit één keer per dag, rond 8:00 in jouw tijdzone, en nooit 's nachts. Ze gebruiken de drempel en rusttijden uit Instellingen &gt; Voorraad.</value></data>
   <data name="Push_Switches" xml:space="preserve"><value>Laat me weten wanneer</value></data>

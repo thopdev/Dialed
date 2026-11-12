@@ -71,6 +71,20 @@ public sealed class StockAlertTests(PushApp app) : IClassFixture<PushApp>
         response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync(Ct));
     }
 
+    private static async Task Service(Person person, bool on)
+    {
+        using var response = await person.Client.PutAsJsonAsync("/push/settings", new PushSettingsRequest(true, true, false, false, null, "Europe/Amsterdam", on), Ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK, await response.Content.ReadAsStringAsync(Ct));
+    }
+
+    /// <summary>A grinder (kind 0) to descale every <paramref name="everyDays"/> days, last serviced on <paramref name="servicedOn"/>.</summary>
+    private static async Task<string> Grinder(Person person, string brand, int everyDays, string servicedOn)
+    {
+        var id = Guid.CreateVersion7().ToString();
+        await Put(person, "equipment", new JsonObject { ["id"] = id, ["kind"] = 0, ["brand"] = brand, ["model"] = "Mignon", ["serviceEveryDays"] = everyDays, ["servicedOn"] = servicedOn });
+        return id;
+    }
+
     private Task Run(DateTimeOffset at) => app.Services.GetRequiredService<StockAlertService>().RunAsync(at, Ct);
 
     private List<PushPayload> LowStock(Person person) => [.. Received(person).Where(p => p.Tag == "low-stock")];
@@ -408,5 +422,60 @@ public sealed class StockAlertTests(PushApp app) : IClassFixture<PushApp>
         }
 
         (await person.Client.GetFromJsonAsync<PushSettingsDto>("/push/settings", Ct))!.Devices.ShouldBe(0);
+    }
+
+    // ---- Service due --------------------------------------------------------------------------
+
+    [Fact]
+    public async Task Gear_due_for_service_is_announced_once_and_named()
+    {
+        var person = await NewPerson("Pia");
+        await Subscribe(person);
+        await Service(person, on: true);
+        await Grinder(person, "Eureka", everyDays: 7, servicedOn: "2026-11-01");
+
+        await Run(Morning);
+        await Run(Morning.AddDays(1));
+
+        var received = Received(person).Where(p => p.Tag == "service-due").ShouldHaveSingleItem();
+        received.Body.ShouldBe("Eureka Mignon is due for service.");
+        received.Url.ShouldBe("gear");
+    }
+
+    [Fact]
+    public async Task Gear_that_is_not_due_or_when_the_switch_is_off_says_nothing()
+    {
+        var person = await NewPerson("Pia");
+        await Subscribe(person);
+        await Grinder(person, "Eureka", everyDays: 7, servicedOn: "2026-11-01");
+        await Service(person, on: false);
+        await Run(Morning);
+
+        await Service(person, on: true);
+        await Grinder(person, "Baratza", everyDays: 30, servicedOn: "2026-11-05");
+        // Already handled today for the person whose switch was off; the next morning only the overdue Eureka counts.
+        await Run(Morning.AddDays(1));
+
+        Received(person).Where(p => p.Tag == "service-due").ShouldHaveSingleItem().Body.ShouldBe("Eureka Mignon is due for service.");
+    }
+
+    [Fact]
+    public async Task Marking_gear_serviced_and_letting_it_come_due_again_announces_it_again()
+    {
+        var person = await NewPerson("Pia");
+        await Subscribe(person);
+        await Service(person, on: true);
+        var id = await Grinder(person, "Eureka", everyDays: 7, servicedOn: "2026-11-01");
+        await Run(Morning);
+
+        var update = new JsonObject { ["id"] = id, ["kind"] = 0, ["brand"] = "Eureka", ["model"] = "Mignon", ["serviceEveryDays"] = 7, ["servicedOn"] = "2026-11-11", ["deleted"] = false };
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/sync/equipment/{id}") { Content = JsonContent.Create(update) };
+        request.Headers.TryAddWithoutValidation("If-Match", "\"1\"");
+        using var saved = await person.Client.SendAsync(request, Ct);
+        saved.StatusCode.ShouldBe(HttpStatusCode.OK, await saved.Content.ReadAsStringAsync(Ct));
+        await Run(Morning.AddDays(1));
+        await Run(Morning.AddDays(8));
+
+        Received(person).Count(p => p.Tag == "service-due").ShouldBe(2);
     }
 }

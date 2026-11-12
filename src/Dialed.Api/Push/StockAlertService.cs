@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Dialed.Api.Auth;
 using Dialed.Api.Sync;
+using Dialed.Domain.Equipment;
 using Dialed.Domain.Inventory;
 using Dialed.Domain.Model;
 using Dialed.Telemetry;
@@ -36,7 +37,7 @@ public sealed class StockAlertService(IPushStore store, ISyncStore sync, IUserDi
     private async Task HandleAsync(string userId, DateTimeOffset utcNow, CancellationToken ct)
     {
         var settings = await store.GetSettingsAsync(userId, ct);
-        if (!settings.LowStock && !settings.Peak)
+        if (!settings.LowStock && !settings.Peak && !settings.Service)
         {
             return;
         }
@@ -54,6 +55,8 @@ public sealed class StockAlertService(IPushStore store, ISyncStore sync, IUserDi
         List<string> low = [];
         List<string> peak = [];
         List<string> peakSoon = [];
+        List<string> gearDue = [];
+        var gearMemory = memory.Gear;
         foreach (var household in user.AllHouseholdIds)
         {
             var stock = InventoryOverview.Build(
@@ -67,7 +70,24 @@ public sealed class StockAlertService(IPushStore store, ISyncStore sync, IUserDi
             peak.AddRange(result.Peak);
             peakSoon.AddRange(result.PeakSoon);
             memory = result.Memory;
+
+            if (settings.Service)
+            {
+                var gear = await ReadAsync<EquipmentItem>(household, userId, "equipment", ct);
+                var upkeep = GearAlerts.Evaluate(
+                    household,
+                    gear,
+                    await ReadAsync<Brew>(household, userId, "brews", ct),
+                    await ReadAsync<Recipe>(household, userId, "recipes", ct),
+                    today,
+                    gearMemory);
+                gearDue.AddRange(upkeep.Due);
+                gearMemory = upkeep.Memory;
+            }
         }
+
+        // Switching the alert off forgets what was told, so it speaks again when switched back on.
+        memory = new StockAlertMemory(memory.Low, memory.Peak) { PeakSoon = memory.PeakSoon, Gear = settings.Service ? gearMemory : new HashSet<string>() };
 
         // Remembered before sending: a crash in between loses one notification rather than sending it twice.
         await store.SaveAlertStateAsync(userId, new StockAlertState(today, memory), ct);
@@ -86,6 +106,11 @@ public sealed class StockAlertService(IPushStore store, ISyncStore sync, IUserDi
         if (peak.Count > 0)
         {
             await SendAsync(userId, devices, PushKind.Peak, peak, ct);
+        }
+
+        if (gearDue.Count > 0)
+        {
+            await SendAsync(userId, devices, PushKind.ServiceDue, gearDue, ct);
         }
     }
 
