@@ -12,6 +12,7 @@ Everything here is offline and local: it is calculated from the person's own bea
 | Brewing calendar with roast days | Statistics | `BrewCalendar`, `BrewCalendarChart` |
 | Milestones and streaks | Statistics | `MilestoneSummary`, `MilestoneBadges` |
 | Dial-in trace | Bean page | `DialInTrace`, `DialInChart` |
+| Compare two brews of a bean | Brew history > a brew > Compare brews | `BrewHistory.CompareBrews`, `BrewHistory.SameBean`, `HistoryCompare` |
 | Brew card (share a picture) | Brew history, own brews | `BrewCard`, `IImageRenderer` |
 | Peak heads-up (push) | Settings > Notifications > Peak | `StockAlerts`, see [push-notifications.md](push-notifications.md) |
 
@@ -28,6 +29,9 @@ Everything here is offline and local: it is calculated from the person's own bea
 - `BrewCalendar` shows the last 15 weeks (Monday first), darker for more brews relative to the busiest day, with a dot on the roast dates of live bags.
 - `MilestoneSummary` counts brews, origins, roasters and your longest run of days with a brew. Quiet by design: nothing expires or nags, and per track only the highest step reached is shown. Steps are in `MilestoneSummary.Steps`.
 - `DialInTrace` plots the grind setting of one bean per method over time. A method needs at least three brews with a grind setting; the best rated brew is ringed (the latest among equals), and "dialed in" means the last three brews used about the same grind.
+
+## Comparing brews
+A brew's page lists the other brews of the same bean (newest first, up to 20, through the bag) and opens `history/compare/{first}/{second}`. `BrewHistory.CompareBrews` reuses `ParameterDelta`: the first brew's value sits in `Planned`, the second's in `Actual`, and `Change` is second minus first. The page shows method, dose, water, yield, grind, temperature and time, the rating and the four taste axes with how each moved, plus both brews' notes. A value only one brew recorded has no change; temperature changes are shown as a difference (no 32 degree offset when units are imperial). Rows that differ are highlighted like the planned-versus-actual table.
 
 ## Brew card
 The share button on your own brew builds a 1080 by 1350 SVG (`BrewCard`, fixed colours because it leaves the app as an image, system fonts, all text escaped) and asks `IImageRenderer` for a PNG. On the web that draws the SVG as a data-URL image on a canvas (`svgToPng` in `platform.js`; the CSP already allows `img-src data:`), then `IFileExport` hands it to the share sheet or downloads it. If a browser cannot draw it the page says so. Check it on a real iPhone: see [iphone-checks.md](iphone-checks.md).

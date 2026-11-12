@@ -328,6 +328,12 @@
                 </div>
             }
 
+            @if (currentJourney.Count >= 2)
+            {
+                <SectionHeader Title="@L["Journey_Title"]" />
+                <BeanJourneyList Events="currentJourney" />
+            }
+
             @if (currentTrace.Count > 0)
             {
                 <SectionHeader Title="@L["Bean_DialInTrace"]" />
@@ -369,6 +375,7 @@
     private IReadOnlyList<BagStock> currentStock = [];
     private IReadOnlyList<Brew> currentBrews = [];
     private IReadOnlyList<DialInSeries> currentTrace = [];
+    private IReadOnlyList<JourneyEvent> currentJourney = [];
     private bool showFilters;
     private Recipe? bestRecipe;
     private string search = "";
@@ -466,12 +473,14 @@
             var bagIds = currentBags.Select(b => b.Id).ToHashSet();
             currentBrews = [.. brews.Where(b => !b.Deleted && bagIds.Contains(b.BagId)).OrderByDescending(b => b.BrewedAt).Take(5)];
             currentTrace = DialInTrace.Build(brews.Where(b => bagIds.Contains(b.BagId)));
+            currentJourney = BeanJourney.Build(current, currentBags, brews, Preferences.Inventory, today);
         }
         else
         {
             currentStock = [];
             currentBrews = [];
             currentTrace = [];
+            currentJourney = [];
         }
         bestRecipe = current is null ? null : RecipeQuery.BestForBean(current.Id, await RecipeStore.ListAsync());
     }
