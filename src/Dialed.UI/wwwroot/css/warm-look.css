@@ -1,0 +1,936 @@
+/* The warm roast look: equipment shelf, Home hero, cups, flavour wheel, roast mood, card lists, empty drawings.
+   Loaded after the files above it in index.html: keep the order. */
+
+/* ---- Equipment shelf ---------------------------------------------------------------------------- */
+
+.dialed-segmented {
+    display: flex;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: var(--dialed-space-3);
+    margin: 0 0 var(--dialed-space-3);
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-shelf-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    min-height: 2.75rem;
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2);
+    border-radius: var(--borderRadiusLarge);
+    background: var(--colorNeutralBackground1);
+    color: inherit;
+    text-align: center;
+    text-decoration: none;
+}
+
+.dialed-shelf-name {
+    font-weight: 600;
+}
+
+.dialed-shelf-kind {
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-favorites ul {
+    margin: var(--dialed-space-1) 0 0;
+    padding-inline-start: 1.25rem;
+}
+
+
+
+.dialed-coach {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+    border-inline-start: 4px solid var(--colorBrandStroke1);
+}
+
+.dialed-coach p {
+    margin: 0;
+}
+
+.dialed-content h2.dialed-coach-title {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 600;
+}
+
+
+/* ---- Home hero and stock ring (warm roast) ---------------------------------------------------------- */
+
+.dialed-home-hero {
+    margin: calc(-1 * max(12px, env(safe-area-inset-top))) -16px 0;
+    padding: max(28px, calc(env(safe-area-inset-top) + 16px)) 1.25rem 3.5rem;
+    border-radius: 0 0 var(--dialed-radius-xl, 24px) var(--dialed-radius-xl, 24px);
+    background: linear-gradient(160deg, var(--colorBrandBackgroundPressed, #5a3825), var(--colorBrandBackground, #7f5d47));
+    color: var(--colorNeutralForegroundOnBrand, #fff);
+}
+
+.dialed-home-hero h1 {
+    margin: 0;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-2xl);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.dialed-home-hero h1:focus {
+    outline: none;
+}
+
+.dialed-home-hero .dialed-home-status {
+    margin: var(--dialed-space-1) 0 0;
+    color: inherit;
+    opacity: 0.85;
+    font-size: var(--dialed-text-s);
+}
+
+/* The actions float over the lower edge of the hero. */
+.dialed-home-hero + .dialed-home-actions {
+    position: relative;
+    margin-top: -2.5rem;
+}
+
+.dialed-home-hero + .dialed-home-actions .dialed-button-primary {
+    background: var(--colorNeutralForegroundOnBrand, #fff);
+    color: var(--colorBrandBackgroundPressed, #5a3825);
+    box-shadow: 0 8px 22px rgb(60 35 20 / 0.28);
+}
+
+.dialed-ring {
+    --dialed-ring-color: var(--colorBrandBackground);
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 50%;
+    background: conic-gradient(var(--dialed-ring-color) var(--dialed-ring-value), var(--colorNeutralBackground6) 0);
+}
+
+.dialed-ring-warning {
+    --dialed-ring-color: var(--colorPaletteDarkOrangeBackground3, #c8873f);
+}
+
+.dialed-ring-danger {
+    --dialed-ring-color: var(--colorPaletteRedBackground3);
+}
+
+.dialed-ring-inner {
+    display: grid;
+    place-items: center;
+    width: 2.95rem;
+    height: 2.95rem;
+    border-radius: 50%;
+    background: var(--colorNeutralBackground1);
+    font-size: var(--dialed-text-xs);
+    font-weight: 700;
+    text-align: center;
+}
+
+
+
+.dialed-transport-small {
+    flex: none;
+    width: var(--dialed-touch-target);
+    height: var(--dialed-touch-target);
+    text-decoration: none;
+}
+
+/* ---- Quick log after the timer ---------------------------------------------------------------------- */
+
+.dialed-quick-log {
+    display: grid;
+    gap: var(--dialed-space-3);
+}
+
+.dialed-quick-log-title {
+    margin: 0;
+}
+
+.dialed-quick-taste {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--dialed-space-2);
+}
+
+.dialed-quick-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-3);
+    border-radius: var(--dialed-radius-xl, var(--borderRadiusXLarge));
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-quick-summary-text {
+    display: grid;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-quick-summary-title {
+    font-weight: 600;
+}
+
+.dialed-quick-rating {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-quick-rating-word {
+    margin: 0;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    min-height: 1.5rem;
+    font-weight: 700;
+    font-size: var(--dialed-text-l);
+    color: var(--colorBrandForeground1);
+}
+
+.dialed-quick-subtitle {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 500;
+    color: var(--colorNeutralForeground2);
+}
+
+/* ---- Pick of the day on Home ------------------------------------------------------------------------ */
+
+.dialed-pick {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--dialed-space-3) var(--dialed-space-4);
+    align-items: center;
+    margin: var(--dialed-space-5) 0 var(--dialed-space-3);
+    padding: var(--dialed-space-4);
+    border-radius: var(--dialed-radius-xl, 24px);
+    background: linear-gradient(150deg, var(--colorBrandBackgroundPressed, #5a3825), var(--colorBrandBackground, #7f5d47));
+    color: var(--colorNeutralForegroundOnBrand, #fff);
+    box-shadow: var(--dialed-shadow-card);
+}
+
+.dialed-pick-cup {
+    width: 4.5rem;
+    height: 4.5rem;
+    overflow: visible;
+}
+
+.dialed-pick-cup .dialed-pick-bowl {
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+}
+
+.dialed-pick-cup .dialed-pick-line,
+.dialed-pick-cup .dialed-pick-steam {
+}
+
+/* ---- Cups and taste scales (quick log) --------------------------------------------------------- */
+
+.dialed-cups {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--dialed-space-2);
+    width: 100%;
+}
+
+.dialed-cup {
+    flex: 1;
+    max-width: 4rem;
+    aspect-ratio: 1;
+    min-width: var(--dialed-touch-target);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--colorNeutralForeground3);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+
+.dialed-cup svg {
+    overflow: visible;
+}
+
+.dialed-cup .dialed-cup-bowl,
+.dialed-cup .dialed-cup-handle,
+.dialed-cup .dialed-cup-saucer,
+.dialed-cup .dialed-cup-steam {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dialed-pick-cup .dialed-pick-steam {
+    opacity: 0.7;
+}
+
+.dialed-pick-text p {
+    margin: 0;
+}
+
+.dialed-pick-label {
+    font-size: var(--dialed-text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.dialed-pick-name {
+    margin-block: var(--dialed-space-1) !important;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-xl);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.dialed-pick-detail {
+    font-size: var(--dialed-text-s);
+    opacity: 0.9;
+}
+
+.dialed-pick-detail .dialed-rating-badge {
+    color: inherit;
+}
+
+.dialed-pick-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-2);
+}
+
+.dialed-pick-actions .dialed-button-primary {
+    flex: 1;
+    background: var(--colorNeutralForegroundOnBrand, #fff);
+    color: var(--colorBrandBackgroundPressed, #5a3825);
+    box-shadow: 0 6px 16px rgb(60 35 20 / 0.28);
+}
+
+.dialed-pick-actions .dialed-transport-button {
+    background: transparent;
+    color: inherit;
+    border-color: currentColor;
+}
+
+
+.dialed-pick-detail .dialed-rating-badge-star {
+    color: inherit;
+}
+
+.dialed-cup .dialed-cup-steam {
+    opacity: 0;
+}
+
+.dialed-cup.on {
+    color: var(--colorBrandForeground1);
+    filter: drop-shadow(0 3px 4px rgb(90 56 37 / 0.3));
+}
+
+.dialed-cup.on .dialed-cup-bowl {
+    fill: var(--colorBrandBackground);
+    stroke: var(--colorBrandBackground);
+}
+
+.dialed-cup.on .dialed-cup-steam {
+    opacity: 0.7;
+}
+
+.dialed-cup:focus-visible,
+.dialed-scale-step:focus-visible {
+    outline: 2px solid var(--colorStrokeFocus2);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dialed-cup {
+        transition: none;
+    }
+}
+
+.dialed-quick-taste {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--dialed-space-4);
+}
+
+.dialed-scale {
+    display: grid;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-scale-ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-scale-name {
+    font-weight: 600;
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-scale-steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--dialed-space-1);
+    padding: var(--dialed-space-1);
+    border-radius: var(--dialed-radius-l);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-scale-step {
+    min-height: var(--dialed-touch-target);
+    padding: 0 2px;
+    border: 0;
+    border-radius: var(--dialed-radius-m);
+    background: transparent;
+    color: var(--colorNeutralForeground2);
+    font: inherit;
+    font-size: var(--dialed-text-xs);
+    cursor: pointer;
+}
+
+.dialed-scale-step.mid {
+    font-weight: 600;
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-scale-step.on {
+    background: var(--colorBrandBackground);
+    color: var(--colorNeutralForegroundOnBrand);
+    font-weight: 700;
+    box-shadow: var(--dialed-shadow-raised, none);
+}
+
+/* ---- Roast mood: a bean's screens take the colour of its roast ------------------------------------- */
+
+.dialed-mood {
+    --dialed-mood-start: var(--colorBrandBackgroundPressed);
+    --dialed-mood-end: var(--colorBrandBackground);
+    --dialed-mood-fg: var(--colorNeutralForegroundOnBrand);
+}
+
+.dialed-mood-light {
+    --dialed-mood-start: var(--dialed-roast-light-start);
+    --dialed-mood-end: var(--dialed-roast-light-end);
+    --dialed-mood-fg: var(--dialed-roast-light-fg);
+}
+
+.dialed-mood-mediumlight {
+    --dialed-mood-start: var(--dialed-roast-mediumlight-start);
+    --dialed-mood-end: var(--dialed-roast-mediumlight-end);
+    --dialed-mood-fg: var(--dialed-roast-mediumlight-fg);
+}
+
+.dialed-mood-medium {
+    --dialed-mood-start: var(--dialed-roast-medium-start);
+    --dialed-mood-end: var(--dialed-roast-medium-end);
+    --dialed-mood-fg: var(--dialed-roast-medium-fg);
+}
+
+.dialed-mood-mediumdark {
+    --dialed-mood-start: var(--dialed-roast-mediumdark-start);
+    --dialed-mood-end: var(--dialed-roast-mediumdark-end);
+    --dialed-mood-fg: var(--dialed-roast-mediumdark-fg);
+}
+
+.dialed-mood-dark {
+    --dialed-mood-start: var(--dialed-roast-dark-start);
+    --dialed-mood-end: var(--dialed-roast-dark-end);
+    --dialed-mood-fg: var(--dialed-roast-dark-fg);
+}
+
+/* The bag screen: the header becomes a roast-coloured hero and the summary card floats over it. */
+#brew-mood > .dialed-page-header {
+    margin: calc(-1 * max(12px, env(safe-area-inset-top))) -16px 0;
+    padding: max(16px, env(safe-area-inset-top)) 1.25rem 2.75rem;
+    border-radius: 0 0 var(--dialed-radius-xl, 24px) var(--dialed-radius-xl, 24px);
+    background: linear-gradient(160deg, var(--dialed-mood-start), var(--dialed-mood-end));
+    color: var(--dialed-mood-fg);
+}
+
+#brew-mood > .dialed-page-header .dialed-back {
+    color: inherit;
+}
+
+#brew-mood > .dialed-brew-bag {
+    position: relative;
+    margin-top: -2rem;
+}
+
+#brew-mood .dialed-meter-fill {
+    background: var(--dialed-mood-start);
+}
+
+#brew-mood .dialed-form-actions .dialed-button-primary,
+#brew-mood .dialed-recipe-choice .dialed-button {
+    border-color: var(--dialed-mood-start);
+}
+
+/* The bean page: its hero card gets the roast colour as a soft wash. */
+.dialed-bean-hero.dialed-mood {
+    border-radius: var(--dialed-radius-xl, 24px);
+    padding: var(--dialed-space-4);
+    background: linear-gradient(160deg, var(--dialed-mood-start), var(--dialed-mood-end));
+    color: var(--dialed-mood-fg);
+}
+
+.dialed-bean-hero.dialed-mood a {
+    color: inherit;
+}
+
+.dialed-bean-hero.dialed-mood .dialed-bean-hero-text *,
+.dialed-bean-hero.dialed-mood .dialed-star {
+    color: inherit;
+}
+
+/* ---- Flavour picker: the wheel with a zoom ---------------------------------------------------------- */
+
+.dialed-flavor-picker {
+    display: grid;
+    justify-items: center;
+    gap: var(--dialed-space-1);
+    margin-bottom: var(--dialed-space-2);
+}
+
+.dialed-fw-hint {
+    margin: 0;
+    justify-self: start;
+    color: var(--colorNeutralForeground2);
+    font-size: var(--dialed-text-s);
+}
+
+.dialed-fw-wheel {
+    width: min(100%, 15rem);
+    height: auto;
+    overflow: visible;
+}
+
+.dialed-fw-slice {
+    cursor: pointer;
+    outline: none;
+}
+
+.dialed-fw-slice path {
+    fill: var(--dialed-flavor-0);
+    opacity: 0.28;
+    stroke: var(--dialed-fw-gap, var(--dialed-surface, var(--colorNeutralBackground1)));
+    stroke-width: 8;
+    stroke-linejoin: round;
+}
+
+.dialed-fw-slice text {
+    fill: var(--colorNeutralForeground1);
+    font-size: 12.5px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.dialed-fw-slice.on path {
+    opacity: 1;
+}
+
+.dialed-fw-slice.on text {
+    fill: #fff;
+}
+
+.dialed-fw-slice:focus-visible path {
+    stroke: var(--colorStrokeFocus2);
+    stroke-width: 3;
+}
+
+.dialed-fw-core {
+    fill: var(--colorBrandBackground);
+}
+
+.dialed-fw-centre {
+    cursor: pointer;
+    outline: none;
+}
+
+.dialed-fw-centre:focus-visible .dialed-fw-core {
+    stroke: var(--colorStrokeFocus2);
+    stroke-width: 3;
+}
+
+.dialed-fw-core-title {
+    fill: var(--colorNeutralForegroundOnBrand);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.dialed-fw-core-sub {
+    fill: var(--colorNeutralForegroundOnBrand);
+    font-size: 9px;
+}
+
+.dialed-fw-slice.dialed-fw-0 path,
+.dialed-fw-core.dialed-fw-0 {
+    fill: var(--dialed-flavor-0);
+}
+
+.dialed-fw-slice.dialed-fw-1 path,
+.dialed-fw-core.dialed-fw-1 {
+    fill: var(--dialed-flavor-1);
+}
+
+.dialed-fw-slice.dialed-fw-2 path,
+.dialed-fw-core.dialed-fw-2 {
+    fill: var(--dialed-flavor-2);
+}
+
+.dialed-fw-slice.dialed-fw-3 path,
+.dialed-fw-core.dialed-fw-3 {
+    fill: var(--dialed-flavor-3);
+}
+
+.dialed-fw-slice.dialed-fw-4 path,
+.dialed-fw-core.dialed-fw-4 {
+    fill: var(--dialed-flavor-4);
+}
+
+.dialed-fw-slice.dialed-fw-5 path,
+.dialed-fw-core.dialed-fw-5 {
+    fill: var(--dialed-flavor-5);
+}
+
+.dialed-fw-slice.dialed-fw-6 path,
+.dialed-fw-core.dialed-fw-6 {
+    fill: var(--dialed-flavor-6);
+}
+
+.dialed-fw-slice.dialed-fw-7 path,
+.dialed-fw-core.dialed-fw-7 {
+    fill: var(--dialed-flavor-7);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-fw-slices {
+        transform-origin: 155px 155px;
+        animation: dialed-flavor-zoom 0.35s ease-out;
+    }
+}
+
+@keyframes dialed-flavor-zoom {
+    from { opacity: 0; transform: scale(0.55); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ---- Card lists: Beans and History rows as soft cards ------------------------------------------------ */
+
+.dialed-list-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--dialed-space-3);
+}
+
+.dialed-list-cards .dialed-row {
+    padding: var(--dialed-space-3) var(--dialed-space-4);
+    border: 0;
+}
+
+.dialed-cups-word {
+    margin: var(--dialed-space-1) 0 0;
+    text-align: center;
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-weight: 700;
+    color: var(--colorBrandForeground1);
+}
+
+
+/* In detail headers the cup badge is bigger. */
+.dialed-brew-summary-text .dialed-rating-badge,
+.dialed-bean-hero .dialed-rating-badge {
+    font-size: var(--dialed-text-l);
+}
+
+.dialed-brew-summary-text .dialed-rating-badge svg,
+.dialed-bean-hero .dialed-rating-badge svg {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+/* History day headings: a big serif day with the date and the number of brews next to it, on the page colour. */
+.dialed-day-title {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--dialed-space-2);
+    margin-inline: 0;
+    padding: var(--dialed-space-2) var(--dialed-space-4);
+    border-bottom: 0;
+    border-radius: var(--dialed-radius-l, 20px);
+}
+
+.dialed-quick-notes {
+    --dialed-fw-gap: var(--colorNeutralBackground1);
+    padding: var(--dialed-space-3);
+    border-radius: var(--dialed-radius-xl, 24px);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-list-cards .dialed-row-title {
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-l);
+}
+
+/* A bean's roast colour runs down the edge of its card. */
+.dialed-bean-row .dialed-row {
+    border-inline-start: 0.375rem solid var(--dialed-mood-start);
+}
+
+
+
+.dialed-day-title strong {
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-xl);
+    font-weight: 700;
+    color: var(--colorNeutralForeground1);
+}
+
+.dialed-day-sub {
+    font-size: var(--dialed-text-s);
+    font-weight: 400;
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-quick-notes summary {
+    min-height: var(--dialed-touch-target);
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ---- Empty-state drawings ------------------------------------------------------------------------- */
+
+.dialed-empty-art {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-art {
+    --dialed-art-stroke: var(--colorBrandForeground1);
+    overflow: visible;
+}
+
+.dialed-art .dialed-art-shadow {
+    fill: var(--colorNeutralForeground3);
+    opacity: 0.18;
+}
+
+.dialed-art .dialed-art-body,
+.dialed-art .dialed-art-flap {
+    fill: var(--colorNeutralBackground1);
+    stroke: var(--dialed-art-stroke);
+    stroke-width: 5;
+    stroke-linejoin: round;
+}
+
+.dialed-art .dialed-art-flap {
+    fill: var(--colorBrandBackground2);
+}
+
+.dialed-art .dialed-art-line,
+.dialed-art .dialed-art-saucer,
+.dialed-art .dialed-art-steam,
+.dialed-art .dialed-art-write {
+    fill: none;
+    stroke: var(--dialed-art-stroke);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dialed-art .dialed-art-steam,
+.dialed-art .dialed-art-write {
+    stroke: var(--colorBrandStroke2, var(--dialed-art-stroke));
+    opacity: 0.8;
+}
+
+.dialed-art .dialed-art-bean ellipse,
+.dialed-art .dialed-art-bean-fill {
+    fill: var(--colorBrandBackground);
+}
+
+.dialed-art .dialed-art-bean path {
+    fill: none;
+    stroke: var(--colorNeutralBackground1);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.dialed-art .dialed-art-bar1,
+.dialed-art .dialed-art-bar2,
+.dialed-art .dialed-art-bar3 {
+    transform-box: fill-box;
+    transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-art .dialed-art-steam {
+        animation: dialed-art-steam 2.8s ease-out infinite;
+    }
+
+    .dialed-art .dialed-art-bean {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: dialed-art-wobble 3s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-write {
+        stroke-dasharray: 44;
+        animation: dialed-art-write 3.6s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-line2 {
+        animation-delay: 0.5s;
+    }
+
+    .dialed-art .dialed-art-line3 {
+        animation-delay: 1s;
+    }
+
+    .dialed-art .dialed-art-cup-left {
+        transform-box: fill-box;
+        transform-origin: bottom right;
+        animation: dialed-art-clink-left 2.6s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-cup-right {
+        transform-box: fill-box;
+        transform-origin: bottom left;
+        animation: dialed-art-clink-right 2.6s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-lens {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: dialed-art-search 3.4s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-float {
+        animation: dialed-art-float 3.2s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-bar1,
+    .dialed-art .dialed-art-bar2,
+    .dialed-art .dialed-art-bar3 {
+        animation: dialed-art-grow 3s ease-in-out infinite;
+    }
+
+    .dialed-art .dialed-art-bar2 {
+        animation-delay: 0.25s;
+    }
+
+    .dialed-art .dialed-art-bar3 {
+        animation-delay: 0.5s;
+    }
+}
+
+@keyframes dialed-art-steam {
+    0% { opacity: 0; transform: translateY(6px); }
+    45% { opacity: 0.9; }
+    100% { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes dialed-art-wobble {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-12deg); }
+    75% { transform: rotate(12deg); }
+}
+
+@keyframes dialed-art-write {
+    0% { stroke-dashoffset: 44; }
+    50%, 100% { stroke-dashoffset: 0; }
+}
+
+@keyframes dialed-art-clink-left {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(4deg); }
+}
+
+@keyframes dialed-art-clink-right {
+    0%, 100% { transform: rotate(8deg); }
+    50% { transform: rotate(-4deg); }
+}
+
+@keyframes dialed-art-search {
+    0%, 100% { transform: translate(-6px, -4px) rotate(-6deg); }
+    50% { transform: translate(8px, 6px) rotate(6deg); }
+}
+
+@keyframes dialed-art-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes dialed-art-grow {
+    0%, 100% { transform: scaleY(0.55); }
+    50% { transform: scaleY(1); }
+}
+
+
+/* Warm polish: More, Settings and People (cream and latte palette). */
+.dialed-card {
+    background: color-mix(in srgb, #e8cfa5 6%, var(--colorNeutralBackground1, #fff));
+}
+
+.dialed-more-group .dialed-list {
+    border-radius: var(--dialed-radius-xl);
+    background: color-mix(in srgb, #e8cfa5 6%, var(--colorNeutralBackground1, #fff));
+    box-shadow: var(--dialed-shadow-card);
+    padding: 0 var(--dialed-space-3);
+    overflow: hidden;
+}
+
+.dialed-more-icon,
+.dialed-settings-group-icon {
+    background: color-mix(in srgb, #3b2616 88%, var(--colorNeutralBackground1, #fff));
+    color: #e9c99b;
+}
+
+.dialed-settings-group-icon {
+    border-radius: 50%;
+}
+
+.dialed-settings-group-header h2,
+.dialed-friend-code h2,
+.dialed-people-section h2 {
+    font-family: var(--dialed-font-display);
+}
+
+.dialed-settings-card {
+    border-radius: var(--dialed-radius-xl);
+    box-shadow: var(--dialed-shadow-card);
+}
+
+.dialed-friend-code {
+    border-radius: var(--dialed-radius-xl);
+    box-shadow: var(--dialed-shadow-raised);
+}
+
+.dialed-friend-code .dialed-code {
+    border: 2px dashed #c9a77c;
+    background: color-mix(in srgb, #c9a77c 28%, var(--colorNeutralBackground1, #fff));
+    color: var(--colorNeutralForeground1, #2e2118);
+}
