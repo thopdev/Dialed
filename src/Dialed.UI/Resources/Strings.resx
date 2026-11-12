@@ -826,6 +826,12 @@
   <data name="RoastStyle_Espresso" xml:space="preserve"><value>Espresso</value></data>
   <data name="RoastStyle_Filter" xml:space="preserve"><value>Filter</value></data>
   <data name="RoastStyle_Omni" xml:space="preserve"><value>Omni</value></data>
+  <data name="RoastTip_After" xml:space="preserve"><value>This bag is older than your best brews of this bean</value></data>
+  <data name="RoastTip_Before" xml:space="preserve"><value>This bag is younger than your best brews of this bean</value></data>
+  <data name="RoastTip_Inside" xml:space="preserve"><value>This bag is in the age range of your best brews of this bean</value></data>
+  <data name="RoastTip_Past" xml:space="preserve"><value>Your best brews were up to {0} days younger. Try a finer grind if it tastes flat.</value></data>
+  <data name="RoastTip_Range" xml:space="preserve"><value>Your best brews (rated 4 stars or more, {3}) were {0} to {1} days after roasting, most around day {2}.</value></data>
+  <data name="RoastTip_Wait" xml:space="preserve"><value>It may still improve: your best brews started {0} days from now.</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="Scan_Again" xml:space="preserve"><value>Scan again</value></data>
   <data name="Scan_BagHeading" xml:space="preserve"><value>Bag</value></data>

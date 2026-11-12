@@ -826,6 +826,12 @@
   <data name="RoastStyle_Espresso" xml:space="preserve"><value>Espresso</value></data>
   <data name="RoastStyle_Filter" xml:space="preserve"><value>Filter</value></data>
   <data name="RoastStyle_Omni" xml:space="preserve"><value>Omni</value></data>
+  <data name="RoastTip_After" xml:space="preserve"><value>Deze zak is ouder dan je beste brews van deze boon</value></data>
+  <data name="RoastTip_Before" xml:space="preserve"><value>Deze zak is jonger dan je beste brews van deze boon</value></data>
+  <data name="RoastTip_Inside" xml:space="preserve"><value>Deze zak zit in de leeftijd van je beste brews van deze boon</value></data>
+  <data name="RoastTip_Past" xml:space="preserve"><value>Je beste brews waren tot {0} dagen jonger. Probeer een fijnere maling als hij flets smaakt.</value></data>
+  <data name="RoastTip_Range" xml:space="preserve"><value>Je beste brews (4 sterren of meer, {3}) waren {0} tot {1} dagen na het roosteren, de meeste rond dag {2}.</value></data>
+  <data name="RoastTip_Wait" xml:space="preserve"><value>Hij kan nog verbeteren: je beste brews begonnen over {0} dagen.</value></data>
   <data name="Save" xml:space="preserve"><value>Opslaan</value></data>
   <data name="Scan_Again" xml:space="preserve"><value>Opnieuw scannen</value></data>
   <data name="Scan_BagHeading" xml:space="preserve"><value>Zak</value></data>
