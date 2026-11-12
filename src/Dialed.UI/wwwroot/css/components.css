@@ -4461,3 +4461,55 @@ a.dialed-banner {
     50% { transform: scaleY(1); }
 }
 
+
+/* Warm polish: More, Settings and People. */
+.dialed-more-group .dialed-list {
+    border-radius: var(--dialed-radius-xl);
+    background: var(--colorNeutralBackground1, #fff);
+    box-shadow: var(--dialed-shadow-card);
+    padding: 0 var(--dialed-space-3);
+    overflow: hidden;
+}
+
+.dialed-more-icon {
+    background: var(--dialed-roast-light-start, #f1dcc0);
+    color: var(--dialed-roast-dark-start, #6b4426);
+}
+
+.dialed-more-group:nth-of-type(2n) .dialed-more-icon {
+    background: var(--dialed-roast-medium-start, #e3bf8f);
+}
+
+.dialed-settings-group-header h2 {
+    font-family: var(--dialed-font-display);
+}
+
+.dialed-settings-group-icon {
+    background: var(--dialed-roast-light-start, #f1dcc0);
+    color: var(--dialed-roast-dark-start, #6b4426);
+    border-radius: 50%;
+}
+
+.dialed-settings-card {
+    border-radius: var(--dialed-radius-xl);
+    box-shadow: var(--dialed-shadow-card);
+}
+
+.dialed-friend-code {
+    border-radius: var(--dialed-radius-xl);
+    box-shadow: var(--dialed-shadow-raised);
+}
+
+.dialed-friend-code h2 {
+    font-family: var(--dialed-font-display);
+}
+
+.dialed-friend-code .dialed-code {
+    border: 2px dashed var(--colorNeutralStroke1, #d1d1d1);
+    background: var(--dialed-roast-light-start, #f1dcc0);
+    color: var(--dialed-roast-dark-start, #4a2c17);
+}
+
+.dialed-people-section h2 {
+    font-family: var(--dialed-font-display);
+}
