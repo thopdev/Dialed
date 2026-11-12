@@ -46,7 +46,10 @@ public sealed class RecipesHistoryPolishTests : UiTestContext
         var page = Render<History>();
 
         var days = page.FindAll(".dialed-day-group");
-        days.Select(d => d.QuerySelector("h2")!.TextContent).ShouldBe(["Today", "Yesterday", older.ToString("dddd d MMMM")]);
+        days.Select(d => d.QuerySelector("h2 strong")!.TextContent).ShouldBe(["Today", "Yesterday", older.ToString("dddd d MMMM")]);
+        days[0].QuerySelector(".dialed-day-sub")!.TextContent.ShouldBe($"{now.ToString("ddd d MMM")} · 2 brews");
+        days[1].QuerySelector(".dialed-day-sub")!.TextContent.ShouldEndWith("· 1 brew");
+        days[2].QuerySelector(".dialed-day-sub")!.TextContent.ShouldBe("1 brew");
         days[0].QuerySelectorAll(".dialed-row").Length.ShouldBe(2);
         days[0].GetAttribute("aria-labelledby").ShouldBe(days[0].QuerySelector("h2")!.Id);
         page.Find("#history-count").TextContent.ShouldBe("4 brews");
