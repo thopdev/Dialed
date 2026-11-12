@@ -1,0 +1,40 @@
+@using System.Globalization
+@using Dialed.Client.Preferences
+@using Dialed.Domain.Inventory
+@inject IStringLocalizer<Strings> L
+@inject UnitFormatter Units
+
+@* The life of a bean's bags as a timeline (#journey): bought, roasted, peak window, first brew, finished. Steps still ahead of today are muted. *@
+<div id="@Id" class="dialed-journey-bags">
+    @foreach (var bag in Bags)
+    {
+        <section class="dialed-journey-bag" data-bag="@bag.Key">
+            <h3>@string.Format(L["Journey_Bag"].Value, Units.Weight(bag.First().BagWeightG))</h3>
+            <ol class="dialed-journey">
+                @foreach (var step in bag)
+                {
+                    <li class="dialed-journey-step @(step.Upcoming ? "upcoming" : "")" data-kind="@step.Kind">
+                        <span class="dialed-journey-dot" aria-hidden="true"></span>
+                        <span class="dialed-journey-text">
+                            <span class="dialed-journey-what">@L[$"Journey_{step.Kind}"]</span>
+                            <span class="dialed-muted">
+                                <time datetime="@step.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@step.Date.ToString("d MMM yyyy", CultureInfo.CurrentCulture)</time>@(step.Upcoming ? $" · {L["Journey_Upcoming"].Value}" : "")
+                            </span>
+                        </span>
+                    </li>
+                }
+            </ol>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<JourneyEvent> Events { get; set; } = [];
+
+    /// <summary>One group per bag, the bag that started earliest first; the steps in each stay in date order.</summary>
+    private IEnumerable<IGrouping<string, JourneyEvent>> Bags => Events.GroupBy(e => e.BagId).OrderBy(g => g.Min(e => e.Date));
+
+    [Parameter]
+    public string Id { get; set; } = "bean-journey";
+}
