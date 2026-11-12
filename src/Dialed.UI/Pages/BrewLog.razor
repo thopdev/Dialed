@@ -44,10 +44,15 @@ else
     {
         <section id="quick-log" class="dialed-quick-log" aria-labelledby="quick-log-title">
             <h2 id="quick-log-title" class="dialed-quick-log-title">@L["QuickLog_Title"]</h2>
-            <div class="dialed-field">
-                <label>@L["Bean_Rating"]</label>
-                <StarRating @bind-Value="quickRating" />
+            <div id="quick-log-summary" class="dialed-quick-summary">
+                <span class="dialed-quick-summary-title">@QuickSummaryTitle</span>
+                <span class="dialed-muted">@QuickSummaryDetail</span>
             </div>
+            <div class="dialed-quick-rating">
+                <StarRating @bind-Value="quickRating" />
+                <p id="quick-rating-word" class="dialed-quick-rating-word" aria-live="polite">@(quickRating > 0 ? L[$"QuickLog_Rating{quickRating}"].Value : L["QuickLog_RatingPrompt"].Value)</p>
+            </div>
+            <h3 class="dialed-quick-subtitle">@L["QuickLog_Stood"]</h3>
             <div class="dialed-quick-taste" role="group" aria-label="@L["Brew_Taste"]">
                 @foreach (var axis in QuickAxes)
                 {
@@ -58,9 +63,9 @@ else
                     </div>
                 }
             </div>
-            <div class="dialed-form-actions">
-                <button id="quick-log-save" type="button" class="dialed-button dialed-button-primary" @onclick="QuickSaveAsync">@L["Save"]</button>
+            <div class="dialed-form-actions dialed-sticky-actions">
                 <button id="quick-log-more" type="button" class="dialed-button" @onclick="ShowAll">@L["QuickLog_More"]</button>
+                <button id="quick-log-save" type="button" class="dialed-button dialed-button-primary" @onclick="QuickSaveAsync">@L["Save"]</button>
             </div>
         </section>
     }
@@ -110,6 +115,22 @@ else
     private int strength;
     private int body;
     private int sweetness;
+
+    private string QuickSummaryTitle => BrewMethodCatalog.Default.Find(initial!.MethodCode)?.Name ?? initial.MethodCode;
+
+    private string QuickSummaryDetail
+    {
+        get
+        {
+            var parts = new List<string> { initial!.WaterG is { } water ? $"{initial.DoseG:0.#} g → {water:0.#} g" : $"{initial.DoseG:0.#} g" };
+            if (initial.TimeS is { } seconds and > 0)
+            {
+                parts.Add($"{seconds / 60}:{seconds % 60:00}");
+            }
+
+            return string.Join(" · ", parts);
+        }
+    }
 
     private bool QuickMode => !showAll && Quick == "1" && initial is { DoseG: > 0m };
 

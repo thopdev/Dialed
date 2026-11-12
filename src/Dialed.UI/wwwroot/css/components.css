@@ -3540,5 +3540,78 @@ a.dialed-banner {
 
 .dialed-quick-pair {
     display: flex;
+    grid-column: 1 / -1;
     gap: var(--dialed-space-2);
+    padding: var(--dialed-space-1);
+    border-radius: var(--borderRadiusXLarge);
+    background: var(--colorNeutralBackground6);
+}
+
+.dialed-quick-pair .dialed-chip {
+    flex: 1;
+    justify-content: center;
+    min-height: 3rem;
+    border-radius: var(--borderRadiusLarge);
+    border-color: transparent;
+    background: transparent;
+    font-size: var(--dialed-text-m);
+    font-weight: 600;
+}
+
+.dialed-quick-pair .dialed-chip.selected {
+    background: var(--colorBrandBackground);
+    color: var(--colorNeutralForegroundOnBrand);
+}
+
+.dialed-quick-summary {
+    display: grid;
+    gap: var(--dialed-space-1);
+    padding: var(--dialed-space-3);
+    border-radius: var(--borderRadiusXLarge);
+    background: var(--colorNeutralBackground6);
+}
+
+.dialed-quick-summary-title {
+    font-weight: 600;
+}
+
+.dialed-quick-rating {
+    display: grid;
+    justify-items: center;
+    gap: var(--dialed-space-1);
+}
+
+.dialed-quick-rating .dialed-stars {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.dialed-quick-rating .dialed-star {
+    width: 3.5rem;
+    height: 3.5rem;
+}
+
+.dialed-quick-rating .dialed-star svg {
+    width: 3rem !important;
+    height: 3rem !important;
+}
+
+.dialed-quick-rating .dialed-star.on {
+    color: var(--colorBrandForeground1);
+}
+
+.dialed-quick-rating-word {
+    margin: 0;
+    min-height: 1.5rem;
+    font-weight: 700;
+    font-size: var(--dialed-text-l);
+    color: var(--colorBrandForeground1);
+}
+
+.dialed-quick-subtitle {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 500;
+    color: var(--colorNeutralForeground2);
 }
