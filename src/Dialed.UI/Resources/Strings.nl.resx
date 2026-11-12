@@ -158,6 +158,19 @@
   <data name="Barcode_UnknownTitle" xml:space="preserve"><value>Nieuwe barcode</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Bewaard in Dialed</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Deel een afbeelding van deze boon</value></data>
+  <data name="BeanCompare_Balanced" xml:space="preserve"><value>In balans</value></data>
+  <data name="BeanCompare_Brews" xml:space="preserve"><value>Brews</value></data>
+  <data name="BeanCompare_Good" xml:space="preserve"><value>4 sterren of meer</value></data>
+  <data name="BeanCompare_Hint" xml:space="preserve"><value>Smaak laat zien naar welke kant elke boon neigt in de brews waarbij iets niet klopte (daarvoor zijn twee van zulke brews nodig). Rijen die verschillen zijn gemarkeerd.</value></data>
+  <data name="BeanCompare_Last" xml:space="preserve"><value>Laatst gezet</value></data>
+  <data name="BeanCompare_Method" xml:space="preserve"><value>Favoriete methode</value></data>
+  <data name="BeanCompare_NotFound" xml:space="preserve"><value>Een van deze bonen bestaat niet meer.</value></data>
+  <data name="BeanCompare_Page" xml:space="preserve"><value>Bonen vergelijken</value></data>
+  <data name="BeanCompare_Pick" xml:space="preserve"><value>Kies een boon</value></data>
+  <data name="BeanCompare_Rating" xml:space="preserve"><value>Gemiddelde beoordeling</value></data>
+  <data name="BeanCompare_RatingValue" xml:space="preserve"><value>{0} ★ ({1} beoordeeld)</value></data>
+  <data name="BeanCompare_Title" xml:space="preserve"><value>Vergelijk met een andere boon</value></data>
+  <data name="BeanCompare_With" xml:space="preserve"><value>Vergelijk met</value></data>
   <data name="BeanForm_SectionBean" xml:space="preserve"><value>Boon</value></data>
   <data name="BeanForm_SectionOrigin" xml:space="preserve"><value>Herkomst</value></data>
   <data name="BeanForm_SectionRoast" xml:space="preserve"><value>Branding</value></data>

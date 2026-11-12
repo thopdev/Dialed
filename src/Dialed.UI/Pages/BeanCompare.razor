@@ -1,0 +1,130 @@
+@page "/beans/compare/{FirstId}/{SecondId}"
+@using System.Globalization
+@using Dialed.Client.Data
+@using Dialed.Domain.BrewMethods
+@using Dialed.Domain.Model
+@using Dialed.Domain.Statistics
+@inject IStringLocalizer<Strings> L
+@inject IRepository<Bean> BeanStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Brew> BrewStore
+
+<PageTitle>@L["BeanCompare_Page"]</PageTitle>
+
+@* Two beans side by side: how often you brewed them, how they rated, the favourite method and which way each tends to taste. *@
+<PageHeader Title="@L["BeanCompare_Page"]" BackHref="@($"beans/{FirstId}")" />
+
+@if (!loaded)
+{
+    <Loading IsLoading="true" />
+}
+else if (first is null || second is null)
+{
+    <EmptyState Message="@L["BeanCompare_NotFound"]" />
+}
+else
+{
+    <table id="bean-compare-table" class="dialed-compare dialed-compare-brews">
+        <thead>
+            <tr>
+                <th><span class="dialed-visually-hidden">@L["History_ParameterColumn"]</span></th>
+                <th scope="col"><a id="bean-compare-first" href="@($"beans/{first.Id}")">@first.Name</a></th>
+                <th scope="col"><a id="bean-compare-second" href="@($"beans/{second.Id}")">@second.Name</a></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-row="brews" class="@Differs(a.Brews, b.Brews)">
+                <th scope="row">@L["BeanCompare_Brews"]</th>
+                <td>@a.Brews</td>
+                <td>@b.Brews</td>
+            </tr>
+            <tr data-row="rating" class="@Differs(a.AverageRating, b.AverageRating)">
+                <th scope="row">@L["BeanCompare_Rating"]</th>
+                <td>@Rating(a)</td>
+                <td>@Rating(b)</td>
+            </tr>
+            <tr data-row="good" class="@Differs(a.FourStarOrBetter, b.FourStarOrBetter)">
+                <th scope="row">@L["BeanCompare_Good"]</th>
+                <td>@a.FourStarOrBetter</td>
+                <td>@b.FourStarOrBetter</td>
+            </tr>
+            <tr data-row="method" class="@Differs(a.FavouriteMethod, b.FavouriteMethod)">
+                <th scope="row">@L["BeanCompare_Method"]</th>
+                <td>@Method(a)</td>
+                <td>@Method(b)</td>
+            </tr>
+            <tr data-row="last" class="@Differs(a.LastBrewed?.Date, b.LastBrewed?.Date)">
+                <th scope="row">@L["BeanCompare_Last"]</th>
+                <td>@Last(a)</td>
+                <td>@Last(b)</td>
+            </tr>
+            @foreach (var axis in Enum.GetValues<TasteAxis>())
+            {
+                <tr data-row="@($"taste-{axis}".ToLowerInvariant())" class="@Differs(Lean(a, axis), Lean(b, axis))">
+                    <th scope="row">@L[$"Taste_{axis}"]</th>
+                    <td>@LeanText(a, axis)</td>
+                    <td>@LeanText(b, axis)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="dialed-muted">@L["BeanCompare_Hint"]</p>
+}
+
+@code {
+    private bool loaded;
+    private Bean? first;
+    private Bean? second;
+    private BeanSummary a = default!;
+    private BeanSummary b = default!;
+
+    [Parameter]
+    public string FirstId { get; set; } = "";
+
+    [Parameter]
+    public string SecondId { get; set; } = "";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var beans = await BeanStore.ListAsync();
+        first = beans.FirstOrDefault(x => !x.Deleted && x.Id == FirstId);
+        second = beans.FirstOrDefault(x => !x.Deleted && x.Id == SecondId);
+        if (first is not null && second is not null)
+        {
+            var bags = await BagStore.ListAsync();
+            var brews = await BrewStore.ListAsync();
+            a = BeanSummaries.Build(first.Id, bags, brews);
+            b = BeanSummaries.Build(second.Id, bags, brews);
+        }
+
+        loaded = true;
+    }
+
+    private static string? Differs(object? x, object? y) => Equals(x, y) ? null : "differs";
+
+    private string Rating(BeanSummary s) => s.AverageRating is { } r ? string.Format(L["BeanCompare_RatingValue"].Value, r.ToString("0.0", CultureInfo.CurrentCulture), s.Rated) : "–";
+
+    private string Method(BeanSummary s) => s.FavouriteMethod is { } code ? BrewMethodCatalog.Default.Find(code)?.Name ?? code : "–";
+
+    private string Last(BeanSummary s) => s.LastBrewed is { } at ? at.ToLocalTime().ToString("d MMM yyyy", CultureInfo.CurrentCulture) : "–";
+
+    private static int? Lean(BeanSummary s, TasteAxis axis) =>
+        s.Taste?.Axes.FirstOrDefault(x => x.Axis == axis) is { IsNoticeable: true } lean ? (lean.Average < 0 ? -1 : 1) : s.Taste is null ? null : 0;
+
+    private string LeanText(BeanSummary s, TasteAxis axis)
+    {
+        if (Lean(s, axis) is not { } lean)
+        {
+            return "–";
+        }
+
+        var (low, high) = axis switch
+        {
+            TasteAxis.Acidity => (L["Taste_Sour"].Value, L["Taste_Bitter"].Value),
+            TasteAxis.Strength => (L["Taste_Weak"].Value, L["Taste_Strong"].Value),
+            TasteAxis.Body => (L["Taste_Thin"].Value, L["Taste_Heavy"].Value),
+            _ => (L["Taste_Flat"].Value, L["Taste_Sweet"].Value),
+        };
+        return lean == 0 ? L["BeanCompare_Balanced"].Value : lean < 0 ? low : high;
+    }
+}
