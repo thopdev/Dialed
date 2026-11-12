@@ -1,0 +1,104 @@
+@using Dialed.Client.Backup
+@inject BackupService Backup
+@inject IStringLocalizer<Strings> L
+
+@* A backup file kept on this device: works offline and without an account. Restoring only adds what is missing. *@
+<div id="backup-panel">
+    <h3>@L["Backup_Title"]</h3>
+    <p class="dialed-muted">@L["Backup_Intro"]</p>
+    <div class="dialed-form-actions">
+        <button id="backup-export" type="button" class="dialed-button" disabled="@busy" @onclick="ExportAsync">@L["Backup_Export"]</button>
+    </div>
+
+    <div class="dialed-field">
+        <label for="backup-file">@L["Backup_Choose"]</label>
+        <InputFile id="backup-file" accept=".json,application/json" OnChange="LoadAsync" />
+    </div>
+
+    @if (plan is not null)
+    {
+        <p id="backup-counts">@L["Backup_Counts", plan.Total, plan.AlreadyThere]</p>
+        @if (plan.Unreadable > 0)
+        {
+            <p class="dialed-muted">@L["Backup_Unreadable", plan.Unreadable]</p>
+        }
+
+        <div class="dialed-form-actions">
+            <button id="backup-restore" type="button" class="dialed-button dialed-button-primary" disabled="@(busy || plan.Total == 0)" @onclick="RestoreAsync">@L["Backup_Restore"]</button>
+        </div>
+    }
+
+    @if (error is not null)
+    {
+        <p id="backup-error" role="alert">@error</p>
+    }
+
+    @if (message is not null)
+    {
+        <p id="backup-message" role="status">@message</p>
+    }
+</div>
+
+@code {
+    private const long MaxBytes = 20 * 1024 * 1024;
+
+    private bool busy;
+    private RestorePlan? plan;
+    private string? message;
+    private string? error;
+
+    private async Task ExportAsync()
+    {
+        busy = true;
+        message = error = null;
+        try
+        {
+            if (await Backup.ExportAsync())
+            {
+                message = L["Backup_Exported"];
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task LoadAsync(InputFileChangeEventArgs e)
+    {
+        plan = null;
+        message = error = null;
+        try
+        {
+            await using var stream = e.File.OpenReadStream(MaxBytes);
+            using var buffer = new MemoryStream();
+            await stream.CopyToAsync(buffer);
+            plan = await Backup.PlanAsync(buffer.ToArray());
+            error = plan is null ? L["Backup_NotABackup"].Value : null;
+        }
+        catch (IOException)
+        {
+            error = L["Backup_NotABackup"];
+        }
+    }
+
+    private async Task RestoreAsync()
+    {
+        if (plan is null)
+        {
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Backup.RestoreAsync(plan);
+            message = L["Backup_Done", result.Restored];
+            plan = null;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

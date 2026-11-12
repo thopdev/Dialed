@@ -5,6 +5,7 @@
 @using Dialed.Client.Preferences
 @using Dialed.Domain.Inventory
 @using Dialed.Domain.Model
+@using Dialed.Domain.Statistics
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Bag> BagStore
@@ -150,6 +151,10 @@
                     @if (current.PriceCents is { } priceCents)
                     {
                         <StatTile Value="@Price(priceCents, current.Currency)" Label="@L["Bag_PriceShort"]" />
+                        @if (CupCost.AverageForBag(current, brews) is { } perCup)
+                        {
+                            <StatTile Value="@Price(perCup, current.Currency)" Label="@L["Bag_PerCup"]" />
+                        }
                     }
                 </div>
                 @if (current.Status != BagStatus.Finished)

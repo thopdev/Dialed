@@ -75,6 +75,16 @@
   <data name="App_Name" xml:space="preserve"><value>Dialed</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>Krijg elke kop perfect ingesteld.</value></data>
   <data name="Back" xml:space="preserve"><value>Terug</value></data>
+  <data name="Backup_Choose" xml:space="preserve"><value>Back-upbestand</value></data>
+  <data name="Backup_Counts" xml:space="preserve"><value>{0} items worden toegevoegd, {1} al aanwezig.</value></data>
+  <data name="Backup_Done" xml:space="preserve"><value>{0} items teruggezet.</value></data>
+  <data name="Backup_Export" xml:space="preserve"><value>Back-up bewaren</value></data>
+  <data name="Backup_Exported" xml:space="preserve"><value>Back-up bewaard.</value></data>
+  <data name="Backup_Intro" xml:space="preserve"><value>Bewaar alles wat je hebt gemaakt als één bestand op dit apparaat, ook offline. Terugzetten voegt alleen toe wat ontbreekt en wijzigt niets. Foto's zitten er niet in.</value></data>
+  <data name="Backup_NotABackup" xml:space="preserve"><value>Dit is geen Dialed-back-upbestand.</value></data>
+  <data name="Backup_Restore" xml:space="preserve"><value>Terugzetten</value></data>
+  <data name="Backup_Title" xml:space="preserve"><value>Back-up en terugzetten</value></data>
+  <data name="Backup_Unreadable" xml:space="preserve"><value>{0} items konden niet worden gelezen en zijn overgeslagen.</value></data>
   <data name="BagForm_SectionBag" xml:space="preserve"><value>Zak</value></data>
   <data name="BagForm_SectionPurchase" xml:space="preserve"><value>Aankoop</value></data>
   <data name="BagForm_SectionStorage" xml:space="preserve"><value>Bewaren</value></data>
@@ -108,6 +118,7 @@
   <data name="Bag_OfferFinish" xml:space="preserve"><value>Er is niets meer over in deze zak. Markeren als op?</value></data>
   <data name="Bag_Open" xml:space="preserve"><value>Openen</value></data>
   <data name="Bag_OpenedOn" xml:space="preserve"><value>Geopend op</value></data>
+  <data name="Bag_PerCup" xml:space="preserve"><value>Per kop</value></data>
   <data name="Bag_Price" xml:space="preserve"><value>Prijs (EUR)</value></data>
   <data name="Bag_PriceShort" xml:space="preserve"><value>Prijs</value></data>
   <data name="Bag_PurchasedOn" xml:space="preserve"><value>Gekocht op</value></data>
@@ -449,6 +460,7 @@
   <data name="Grind_Step" xml:space="preserve"><value>Gebruik stappen van {0}.</value></data>
   <data name="History_Actual" xml:space="preserve"><value>Gezet</value></data>
   <data name="History_Balanced" xml:space="preserve"><value>Gebalanceerd</value></data>
+  <data name="History_Cost" xml:space="preserve"><value>De koffie in deze brew kostte ongeveer {0}.</value></data>
   <data name="History_Count" xml:space="preserve"><value>{0} keer gezet</value></data>
   <data name="History_CountOne" xml:space="preserve"><value>{0} keer gezet</value></data>
   <data name="History_DeleteBody" xml:space="preserve"><value>De koffie gaat terug in de zak. Dit kan niet ongedaan worden gemaakt.</value></data>
@@ -926,6 +938,8 @@
   <data name="Shot_TooLong" xml:space="preserve"><value>Te lang</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Te kort</value></data>
   <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} brews</value></data>
+  <data name="Stats_CupCost" xml:space="preserve"><value>Kosten per kop</value></data>
+  <data name="Stats_CupCostHelp" xml:space="preserve"><value>De gemiddelde kosten van de koffie in een brew, uit de prijs en het gewicht van de zak. Melk en water tellen niet mee.</value></data>
   <data name="Stats_Empty" xml:space="preserve"><value>Zet wat koffie en je statistieken verschijnen hier.</value></data>
   <data name="Stats_Grind" xml:space="preserve"><value>Maalstand per molen</value></data>
   <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log bereidingen met een molen en maalstand om trends te zien.</value></data>

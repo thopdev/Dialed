@@ -75,6 +75,16 @@
   <data name="App_Name" xml:space="preserve"><value>Dialed</value></data>
   <data name="App_Tagline" xml:space="preserve"><value>Get every cup dialed in.</value></data>
   <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Backup_Choose" xml:space="preserve"><value>Backup file</value></data>
+  <data name="Backup_Counts" xml:space="preserve"><value>{0} records will be added, {1} already here.</value></data>
+  <data name="Backup_Done" xml:space="preserve"><value>Restored {0} records.</value></data>
+  <data name="Backup_Export" xml:space="preserve"><value>Save a backup</value></data>
+  <data name="Backup_Exported" xml:space="preserve"><value>Backup saved.</value></data>
+  <data name="Backup_Intro" xml:space="preserve"><value>Save everything you made as one file on this device, also offline. Restoring only adds what is missing and never changes what is here. Photos are not included.</value></data>
+  <data name="Backup_NotABackup" xml:space="preserve"><value>This is not a Dialed backup file.</value></data>
+  <data name="Backup_Restore" xml:space="preserve"><value>Restore</value></data>
+  <data name="Backup_Title" xml:space="preserve"><value>Backup and restore</value></data>
+  <data name="Backup_Unreadable" xml:space="preserve"><value>{0} records could not be read and are skipped.</value></data>
   <data name="BagForm_SectionBag" xml:space="preserve"><value>Bag</value></data>
   <data name="BagForm_SectionPurchase" xml:space="preserve"><value>Purchase</value></data>
   <data name="BagForm_SectionStorage" xml:space="preserve"><value>Storage</value></data>
@@ -108,6 +118,7 @@
   <data name="Bag_OfferFinish" xml:space="preserve"><value>Nothing is left in this bag. Mark it finished?</value></data>
   <data name="Bag_Open" xml:space="preserve"><value>Open</value></data>
   <data name="Bag_OpenedOn" xml:space="preserve"><value>Opened on</value></data>
+  <data name="Bag_PerCup" xml:space="preserve"><value>Per cup</value></data>
   <data name="Bag_Price" xml:space="preserve"><value>Price (EUR)</value></data>
   <data name="Bag_PriceShort" xml:space="preserve"><value>Price</value></data>
   <data name="Bag_PurchasedOn" xml:space="preserve"><value>Purchased on</value></data>
@@ -449,6 +460,7 @@
   <data name="Grind_Step" xml:space="preserve"><value>Use steps of {0}.</value></data>
   <data name="History_Actual" xml:space="preserve"><value>Brewed</value></data>
   <data name="History_Balanced" xml:space="preserve"><value>Balanced</value></data>
+  <data name="History_Cost" xml:space="preserve"><value>The coffee in this brew cost about {0}.</value></data>
   <data name="History_Count" xml:space="preserve"><value>{0} brews</value></data>
   <data name="History_CountOne" xml:space="preserve"><value>{0} brew</value></data>
   <data name="History_DeleteBody" xml:space="preserve"><value>The coffee goes back into the bag. This cannot be undone.</value></data>
@@ -926,6 +938,8 @@
   <data name="Shot_TooLong" xml:space="preserve"><value>Too long</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Too short</value></data>
   <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} brews</value></data>
+  <data name="Stats_CupCost" xml:space="preserve"><value>Cost per cup</value></data>
+  <data name="Stats_CupCostHelp" xml:space="preserve"><value>The average cost of the coffee in a brew, from the price and weight of its bag. Milk and water are not counted.</value></data>
   <data name="Stats_Empty" xml:space="preserve"><value>Brew some coffee and your statistics will show up here.</value></data>
   <data name="Stats_Grind" xml:space="preserve"><value>Grind setting per grinder</value></data>
   <data name="Stats_GrindEmpty" xml:space="preserve"><value>Log brews with a grinder and grind setting to see trends.</value></data>

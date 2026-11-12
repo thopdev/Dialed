@@ -66,6 +66,23 @@ else
         }
     </section>
 
+    @if (cupCosts.Count > 0)
+    {
+        <section id="stats-cup-cost">
+            <h2>@L["Stats_CupCost"]</h2>
+            <p class="dialed-muted">@L["Stats_CupCostHelp"]</p>
+            <ul class="dialed-list">
+                @foreach (var month in cupCosts)
+                {
+                    <li class="dialed-stat-row" data-month="@($"{month.Year}-{month.Month:00}-{month.Currency}")">
+                        <span>@(new DateTime(month.Year, month.Month, 1).ToString("MMMM yyyy", CultureInfo.CurrentCulture)) · @L.Count("Brews", month.Brews)</span>
+                        <span>@Money(month.AverageCents, month.Currency)</span>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+
     <Favourites Id="stats-origins" Title="@L["Stats_Origins"]" Items="stats.Origins" Href="@(o => $"beans?country={Uri.EscapeDataString(o.Name)}")" />
     <OriginMap Id="stats-origin-map" LinkToBeans="true" Origins="@([.. stats.Origins.Select(o => (o.Name, o.Brews))])" />
     <OriginPassport Countries="@([.. stats.Origins.Select(o => o.Name)])" />
@@ -105,6 +122,10 @@ else
 @code {
     private CoffeeStatistics? stats;
     private BrewCalendar calendar = BrewCalendar.Build([], [], DateOnly.FromDateTime(DateTime.Today));
+    private IReadOnlyList<CupCostMonth> cupCosts = [];
+
+    private static string Money(int cents, string currency) => $"{(cents / 100m).ToString("N2", CultureInfo.CurrentCulture)} {currency}";
+
     private MilestoneSummary milestones = MilestoneSummary.Calculate([], [], [], DateOnly.FromDateTime(DateTime.Today));
 
     private decimal BarWidth(decimal grams)
@@ -128,6 +149,7 @@ else
         var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
         calendar = BrewCalendar.Build(brews, bags, today);
         milestones = MilestoneSummary.Calculate(brews, bags, beans, today);
+        cupCosts = CupCost.PerMonth(brews, bags);
         stats = CoffeeStatistics.Calculate(brews, bags, beans, await VendorStore.ListAsync(), await EquipmentStore.ListAsync(), today);
     }
 
