@@ -28,7 +28,7 @@ else if (recipe is null)
 }
 else
 {
-    <div class="dialed-timer @StatusClass" data-mode="@(isEspresso ? "espresso" : "guided")" data-step-key="@stepKey">
+    <div class="dialed-timer @StatusClass @(focus ? "dialed-timer-focus" : "")" data-mode="@(isEspresso ? "espresso" : "guided")" data-step-key="@stepKey">
         <PageHeader Title="@recipe.Name" BackHref="@($"brew/{BagId}")" />
 
         <div id="timer-clock" class="dialed-timer-clock" role="timer" aria-label="@L["Timer_Elapsed"]">@Clock(elapsed)</div>
@@ -42,8 +42,8 @@ else
 
         @if (!isEspresso && timeline.Steps.Count > 0)
         {
-            <PourFigure Id="timer-figure" Fraction="@FigureFraction" Pattern="state.Current?.Pattern" Pouring="@(running && !state.IsFinished && state.Current is { Kind: RecipeStepKind.Bloom or RecipeStepKind.Pour })"
-                        Animated="@running" Cylinder="@(recipe.MethodCode is "aeropress" or "french-press")" />
+            <PourFigure Id="timer-figure" Fraction="@FigureFraction" Pattern="state.Current?.Pattern" Pouring="@(running && !paused && !state.IsFinished && state.Current is { Kind: RecipeStepKind.Bloom or RecipeStepKind.Pour })"
+                        Animated="@(running && !paused)" Cylinder="@(recipe.MethodCode is "aeropress" or "french-press")" />
         }
 
         @if (isEspresso)
@@ -68,6 +68,10 @@ else
             @if (state.TargetWaterG is { } target)
             {
                 <p id="timer-target" class="dialed-timer-target">@string.Format(L["Timer_Target"].Value, Units.Weight(target))</p>
+                @if (AddWater is { } add)
+                {
+                    <p id="timer-add" class="dialed-timer-sub">@string.Format(L["Timer_Add"].Value, Units.Weight(add))</p>
+                }
             }
 
             @if (state.IsFinished)
@@ -118,7 +122,13 @@ else
             else
             {
                 <button type="button" id="timer-finish" class="dialed-button dialed-button-primary" @onclick="FinishAsync">@L["Timer_Finish"]</button>
+                @if (!isEspresso)
+                {
+                    <button type="button" id="timer-pause" class="dialed-button" aria-pressed="@(paused ? "true" : "false")" @onclick="TogglePauseAsync">@L[paused ? "Timer_Resume" : "Timer_Pause"]</button>
+                }
             }
+
+            <button type="button" id="timer-focus" class="dialed-button" aria-pressed="@(focus ? "true" : "false")" @onclick="@(() => focus = !focus)">@L[focus ? "Timer_FocusOff" : "Timer_FocusOn"]</button>
 
             @if (running || elapsed > 0)
             {
@@ -140,6 +150,24 @@ else
     private bool doneCued;
     private bool speechSupported;
     private int lastCountdown;
+    private bool paused;
+    private bool focus;
+    private DateTimeOffset pausedAt;
+
+    /// <summary>Water to add in the current step (its target minus the target before it), shown beside the target.</summary>
+    private decimal? AddWater
+    {
+        get
+        {
+            if (state.TargetWaterG is not { } target || state.Current is null)
+            {
+                return null;
+            }
+
+            var before = state.CurrentIndex > 0 ? timeline.Steps[state.CurrentIndex - 1].WaterG ?? 0m : 0m;
+            return target - before is > 0m and var add ? add : null;
+        }
+    }
 
     /// <summary>Water so far over the recipe's total water: how full the drawing is.</summary>
     private double FigureFraction => running && recipe?.WaterG is > 0 && state.TargetWaterG is { } water ? (double)(water / recipe.WaterG.Value) : 0;
@@ -184,6 +212,7 @@ else
     private async Task StartAsync()
     {
         running = true;
+        paused = false;
         doneCued = false;
         elapsed = 0;
         stepKey = 0;
@@ -222,7 +251,7 @@ else
     /// <summary>Reads the clock and updates what is shown; called by the tick loop (and by tests with a manual clock).</summary>
     public async Task Refresh()
     {
-        if (!running)
+        if (!running || paused)
         {
             return;
         }
@@ -301,9 +330,27 @@ else
         Navigation.NavigateTo($"brew/{BagId}/log/recipe/{RecipeId}");
     }
 
+    private Task TogglePauseAsync()
+    {
+        if (paused)
+        {
+            // The time spent paused does not count: move the start forward by it.
+            startedAt += Time.GetUtcNow() - pausedAt;
+            paused = false;
+        }
+        else
+        {
+            pausedAt = Time.GetUtcNow();
+            paused = true;
+        }
+
+        return Task.CompletedTask;
+    }
+
     private async Task ResetAsync()
     {
         await StopLoopAsync(releaseWakeLock: true);
+        paused = false;
         running = false;
         elapsed = 0;
         stepKey = 0;
