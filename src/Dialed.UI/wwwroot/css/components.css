@@ -841,9 +841,24 @@ button.dialed-chip::after {
     color: var(--colorNeutralForeground3);
 }
 
+.dialed-timer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--dialed-space-2);
+    width: 100%;
+}
+
 .dialed-timer-actions .dialed-button {
-    min-width: 10rem;
+    min-width: 0;
     min-height: 56px;
+    flex: 1 1 8rem;
+    font-size: 1.125rem;
+}
+
+/* Start / Finish is the main action: its own full-width row; Pause, Big clock and Reset share the row below. */
+.dialed-timer-actions .dialed-button-primary {
+    flex-basis: 100%;
     font-size: 1.25rem;
 }
 
@@ -3270,4 +3285,25 @@ a.dialed-banner {
     margin: 0;
     font-size: var(--dialed-text-m);
     font-weight: 600;
+}
+
+/* ---- Brew timer: focus mode, readable from across the counter -------------------------------------- */
+
+.dialed-timer-focus .dialed-page-header,
+.dialed-timer-focus .dialed-timer-steps,
+.dialed-timer-focus .dialed-timer-voice {
+    display: none;
+}
+
+.dialed-timer-focus .dialed-timer-clock {
+    font-size: clamp(5rem, 34vw, 16rem);
+    line-height: 1;
+}
+
+.dialed-timer-focus .dialed-timer-step {
+    font-size: var(--dialed-text-xl, 2rem);
+}
+
+.dialed-timer-focus .dialed-timer-target {
+    font-size: var(--dialed-text-l);
 }

@@ -116,6 +116,81 @@ public sealed class BrewTimerTests : UiTestContext
         sound.Cues.ShouldBe([SoundCue.Tick, SoundCue.Tick, SoundCue.Tick]);
     }
 
+    // ---- Pause, focus and the amount to add ---------------------------------------------------
+
+    [Fact]
+    public async Task Pausing_stops_the_clock_and_resuming_continues_without_the_pause()
+    {
+        var page = RenderTimer(await V60());
+        page.Find("#timer-start").Click();
+        await Advance(page, 20);
+
+        page.Find("#timer-pause").Click();
+        page.Find("#timer-pause").TextContent.ShouldBe("Resume");
+        await Advance(page, 60);
+        page.Find("#timer-clock").TextContent.ShouldBe("0:20");
+
+        page.Find("#timer-pause").Click();
+        page.Find("#timer-pause").TextContent.ShouldBe("Pause");
+        await Advance(page, 10);
+
+        page.Find("#timer-clock").TextContent.ShouldBe("0:30");
+    }
+
+    [Fact]
+    public async Task Finishing_while_paused_hands_over_the_time_before_the_pause()
+    {
+        var recipe = await V60();
+        var page = RenderTimer(recipe);
+        page.Find("#timer-start").Click();
+        await Advance(page, 25);
+        page.Find("#timer-pause").Click();
+        await Advance(page, 100);
+
+        page.Find("#timer-finish").Click();
+
+        page.WaitForAssertion(() => Services.GetRequiredService<NavigationManager>().Uri.ShouldEndWith($"brew/bag1/log/recipe/{recipe.Id}"));
+        Services.GetRequiredService<BrewTimerHandoff>().Take(recipe.Id).ShouldBe(25);
+    }
+
+    [Fact]
+    public async Task The_espresso_timer_cannot_be_paused()
+    {
+        var page = RenderTimer(await Espresso());
+        page.Find("#timer-start").Click();
+
+        page.FindAll("#timer-pause").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task The_big_clock_mode_toggles_and_keeps_the_controls()
+    {
+        var page = RenderTimer(await V60());
+        page.Find(".dialed-timer").ClassList.ShouldNotContain("dialed-timer-focus");
+
+        page.Find("#timer-focus").Click();
+
+        page.Find(".dialed-timer").ClassList.ShouldContain("dialed-timer-focus");
+        page.Find("#timer-focus").TextContent.ShouldBe("Normal view");
+        page.Find("#timer-focus").GetAttribute("aria-pressed").ShouldBe("true");
+        page.Find("#timer-start").ShouldNotBeNull();
+        page.Find("#timer-clock").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Each_pour_says_how_much_water_to_add_now()
+    {
+        var page = RenderTimer(await V60());
+        page.Find("#timer-start").Click();
+        page.Find("#timer-add").TextContent.ShouldBe("Add 45 g now");
+
+        await Advance(page, 45);
+        page.Find("#timer-add").TextContent.ShouldBe("Add 105 g now");
+
+        await Advance(page, 45);
+        page.Find("#timer-add").TextContent.ShouldBe("Add 90 g now");
+    }
+
     // ---- Guided timer -------------------------------------------------------------------------
 
     [Fact]
