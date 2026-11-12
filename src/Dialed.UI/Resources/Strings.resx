@@ -1065,6 +1065,7 @@
   <data name="Timer_StartFor" xml:space="preserve"><value>Start the timer for {0}</value></data>
   <data name="Timer_Target" xml:space="preserve"><value>Pour to {0}</value></data>
   <data name="Timer_Voice" xml:space="preserve"><value>Say the steps out loud</value></data>
+  <data name="Tips_Title" xml:space="preserve"><value>Tips for this bag ({0})</value></data>
   <data name="Units_Imperial" xml:space="preserve"><value>Imperial (oz, fl oz, °F)</value></data>
   <data name="Units_Metric" xml:space="preserve"><value>Metric (g, ml, °C)</value></data>
   <data name="Units_Title" xml:space="preserve"><value>Units</value></data>
