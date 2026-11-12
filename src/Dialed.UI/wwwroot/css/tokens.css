@@ -97,6 +97,6 @@ html {
 
 /* Warm surfaces: derived from the brand colour, so they follow light and dark mode. Fluent's colour variables live on body, so these do too. */
 body {
-    --dialed-surface: color-mix(in srgb, #e8cfa5 14%, var(--colorNeutralBackground2, #fafafa));
+    --dialed-surface: color-mix(in srgb, var(--colorBrandBackground, #6f4e37) 15%, var(--colorNeutralBackground2, #fafafa));
     --dialed-surface-tray: color-mix(in srgb, var(--colorBrandBackground, #6f4e37) 16%, var(--colorNeutralBackground1, #fff));
 }
