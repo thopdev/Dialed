@@ -799,7 +799,7 @@
   <data name="QuickLog_Rating3" xml:space="preserve"><value>Okay</value></data>
   <data name="QuickLog_Rating4" xml:space="preserve"><value>Really good</value></data>
   <data name="QuickLog_Rating5" xml:space="preserve"><value>Perfect</value></data>
-  <data name="QuickLog_RatingPrompt" xml:space="preserve"><value>Tap a star</value></data>
+  <data name="QuickLog_RatingPrompt" xml:space="preserve"><value>Tap a face</value></data>
   <data name="QuickLog_Stood" xml:space="preserve"><value>What stood out? Tap any</value></data>
   <data name="QuickLog_Title" xml:space="preserve"><value>How was it?</value></data>
   <data name="Rating_Label" xml:space="preserve"><value>Rating</value></data>
@@ -1054,6 +1054,11 @@
   <data name="TasteProfile_Hint" xml:space="preserve"><value>From the {0} where something was off: which way it leans.</value></data>
   <data name="TasteProfile_Leans" xml:space="preserve"><value>{0}: leans {1}</value></data>
   <data name="TasteProfile_Title" xml:space="preserve"><value>How it tends to taste</value></data>
+  <data name="TasteScale_ABit" xml:space="preserve"><value>A bit</value></data>
+  <data name="TasteScale_ABitOf" xml:space="preserve"><value>A bit {0}</value></data>
+  <data name="TasteScale_Balanced" xml:space="preserve"><value>Balanced</value></data>
+  <data name="TasteScale_Very" xml:space="preserve"><value>Very</value></data>
+  <data name="TasteScale_VeryOf" xml:space="preserve"><value>Very {0}</value></data>
   <data name="Taste_Acidity" xml:space="preserve"><value>Acidity</value></data>
   <data name="Taste_Bitter" xml:space="preserve"><value>Bitter</value></data>
   <data name="Taste_Body" xml:space="preserve"><value>Body</value></data>

@@ -413,10 +413,10 @@ public sealed class BrewLogTests : UiTestContext
 
         page.WaitForElement("#quick-log");
         page.FindAll("#brew-dose").ShouldBeEmpty();
-        page.FindAll("#quick-log .dialed-star").Count.ShouldBe(5);
-        page.FindAll("#quick-log .dialed-star")[3].Click();
-        page.Find("[data-axis=acidity] .dialed-chip").Click();
-        page.FindAll("[data-axis=body] .dialed-chip")[1].Click();
+        page.FindAll("#quick-log .dialed-face").Count.ShouldBe(5);
+        page.FindAll("#quick-log .dialed-face")[3].Click();
+        page.FindAll("[data-axis=acidity] .dialed-scale-step")[1].Click();
+        page.FindAll("[data-axis=body] .dialed-scale-step")[3].Click();
         page.Find("#quick-log-save").Click();
 
         page.WaitForAssertion(() => Services.GetRequiredService<NavigationManager>().Uri.ShouldContain("brew/"));
@@ -426,19 +426,34 @@ public sealed class BrewLogTests : UiTestContext
     }
 
     [Fact]
-    public async Task A_taste_chip_tapped_twice_turns_off_and_the_other_side_switches()
+    public async Task A_taste_scale_starts_balanced_and_moves_between_the_ends()
     {
         var (bag, recipe) = await BagAndRecipe();
         var page = RenderQuick(bag, recipe);
         page.WaitForElement("#quick-log");
 
-        page.FindAll("[data-axis=strength] .dialed-chip")[0].Click();
-        page.FindAll("[data-axis=strength] .dialed-chip")[0].Click();
-        page.FindAll("[data-axis=strength] .dialed-chip").Select(c => c.GetAttribute("aria-pressed")).ShouldBe(["false", "false"]);
+        string[] Checked() => [.. page.FindAll("[data-axis=strength] .dialed-scale-step").Select(c => c.GetAttribute("aria-checked")!)];
+        Checked().ShouldBe(["false", "false", "true", "false", "false"]);
 
-        page.FindAll("[data-axis=strength] .dialed-chip")[0].Click();
-        page.FindAll("[data-axis=strength] .dialed-chip")[1].Click();
-        page.FindAll("[data-axis=strength] .dialed-chip").Select(c => c.GetAttribute("aria-pressed")).ShouldBe(["false", "true"]);
+        page.FindAll("[data-axis=strength] .dialed-scale-step")[0].Click();
+        Checked().ShouldBe(["true", "false", "false", "false", "false"]);
+        page.FindAll("[data-axis=strength] .dialed-scale-step")[0].GetAttribute("aria-label").ShouldBe("Very weak");
+
+        page.FindAll("[data-axis=strength] .dialed-scale-step")[4].Click();
+        Checked().ShouldBe(["false", "false", "false", "false", "true"]);
+    }
+
+    [Fact]
+    public async Task A_face_tapped_twice_clears_the_rating()
+    {
+        var (bag, recipe) = await BagAndRecipe();
+        var page = RenderQuick(bag, recipe);
+        page.WaitForElement("#quick-log");
+
+        page.FindAll("#quick-log .dialed-face")[4].Click();
+        page.Find("#quick-rating-word").TextContent.ShouldBe("Perfect");
+        page.FindAll("#quick-log .dialed-face")[4].Click();
+        page.Find("#quick-rating-word").TextContent.ShouldBe("Tap a face");
     }
 
     [Fact]
@@ -447,7 +462,7 @@ public sealed class BrewLogTests : UiTestContext
         var (bag, recipe) = await BagAndRecipe();
         var page = RenderQuick(bag, recipe);
         page.WaitForElement("#quick-log");
-        page.FindAll("#quick-log .dialed-star")[4].Click();
+        page.FindAll("#quick-log .dialed-face")[4].Click();
 
         page.Find("#quick-log-more").Click();
 

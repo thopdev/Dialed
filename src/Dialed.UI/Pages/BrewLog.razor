@@ -52,18 +52,14 @@ else
                 </span>
             </div>
             <div class="dialed-quick-rating">
-                <StarRating @bind-Value="quickRating" />
+                <FaceRating @bind-Value="quickRating" />
                 <p id="quick-rating-word" class="dialed-quick-rating-word" aria-live="polite">@(quickRating > 0 ? L[$"QuickLog_Rating{quickRating}"].Value : L["QuickLog_RatingPrompt"].Value)</p>
             </div>
-            <h3 class="dialed-quick-subtitle">@L["QuickLog_Stood"]</h3>
-            <div class="dialed-quick-taste" role="group" aria-label="@L["Brew_Taste"]">
+            <h3 class="dialed-quick-subtitle">@L["Brew_Taste"]</h3>
+            <div class="dialed-quick-taste">
                 @foreach (var axis in QuickAxes)
                 {
-                    var current = axis.Get();
-                    <div class="dialed-quick-pair" data-axis="@axis.Id">
-                        <Chip Selected="@(current < 0)" OnClick="@(() => Toggle(axis, -1))">@L[axis.Low]</Chip>
-                        <Chip Selected="@(current > 0)" OnClick="@(() => Toggle(axis, 1))">@L[axis.High]</Chip>
-                    </div>
+                    <TasteScale Axis="@axis.Id" Label="@L[axis.Name].Value" LowLabel="@L[axis.Low].Value" HighLabel="@L[axis.High].Value" Value="@axis.Get()" ValueChanged="@(v => axis.Set(v))" />
                 }
             </div>
             <div class="dialed-form-actions dialed-sticky-actions">
@@ -137,18 +133,15 @@ else
 
     private bool QuickMode => !showAll && Quick == "1" && initial is { DoseG: > 0m };
 
-    private sealed record QuickAxis(string Id, string Low, string High, Func<int> Get, Action<int> Set);
+    private sealed record QuickAxis(string Id, string Name, string Low, string High, Func<int> Get, Action<int> Set);
 
     private IReadOnlyList<QuickAxis> QuickAxes =>
     [
-        new("acidity", "Taste_Sour", "Taste_Bitter", () => acidity, v => acidity = v),
-        new("strength", "Taste_Weak", "Taste_Strong", () => strength, v => strength = v),
-        new("body", "Taste_Thin", "Taste_Heavy", () => body, v => body = v),
-        new("sweetness", "Taste_Flat", "Taste_Sweet", () => sweetness, v => sweetness = v),
+        new("acidity", "Taste_Acidity", "Taste_Sour", "Taste_Bitter", () => acidity, v => acidity = v),
+        new("strength", "Taste_Strength", "Taste_Weak", "Taste_Strong", () => strength, v => strength = v),
+        new("body", "Taste_Body", "Taste_Thin", "Taste_Heavy", () => body, v => body = v),
+        new("sweetness", "Taste_Sweetness", "Taste_Flat", "Taste_Sweet", () => sweetness, v => sweetness = v),
     ];
-
-    /// <summary>Tapping the chip that is on turns it off; tapping the other one of the pair switches sides.</summary>
-    private static void Toggle(QuickAxis axis, int side) => axis.Set(axis.Get() == side ? 0 : side);
 
     private Brew WithQuickAnswers(Brew brew) => brew with
     {
