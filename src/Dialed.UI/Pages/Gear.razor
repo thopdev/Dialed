@@ -10,6 +10,8 @@
 @inject IRepository<MethodDefault> DefaultStore
 @inject IRepository<Brew> BrewStore
 @inject IRepository<Recipe> RecipeStore
+@inject IRepository<Bag> BagStore
+@inject IRepository<Bean> BeanStore
 @inject TimeProvider Time
 @inject NavigationManager Navigation
 
@@ -41,6 +43,32 @@
                     }
                 </select>
             </div>
+            <div class="dialed-segmented" role="group" aria-label="@L["Gear_View"]">
+                <button id="gear-view-list" type="button" class="dialed-button @(shelf ? "" : "dialed-button-primary")" aria-pressed="@(shelf ? "false" : "true")" @onclick="@(() => shelf = false)">@L["Gear_ViewList"]</button>
+                <button id="gear-view-shelf" type="button" class="dialed-button @(shelf ? "dialed-button-primary" : "")" aria-pressed="@(shelf ? "true" : "false")" @onclick="@(() => shelf = true)">@L["Gear_ViewShelf"]</button>
+            </div>
+            @if (shelf)
+            {
+                <ul id="gear-shelf" class="dialed-shelf">
+                    @foreach (var item in Visible)
+                    {
+                        var wear = WearOf(item);
+                        <li>
+                            <a class="dialed-shelf-tile" href="@($"equipment/{item.Id}")" data-gear="@item.Id">
+                                <Thumb PhotoId="@item.PhotoIds.FirstOrDefault()" Size="96" Placeholder="@KindIcon(item.Kind)" />
+                                <span class="dialed-shelf-name">@Title(item)</span>
+                                <span class="dialed-shelf-kind">@L[$"EquipmentKind_{item.Kind}"]</span>
+                                @if (wear.State is WearState.Due or WearState.Soon)
+                                {
+                                    <span class="dialed-chip @(wear.State == WearState.Due ? "dialed-chip-warning" : "")">@L[wear.State == WearState.Due ? "Gear_ServiceDue" : "Gear_ServiceSoon"]</span>
+                                }
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
             <div class="dialed-list">
                 @foreach (var item in Visible)
                 {
@@ -54,6 +82,7 @@
                     </ListRow>
                 }
             </div>
+            }
             <div class="dialed-list">
                 <ListRow Title="@L["Gear_Defaults"]" Href="equipment/defaults" />
             </div>
@@ -164,6 +193,18 @@
                         <button id="gear-mark-serviced" type="button" class="dialed-button" @onclick="MarkServicedAsync">@L["Gear_MarkServiced"]</button>
                     </div>
                 }
+                @if (favorites.Count > 0)
+                {
+                    <div id="gear-favorites" class="dialed-favorites">
+                        <strong>@L["Gear_Favorites"]</strong>
+                        <ul>
+                            @foreach (var favorite in favorites)
+                            {
+                                <li data-bean="@favorite.BeanId">@string.Format(L["Gear_FavoriteLine"].Value, beanNames.GetValueOrDefault(favorite.BeanId, L["Bag_UnknownBean"].Value), MethodName(favorite.MethodCode), GrindScale.Format(favorite.Setting), new string('★', favorite.Rating))</li>
+                            }
+                        </ul>
+                    </div>
+                }
                 @if (current.Kind == EquipmentKind.Water)
                 {
                     <p id="gear-water-stats" class="dialed-water-stats">@WaterText(current)</p>
@@ -184,6 +225,9 @@
     private IReadOnlyList<Recipe> recipes = [];
     private EquipmentItem? current;
     private string kindFilter = "";
+    private bool shelf;
+    private IReadOnlyList<FavoriteGrind> favorites = [];
+    private Dictionary<string, string> beanNames = [];
     private bool editing;
     private bool confirmingDelete;
     private string? error;
@@ -223,7 +267,25 @@
         brews = await BrewStore.ListAsync();
         recipes = await RecipeStore.ListAsync();
         current = Id is null or "new" or "defaults" ? null : items.FirstOrDefault(i => i.Id == Id);
+        favorites = [];
+        if (current is { Kind: EquipmentKind.Grinder })
+        {
+            var bags = await BagStore.ListAsync();
+            favorites = FavoriteGrinds.For(current.Id, brews, bags);
+            beanNames = (await BeanStore.ListAsync()).Where(b => !b.Deleted).ToDictionary(b => b.Id, b => b.Name);
+        }
     }
+
+    private static string MethodName(string code) => BrewMethodCatalog.Default.Find(code)?.Name ?? code;
+
+    private static Icon KindIcon(EquipmentKind kind) => kind switch
+    {
+        EquipmentKind.Grinder => new Icons.Regular.Size24.Settings(),
+        EquipmentKind.Kettle => new Icons.Regular.Size24.DrinkCoffee(),
+        EquipmentKind.Scale => new Icons.Regular.Size24.Scales(),
+        EquipmentKind.Water => new Icons.Regular.Size24.Drop(),
+        _ => new Icons.Regular.Size24.Box(),
+    };
 
     private void OnStoreChanged() => _ = InvokeAsync(async () =>
     {
