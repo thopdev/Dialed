@@ -20,7 +20,7 @@
                     @if (LinkToBeans)
                     {
                         <a class="dialed-origin-map-link" href="@($"beans?country={pin.Iso2}")" aria-label="@string.Format(L["Map_ShowBeans"].Value, pin.Label)">
-                            <circle class="dialed-origin-map-hit" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(Math.Max(pin.Radius, 40))" />
+                            <circle class="dialed-origin-map-hit" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(Math.Max(pin.Radius, 60))" />
                             <circle class="dialed-origin-map-pin" cx="@Num(pin.X)" cy="@Num(pin.Y)" r="@Num(pin.Radius)"><title>@pin.Label</title></circle>
                         </a>
                     }
