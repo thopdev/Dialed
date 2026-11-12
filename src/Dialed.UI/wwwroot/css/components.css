@@ -4253,13 +4253,3 @@ a.dialed-banner {
     font-weight: 400;
     color: var(--colorNeutralForeground2);
 }
-
-/* No hairline after each History row (it showed as a dark bar in dark mode): the rows are separated by space instead. */
-.dialed-day-group .dialed-row {
-    border-bottom: 0;
-}
-
-.dialed-day-group .dialed-list {
-    display: grid;
-    gap: var(--dialed-space-1);
-}
