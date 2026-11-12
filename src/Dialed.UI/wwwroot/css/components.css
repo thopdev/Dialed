@@ -4207,19 +4207,6 @@ a.dialed-banner {
     to { opacity: 1; transform: scale(1); }
 }
 
-/* ---- Card lists: Beans and History rows as soft cards ------------------------------------------------ */
-
-.dialed-list-cards {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--dialed-space-3);
-}
-
-.dialed-list-cards .dialed-row {
-    padding: var(--dialed-space-3) var(--dialed-space-4);
-    border: 0;
-}
-
 .dialed-cups-word {
     margin: var(--dialed-space-1) 0 0;
     text-align: center;
@@ -4260,18 +4247,6 @@ a.dialed-banner {
     background: var(--colorNeutralBackground1);
     box-shadow: var(--dialed-shadow-card, none);
 }
-
-.dialed-list-cards .dialed-row-title {
-    font-family: var(--dialed-font-display, Georgia, serif);
-    font-size: var(--dialed-text-l);
-}
-
-/* A bean's roast colour runs down the edge of its card. */
-.dialed-bean-row .dialed-row {
-    border-inline-start: 0.375rem solid var(--dialed-mood-start);
-}
-
-
 
 .dialed-day-title strong {
     font-family: var(--dialed-font-display, Georgia, serif);
@@ -4461,3 +4436,29 @@ a.dialed-banner {
     50% { transform: scaleY(1); }
 }
 
+
+/* ---- Card lists: Beans and History rows as soft cards ------------------------------------------------ */
+
+.dialed-list-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--dialed-space-3);
+}
+
+.dialed-list-cards .dialed-row {
+    padding: var(--dialed-space-3) var(--dialed-space-4);
+    border: 0;
+    border-radius: var(--dialed-radius-xl, 24px);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-list-cards .dialed-row-title {
+    font-family: var(--dialed-font-display, Georgia, serif);
+    font-size: var(--dialed-text-l);
+}
+
+/* A bean's roast colour runs down the edge of its card. */
+.dialed-bean-row .dialed-row {
+    border-inline-start: 0.375rem solid var(--dialed-mood-start);
+}
