@@ -322,6 +322,29 @@ public sealed class HomeBrewPolishTests : UiTestContext
         again.FindAll("#brew-again-timer").ShouldBeEmpty();
     }
 
+    // ---- Brew again with the timer ------------------------------------------------------------
+
+    [Fact]
+    public async Task Brew_again_on_home_starts_the_timer_for_brews_made_with_a_recipe_that_has_steps()
+    {
+        await Profile();
+        var guidedBag = await NewBag("Gesha");
+        var plainBag = await NewBag("Guji");
+        var recipes = Services.GetRequiredService<IRepository<Recipe>>();
+        var guided = await recipes.SaveAsync(new Recipe { MethodCode = "v60", Name = "Morning", DoseG = 15m, WaterG = 250m, Steps = [new RecipeStep(RecipeStepKind.Bloom, 0, 30, 45m)] }, Ct);
+        var plain = await recipes.SaveAsync(new Recipe { MethodCode = "espresso", Name = "House", DoseG = 18m, YieldG = 36m }, Ct);
+        var withSteps = await Brews.SaveAsync(new Brew { BagId = guidedBag.Id, MethodCode = "v60", DoseG = 15m, RecipeId = guided.Id, Rating = 5, BrewedAt = DateTimeOffset.Now.AddHours(-1) }, Ct);
+        var withoutSteps = await Brews.SaveAsync(new Brew { BagId = plainBag.Id, MethodCode = "espresso", DoseG = 18m, RecipeId = plain.Id, Rating = 5, BrewedAt = DateTimeOffset.Now.AddHours(-2) }, Ct);
+
+        var page = Render<Home>();
+
+        var timer = page.WaitForElement($"[data-timer-for='{withSteps.Id}']");
+        timer.GetAttribute("href").ShouldBe($"brew/{guidedBag.Id}/timer/{guided.Id}");
+        timer.GetAttribute("aria-label").ShouldBe("Start the timer for Gesha");
+        page.FindAll($"[data-timer-for='{withoutSteps.Id}']").ShouldBeEmpty();
+        page.FindAll("#home-brew-again .dialed-row").Count.ShouldBe(2);
+    }
+
     // ---- Cost per cup -------------------------------------------------------------------------
 
     [Fact]

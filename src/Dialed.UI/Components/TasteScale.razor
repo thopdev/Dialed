@@ -1,0 +1,60 @@
+@inject IStringLocalizer<Strings> L
+
+@*
+    One taste axis as five steps from one end to the other with "Balanced" in the middle, for example Sour - Balanced - Bitter.
+    Value is -2 to 2 (the Taste model); 0 is balanced. A radio group of 44 pt steps; every step is named in full ("A bit sour").
+*@
+<div class="dialed-scale" data-axis="@Axis" role="radiogroup" aria-label="@Label">
+    <div class="dialed-scale-ends">
+        <span>@LowLabel</span>
+        <span class="dialed-scale-name">@Label</span>
+        <span>@HighLabel</span>
+    </div>
+    <div class="dialed-scale-steps">
+        @for (var step = -2; step <= 2; step++)
+        {
+            var current = step;
+            <button type="button"
+                    class="dialed-scale-step @(current == Value ? "on" : "") @(current == 0 ? "mid" : "")"
+                    role="radio"
+                    aria-checked="@(current == Value ? "true" : "false")"
+                    aria-label="@Name(current)"
+                    @onclick="() => ValueChanged.InvokeAsync(current)">
+                @Short(current)
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>A stable id for tests and styling, for example "acidity".</summary>
+    [Parameter, EditorRequired]
+    public string Axis { get; set; } = "";
+
+    /// <summary>The axis name, for example "Acidity".</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string LowLabel { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string HighLabel { get; set; } = "";
+
+    [Parameter]
+    public int Value { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
+
+    private string Short(int step) => step == 0 ? L["TasteScale_Balanced"].Value : Math.Abs(step) == 2 ? L["TasteScale_Very"].Value : L["TasteScale_ABit"].Value;
+
+    private string Name(int step) => step switch
+    {
+        0 => L["TasteScale_Balanced"].Value,
+        -2 => string.Format(L["TasteScale_VeryOf"].Value, LowLabel.ToLowerInvariant()),
+        -1 => string.Format(L["TasteScale_ABitOf"].Value, LowLabel.ToLowerInvariant()),
+        1 => string.Format(L["TasteScale_ABitOf"].Value, HighLabel.ToLowerInvariant()),
+        _ => string.Format(L["TasteScale_VeryOf"].Value, HighLabel.ToLowerInvariant()),
+    };
+}

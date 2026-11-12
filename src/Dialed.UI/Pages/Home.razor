@@ -12,6 +12,7 @@
 @inject IRepository<Bag> BagStore
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Brew> BrewStore
+@inject IRepository<Recipe> RecipeStore
 @inject IRepository<EquipmentItem> GearStore
 @inject IRepository<Recipe> RecipeStore
 @inject IUserPreferences Preferences
@@ -92,10 +93,19 @@ else
         <div class="dialed-list" id="home-brew-again">
             @foreach (var brew in again)
             {
-                <ListRow Title="@BeanName(brew)" Subtitle="@Describe(brew)" Href="@($"brew/{brew.BagId}/log/again/{brew.Id}")" data-brew="@brew.Id">
-                    <Leading><MethodIcon Code="@brew.MethodCode" /></Leading>
-                    <Trailing><RatingBadge Value="@(brew.Rating ?? 0)" /></Trailing>
-                </ListRow>
+                var guided = GuidedRecipe(brew);
+                <div class="dialed-recipe-choice">
+                    <ListRow Title="@BeanName(brew)" Subtitle="@Describe(brew)" Href="@($"brew/{brew.BagId}/log/again/{brew.Id}")" data-brew="@brew.Id">
+                        <Leading><MethodIcon Code="@brew.MethodCode" /></Leading>
+                        <Trailing><RatingBadge Value="@(brew.Rating ?? 0)" /></Trailing>
+                    </ListRow>
+                    @if (guided is not null)
+                    {
+                        <a class="dialed-transport-button dialed-transport-small" data-timer-for="@brew.Id" href="@($"brew/{brew.BagId}/timer/{guided.Id}")" aria-label="@string.Format(L["Timer_StartFor"].Value, BeanName(brew))" title="@string.Format(L["Timer_StartFor"].Value, BeanName(brew))">
+                            <FluentIcon Value="@(new Icons.Regular.Size24.Timer())" Color="Color.Custom" CustomColor="currentColor" />
+                        </a>
+                    }
+                </div>
             }
         </div>
     }
@@ -132,6 +142,7 @@ else
     private int beanCount;
     private Dictionary<string, Bean> beansById = [];
     private Dictionary<string, string> bagBeans = [];
+    private Dictionary<string, Recipe> guidedRecipes = [];
 
     private IReadOnlyList<BagStock> OpenBags =>
         [.. (stock ?? []).Where(s => s.Bag.Status == BagStatus.Open).OrderBy(s => s.BeanName, StringComparer.OrdinalIgnoreCase)];
@@ -179,6 +190,7 @@ else
         stock = InventoryOverview.Build(bags, beans, brews, today, Preferences.Inventory);
         beansById = beans.Where(b => !b.Deleted).ToDictionary(b => b.Id);
         bagBeans = bags.ToDictionary(b => b.Id, b => b.BeanId);
+        guidedRecipes = (await RecipeStore.ListAsync()).Where(r => !r.Deleted && r.Steps.Count > 0).ToDictionary(r => r.Id);
         var live = brews.Where(b => !b.Deleted).OrderByDescending(b => b.BrewedAt).ToList();
         var usable = stock.Where(s => s.Bag.Status != BagStatus.Finished).Select(s => s.Bag.Id).ToHashSet();
         again = [.. live.Where(b => b.Rating >= 4 && usable.Contains(b.BagId)).Take(3)];
@@ -200,6 +212,9 @@ else
         string.IsNullOrWhiteSpace(name) ? null : name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
 
     private static string Clock(DateTimeOffset at) => at.ToLocalTime().ToString("t", CultureInfo.CurrentCulture);
+
+    /// <summary>The recipe a brew was made with when it has steps for the guided timer.</summary>
+    private Recipe? GuidedRecipe(Brew brew) => brew.RecipeId is { } id && guidedRecipes.TryGetValue(id, out var recipe) ? recipe : null;
 
     private string? PhotoOf(string beanId) => beansById.TryGetValue(beanId, out var bean) ? bean.PhotoIds.FirstOrDefault() : null;
 
