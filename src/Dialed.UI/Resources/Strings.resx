@@ -158,6 +158,19 @@
   <data name="Barcode_UnknownTitle" xml:space="preserve"><value>New barcode</value></data>
   <data name="BeanCard_Footer" xml:space="preserve"><value>Kept in Dialed</value></data>
   <data name="BeanCard_Share" xml:space="preserve"><value>Share a picture of this bean</value></data>
+  <data name="BeanCompare_Balanced" xml:space="preserve"><value>Balanced</value></data>
+  <data name="BeanCompare_Brews" xml:space="preserve"><value>Brews</value></data>
+  <data name="BeanCompare_Good" xml:space="preserve"><value>Rated 4 stars or more</value></data>
+  <data name="BeanCompare_Hint" xml:space="preserve"><value>Taste shows which way each bean leans in the brews where something was off (needs two such brews). The rows that differ are highlighted.</value></data>
+  <data name="BeanCompare_Last" xml:space="preserve"><value>Last brewed</value></data>
+  <data name="BeanCompare_Method" xml:space="preserve"><value>Favourite method</value></data>
+  <data name="BeanCompare_NotFound" xml:space="preserve"><value>One of these beans no longer exists.</value></data>
+  <data name="BeanCompare_Page" xml:space="preserve"><value>Compare beans</value></data>
+  <data name="BeanCompare_Pick" xml:space="preserve"><value>Pick a bean</value></data>
+  <data name="BeanCompare_Rating" xml:space="preserve"><value>Average rating</value></data>
+  <data name="BeanCompare_RatingValue" xml:space="preserve"><value>{0} ★ ({1} rated)</value></data>
+  <data name="BeanCompare_Title" xml:space="preserve"><value>Compare with another bean</value></data>
+  <data name="BeanCompare_With" xml:space="preserve"><value>Compare with</value></data>
   <data name="BeanForm_SectionBean" xml:space="preserve"><value>Bean</value></data>
   <data name="BeanForm_SectionOrigin" xml:space="preserve"><value>Origin</value></data>
   <data name="BeanForm_SectionRoast" xml:space="preserve"><value>Roast</value></data>
