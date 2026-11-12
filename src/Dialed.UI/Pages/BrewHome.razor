@@ -4,6 +4,7 @@
 @using Dialed.Client.Preferences
 @using Dialed.Domain.BrewMethods
 @using Dialed.Domain.DialIn
+@using Dialed.Domain.Equipment
 @using Dialed.Domain.Inventory
 @using Dialed.Domain.Model
 @implements IDisposable
@@ -87,6 +88,19 @@
                 </Card>
             }
 
+            @if (drift is not null)
+            {
+                <Card class="dialed-card dialed-drift" id="brew-grind-drift">
+                    <h2 class="dialed-drift-title">@L[drift.Finer ? "Drift_TitleFiner" : "Drift_TitleCoarser"]</h2>
+                    <p>@string.Format(L["Drift_Text"].Value, GrindScale.Format(drift.From), GrindScale.Format(drift.To), drift.Days, drift.Brews)</p>
+                    @if (drift.Suggested is { } suggested)
+                    {
+                        <p id="brew-grind-drift-try"><strong>@string.Format(L["Drift_Try"].Value, GrindScale.Format(suggested))</strong></p>
+                    }
+                    <p class="dialed-muted">@L["Drift_Why"]</p>
+                </Card>
+            }
+
             @if (logged is not null)
             {
                 <DialInAdviceCard Brew="logged" Scale="@loggedScale" />
@@ -152,6 +166,7 @@
     [SupplyParameterFromQuery(Name = "logged")]
     public string? Logged { get; set; }
 
+    private GrindDriftNote? drift;
     private Brew? logged;
     private Dialed.Domain.Equipment.GrindScale? loggedScale;
 
@@ -184,6 +199,14 @@
         last = current is null ? null : BrewPrefill.Last(current.Id, brews);
         logged = current is null || Logged is null ? null : brews.FirstOrDefault(b => !b.Deleted && b.Id == Logged && b.BagId == current.Id && DialInHistory.NeedsAdvice(b));
         loggedScale = logged?.GrinderId is { } grinderId ? (await GearStore.GetAsync(grinderId))?.GrindScale : null;
+        drift = null;
+        if (current is not null)
+        {
+            var newest = brews.Where(b => !b.Deleted && b.BagId == current.Id && b.GrindSetting is not null).OrderByDescending(b => b.BrewedAt).FirstOrDefault();
+            var scale = newest?.GrinderId is { } id ? (await GearStore.GetAsync(id))?.GrindScale : null;
+            drift = GrindDrift.Detect(current.Id, brews, scale, DateOnly.FromDateTime(Time.GetLocalNow().DateTime));
+        }
+
         recipesForBag = current is null
             ? []
             : [.. recipes.Where(r => !r.IsSuperseded && (r.BeanId == current.BeanId || r.BeanId is null))

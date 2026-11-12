@@ -3157,3 +3157,18 @@ a.dialed-banner {
     color: inherit;
     text-decoration: none;
 }
+
+.dialed-drift {
+    margin-bottom: var(--dialed-space-3);
+    border-inline-start: 4px solid var(--colorBrandStroke1);
+}
+
+.dialed-drift p {
+    margin: var(--dialed-space-1) 0 0;
+}
+
+.dialed-content h2.dialed-drift-title {
+    margin: 0;
+    font-size: var(--dialed-text-m);
+    font-weight: 600;
+}

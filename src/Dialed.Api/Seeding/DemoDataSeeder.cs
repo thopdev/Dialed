@@ -114,9 +114,9 @@ public sealed class DemoDataSeeder(ISyncStore store, TimeProvider time, ILogger<
             Shot(1, 7, 3) with { TimeS = 24, YieldG = 40m, GrindSetting = 2.75m, Taste = new Taste(Acidity: 1, Strength: -1, Body: -1), Notes = "Ran fast, a bit thin." },
             Shot(1, 15, 4) with { DrinkType = DrinkType.Cappuccino, MilkMl = 150, MilkType = MilkType.Whole },
             Shot(2, 7, 2) with { TimeS = 35, YieldG = 32m, GrindSetting = 2.25m, Taste = new Taste(Acidity: -1, Strength: 2, Body: 1, Sweetness: -1), Notes = "Choked, bitter." },
-            Pour(2, 9, 4) with { TimeS = 205 },
+            Pour(2, 9, 4) with { TimeS = 205, GrindSetting = 23m },
             Pour(4, 9, 3) with { GrindSetting = 24m, TempC = 96m, Taste = new Taste(Acidity: 2, Strength: -1, Body: -1, Sweetness: -1), Notes = "Sour and thin; go finer." },
-            Pour(6, 10, 4),
+            Pour(8, 10, 4) with { GrindSetting = 26m },
             .. Enumerable.Range(3, 11).Select(day => Shot(day, 7, day % 3 == 0 ? 4 : 3)),
             new Brew
             {
