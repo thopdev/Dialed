@@ -23,6 +23,7 @@
     --dialed-radius-s: 6px;
     --dialed-radius-m: 12px;
     --dialed-radius-l: 20px;
+    --dialed-radius-xl: 24px;
     --dialed-radius-pill: 999px;
 
     /* Minimum touch target on iPhone and iPad (Apple HIG: 44 x 44 pt) */
@@ -41,8 +42,13 @@
     --dialed-weight-semibold: 600;
     --dialed-weight-bold: 700;
 
-    /* Elevation */
-    --dialed-shadow-card: 0 1px 2px rgb(0 0 0 / 0.08), 0 1px 8px rgb(0 0 0 / 0.04);
+    /* Elevation: a soft, warm lift (roasted-brown tinted, not grey) */
+    --dialed-shadow-card: 0 1px 2px rgb(60 35 20 / 0.08), 0 6px 16px rgb(90 56 37 / 0.12);
+    --dialed-shadow-raised: 0 8px 22px rgb(90 56 37 / 0.2);
+
+
+    /* Titles get a touch of character */
+    --dialed-font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
 }
 
 /*
@@ -60,4 +66,10 @@
 html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+}
+
+/* Warm surfaces: derived from the brand colour, so they follow light and dark mode. Fluent's colour variables live on body, so these do too. */
+body {
+    --dialed-surface: color-mix(in srgb, var(--colorBrandBackground, #6f4e37) 15%, var(--colorNeutralBackground2, #fafafa));
+    --dialed-surface-tray: color-mix(in srgb, var(--colorBrandBackground, #6f4e37) 16%, var(--colorNeutralBackground1, #fff));
 }
