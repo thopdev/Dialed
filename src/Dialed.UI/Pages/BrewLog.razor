@@ -45,8 +45,11 @@ else
         <section id="quick-log" class="dialed-quick-log" aria-labelledby="quick-log-title">
             <h2 id="quick-log-title" class="dialed-quick-log-title">@L["QuickLog_Title"]</h2>
             <div id="quick-log-summary" class="dialed-quick-summary">
-                <span class="dialed-quick-summary-title">@QuickSummaryTitle</span>
-                <span class="dialed-muted">@QuickSummaryDetail</span>
+                <MethodIcon Code="@initial!.MethodCode" />
+                <span class="dialed-quick-summary-text">
+                    <span class="dialed-quick-summary-title">@QuickSummaryTitle</span>
+                    <span class="dialed-muted">@QuickSummaryDetail</span>
+                </span>
             </div>
             <div class="dialed-quick-rating">
                 <StarRating @bind-Value="quickRating" />

@@ -3544,7 +3544,7 @@ a.dialed-banner {
     gap: var(--dialed-space-2);
     padding: var(--dialed-space-1);
     border-radius: var(--borderRadiusXLarge);
-    background: var(--colorNeutralBackground6);
+    background: var(--dialed-surface-tray, var(--colorNeutralBackground6));
 }
 
 .dialed-quick-pair .dialed-chip {
@@ -3561,14 +3561,22 @@ a.dialed-banner {
 .dialed-quick-pair .dialed-chip.selected {
     background: var(--colorBrandBackground);
     color: var(--colorNeutralForegroundOnBrand);
+    box-shadow: var(--dialed-shadow-raised, none);
 }
 
 .dialed-quick-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-3);
+    border-radius: var(--dialed-radius-xl, var(--borderRadiusXLarge));
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card, none);
+}
+
+.dialed-quick-summary-text {
     display: grid;
     gap: var(--dialed-space-1);
-    padding: var(--dialed-space-3);
-    border-radius: var(--borderRadiusXLarge);
-    background: var(--colorNeutralBackground6);
 }
 
 .dialed-quick-summary-title {
@@ -3599,10 +3607,12 @@ a.dialed-banner {
 
 .dialed-quick-rating .dialed-star.on {
     color: var(--colorBrandForeground1);
+    filter: drop-shadow(0 2px 3px rgb(90 56 37 / 0.3));
 }
 
 .dialed-quick-rating-word {
     margin: 0;
+    font-family: var(--dialed-font-display, Georgia, serif);
     min-height: 1.5rem;
     font-weight: 700;
     font-size: var(--dialed-text-l);
