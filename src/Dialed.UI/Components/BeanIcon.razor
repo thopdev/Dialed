@@ -1,0 +1,10 @@
+@* A coffee bean in the current text colour: the calm placeholder of Thumb and a small brand touch. Decorative. *@
+<svg class="dialed-bean-icon" viewBox="0 0 40 40" width="@Size" height="@Size" aria-hidden="true" focusable="false">
+    <ellipse cx="20" cy="20" rx="13" ry="17" transform="rotate(35 20 20)" fill="currentColor" />
+    <path d="M12 9c6 6 3 12 9 17s2 9 8 5" transform="rotate(35 20 20)" fill="none" stroke="var(--colorNeutralBackground1, #fff)" stroke-opacity="0.6" stroke-width="2.4" stroke-linecap="round" />
+</svg>
+
+@code {
+    [Parameter]
+    public int Size { get; set; } = 28;
+}
