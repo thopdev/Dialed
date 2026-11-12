@@ -432,6 +432,8 @@
   <data name="Gear_EveryBrews" xml:space="preserve"><value>Service every (brews)</value></data>
   <data name="Gear_EveryDays" xml:space="preserve"><value>or every (days, 7 = weekly)</value></data>
   <data name="Gear_EveryKg" xml:space="preserve"><value>or every (kg of coffee)</value></data>
+  <data name="Gear_FavoriteLine" xml:space="preserve"><value>{0} · {1}: setting {2} {3}</value></data>
+  <data name="Gear_Favorites" xml:space="preserve"><value>Favourite settings</value></data>
   <data name="Gear_Kind" xml:space="preserve"><value>Kind</value></data>
   <data name="Gear_MarkServiced" xml:space="preserve"><value>Mark as serviced today</value></data>
   <data name="Gear_Model" xml:space="preserve"><value>Model</value></data>
@@ -453,6 +455,9 @@
   <data name="Gear_UpkeepMeter" xml:space="preserve"><value>Used since the last service</value></data>
   <data name="Gear_UsageSince" xml:space="preserve"><value>{0} since {1}</value></data>
   <data name="Gear_UsageSoFar" xml:space="preserve"><value>{0} so far</value></data>
+  <data name="Gear_View" xml:space="preserve"><value>View</value></data>
+  <data name="Gear_ViewList" xml:space="preserve"><value>List</value></data>
+  <data name="Gear_ViewShelf" xml:space="preserve"><value>Shelf</value></data>
   <data name="Grind_Clicks" xml:space="preserve"><value>clicks</value></data>
   <data name="Grind_Decrease" xml:space="preserve"><value>Finer</value></data>
   <data name="Grind_ErrorMissing" xml:space="preserve"><value>Enter the highest setting.</value></data>

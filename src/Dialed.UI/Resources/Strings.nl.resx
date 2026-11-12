@@ -432,6 +432,8 @@
   <data name="Gear_EveryBrews" xml:space="preserve"><value>Onderhoud elke (brews)</value></data>
   <data name="Gear_EveryDays" xml:space="preserve"><value>of elke (dagen, 7 = wekelijks)</value></data>
   <data name="Gear_EveryKg" xml:space="preserve"><value>of elke (kg koffie)</value></data>
+  <data name="Gear_FavoriteLine" xml:space="preserve"><value>{0} · {1}: stand {2} {3}</value></data>
+  <data name="Gear_Favorites" xml:space="preserve"><value>Favoriete standen</value></data>
   <data name="Gear_Kind" xml:space="preserve"><value>Soort</value></data>
   <data name="Gear_MarkServiced" xml:space="preserve"><value>Vandaag onderhoud gedaan</value></data>
   <data name="Gear_Model" xml:space="preserve"><value>Model</value></data>
@@ -453,6 +455,9 @@
   <data name="Gear_UpkeepMeter" xml:space="preserve"><value>Gebruik sinds het laatste onderhoud</value></data>
   <data name="Gear_UsageSince" xml:space="preserve"><value>{0} sinds {1}</value></data>
   <data name="Gear_UsageSoFar" xml:space="preserve"><value>{0} tot nu toe</value></data>
+  <data name="Gear_View" xml:space="preserve"><value>Weergave</value></data>
+  <data name="Gear_ViewList" xml:space="preserve"><value>Lijst</value></data>
+  <data name="Gear_ViewShelf" xml:space="preserve"><value>Schap</value></data>
   <data name="Grind_Clicks" xml:space="preserve"><value>klikken</value></data>
   <data name="Grind_Decrease" xml:space="preserve"><value>Fijner</value></data>
   <data name="Grind_ErrorMissing" xml:space="preserve"><value>Vul de hoogste stand in.</value></data>

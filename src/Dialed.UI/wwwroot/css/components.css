@@ -3522,6 +3522,54 @@ a.dialed-banner {
     height: 2.5rem;
 }
 
+/* ---- Equipment shelf ---------------------------------------------------------------------------- */
+
+.dialed-segmented {
+    display: flex;
+    gap: var(--dialed-space-2);
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-shelf {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    gap: var(--dialed-space-3);
+    margin: 0 0 var(--dialed-space-3);
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-shelf-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--dialed-space-1);
+    min-height: 2.75rem;
+    padding: var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2);
+    border-radius: var(--borderRadiusLarge);
+    background: var(--colorNeutralBackground1);
+    color: inherit;
+    text-align: center;
+    text-decoration: none;
+}
+
+.dialed-shelf-name {
+    font-weight: 600;
+}
+
+.dialed-shelf-kind {
+    font-size: var(--dialed-text-s);
+    color: var(--colorNeutralForeground2);
+}
+
+.dialed-favorites ul {
+    margin: var(--dialed-space-1) 0 0;
+    padding-inline-start: 1.25rem;
+}
+
+
+
 .dialed-coach {
     display: flex;
     flex-direction: column;
