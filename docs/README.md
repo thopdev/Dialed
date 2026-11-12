@@ -22,7 +22,7 @@ Start with the [plan](PLAN.md) and the [architecture](architecture.md); decision
 | [photo-uploads.md](photo-uploads.md) | Photo upload queue and short-lived URLs |
 | [push-notifications.md](push-notifications.md) | Web Push: follow and household events, low stock and peak alerts, keys, the stock alert job |
 | [public-profiles.md](public-profiles.md) | Opt-in public profiles, find people, reports, moderation with the admin key |
-| [insights.md](insights.md) | Offline maps, flavour wheel, calendar, milestones, dial-in trace and the brew card: what they read, where the code is, how to extend them |
+| [insights.md](insights.md) | Offline maps, flavour wheel, calendar, milestones, dial-in trace, brew and bean cards, bean journey, gear upkeep, grind drift, recipe from best brews and tasting suggestions: what they read, where the code is, how to extend them |
 | [automerge.md](automerge.md) | Docs-only PRs from the owner merge themselves when `build-test` is green: the workflow and the settings to switch on |
 | [app-size.md](app-size.md) | What the first load downloads, how to measure it, and how fast the insight views are on a big household |
 | [catalog.md](catalog.md) | The shared bean and roaster catalog: what goes in, the 2-person rule, moderation, where it is used |
