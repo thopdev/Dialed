@@ -10,6 +10,8 @@
 @inject IRepository<Brew> BrewStore
 @inject IUserPreferences Preferences
 @inject TimeProvider Time
+@inject Dialed.Client.Platform.IShareService Sharing
+@inject UnitFormatter Units
 
 <PageHeader Title="@L["Stock_Title"]" BackHref="more" />
 
@@ -19,6 +21,29 @@
         @L[Filter == "low" ? "Stock_FilterLow" : "Stock_FilterPeak"]
         <a id="stock-filter-clear" class="dialed-section-link" href="inventory">@L["Stock_ShowAll"]</a>
     </p>
+}
+
+@if (stock is not null && shopping.Count > 0 && Filter is null)
+{
+    <section id="stock-shopping">
+        <SectionHeader Title="@L["Shopping_Title"]" />
+        <div class="dialed-list">
+            @foreach (var item in shopping)
+            {
+                <ListRow Title="@item.Name" Subtitle="@ShoppingSubtitle(item)" Href="@($"beans/{item.BeanId}")" data-bean="@item.BeanId" />
+            }
+        </div>
+        <div class="dialed-form-actions">
+            <button id="stock-share-list" type="button" class="dialed-button" @onclick="ShareListAsync">@L["Shopping_Share"]</button>
+        </div>
+        @if (listText is not null)
+        {
+            <div class="dialed-field">
+                <label for="stock-list-text">@L["Shopping_Copy"]</label>
+                <textarea id="stock-list-text" readonly rows="@(shopping.Count + 1)">@listText</textarea>
+            </div>
+        }
+    </section>
 }
 
 @if (stock is null)
@@ -56,6 +81,8 @@ else
 @code {
     private IReadOnlyList<BagStock>? stock;
     private Dictionary<string, Bean> beansById = [];
+    private IReadOnlyList<ShoppingItem> shopping = [];
+    private string? listText;
 
     /// <summary>A tapped stock notification opens this page with <c>?show=low</c> or <c>?show=peak</c> (#259).</summary>
     [SupplyParameterFromQuery(Name = "show")]
@@ -90,7 +117,29 @@ else
         var today = DateOnly.FromDateTime(Time.GetLocalNow().DateTime);
         var beans = await BeanStore.ListAsync();
         beansById = beans.Where(b => !b.Deleted).ToDictionary(b => b.Id);
-        stock = InventoryOverview.Build(await BagStore.ListAsync(), beans, await BrewStore.ListAsync(), today, Preferences.Inventory);
+        var brews = await BrewStore.ListAsync();
+        stock = InventoryOverview.Build(await BagStore.ListAsync(), beans, brews, today, Preferences.Inventory);
+        shopping = ShoppingList.Build(stock, brews);
+    }
+
+    private string ShoppingSubtitle(ShoppingItem item)
+    {
+        var reason = L[item.Reason == ShoppingReason.RunningLow ? "Shopping_Low" : "Shopping_Again"].Value;
+        return item.LastBagWeightG is { } weight ? $"{reason} · {Units.Weight(weight)}" : reason;
+    }
+
+    private async Task ShareListAsync()
+    {
+        var lines = shopping.Select(i => $"- {i.Name}{(i.LastBagWeightG is { } w ? $" ({Units.Weight(w)})" : "")}");
+        var text = $"{L["Shopping_Title"].Value}\n{string.Join("\n", lines)}";
+        if (await Sharing.IsSupportedAsync() && await Sharing.ShareAsync(new Dialed.Client.Platform.ShareRequest(Title: L["Shopping_Title"].Value, Text: text)))
+        {
+            listText = null;
+            return;
+        }
+
+        // No share sheet (or it was dismissed): show the text to copy by hand.
+        listText = text;
     }
 
     private void OnChanged() => _ = InvokeAsync(async () =>
