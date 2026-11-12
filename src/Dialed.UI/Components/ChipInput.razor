@@ -1,3 +1,4 @@
+@using Dialed.Domain.Flavors
 @using Dialed.Domain.Model
 @inject IStringLocalizer<Strings> L
 
@@ -23,6 +24,16 @@
                @onkeydown="OnKeyDown" />
         <button type="button" class="dialed-button" @onclick="AddAsync">@L["Chip_Add"]</button>
     </div>
+    @if (Suggestions.Count > 0)
+    {
+        <ul class="dialed-chip-suggestions" aria-label="@L["Chip_Suggestions"]">
+            @foreach (var word in Suggestions)
+            {
+                var captured = word;
+                <li><Chip OnClick="() => PickAsync(captured)">@captured</Chip></li>
+            }
+        </ul>
+    }
 </div>
 
 @code {
@@ -37,6 +48,18 @@
 
     [Parameter]
     public EventCallback<IReadOnlyList<string>> ValuesChanged { get; set; }
+
+    /// <summary>Offer known flavour words while typing (tasting notes).</summary>
+    [Parameter]
+    public bool SuggestFlavors { get; set; }
+
+    private IReadOnlyList<string> Suggestions => SuggestFlavors ? FlavorWheel.Suggest(text, Values) : [];
+
+    private async Task PickAsync(string word)
+    {
+        text = word;
+        await AddAsync();
+    }
 
     private async Task AddAsync()
     {

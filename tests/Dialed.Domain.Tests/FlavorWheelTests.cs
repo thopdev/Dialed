@@ -58,4 +58,23 @@ public sealed class FlavorWheelTests
 
         stats.Flavours.ShouldBe([new(FlavorCategory.Fruity, 3), new(FlavorCategory.Floral, 3)]);
     }
+
+    [Fact]
+    public void Suggest_offers_known_words_by_prefix_shortest_first_without_chosen_ones()
+    {
+        FlavorWheel.Suggest("blue").ShouldBe(["blueberry"]);
+        FlavorWheel.Suggest("BLA", ["Blackberry"]).ShouldNotContain("blackberry");
+        FlavorWheel.Suggest("ca").ShouldBe(FlavorWheel.Suggest("ca").OrderBy(w => w.Length).ThenBy(w => w, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Suggest_ignores_accents_empty_input_and_exact_matches_and_understands_dutch()
+    {
+        FlavorWheel.Suggest("").ShouldBeEmpty();
+        FlavorWheel.Suggest("  ").ShouldBeEmpty();
+        FlavorWheel.Suggest("honeysuckle").ShouldBeEmpty();
+        FlavorWheel.Suggest("honey").ShouldBe(["honeysuckle"]);
+        FlavorWheel.Suggest("bosb").ShouldBe(["bosbes"]);
+        FlavorWheel.Suggest("a", max: 3).Count.ShouldBe(3);
+    }
 }

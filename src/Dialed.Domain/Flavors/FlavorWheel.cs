@@ -65,6 +65,28 @@ public static class FlavorWheel
         ];
     }
 
+    /// <summary>
+    /// Known flavour words that start with what is typed (ignoring case and accents), shortest first, without the ones already chosen.
+    /// Shorter words come first.
+    /// </summary>
+    public static IReadOnlyList<string> Suggest(string? typed, IEnumerable<string>? already = null, int max = 6)
+    {
+        var prefix = Normalize(typed);
+        if (prefix.Length == 0 || max <= 0)
+        {
+            return [];
+        }
+
+        var taken = (already ?? []).Select(Normalize).ToHashSet();
+        return
+        [
+            .. Words.Keys
+                .Where(w => w.StartsWith(prefix, StringComparison.Ordinal) && w != prefix && !taken.Contains(w))
+                .OrderBy(w => w.Length).ThenBy(w => w, StringComparer.Ordinal)
+                .Take(max),
+        ];
+    }
+
     private static FlavorCategory? Lookup(string word)
     {
         if (Words.TryGetValue(word, out var category))
