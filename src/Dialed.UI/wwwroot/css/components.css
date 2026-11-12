@@ -2486,7 +2486,6 @@ a.people-row-name {
 .dialed-dialin-ai-result h3 {
     margin: 0;
     font-size: var(--dialed-text-m);
-    font-weight: 600;
 }
 
 .dialed-dialin-ai-result > .dialed-muted {
@@ -3048,6 +3047,67 @@ a.people-row-name {
 .dialed-compare-notes {
     display: grid;
     gap: var(--dialed-space-3);
+}
+
+/* ---- Bean journey ------------------------------------------------------------------------------ */
+
+.dialed-journey {
+    position: relative;
+    margin: var(--dialed-space-3) 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dialed-journey::before {
+    content: "";
+    position: absolute;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    left: 0.4375rem;
+    width: 2px;
+    background: var(--colorNeutralStroke2);
+}
+
+.dialed-journey-step {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--dialed-space-3);
+    padding: var(--dialed-space-2) 0;
+}
+
+.dialed-journey-dot {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.125rem;
+    border: 2px solid var(--colorBrandStroke1);
+    border-radius: var(--borderRadiusCircular);
+    background: var(--colorBrandBackground);
+}
+
+.dialed-journey-step.upcoming .dialed-journey-dot {
+    background: var(--colorNeutralBackground1);
+    border-style: dashed;
+}
+
+.dialed-journey-step.upcoming .dialed-journey-what {
+    color: var(--colorNeutralForeground3);
+}
+
+.dialed-journey-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.dialed-journey-what {
+    font-weight: var(--dialed-weight-semibold);
+}
+
+.dialed-journey-bag h3 {
+    margin: var(--dialed-space-4) 0 var(--dialed-space-1);
+    font-size: var(--dialed-text-m);
+    font-weight: var(--dialed-weight-semibold);
 }
 
 .dialed-drift {

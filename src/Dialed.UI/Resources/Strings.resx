@@ -1053,4 +1053,13 @@
   <data name="Drift_Text" xml:space="preserve"><value>Over your last {3} brews of this bag the setting went from {0} to {1} in {2} days.</value></data>
   <data name="Drift_Try" xml:space="preserve"><value>Today the trend points to {0}.</value></data>
   <data name="Drift_Why" xml:space="preserve"><value>Beans change as they age, so many people grind finer to keep the taste. Use this as a hint, not a rule.</value></data>
+  <data name="Journey_Title" xml:space="preserve"><value>Journey</value></data>
+  <data name="Journey_Purchased" xml:space="preserve"><value>Bought</value></data>
+  <data name="Journey_Roasted" xml:space="preserve"><value>Roasted</value></data>
+  <data name="Journey_PeakStarts" xml:space="preserve"><value>Peak window starts</value></data>
+  <data name="Journey_PeakEnds" xml:space="preserve"><value>Peak window ends</value></data>
+  <data name="Journey_FirstBrew" xml:space="preserve"><value>First brew</value></data>
+  <data name="Journey_Finished" xml:space="preserve"><value>Last brew, bag finished</value></data>
+  <data name="Journey_Bag" xml:space="preserve"><value>{0} bag</value></data>
+  <data name="Journey_Upcoming" xml:space="preserve"><value>Upcoming</value></data>
 </root>

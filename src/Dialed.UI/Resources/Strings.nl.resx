@@ -1052,4 +1052,13 @@
   <data name="Drift_Text" xml:space="preserve"><value>Bij je laatste {3} bakjes uit deze zak ging de stand van {0} naar {1} in {2} dagen.</value></data>
   <data name="Drift_Try" xml:space="preserve"><value>Vandaag wijst de trend naar {0}.</value></data>
   <data name="Drift_Why" xml:space="preserve"><value>Bonen veranderen met de tijd, daarom malen veel mensen fijner om de smaak te houden. Zie dit als hint, niet als regel.</value></data>
+  <data name="Journey_Title" xml:space="preserve"><value>Levensloop</value></data>
+  <data name="Journey_Purchased" xml:space="preserve"><value>Gekocht</value></data>
+  <data name="Journey_Roasted" xml:space="preserve"><value>Gebrand</value></data>
+  <data name="Journey_PeakStarts" xml:space="preserve"><value>Piekperiode begint</value></data>
+  <data name="Journey_PeakEnds" xml:space="preserve"><value>Piekperiode eindigt</value></data>
+  <data name="Journey_FirstBrew" xml:space="preserve"><value>Eerste brew</value></data>
+  <data name="Journey_Finished" xml:space="preserve"><value>Laatste brew, zak op</value></data>
+  <data name="Journey_Bag" xml:space="preserve"><value>Zak van {0}</value></data>
+  <data name="Journey_Upcoming" xml:space="preserve"><value>Straks</value></data>
 </root>
