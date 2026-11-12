@@ -82,3 +82,17 @@ On guided timers (not the espresso shot timer) the switch "Say the steps out lou
 - `RecipeStep.Pattern` (`PourPattern`: centre, spiral, circles, pulse) is optional and only drawn; the recipe form has a "Pour pattern" choice for bloom and pour steps and keeps it when a routine is edited.
 - `PourFigure` is an SVG of the brewer (a cone, or a straight-sided press for AeroPress and French press) with the water level and the pour. On the timer the level rises to the step's cumulative target and the pattern animates while a bloom or pour runs (a falling stream for centre and pulse, a dot circling a track for spiral and circles); it stops when paused. All motion is CSS and switches off for reduced motion. Elsewhere it is a still thumbnail. Each figure is one image with a description.
 
+## Quick log, cost per cup and the Home timer button
+- **Quick log** (#332): after a guided timer finishes, the log form opens in a short mode with just the rating and taste chips (`#quick-log`, `#quick-log-save`); "More details" (`#quick-log-more`) opens the full form. The brew is saved with what the recipe and timer already knew.
+- **Cost per cup** (#333): `CupCost` (`Dialed.Domain.Statistics`) divides a bag's price by its weight and multiplies by the dose. `ForBrew` is one brew, `AverageForBag` the average over a bag's brews, `PerMonth` feeds a statistics tile. Brews of bags without a price or weight are left out. It shows on the brew detail, the bag screen and Statistics.
+- **Home timer button** (#334): the "Brew again" rows on Home have a round timer button that starts the guided timer for the last recipe.
+
+## Dial-in coach
+`DialInCoach.Build` (`Dialed.Domain.DialIn`) reads the logged brews of one bag for the method brewed last: the number of tries, the best rating, and the stage. A bag is *dialled in* when the latest brew is rated 4 or more and tastes balanced. The Brew screen of a bag shows a coach card (`#brew-coach`) while it is still being dialled in, with the next step from `DialInAdvisor` and a button that opens the log form with that change applied (`#brew-coach-apply`). After at least two tries the card says "Dialled in" once it gets there. No new storage; it follows the brews.
+
+## Equipment shelf and favourite settings
+Equipment has a List and a Shelf view (`#gear-view-list`, `#gear-view-shelf`). The shelf shows a tile per item with its first photo or a kind icon and the service chip from the upkeep rules. A grinder's detail lists its favourite settings (`#gear-favorites`): `FavoriteGrinds.For` takes, per bean and method, the setting of the best-rated brew (4 or more, newest wins ties) made with that grinder.
+
+## Backup and restore
+Settings has "Save a backup" and a restore picker (`BackupPanel`, `BackupService` in `Dialed.Client.Backup`). The file (`dialed-backup-<date>.json`, `format: "dialed-backup"`, `version: 1`) holds vendors, beans, bags, gear, recipes and brews built from what the device has, so it works offline and signed out. A restore only adds records whose id is not here yet, restored in dependency order, and never changes or removes anything. Photos are not included, so restored records come back without them. The server's "Export my data" file is accepted too. To add a kind of record, add it to `Tables` and the two switches in `BackupService` and a test.
+
