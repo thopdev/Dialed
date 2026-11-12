@@ -1,0 +1,26 @@
+@* How much of a bag is left as a ring with the grams in the middle. Announced as a meter. *@
+<div class="dialed-ring dialed-ring-@(Tone.ToString().ToLowerInvariant())" role="meter" aria-label="@Label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Percent" aria-valuetext="@(ValueText ?? $"{Percent}%")" style="--dialed-ring-value: @(Percent)%">
+    <span class="dialed-ring-inner" aria-hidden="true">@Text</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    /// <summary>0 to 1; values outside are clamped.</summary>
+    [Parameter]
+    public double Fraction { get; set; }
+
+    [Parameter]
+    public Meter.MeterTone Tone { get; set; }
+
+    /// <summary>What a screen reader says instead of the percentage.</summary>
+    [Parameter]
+    public string? ValueText { get; set; }
+
+    /// <summary>The short text in the middle, for example "120 g".</summary>
+    [Parameter]
+    public string Text { get; set; } = "";
+
+    private int Percent => (int)Math.Round(Math.Clamp(double.IsNaN(Fraction) ? 0 : Fraction, 0, 1) * 100);
+}
