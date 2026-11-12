@@ -1368,6 +1368,17 @@ button.dialed-chip::after {
     min-width: 0;
 }
 
+/* Brew again with its timer button beside it: the card shrinks to leave room. */
+.dialed-brew-again-row > .dialed-brew-again {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+}
+
+.dialed-brew-again-row {
+    margin-bottom: var(--dialed-space-3);
+}
+
 /* Brew log form: sections with a heading, dose and liquid side by side, and a save bar that stays in view. */
 .dialed-form-section {
     display: flex;
@@ -3306,4 +3317,25 @@ a.dialed-banner {
 
 .dialed-timer-focus .dialed-timer-target {
     font-size: var(--dialed-text-l);
+
+/* ---- Bag screen: tips in one collapsed row ------------------------------------------------------ */
+
+.dialed-tips {
+    margin-bottom: var(--dialed-space-3);
+}
+
+.dialed-tips > summary {
+    display: flex;
+    align-items: center;
+    min-height: var(--dialed-touch-target);
+    padding: 0 var(--dialed-space-3);
+    border: 1px solid var(--colorNeutralStroke2);
+    border-radius: var(--dialed-radius-m);
+    background: var(--colorNeutralBackground1);
+    font-weight: var(--dialed-weight-semibold);
+    cursor: pointer;
+}
+
+.dialed-tips[open] > summary {
+    margin-bottom: var(--dialed-space-3);
 }
