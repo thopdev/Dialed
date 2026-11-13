@@ -150,18 +150,27 @@
 
 /* The brew follows the real download: js/loading.js sets data-stage on .dialed-loading from the progress
    (bloom, rest1, pour1, rest2, pour2, done). Each stage sets how far the kettle tilts, whether it pours and how high the water stands. */
+/* How far the pouring kettle sways from side to side, so the stream lands in different places like a real pour. It is a registered
+   property so that it eases to 0 when the kettle rests instead of jumping. */
+@property --sway {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+}
+
 .dialed-loading {
     --kettle-tilt: 12deg;
     --pouring: 1;
     --water: 24%;
     --drip: 1;
+    --sway: 4px;
 }
 
-.dialed-loading[data-stage="rest1"] { --kettle-tilt: 0deg; --pouring: 0; --water: 16%; }
-.dialed-loading[data-stage="pour1"] { --kettle-tilt: 16deg; --pouring: 1; --water: 58%; }
-.dialed-loading[data-stage="rest2"] { --kettle-tilt: 0deg; --pouring: 0; --water: 42%; }
-.dialed-loading[data-stage="pour2"] { --kettle-tilt: 16deg; --pouring: 1; --water: 86%; }
-.dialed-loading[data-stage="done"] { --kettle-tilt: 0deg; --pouring: 0; --water: 0%; --drip: 0; }
+.dialed-loading[data-stage="rest1"] { --kettle-tilt: 0deg; --pouring: 0; --water: 16%; --sway: 0px; }
+.dialed-loading[data-stage="pour1"] { --kettle-tilt: 16deg; --pouring: 1; --water: 58%; --sway: 7px; }
+.dialed-loading[data-stage="rest2"] { --kettle-tilt: 0deg; --pouring: 0; --water: 42%; --sway: 0px; }
+.dialed-loading[data-stage="pour2"] { --kettle-tilt: 16deg; --pouring: 1; --water: 86%; --sway: 7px; }
+.dialed-loading[data-stage="done"] { --kettle-tilt: 0deg; --pouring: 0; --water: 0%; --drip: 0; --sway: 0px; }
 
 .dialed-loading-kettle {
     transform: translate(-12px, 0) rotate(var(--kettle-tilt));
@@ -171,8 +180,12 @@
     opacity: var(--drip);
 }
 
+/* The stream grows out of the spout instead of just appearing. */
 .dialed-loading-stream-kettle {
     opacity: var(--pouring);
+    transform: scaleY(var(--pouring));
+    transform-box: view-box;
+    transform-origin: 50px 27px;
 }
 
 .dialed-loading-water {
@@ -180,17 +193,35 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
+    .dialed-loading {
+        transition: --sway 1s ease-in-out;
+    }
+
+    /* The kettle and its stream drift left and right while pouring. */
+    .dialed-loading-pourer {
+        animation: dialed-loading-sway 2.6s ease-in-out infinite alternate;
+    }
+
     .dialed-loading-kettle {
-        transition: transform 0.5s ease;
+        transition: transform 1s cubic-bezier(0.45, 0, 0.2, 1);
     }
 
     .dialed-loading-stream {
-        transition: opacity 0.25s ease;
+        transition: opacity 0.4s ease;
+    }
+
+    .dialed-loading-stream-kettle {
+        transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.3, 0, 0.2, 1);
     }
 
     .dialed-loading-water {
-        transition: height 0.6s ease;
+        transition: height 0.9s ease-in-out;
     }
+}
+
+@keyframes dialed-loading-sway {
+    from { transform: translateX(calc(var(--sway) * -1)); }
+    to { transform: translateX(var(--sway)); }
 }
 
 .dialed-loading-name {
