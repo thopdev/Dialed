@@ -87,6 +87,8 @@
 
 .dialed-loading-kettle {
     stroke-width: 0.22rem;
+    transform-box: view-box;
+    transform-origin: 30px 20px;
 }
 
 .dialed-loading-kettle-body {
@@ -145,6 +147,43 @@
 
 @keyframes dialed-loading-pour {
     to { stroke-dashoffset: -0.9rem; }
+}
+
+/* The brew, on a 7 second loop: a short bloom, a rest, then two pours. The cup follows the real download progress. */
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-loading-kettle {
+        animation: dialed-loading-kettle 7s ease-in-out infinite;
+    }
+
+    .dialed-loading-stream-kettle {
+        animation: dialed-loading-pour 0.5s linear infinite, dialed-loading-stream 7s linear infinite;
+    }
+
+    .dialed-loading-water {
+        animation: dialed-loading-water 7s ease-in-out infinite;
+    }
+}
+
+@keyframes dialed-loading-kettle {
+    0%, 14%, 30%, 53%, 64%, 90%, 100% { transform: translate(-12px, 0) rotate(0deg); }
+    3%, 12% { transform: translate(-12px, 0) rotate(12deg); }
+    32%, 51% { transform: translate(-12px, 0) rotate(16deg); }
+    66%, 88% { transform: translate(-12px, 0) rotate(16deg); }
+}
+
+@keyframes dialed-loading-stream {
+    0%, 2%, 13%, 30%, 52%, 64%, 88%, 100% { opacity: 0; }
+    3%, 12%, 31%, 51%, 65%, 87% { opacity: 1; }
+}
+
+@keyframes dialed-loading-water {
+    0% { height: 0; }
+    12% { height: 24%; }
+    30% { height: 16%; }
+    52% { height: 58%; }
+    64% { height: 42%; }
+    88% { height: 86%; }
+    100% { height: 0; }
 }
 
 .dialed-loading-name {
