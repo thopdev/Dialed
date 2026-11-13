@@ -120,7 +120,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    height: 62%;
     background: var(--loading-ink);
     opacity: 0.45;
 }
@@ -149,41 +148,49 @@
     to { stroke-dashoffset: -0.9rem; }
 }
 
-/* The brew, on a 7 second loop: a short bloom, a rest, then two pours. The cup follows the real download progress. */
+/* The brew follows the real download: js/loading.js sets data-stage on .dialed-loading from the progress
+   (bloom, rest1, pour1, rest2, pour2, done). Each stage sets how far the kettle tilts, whether it pours and how high the water stands. */
+.dialed-loading {
+    --kettle-tilt: 12deg;
+    --pouring: 1;
+    --water: 24%;
+    --drip: 1;
+}
+
+.dialed-loading[data-stage="rest1"] { --kettle-tilt: 0deg; --pouring: 0; --water: 16%; }
+.dialed-loading[data-stage="pour1"] { --kettle-tilt: 16deg; --pouring: 1; --water: 58%; }
+.dialed-loading[data-stage="rest2"] { --kettle-tilt: 0deg; --pouring: 0; --water: 42%; }
+.dialed-loading[data-stage="pour2"] { --kettle-tilt: 16deg; --pouring: 1; --water: 86%; }
+.dialed-loading[data-stage="done"] { --kettle-tilt: 0deg; --pouring: 0; --water: 0%; --drip: 0; }
+
+.dialed-loading-kettle {
+    transform: translate(-12px, 0) rotate(var(--kettle-tilt));
+}
+
+.dialed-loading-stream {
+    opacity: var(--drip);
+}
+
+.dialed-loading-stream-kettle {
+    opacity: var(--pouring);
+}
+
+.dialed-loading-water {
+    height: var(--water);
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .dialed-loading-kettle {
-        animation: dialed-loading-kettle 7s ease-in-out infinite;
+        transition: transform 0.5s ease;
     }
 
-    .dialed-loading-stream-kettle {
-        animation: dialed-loading-pour 0.5s linear infinite, dialed-loading-stream 7s linear infinite;
+    .dialed-loading-stream {
+        transition: opacity 0.25s ease;
     }
 
     .dialed-loading-water {
-        animation: dialed-loading-water 7s ease-in-out infinite;
+        transition: height 0.6s ease;
     }
-}
-
-@keyframes dialed-loading-kettle {
-    0%, 14%, 30%, 53%, 64%, 90%, 100% { transform: translate(-12px, 0) rotate(0deg); }
-    3%, 12% { transform: translate(-12px, 0) rotate(12deg); }
-    32%, 51% { transform: translate(-12px, 0) rotate(16deg); }
-    66%, 88% { transform: translate(-12px, 0) rotate(16deg); }
-}
-
-@keyframes dialed-loading-stream {
-    0%, 2%, 13%, 30%, 52%, 64%, 88%, 100% { opacity: 0; }
-    3%, 12%, 31%, 51%, 65%, 87% { opacity: 1; }
-}
-
-@keyframes dialed-loading-water {
-    0% { height: 0; }
-    12% { height: 24%; }
-    30% { height: 16%; }
-    52% { height: 58%; }
-    64% { height: 42%; }
-    88% { height: 86%; }
-    100% { height: 0; }
 }
 
 .dialed-loading-name {
@@ -194,7 +201,7 @@
     letter-spacing: 0.04em;
 }
 
-/* "Bloom", "Pour" and "Dialed" sit in the same spot; the loading script adds .dialed-loading-done near the end of the download. */
+/* "Bloom", "Pour" and "Dialed" sit in the same spot: Bloom for the bloom and its rest, Pour for the pours, Dialed at the end. */
 .dialed-loading-bloom,
 .dialed-loading-pour-word,
 .dialed-loading-dialed {
@@ -207,13 +214,20 @@
     opacity: 0;
 }
 
-.dialed-loading-done .dialed-loading-bloom,
-.dialed-loading-done .dialed-loading-pour-word {
+.dialed-loading[data-stage="pour1"] .dialed-loading-bloom,
+.dialed-loading[data-stage="rest2"] .dialed-loading-bloom,
+.dialed-loading[data-stage="pour2"] .dialed-loading-bloom,
+.dialed-loading[data-stage="done"] .dialed-loading-bloom {
     opacity: 0;
-    animation: none;
 }
 
-.dialed-loading-done .dialed-loading-dialed {
+.dialed-loading[data-stage="pour1"] .dialed-loading-pour-word,
+.dialed-loading[data-stage="rest2"] .dialed-loading-pour-word,
+.dialed-loading[data-stage="pour2"] .dialed-loading-pour-word {
+    opacity: 1;
+}
+
+.dialed-loading[data-stage="done"] .dialed-loading-dialed {
     opacity: 1;
 }
 
@@ -224,65 +238,14 @@
         transition: opacity 0.25s ease;
     }
 
-    /* The word follows the kettle on the same 7 second loop: Bloom for the bloom and its rest, Pour for the pours. */
-    .dialed-loading-bloom {
-        animation: dialed-loading-word-bloom 7s ease-in-out infinite;
-    }
-
-    .dialed-loading-pour-word {
-        animation: dialed-loading-word-pour 7s ease-in-out infinite;
-    }
-
-    /* "Dialed" settles into place with a little overshoot, and the cup gives a small bounce. */
-    .dialed-loading-done .dialed-loading-dialed {
+    /* "Dialed" settles into place with a little overshoot, and the cup gives a small hop. */
+    .dialed-loading[data-stage="done"] .dialed-loading-dialed {
         animation: dialed-loading-settle 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
     }
 
-    .dialed-loading-done .dialed-loading-brewer {
+    .dialed-loading[data-stage="done"] .dialed-loading-brewer {
         animation: dialed-loading-cheer 0.6s ease-out;
     }
-}
-
-/* Done: the pouring stops. The kettle rests, both streams stop and the V60 has drained into the full cup. */
-.dialed-loading-done .dialed-loading-kettle {
-    animation: none;
-    transform: translate(-12px, 0) rotate(0deg);
-}
-
-.dialed-loading-done .dialed-loading-stream {
-    animation: none;
-    opacity: 0;
-}
-
-.dialed-loading-done .dialed-loading-water {
-    animation: none;
-    height: 0;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .dialed-loading-done .dialed-loading-kettle {
-        transition: transform 0.4s ease;
-    }
-
-    .dialed-loading-done .dialed-loading-stream {
-        transition: opacity 0.25s ease;
-    }
-
-    .dialed-loading-done .dialed-loading-water {
-        transition: height 0.6s ease;
-    }
-}
-
-@keyframes dialed-loading-word-bloom {
-    0%, 26% { opacity: 1; }
-    30%, 96% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-@keyframes dialed-loading-word-pour {
-    0%, 26% { opacity: 0; }
-    30%, 96% { opacity: 1; }
-    100% { opacity: 0; }
 }
 
 @keyframes dialed-loading-settle {
