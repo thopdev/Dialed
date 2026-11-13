@@ -228,6 +228,12 @@ async function signInAs(page: Page, user: DevUser) {
 }
 
 async function openSettings(page: Page) {
+  const back = page.locator('a.dialed-back[href="settings"]');
+  if (await back.count()) {
+    await back.click();
+    return;
+  }
+
   await page.getByRole('link', { name: 'More', exact: true }).click();
   await page.getByRole('link', { name: 'Settings' }).click();
 }
@@ -238,8 +244,15 @@ test('signs in with the dev login and shows the account and household', async ({
 
   await openSettings(page);
 
+  // The overview shows who is signed in; the account and the household have their own pages.
+  await expect(page.locator('#settings-account-card')).toContainText('Alice');
+  await expect(page.locator('#settings-signin')).toHaveCount(0);
+  await page.locator('#settings-account-card').click();
   await expect(page.locator('#account-signed-in')).toContainText('Alice');
   await expect(page.locator('#account-signup-form')).toHaveCount(0);
+
+  await openSettings(page);
+  await page.locator('[data-settings="household"]').click();
   await expect(page.locator('#household-name')).toHaveText('Alice and Bob');
   await expect(page.locator('#household-members')).toContainText('Bob');
 });
