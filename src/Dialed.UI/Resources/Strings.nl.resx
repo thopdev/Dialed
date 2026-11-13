@@ -629,6 +629,16 @@
   <data name="KnownIssues_Storage" xml:space="preserve"><value>Op iPhone kan Safari de gegevens van sites wissen die niet op het beginscherm staan. Zet Dialed op je beginscherm en controleer Instellingen &gt; Opslag; maak een account om een kopie op de server te bewaren.</value></data>
   <data name="KnownIssues_Timer" xml:space="preserve"><value>Het geluid van de brewtimer kan gedempt worden door de stille modus van de iPhone, en het scherm kan op sommige apparaten toch dimmen.</value></data>
   <data name="KnownIssues_Title" xml:space="preserve"><value>Bekende problemen</value></data>
+  <data name="Level_0" xml:space="preserve"><value>Beginner</value></data>
+  <data name="Level_1" xml:space="preserve"><value>Thuisbrouwer</value></data>
+  <data name="Level_2" xml:space="preserve"><value>Dialed-in</value></data>
+  <data name="Level_3" xml:space="preserve"><value>Vaste klant</value></data>
+  <data name="Level_4" xml:space="preserve"><value>Kenner</value></data>
+  <data name="Level_5" xml:space="preserve"><value>Meester</value></data>
+  <data name="Level_Label" xml:space="preserve"><value>Niveau {0}</value></data>
+  <data name="Level_Next" xml:space="preserve"><value>Nog {0} tot {1}</value></data>
+  <data name="Level_Progress" xml:space="preserve"><value>Voortgang naar het volgende niveau</value></data>
+  <data name="Level_Top" xml:space="preserve"><value>{0} · hoogste niveau</value></data>
   <data name="Loading" xml:space="preserve"><value>Laden…</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Kaart met een markering voor elke herkomst: {0}</value></data>
   <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: bonen tonen</value></data>
@@ -1059,6 +1069,11 @@
   <data name="Storage_Unprotected" xml:space="preserve"><value>Je gegevens staan op dit apparaat, maar de browser kan ze wissen als de ruimte krap wordt. Log in om online een kopie te bewaren.</value></data>
   <data name="Storage_WriteFailed" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard tot je de app sluit. Maak ruimte vrij op je apparaat.</value></data>
   <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>Dit apparaat kon je laatste wijziging niet opslaan (misschien is de opslag vol). Hij blijft bewaard zolang de app open is en wordt naar je account gestuurd. Maak ruimte vrij op je apparaat.</value></data>
+  <data name="StreakLevel_Title" xml:space="preserve"><value>Reeks en niveau</value></data>
+  <data name="Streak_Best" xml:space="preserve"><value>Langste: {0}</value></data>
+  <data name="Streak_Caption_One" xml:space="preserve"><value>dag op rij</value></data>
+  <data name="Streak_Caption_Other" xml:space="preserve"><value>dagen op rij</value></data>
+  <data name="Streak_Show" xml:space="preserve"><value>Toon reeks en niveau op Home</value></data>
   <data name="Suggest_Again" xml:space="preserve"><value>Opnieuw voorstellen</value></data>
   <data name="Suggest_Go" xml:space="preserve"><value>Recept voorstellen</value></data>
   <data name="Suggest_Hint" xml:space="preserve"><value>Kies een methode en een molen en krijg een startrecept voor deze boon, met bij elk getal een reden.</value></data>

@@ -629,6 +629,16 @@
   <data name="KnownIssues_Storage" xml:space="preserve"><value>On iPhone, Safari can clear the data of sites that are not on the Home Screen. Add Dialed to your Home Screen and check Settings &gt; Storage; sign up to keep a copy on the server.</value></data>
   <data name="KnownIssues_Timer" xml:space="preserve"><value>The brew timer sound may be muted by the iPhone silent switch, and the screen may still dim on some devices.</value></data>
   <data name="KnownIssues_Title" xml:space="preserve"><value>Known issues</value></data>
+  <data name="Level_0" xml:space="preserve"><value>Beginner</value></data>
+  <data name="Level_1" xml:space="preserve"><value>Home brewer</value></data>
+  <data name="Level_2" xml:space="preserve"><value>Dialed in</value></data>
+  <data name="Level_3" xml:space="preserve"><value>Regular</value></data>
+  <data name="Level_4" xml:space="preserve"><value>Connoisseur</value></data>
+  <data name="Level_5" xml:space="preserve"><value>Master</value></data>
+  <data name="Level_Label" xml:space="preserve"><value>Level {0}</value></data>
+  <data name="Level_Next" xml:space="preserve"><value>{0} to go for {1}</value></data>
+  <data name="Level_Progress" xml:space="preserve"><value>Progress to the next level</value></data>
+  <data name="Level_Top" xml:space="preserve"><value>{0} · highest level</value></data>
   <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
   <data name="Map_Description" xml:space="preserve"><value>Map with a marker for each origin: {0}</value></data>
   <data name="Map_ShowBeans" xml:space="preserve"><value>{0}: show beans</value></data>
@@ -1059,6 +1069,11 @@
   <data name="Storage_Unprotected" xml:space="preserve"><value>Your data is saved on this device, but the browser may clear it when space runs low. Sign in to keep a copy online.</value></data>
   <data name="Storage_WriteFailed" xml:space="preserve"><value>This device could not save your last change (storage may be full). It is kept until you close the app. Free up space on your device.</value></data>
   <data name="Storage_WriteFailedSignedIn" xml:space="preserve"><value>This device could not save your last change (storage may be full). It is kept while the app is open and sent to your account. Free up space on your device.</value></data>
+  <data name="StreakLevel_Title" xml:space="preserve"><value>Streak and level</value></data>
+  <data name="Streak_Best" xml:space="preserve"><value>Longest: {0}</value></data>
+  <data name="Streak_Caption_One" xml:space="preserve"><value>day in a row</value></data>
+  <data name="Streak_Caption_Other" xml:space="preserve"><value>days in a row</value></data>
+  <data name="Streak_Show" xml:space="preserve"><value>Show streak and level on Home</value></data>
   <data name="Suggest_Again" xml:space="preserve"><value>Suggest again</value></data>
   <data name="Suggest_Go" xml:space="preserve"><value>Suggest a recipe</value></data>
   <data name="Suggest_Hint" xml:space="preserve"><value>Pick a method and a grinder and get a starting recipe for this bean, with a reason for each number.</value></data>

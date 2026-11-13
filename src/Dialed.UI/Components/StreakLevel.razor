@@ -1,0 +1,37 @@
+@using Dialed.Domain.Statistics
+@inject IStringLocalizer<Strings> L
+
+@* Two quiet tiles (#368 follow-up, passport step 1): the days-in-a-row cup and a level title by total brews. Derived from MilestoneSummary, nothing stored. *@
+<section id="@Id" class="dialed-streak-level" aria-label="@L["StreakLevel_Title"]">
+    <div class="dialed-streak-tile">
+        <span class="dialed-streak-cup" aria-hidden="true"><FluentIcon Value="@(new Icons.Regular.Size24.DrinkCoffee())" Color="Color.Custom" CustomColor="currentColor" /></span>
+        <strong id="@(Id)-days" class="dialed-streak-days">@Summary.CurrentStreak</strong>
+        <span class="dialed-muted">@L[Summary.CurrentStreak == 1 ? "Streak_Caption_One" : "Streak_Caption_Other"]</span>
+        @if (Summary.LongestStreak > Summary.CurrentStreak)
+        {
+            <span class="dialed-muted dialed-streak-best">@string.Format(L["Streak_Best"].Value, Summary.LongestStreak)</span>
+        }
+    </div>
+    <div class="dialed-level-tile">
+        <strong id="@(Id)-level" class="dialed-level-title">@L[$"Level_{level.Index}"]</strong>
+        <span class="dialed-muted">@string.Format(L["Level_Label"].Value, level.Index + 1)</span>
+        <Meter Label="@L["Level_Progress"]" Fraction="level.Fraction" ValueText="@Detail" />
+        <span id="@(Id)-detail" class="dialed-muted">@Detail</span>
+    </div>
+</section>
+
+@code {
+    private CoffeeLevel level = CoffeeLevel.For(0);
+
+    [Parameter, EditorRequired]
+    public MilestoneSummary Summary { get; set; } = default!;
+
+    [Parameter]
+    public string Id { get; set; } = "stats-streak-level";
+
+    private string Detail => level.IsTop
+        ? string.Format(L["Level_Top"].Value, L.Count("Brews", level.Brews))
+        : string.Format(L["Level_Next"].Value, L.Count("Brews", level.ToGo), L[$"Level_{level.Index + 1}"].Value);
+
+    protected override void OnParametersSet() => level = Summary.Level;
+}

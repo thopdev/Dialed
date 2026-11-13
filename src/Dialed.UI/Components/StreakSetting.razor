@@ -1,0 +1,19 @@
+@using Dialed.Client.Preferences
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject IUserPreferences Preferences
+
+@* Whether Home shows the days-in-a-row cup and the level title. On by default; Statistics always shows them. *@
+<label class="dialed-check">
+    <input id="settings-streak" type="checkbox" checked="@(!Preferences.Profile.HideStreak)"
+           @onchange="e => Preferences.SetProfileAsync(Preferences.Profile with { HideStreak = !(bool)e.Value! })" />
+    @L["Streak_Show"]
+</label>
+
+@code {
+    protected override void OnInitialized() => Preferences.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Preferences.Changed -= OnChanged;
+}
