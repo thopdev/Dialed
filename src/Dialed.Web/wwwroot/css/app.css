@@ -194,7 +194,7 @@
     letter-spacing: 0.04em;
 }
 
-/* "Dialing" and "Dialed" sit in the same spot; the loading script adds .dialed-loading-done near the end of the download. */
+/* "Bloom" and "Dialed" sit in the same spot; the loading script adds .dialed-loading-done near the end of the download. */
 .dialed-loading-dialing,
 .dialed-loading-dialed {
     grid-area: 1 / 1;
@@ -203,10 +203,6 @@
 
 .dialed-loading-dialed {
     opacity: 0;
-}
-
-.dialed-loading-dots i {
-    font-style: normal;
 }
 
 .dialed-loading-done .dialed-loading-dialing {
@@ -218,13 +214,6 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .dialed-loading-dots i {
-        animation: dialed-loading-dot 1.2s ease-in-out infinite;
-    }
-
-    .dialed-loading-dots i:nth-child(2) { animation-delay: 0.2s; }
-    .dialed-loading-dots i:nth-child(3) { animation-delay: 0.4s; }
-
     .dialed-loading-dialing,
     .dialed-loading-dialed {
         transition: opacity 0.25s ease;
@@ -238,11 +227,6 @@
     .dialed-loading-done .dialed-loading-brewer {
         animation: dialed-loading-cheer 0.6s ease-out;
     }
-}
-
-@keyframes dialed-loading-dot {
-    0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
-    30% { opacity: 1; transform: translateY(-0.2em); }
 }
 
 @keyframes dialed-loading-settle {
