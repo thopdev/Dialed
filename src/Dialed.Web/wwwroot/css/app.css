@@ -200,7 +200,7 @@
     opacity: var(--pouring);
     transform: scaleY(var(--pouring));
     transform-box: view-box;
-    transform-origin: 53.4px 16px;
+    transform-origin: 50px 19px;
 }
 
 .dialed-loading-water {
