@@ -1,0 +1,62 @@
+@implements IDisposable
+@inject UndoService Undo
+@inject IStringLocalizer<Strings> L
+
+@* Bottom snackbar for "Deleted. Undo". Polite live region so screen readers hear it; gold only on the action. *@
+<div class="dialed-toast-region" role="status" aria-live="polite">
+    @if (offer is not null)
+    {
+        <div class="dialed-toast" id="undo-toast" @key="offer.Id">
+            <span class="dialed-toast-message">@offer.Message</span>
+            <button type="button" id="undo-action" class="dialed-toast-action" @onclick="UndoAsync">@L["Undo"]</button>
+        </div>
+    }
+</div>
+
+@code {
+    private const int Seconds = 6;
+
+    private UndoOffer? offer;
+    private CancellationTokenSource? timer;
+
+    protected override void OnInitialized()
+    {
+        offer = Undo.Current;
+        Undo.Changed += OnChanged;
+    }
+
+    private void OnChanged()
+    {
+        _ = InvokeAsync(() =>
+        {
+            timer?.Cancel();
+            offer = Undo.Current;
+            if (offer is not null)
+            {
+                Expire(offer.Id, (timer = new CancellationTokenSource()).Token);
+            }
+
+            StateHasChanged();
+        });
+    }
+
+    private async void Expire(long id, CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(Seconds), token);
+            Undo.Dismiss(id);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private Task UndoAsync() => offer is null ? Task.CompletedTask : Undo.UndoAsync(offer.Id);
+
+    public void Dispose()
+    {
+        Undo.Changed -= OnChanged;
+        timer?.Cancel();
+    }
+}

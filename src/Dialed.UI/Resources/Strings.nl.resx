@@ -106,6 +106,7 @@
   <data name="Bag_DaysShort" xml:space="preserve"><value>{0} d</value></data>
   <data name="Bag_DeleteBody" xml:space="preserve"><value>Dit kan niet ongedaan worden gemaakt.</value></data>
   <data name="Bag_DeleteTitle" xml:space="preserve"><value>Deze zak verwijderen?</value></data>
+  <data name="Bag_Deleted" xml:space="preserve"><value>Zak verwijderd</value></data>
   <data name="Bag_Details" xml:space="preserve"><value>Details</value></data>
   <data name="Bag_Finish" xml:space="preserve"><value>Afronden</value></data>
   <data name="Bag_FinishedOn" xml:space="preserve"><value>Op sinds</value></data>
@@ -500,6 +501,7 @@
   <data name="History_CountOne" xml:space="preserve"><value>{0} keer gezet</value></data>
   <data name="History_DeleteBody" xml:space="preserve"><value>De koffie gaat terug in de zak. Dit kan niet ongedaan worden gemaakt.</value></data>
   <data name="History_DeleteTitle" xml:space="preserve"><value>Deze brew verwijderen?</value></data>
+  <data name="History_Deleted" xml:space="preserve"><value>Brouwsel verwijderd</value></data>
   <data name="History_Empty" xml:space="preserve"><value>Nog geen brews. Je brews staan hier.</value></data>
   <data name="History_Milk" xml:space="preserve"><value>{0} melk</value></data>
   <data name="History_MinRating" xml:space="preserve"><value>Beoordeling minstens</value></data>
@@ -849,6 +851,7 @@
   <data name="Recipe_Bean" xml:space="preserve"><value>Boon</value></data>
   <data name="Recipe_Brewer" xml:space="preserve"><value>Zetter</value></data>
   <data name="Recipe_DeleteTitle" xml:space="preserve"><value>{0} verwijderen?</value></data>
+  <data name="Recipe_Deleted" xml:space="preserve"><value>{0} verwijderd</value></data>
   <data name="Recipe_Dose" xml:space="preserve"><value>Dosis</value></data>
   <data name="Recipe_Favourite" xml:space="preserve"><value>Favoriet</value></data>
   <data name="Recipe_Filter" xml:space="preserve"><value>Filter</value></data>
@@ -1151,6 +1154,7 @@
   <data name="Timer_Target" xml:space="preserve"><value>Giet tot {0}</value></data>
   <data name="Timer_Voice" xml:space="preserve"><value>Zeg de stappen hardop</value></data>
   <data name="Tips_Title" xml:space="preserve"><value>Tips voor deze zak ({0})</value></data>
+  <data name="Undo" xml:space="preserve"><value>Ongedaan maken</value></data>
   <data name="Units_Imperial" xml:space="preserve"><value>Imperiaal (oz, fl oz, °F)</value></data>
   <data name="Units_Metric" xml:space="preserve"><value>Metrisch (g, ml, °C)</value></data>
   <data name="Units_Title" xml:space="preserve"><value>Eenheden</value></data>

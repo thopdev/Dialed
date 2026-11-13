@@ -112,6 +112,32 @@ public sealed class InMemoryRepository<T>(ICurrentContext context, TimeProvider 
         return saved;
     }
 
+    public async Task RestoreAsync(string id, CancellationToken cancellationToken = default)
+    {
+        T? restored = null;
+        lock (gate)
+        {
+            if (records.TryGetValue(id, out var existing) && existing.Deleted)
+            {
+                restored = existing with
+                {
+                    Deleted = false,
+                    UpdatedBy = context.UserId,
+                    UpdatedAt = time.GetUtcNow(),
+                    Version = existing.Version + 1,
+                };
+                records[id] = restored;
+            }
+        }
+
+        if (restored is not null)
+        {
+            await PersistAsync(restored, cancellationToken);
+            Changed?.Invoke();
+            LocalChanged?.Invoke(restored);
+        }
+    }
+
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         T? deleted = null;

@@ -9,6 +9,7 @@
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Recipe> RecipeStore
+@inject UndoService Undo
 @inject IRepository<Bean> BeanStore
 @inject IRepository<EquipmentItem> GearStore
 @inject IRepository<MethodDefault> DefaultStore
@@ -201,7 +202,7 @@
                         <button type="button" id="recipe-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
                             <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
                         </button>
-                        <button type="button" id="recipe-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="@(() => confirmingDelete = true)">
+                        <button type="button" id="recipe-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="DeleteAsync">
                             <FluentIcon Value="@(new Icons.Regular.Size24.Delete())" Color="Color.Custom" CustomColor="currentColor" />
                         </button>
                     }
@@ -211,18 +212,6 @@
             @if (error is not null)
             {
                 <ErrorBanner Message="@error" />
-            }
-
-            @if (confirmingDelete)
-            {
-                <div class="dialed-confirm" role="alertdialog" aria-label="@string.Format(L["Recipe_DeleteTitle"].Value, current.Name)">
-                    <p><strong>@string.Format(L["Recipe_DeleteTitle"].Value, current.Name)</strong></p>
-                    <p>@L["Gear_DeleteBody"]</p>
-                    <div class="dialed-form-actions">
-                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
-                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
-                    </div>
-                </div>
             }
 
             @if (current.IsSuperseded)
@@ -362,7 +351,6 @@
     private IReadOnlyList<Recipe> family = [];
     private Recipe? familyCurrent;
     private bool editing;
-    private bool confirmingDelete;
     private string? error;
 
     [Parameter]
@@ -387,7 +375,6 @@
     protected override async Task OnParametersSetAsync()
     {
         editing = false;
-        confirmingDelete = false;
         pendingEdit = null;
         error = null;
         await LoadAsync();
@@ -744,13 +731,21 @@
             return;
         }
 
-        // Deleting the current version brings its parent back as the current one.
+        // Deleting the current version brings its parent back as the current one; undo puts the parent back as superseded.
+        Func<Task>? alsoUndo = null;
         if (!current.IsSuperseded && current.ParentRecipeId is { } parentId && family.FirstOrDefault(r => r.Id == parentId) is { IsSuperseded: true } parent)
         {
             await RecipeStore.SaveAsync(parent with { IsSuperseded = false });
+            alsoUndo = async () =>
+            {
+                if (await RecipeStore.GetAsync(parentId) is { } stored)
+                {
+                    await RecipeStore.SaveAsync(stored with { IsSuperseded = true });
+                }
+            };
         }
 
-        await RecipeStore.DeleteAsync(current.Id);
+        await Undo.DeleteAsync(RecipeStore, current.Id, string.Format(L["Recipe_Deleted"].Value, current.Name), alsoUndo);
         Navigation.NavigateTo("recipes");
     }
 

@@ -9,6 +9,7 @@
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Bag> BagStore
+@inject UndoService Undo
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Vendor> VendorStore
 @inject IRepository<Brew> BrewStore
@@ -101,7 +102,7 @@
                     <button type="button" id="bag-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
                         <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
                     </button>
-                    <button type="button" id="bag-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="@(() => confirmingDelete = true)">
+                    <button type="button" id="bag-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="DeleteAsync">
                         <FluentIcon Value="@(new Icons.Regular.Size24.Delete())" Color="Color.Custom" CustomColor="currentColor" />
                     </button>
                 </Actions>
@@ -110,18 +111,6 @@
             @if (error is not null)
             {
                 <ErrorBanner Message="@error" />
-            }
-
-            @if (confirmingDelete)
-            {
-                <div class="dialed-confirm" role="alertdialog" aria-label="@L["Bag_DeleteTitle"]">
-                    <p><strong>@L["Bag_DeleteTitle"]</strong></p>
-                    <p>@L["Bag_DeleteBody"]</p>
-                    <div class="dialed-form-actions">
-                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
-                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
-                    </div>
-                </div>
             }
 
             @if (BagInventory.ShouldOfferFinish(current.Status, remaining))
@@ -233,7 +222,6 @@
     private decimal remaining;
     private bool showFinished;
     private bool editing;
-    private bool confirmingDelete;
     private string? error;
     private DateOnly? stepDate;
 
@@ -273,7 +261,6 @@
     protected override async Task OnParametersSetAsync()
     {
         editing = false;
-        confirmingDelete = false;
         error = null;
         stepDate = Today;
         await LoadAsync();
@@ -393,7 +380,7 @@
             return;
         }
 
-        await BagStore.DeleteAsync(current.Id);
+        await Undo.DeleteAsync(BagStore, current.Id, L["Bag_Deleted"].Value);
         Navigation.NavigateTo("bags");
     }
 

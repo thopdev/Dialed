@@ -10,6 +10,7 @@
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Brew> BrewStore
+@inject UndoService Undo
 @inject IRepository<Bag> BagStore
 @inject IRepository<Bean> BeanStore
 @inject IRepository<Recipe> RecipeStore
@@ -160,7 +161,7 @@
                         <button type="button" id="history-edit" class="dialed-icon-button" aria-label="@L["Edit"]" title="@L["Edit"]" @onclick="@(() => editing = true)">
                             <FluentIcon Value="@(new Icons.Regular.Size24.Edit())" Color="Color.Custom" CustomColor="currentColor" />
                         </button>
-                        <button type="button" id="history-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="@(() => confirmingDelete = true)">
+                        <button type="button" id="history-delete" class="dialed-icon-button" aria-label="@L["Delete"]" title="@L["Delete"]" @onclick="DeleteAsync">
                             <FluentIcon Value="@(new Icons.Regular.Size24.Delete())" Color="Color.Custom" CustomColor="currentColor" />
                         </button>
                     }
@@ -170,18 +171,6 @@
             @if (error is not null)
             {
                 <ErrorBanner Message="@error" />
-            }
-
-            @if (confirmingDelete)
-            {
-                <div class="dialed-confirm" role="alertdialog" aria-label="@L["History_DeleteTitle"]">
-                    <p><strong>@L["History_DeleteTitle"]</strong></p>
-                    <p>@L["History_DeleteBody"]</p>
-                    <div class="dialed-form-actions">
-                        <button type="button" class="dialed-button dialed-button-danger" @onclick="DeleteAsync">@L["Delete"]</button>
-                        <button type="button" class="dialed-button" @onclick="@(() => confirmingDelete = false)">@L["Cancel"]</button>
-                    </div>
-                </div>
             }
 
             <Card class="dialed-card dialed-brew-summary" id="history-summary">
@@ -286,7 +275,6 @@
     private bool editing;
     private bool showFilters;
     private Dictionary<string, string> memberNames = [];
-    private bool confirmingDelete;
     private bool sharing;
     private string compareWith = "";
     private string? error;
@@ -326,7 +314,6 @@
     {
         compareWith = "";
         editing = false;
-        confirmingDelete = false;
         error = null;
         await LoadAsync();
     }
@@ -552,7 +539,7 @@
             return;
         }
 
-        await BrewStore.DeleteAsync(current.Id);
+        await Undo.DeleteAsync(BrewStore, current.Id, L["History_Deleted"].Value);
         Navigation.NavigateTo("history");
     }
 

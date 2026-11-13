@@ -27,6 +27,7 @@ public static class ClientServices
         services.TryAddSingleton<Catalog.ICatalogApi>(Catalog.NoCatalog.Instance);
         services.TryAddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
         services.TryAddSingleton<Backup.BackupService>();
+        services.TryAddSingleton<Undo.UndoService>();
         return services;
     }
 

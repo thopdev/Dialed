@@ -31,6 +31,9 @@ public interface IRepository<T>
     /// <summary>Soft-deletes the record (no error when it does not exist).</summary>
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 
+    /// <summary>Brings a soft-deleted record back (undo). Stored as a normal new version, so it syncs like any edit. No error when it is not deleted.</summary>
+    Task RestoreAsync(string id, CancellationToken cancellationToken = default);
+
     /// <summary>Raised after every save or delete so lists can refresh.</summary>
     event Action? Changed;
 }
