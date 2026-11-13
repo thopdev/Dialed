@@ -21,21 +21,33 @@ public sealed class SettingsOnboardingTests : UiTestContext
     [Fact]
     public void Settings_has_every_section()
     {
-        var page = Render<Settings>();
-
-        foreach (var id in new[] { "profile", "passkeys", "units", "methods", "inventory", "household", "setup", "sync", "storage", "privacy", "account" })
+        var sections = new Dictionary<string, string[]>
         {
-            page.FindAll($"#settings-{id}").Count.ShouldBe(1, id);
+            ["profile"] = ["profile"],
+            ["preferences"] = ["units", "methods", "inventory"],
+            ["household"] = ["household"],
+            ["data"] = ["sync", "storage"],
+            ["account"] = ["account", "passkeys"],
+            ["privacy"] = ["privacy"],
+            ["help"] = ["setup", "feedback"],
+        };
+        foreach (var (group, ids) in sections)
+        {
+            var page = Render<Settings>(p => p.Add(x => x.Group, group));
+            foreach (var id in ids)
+            {
+                page.FindAll($"#settings-{id}").Count.ShouldBe(1, id);
+            }
         }
 
-        page.Find("#settings-version").TextContent.ShouldStartWith("Version");
-        page.Find("#settings-reopen-onboarding").GetAttribute("href").ShouldBe("welcome");
+        Render<Settings>().Find("#settings-version").TextContent.ShouldStartWith("Version");
+        Render<Settings>(p => p.Add(x => x.Group, "help")).Find("#settings-reopen-onboarding").GetAttribute("href").ShouldBe("welcome");
     }
 
     [Fact]
     public void Export_and_delete_are_only_offered_to_a_signed_in_person()
     {
-        Render<Settings>().FindAll("#data-delete").ShouldBeEmpty();
+        Render<Settings>(p => p.Add(x => x.Group, "account")).FindAll("#data-delete").ShouldBeEmpty();
     }
 
     [Fact]

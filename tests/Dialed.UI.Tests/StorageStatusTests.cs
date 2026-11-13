@@ -9,7 +9,7 @@ public sealed class StorageStatusTests : UiTestContext
 {
     private string Status()
     {
-        var page = Render<Settings>();
+        var page = Render<Settings>(p => p.Add(x => x.Group, "data"));
         return page.Find("#storage-status").TextContent;
     }
 

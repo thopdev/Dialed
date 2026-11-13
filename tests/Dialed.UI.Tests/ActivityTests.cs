@@ -32,7 +32,7 @@ public sealed class ActivityTests : UiTestContext
     {
         var page = Render<Activity>();
 
-        page.Find("#feed-sign-in").GetAttribute("href").ShouldBe("settings#group-account");
+        page.Find("#feed-sign-in").GetAttribute("href").ShouldBe("signin");
         FriendsServer.Calls.ShouldBeEmpty();
     }
 

@@ -64,9 +64,9 @@ public sealed class AccessibilityTests : UiTestContext
         }
     }
 
-    private void Audit<TPage>() where TPage : IComponent
+    private void Audit<TPage>(Action<ComponentParameterCollectionBuilder<TPage>>? parameters = null) where TPage : IComponent
     {
-        var screen = Render<TPage>();
+        var screen = parameters is null ? Render<TPage>() : Render(parameters);
         try
         {
             screen.WaitForAssertion(() => screen.Markup.ShouldNotContain("dialed-skeleton"), TimeSpan.FromSeconds(1));
@@ -154,6 +154,15 @@ public sealed class AccessibilityTests : UiTestContext
     [Fact] public void Friends_activity_is_labeled() => Audit<Activity>();
 
     [Fact] public void Settings_is_labeled() => Audit<Settings>();
+    [Theory]
+    [InlineData("profile")]
+    [InlineData("preferences")]
+    [InlineData("household")]
+    [InlineData("data")]
+    [InlineData("account")]
+    [InlineData("privacy")]
+    [InlineData("help")]
+    public void Settings_groups_are_labeled(string group) => Audit<Settings>(p => p.Add(x => x.Group, group));
 
     [Fact] public void Statistics_is_labeled() => Audit<Statistics>();
     [Fact] public void HistoryCompare_is_labeled() => Audit<HistoryCompare>();
@@ -171,6 +180,7 @@ public sealed class AccessibilityTests : UiTestContext
     [Fact] public void Find_people_is_labeled() => Audit<Dialed.UI.Components.FindPeople>();
 
     [Fact] public void Onboarding_is_labeled() => Audit<Onboarding>();
+    [Fact] public void SignIn_is_labeled() => Audit<SignIn>();
 
     [Fact] public void Tab_bar_is_labeled() => Audit<Dialed.UI.Layout.TabBar>();
 
