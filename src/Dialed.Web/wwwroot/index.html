@@ -65,25 +65,27 @@
     <script type="importmap"></script>
     <!-- First script on the page so JavaScript errors during startup are caught too (#91). -->
     <script src="js/errors.js"></script>
-    <!-- Switches the loading screen from "Bloom" and "Pour" to "Dialed" when the download is almost done. -->
+    <!-- Sets the loading screen stage (bloom, pour, done) from the download progress. -->
     <script src="js/loading.js"></script>
 </head>
 
 <!-- Fluent UI builds light and dark brand themes from this colour (espresso brown) and follows the system mode. -->
 <body data-theme-color="#6F4E37">
-    <!-- Shown until Blazor has started: a kettle blooms and pours twice into a V60 that drips into a cup, and the cup fills as the app downloads; the name says "Bloom" and "Pour" with the kettle and becomes "Dialed" near the end (js/loading.js) (Blazor sets --blazor-load-percentage).
+    <!-- Shown until Blazor has started: a kettle blooms and pours twice into a V60 that drips into a cup, in step with the download (js/loading.js sets data-stage from the progress); the cup fills with the progress and the name says "Bloom", "Pour", then "Dialed" (Blazor sets --blazor-load-percentage).
          Plain HTML and CSS on purpose so it appears before any .NET code runs; no words, so it needs no translation. -->
     <div id="app">
-        <div class="dialed-loading" role="status" aria-label="Dialed">
+        <div class="dialed-loading" data-stage="bloom" role="status" aria-label="Dialed">
             <div class="dialed-loading-brewer" aria-hidden="true">
                 <svg viewBox="0 0 90 130" focusable="false">
-                    <g class="dialed-loading-kettle" transform="translate(-12 0) rotate(16 30 20)">
-                        <path class="dialed-loading-kettle-body" d="M12 10 h28 a6 6 0 0 1 6 6 v12 a6 6 0 0 1 -6 6 h-28 a6 6 0 0 1 -6 -6 v-12 a6 6 0 0 1 6 -6 z" />
-                        <path class="dialed-loading-kettle-body" d="M46 18 L60 14 L62 18 L46 28" />
-                        <path d="M6 16 q-10 0 -10 8 q0 8 10 8" />
-                        <path d="M20 10 q6 -6 12 0" />
+                    <g class="dialed-loading-pourer">
+                        <g class="dialed-loading-kettle" transform="translate(-12 -8) rotate(16 30 20)">
+                            <path class="dialed-loading-kettle-body" d="M12 10 h28 a6 6 0 0 1 6 6 v12 a6 6 0 0 1 -6 6 h-28 a6 6 0 0 1 -6 -6 v-12 a6 6 0 0 1 6 -6 z" />
+                            <path class="dialed-loading-kettle-body" d="M46 18 L60 14 L62 18 L46 28" />
+                            <path d="M6 16 q-10 0 -10 8 q0 8 10 8" />
+                            <path d="M20 10 q6 -6 12 0" />
+                        </g>
+                        <line class="dialed-loading-stream dialed-loading-stream-kettle" x1="50" y1="19" x2="50" y2="62" />
                     </g>
-                    <line class="dialed-loading-stream dialed-loading-stream-kettle" x1="50" y1="27" x2="50" y2="62" />
                     <polygon class="dialed-loading-cone" points="15,44 75,44 53,86 37,86" />
                     <path class="dialed-loading-rim" d="M12 44 H78" />
                     <line class="dialed-loading-stream" x1="45" y1="90" x2="45" y2="103" />
