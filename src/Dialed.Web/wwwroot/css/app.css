@@ -41,39 +41,280 @@
         content: "An error has occurred."
     }
 
-.loading-progress {
-    position: absolute;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    inset: 20vh 0 auto 0;
-    margin: 0 auto 0 auto;
+/* Loading screen (index.html): same colours as the iOS splash image, a cup that fills with the download progress. */
+.dialed-loading {
+    --loading-bg: #f4ece0;
+    --loading-ink: #6f4e37;
+    --loading-track: rgba(111, 78, 55, 0.18);
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    background: var(--loading-bg);
+    color: var(--loading-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
+@media (prefers-color-scheme: dark) {
+    .dialed-loading {
+        --loading-bg: #1e1713;
+        --loading-ink: #d2a77f;
+        --loading-track: rgba(210, 167, 127, 0.2);
     }
-
-        .loading-progress circle:last-child {
-            stroke: #6f4e37;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+.dialed-loading-brewer {
+    position: relative;
+    width: 9rem;
+    height: 13rem;
+}
+
+.dialed-loading-brewer svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    stroke: var(--loading-ink);
+    stroke-width: 0.3rem;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dialed-loading-kettle {
+    stroke-width: 0.22rem;
+    transform-box: view-box;
+    transform-origin: 30px 20px;
+}
+
+.dialed-loading-kettle-body {
+    fill: var(--loading-bg);
+}
+
+.dialed-loading-cone {
+    fill: var(--loading-track);
+}
+
+.dialed-loading-stream {
+    stroke-width: 0.25rem;
+    stroke-dasharray: 0.5rem 0.4rem;
+    animation: dialed-loading-pour 0.5s linear infinite;
+}
+
+/* The coffee in the cone: the same shape as the outline, filling from the bottom with the download progress. */
+.dialed-loading-cone-fill {
+    position: absolute;
+    left: 1.5rem;
+    top: 4.4rem;
+    width: 6rem;
+    height: 4.2rem;
+    clip-path: polygon(0 0, 100% 0, 63.3% 100%, 36.7% 100%);
+}
+
+.dialed-loading-water {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 62%;
+    background: var(--loading-ink);
+    opacity: 0.45;
+}
+
+.dialed-loading-cup-fill {
+    position: absolute;
+    left: 2.8rem;
+    top: 10rem;
+    width: 3.4rem;
+    height: 2.6rem;
+    overflow: hidden;
+    border-radius: 0 0 1.2rem 1.2rem;
+}
+
+.dialed-loading-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--blazor-load-percentage, 0%);
+    background: var(--loading-ink);
+    transition: height 0.2s ease-out;
+}
+
+@keyframes dialed-loading-pour {
+    to { stroke-dashoffset: -0.9rem; }
+}
+
+/* The brew, on a 7 second loop: a short bloom, a rest, then two pours. The cup follows the real download progress. */
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-loading-kettle {
+        animation: dialed-loading-kettle 7s ease-in-out infinite;
     }
+
+    .dialed-loading-stream-kettle {
+        animation: dialed-loading-pour 0.5s linear infinite, dialed-loading-stream 7s linear infinite;
+    }
+
+    .dialed-loading-water {
+        animation: dialed-loading-water 7s ease-in-out infinite;
+    }
+}
+
+@keyframes dialed-loading-kettle {
+    0%, 14%, 30%, 53%, 64%, 90%, 100% { transform: translate(-12px, 0) rotate(0deg); }
+    3%, 12% { transform: translate(-12px, 0) rotate(12deg); }
+    32%, 51% { transform: translate(-12px, 0) rotate(16deg); }
+    66%, 88% { transform: translate(-12px, 0) rotate(16deg); }
+}
+
+@keyframes dialed-loading-stream {
+    0%, 2%, 13%, 30%, 52%, 64%, 88%, 100% { opacity: 0; }
+    3%, 12%, 31%, 51%, 65%, 87% { opacity: 1; }
+}
+
+@keyframes dialed-loading-water {
+    0% { height: 0; }
+    12% { height: 24%; }
+    30% { height: 16%; }
+    52% { height: 58%; }
+    64% { height: 42%; }
+    88% { height: 86%; }
+    100% { height: 0; }
+}
+
+.dialed-loading-name {
+    display: grid;
+    justify-items: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+/* "Bloom", "Pour" and "Dialed" sit in the same spot; the loading script adds .dialed-loading-done near the end of the download. */
+.dialed-loading-bloom,
+.dialed-loading-pour-word,
+.dialed-loading-dialed {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+}
+
+.dialed-loading-pour-word,
+.dialed-loading-dialed {
+    opacity: 0;
+}
+
+.dialed-loading-done .dialed-loading-bloom,
+.dialed-loading-done .dialed-loading-pour-word {
+    opacity: 0;
+    animation: none;
+}
+
+.dialed-loading-done .dialed-loading-dialed {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-loading-bloom,
+    .dialed-loading-pour-word,
+    .dialed-loading-dialed {
+        transition: opacity 0.25s ease;
+    }
+
+    /* The word follows the kettle on the same 7 second loop: Bloom for the bloom and its rest, Pour for the pours. */
+    .dialed-loading-bloom {
+        animation: dialed-loading-word-bloom 7s ease-in-out infinite;
+    }
+
+    .dialed-loading-pour-word {
+        animation: dialed-loading-word-pour 7s ease-in-out infinite;
+    }
+
+    /* "Dialed" settles into place with a little overshoot, and the cup gives a small bounce. */
+    .dialed-loading-done .dialed-loading-dialed {
+        animation: dialed-loading-settle 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+    }
+
+    .dialed-loading-done .dialed-loading-brewer {
+        animation: dialed-loading-cheer 0.6s ease-out;
+    }
+}
+
+/* Done: the pouring stops. The kettle rests, both streams stop and the V60 has drained into the full cup. */
+.dialed-loading-done .dialed-loading-kettle {
+    animation: none;
+    transform: translate(-12px, 0) rotate(0deg);
+}
+
+.dialed-loading-done .dialed-loading-stream {
+    animation: none;
+    opacity: 0;
+}
+
+.dialed-loading-done .dialed-loading-water {
+    animation: none;
+    height: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-loading-done .dialed-loading-kettle {
+        transition: transform 0.4s ease;
+    }
+
+    .dialed-loading-done .dialed-loading-stream {
+        transition: opacity 0.25s ease;
+    }
+
+    .dialed-loading-done .dialed-loading-water {
+        transition: height 0.6s ease;
+    }
+}
+
+@keyframes dialed-loading-word-bloom {
+    0%, 26% { opacity: 1; }
+    30%, 96% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes dialed-loading-word-pour {
+    0%, 26% { opacity: 0; }
+    30%, 96% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes dialed-loading-settle {
+    from { opacity: 0; transform: translateY(0.6rem) scale(0.85); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes dialed-loading-cheer {
+    0%, 100% { transform: none; }
+    40% { transform: translateY(-0.4rem); }
+}
+
+.dialed-loading-percent {
+    min-height: 1.25rem;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+}
+
+.dialed-loading-percent::after {
+    content: var(--blazor-load-percentage-text, "");
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dialed-loading-stream {
+        animation: none;
+    }
+
+    .dialed-loading-fill {
+        transition: none;
+    }
+}
 
 code {
     color: #c02d76;
