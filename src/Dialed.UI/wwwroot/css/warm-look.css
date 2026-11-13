@@ -904,13 +904,11 @@
     overflow: hidden;
 }
 
-.dialed-more-icon,
-.dialed-settings-group-icon {
+.dialed-more-icon {
     background: transparent;
     color: var(--colorNeutralForeground2, #424242);
 }
 
-.dialed-settings-group-header h2,
 .dialed-friend-code h2,
 .dialed-people-section h2 {
     font-family: var(--dialed-font-display);

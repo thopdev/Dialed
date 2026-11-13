@@ -23,7 +23,7 @@
 @if (!Session.IsSignedIn)
 {
     <EmptyState Icon="@(new Icons.Regular.Size24.People())" Message="@L["People_SignInFirst"]">
-        <a id="feed-sign-in" class="dialed-button dialed-button-primary" href="settings#group-account">@L["People_GoToAccount"]</a>
+        <a id="feed-sign-in" class="dialed-button dialed-button-primary" href="signin">@L["People_GoToAccount"]</a>
     </EmptyState>
 }
 else if (loading && entries.Count == 0)

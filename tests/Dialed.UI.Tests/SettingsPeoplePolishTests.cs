@@ -23,33 +23,44 @@ public sealed class SettingsPeoplePolishTests : UiTestContext
     // ---- Settings -----------------------------------------------------------------------------
 
     [Fact]
-    public void Settings_are_grouped_in_cards_with_an_icon_and_heading()
+    public void Settings_overview_lists_the_groups_as_rows_with_an_icon_and_the_account_first()
     {
         var page = Render<Settings>();
 
-        var groups = page.FindAll(".dialed-settings-group");
-        groups.Select(g => g.QuerySelector("h2")!.TextContent).ShouldBe(["Profile", "Preferences", "Household", "Data and sync", "Account", "Privacy", "Help and feedback", "About"]);
-        groups.ShouldAllBe(g => g.QuerySelector(".dialed-settings-group-icon[aria-hidden=true] svg") != null);
-        groups.ShouldAllBe(g => g.GetAttribute("aria-labelledby") == g.QuerySelector("h2")!.Id);
-        groups.ShouldAllBe(g => g.QuerySelector(".dialed-settings-card") != null);
-        page.Find("#group-preferences #settings-units").ShouldNotBeNull();
-        page.Find("#group-about #settings-version").ShouldNotBeNull();
+        var rows = page.FindAll("#settings-groups .dialed-row");
+        rows.Select(r => r.GetAttribute("href")).ShouldBe(["settings/profile", "settings/preferences", "settings/household", "settings/data", "settings/privacy", "settings/help"]);
+        rows.ShouldAllBe(r => r.QuerySelector(".dialed-more-icon[aria-hidden=true] svg") != null);
+        page.Find("#settings-signin").GetAttribute("href").ShouldBe("signin");
+        page.Find("#settings-version").TextContent.ShouldStartWith("Version");
+        page.Markup.ShouldNotContain("Available once accounts are in");
     }
 
     [Fact]
-    public void Settings_offer_jump_links_to_the_groups_and_drop_the_stale_passkey_note()
+    public async Task Settings_overview_shows_the_signed_in_person_and_links_to_the_account_group()
     {
+        await SignIn();
+
         var page = Render<Settings>();
 
-        var jump = page.Find("nav.dialed-settings-jump");
-        jump.GetAttribute("aria-label").ShouldBe("Jump to");
-        jump.QuerySelectorAll("a").Select(a => a.GetAttribute("href")).ShouldAllBe(h => h!.StartsWith("settings#group-"));
-        foreach (var link in jump.QuerySelectorAll("a"))
-        {
-            page.FindAll(link.GetAttribute("href")!["settings".Length..]).Count.ShouldBe(1);
-        }
+        page.FindAll("#settings-signin").ShouldBeEmpty();
+        page.Find("#settings-account-card").GetAttribute("href").ShouldBe("settings/account");
+        page.Find("#settings-account-card").TextContent.ShouldContain("Thomas");
+    }
 
-        page.Markup.ShouldNotContain("Available once accounts are in");
+    [Fact]
+    public void A_settings_group_opens_on_its_own_page_with_a_back_link()
+    {
+        var page = Render<Settings>(p => p.Add(x => x.Group, "preferences"));
+
+        page.Find("h1").TextContent.ShouldBe("Preferences");
+        page.Find("a.dialed-back").GetAttribute("href").ShouldBe("settings");
+        page.Find("#group-preferences #settings-units").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void An_unknown_settings_group_shows_the_overview()
+    {
+        Render<Settings>(p => p.Add(x => x.Group, "nope")).FindAll("#settings-groups").Count.ShouldBe(1);
     }
 
     // ---- More ---------------------------------------------------------------------------------
@@ -124,7 +135,7 @@ public sealed class SettingsPeoplePolishTests : UiTestContext
         var page = Render<People>();
 
         page.Find(".dialed-empty .dialed-empty-icon").ShouldNotBeNull();
-        page.Find("#people-sign-in").GetAttribute("href").ShouldBe("settings#group-account");
+        page.Find("#people-sign-in").GetAttribute("href").ShouldBe("signin");
     }
 
     [Fact]
