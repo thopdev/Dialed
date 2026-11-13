@@ -48,6 +48,24 @@ else
 
         @if (isEspresso)
         {
+            <EspressoFigure Id="espresso-figure" Phase="@EspressoStage" Fraction="@ShotFraction" Finished="@(running && elapsed >= band.LowerS)" Animated="@(!paused && (EspressoStage != EspressoPhase.Shot || running))" />
+
+            @if (!running && elapsed == 0)
+            {
+                <div id="espresso-prep" class="dialed-espresso-prep">
+                    <div class="dialed-chips" role="group" aria-label="@L["Espresso_Prep"]">
+                        <Chip Selected="@(prepPhase == EspressoPhase.Grind)" OnClick="@(() => prepPhase = EspressoPhase.Grind)">@L["Espresso_Step_Grind"]</Chip>
+                        <Chip Selected="@(prepPhase == EspressoPhase.Wdt)" OnClick="@(() => prepPhase = EspressoPhase.Wdt)">@L["Espresso_Step_Wdt"]</Chip>
+                        <Chip Selected="@(prepPhase == EspressoPhase.Shot)" OnClick="@(() => prepPhase = EspressoPhase.Shot)">@L["Espresso_Step_Shot"]</Chip>
+                    </div>
+                    <p id="espresso-hint" class="dialed-timer-sub">@L[$"Espresso_Hint_{prepPhase}"]</p>
+                    @if (prepPhase != EspressoPhase.Shot)
+                    {
+                        <button id="espresso-next" type="button" class="dialed-button" @onclick="@(() => prepPhase++)">@L["Espresso_Next"]</button>
+                    }
+                </div>
+            }
+
             <p id="timer-band" class="dialed-timer-sub">@string.Format(L["Timer_Band"].Value, band.LowerS, band.UpperS)</p>
             @if (running)
             {
@@ -165,6 +183,13 @@ else
     private bool speechSupported;
     private int lastCountdown;
     private bool paused;
+    private EspressoPhase prepPhase;
+
+    /// <summary>What the espresso drawing shows: the prep step you are on, and always the shot once the timer runs.</summary>
+    private EspressoPhase EspressoStage => running || elapsed > 0 ? EspressoPhase.Shot : prepPhase;
+
+    /// <summary>How much of the shot window has run: how full the cup is.</summary>
+    private double ShotFraction => band.UpperS > 0 ? Math.Clamp((double)elapsed / band.UpperS, 0, 1) : 0;
 
     private Icon FocusIcon => focus ? new Icons.Regular.Size24.FullScreenMinimize() : new Icons.Regular.Size24.FullScreenMaximize();
 
@@ -209,6 +234,7 @@ else
         await StopLoopAsync(releaseWakeLock: true);
         running = false;
         elapsed = 0;
+        prepPhase = EspressoPhase.Grind;
         recipe = await RecipeStore.GetAsync(RecipeId);
         if (recipe is not null)
         {
@@ -372,6 +398,7 @@ else
         running = false;
         elapsed = 0;
         stepKey = 0;
+        prepPhase = EspressoPhase.Grind;
         state = timeline.At(0);
     }
 

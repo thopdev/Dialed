@@ -387,6 +387,17 @@
   <data name="Error_Message" xml:space="preserve"><value>This screen couldn't be shown. Your data is safe.</value></data>
   <data name="Error_Retry" xml:space="preserve"><value>Try again</value></data>
   <data name="Error_Title" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="Espresso_Figure_Grind" xml:space="preserve"><value>Grinder filling the portafilter</value></data>
+  <data name="Espresso_Figure_Shot" xml:space="preserve"><value>Espresso in the cup, {0}%</value></data>
+  <data name="Espresso_Figure_Wdt" xml:space="preserve"><value>A needle stirring the grounds in the portafilter</value></data>
+  <data name="Espresso_Hint_Grind" xml:space="preserve"><value>Grind your dose straight into the portafilter.</value></data>
+  <data name="Espresso_Hint_Shot" xml:space="preserve"><value>Lock in the portafilter, put the cup under it and start.</value></data>
+  <data name="Espresso_Hint_Wdt" xml:space="preserve"><value>Stir the grounds with a fine needle (WDT) to break up clumps, then tamp.</value></data>
+  <data name="Espresso_Next" xml:space="preserve"><value>Next step</value></data>
+  <data name="Espresso_Prep" xml:space="preserve"><value>Prepare the shot</value></data>
+  <data name="Espresso_Step_Grind" xml:space="preserve"><value>1 Grind</value></data>
+  <data name="Espresso_Step_Shot" xml:space="preserve"><value>3 Shot</value></data>
+  <data name="Espresso_Step_Wdt" xml:space="preserve"><value>2 WDT</value></data>
   <data name="Fav_Title" xml:space="preserve"><value>Favourite brew methods</value></data>
   <data name="Feed_AddedBean" xml:space="preserve"><value>{0} added {1}</value></data>
   <data name="Feed_Brewed" xml:space="preserve"><value>{0} brewed {1}</value></data>
