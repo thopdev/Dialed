@@ -41,39 +41,115 @@
         content: "An error has occurred."
     }
 
-.loading-progress {
-    position: absolute;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    inset: 20vh 0 auto 0;
-    margin: 0 auto 0 auto;
+/* Loading screen (index.html): same colours as the iOS splash image, a cup that fills with the download progress. */
+.dialed-loading {
+    --loading-bg: #f4ece0;
+    --loading-ink: #6f4e37;
+    --loading-track: rgba(111, 78, 55, 0.18);
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    background: var(--loading-bg);
+    color: var(--loading-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
+@media (prefers-color-scheme: dark) {
+    .dialed-loading {
+        --loading-bg: #1e1713;
+        --loading-ink: #d2a77f;
+        --loading-track: rgba(210, 167, 127, 0.2);
     }
-
-        .loading-progress circle:last-child {
-            stroke: #6f4e37;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+.dialed-loading-cup {
+    position: relative;
+    width: 5.5rem;
+    height: 4.5rem;
+    margin-top: 2rem;
+}
+
+.dialed-loading-body {
+    position: absolute;
+    inset: 0 0 0 0;
+    overflow: hidden;
+    border: 0.3rem solid var(--loading-ink);
+    border-radius: 0.4rem 0.4rem 2.75rem 2.75rem;
+    background: var(--loading-track);
+}
+
+.dialed-loading-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--blazor-load-percentage, 0%);
+    background: var(--loading-ink);
+    transition: height 0.2s ease-out;
+}
+
+.dialed-loading-handle {
+    position: absolute;
+    top: 0.9rem;
+    right: -1.35rem;
+    width: 1.6rem;
+    height: 2rem;
+    border: 0.3rem solid var(--loading-ink);
+    border-left: 0;
+    border-radius: 0 1.2rem 1.2rem 0;
+}
+
+.dialed-loading-steam {
+    position: absolute;
+    bottom: 100%;
+    width: 0.3rem;
+    height: 1.4rem;
+    border-radius: 0.3rem;
+    background: var(--loading-ink);
+    opacity: 0;
+    animation: dialed-loading-steam 2.4s ease-in-out infinite;
+}
+
+.dialed-loading-steam:nth-child(1) { left: 1.4rem; animation-delay: 0s; }
+.dialed-loading-steam:nth-child(2) { left: 2.65rem; animation-delay: 0.8s; }
+.dialed-loading-steam:nth-child(3) { left: 3.9rem; animation-delay: 1.6s; }
+
+@keyframes dialed-loading-steam {
+    0% { opacity: 0; transform: translateY(0.6rem) scaleY(0.6); }
+    40% { opacity: 0.55; }
+    100% { opacity: 0; transform: translateY(-0.6rem) scaleY(1); }
+}
+
+.dialed-loading-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.dialed-loading-percent {
+    min-height: 1.25rem;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+}
+
+.dialed-loading-percent::after {
+    content: var(--blazor-load-percentage-text, "");
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dialed-loading-steam {
+        animation: none;
     }
+
+    .dialed-loading-fill {
+        transition: none;
+    }
+}
 
 code {
     color: #c02d76;

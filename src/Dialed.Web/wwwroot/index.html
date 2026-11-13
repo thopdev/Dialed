@@ -69,12 +69,20 @@
 
 <!-- Fluent UI builds light and dark brand themes from this colour (espresso brown) and follows the system mode. -->
 <body data-theme-color="#6F4E37">
+    <!-- Shown until Blazor has started: a cup that fills as the app downloads (Blazor sets --blazor-load-percentage).
+         Plain HTML and CSS on purpose so it appears before any .NET code runs; no words, so it needs no translation. -->
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="dialed-loading" role="status" aria-label="Dialed">
+            <div class="dialed-loading-cup" aria-hidden="true">
+                <span class="dialed-loading-steam"></span>
+                <span class="dialed-loading-steam"></span>
+                <span class="dialed-loading-steam"></span>
+                <div class="dialed-loading-body"><div class="dialed-loading-fill"></div></div>
+                <span class="dialed-loading-handle"></span>
+            </div>
+            <div class="dialed-loading-name" aria-hidden="true">Dialed</div>
+            <div class="dialed-loading-percent" aria-hidden="true"></div>
+        </div>
     </div>
 
     <div id="blazor-error-ui">
