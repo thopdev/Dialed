@@ -69,7 +69,7 @@
 .dialed-loading-brewer {
     position: relative;
     width: 9rem;
-    height: 10rem;
+    height: 13rem;
 }
 
 .dialed-loading-brewer svg {
@@ -111,6 +111,26 @@
     width: 6rem;
     height: 4.2rem;
     clip-path: polygon(0 0, 100% 0, 63.3% 100%, 36.7% 100%);
+}
+
+.dialed-loading-water {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 62%;
+    background: var(--loading-ink);
+    opacity: 0.45;
+}
+
+.dialed-loading-cup-fill {
+    position: absolute;
+    left: 2.8rem;
+    top: 10rem;
+    width: 3.4rem;
+    height: 2.6rem;
+    overflow: hidden;
+    border-radius: 0 0 1.2rem 1.2rem;
 }
 
 .dialed-loading-fill {
