@@ -66,20 +66,51 @@
     }
 }
 
-.dialed-loading-cup {
+.dialed-loading-brewer {
     position: relative;
-    width: 5.5rem;
-    height: 4.5rem;
-    margin-top: 2rem;
+    width: 9rem;
+    height: 10rem;
 }
 
-.dialed-loading-body {
+.dialed-loading-brewer svg {
     position: absolute;
-    inset: 0 0 0 0;
-    overflow: hidden;
-    border: 0.3rem solid var(--loading-ink);
-    border-radius: 0.4rem 0.4rem 2.75rem 2.75rem;
-    background: var(--loading-track);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    fill: none;
+    stroke: var(--loading-ink);
+    stroke-width: 0.3rem;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dialed-loading-kettle {
+    stroke-width: 0.22rem;
+}
+
+.dialed-loading-kettle-body {
+    fill: var(--loading-bg);
+}
+
+.dialed-loading-cone {
+    fill: var(--loading-track);
+}
+
+.dialed-loading-stream {
+    stroke-width: 0.25rem;
+    stroke-dasharray: 0.5rem 0.4rem;
+    animation: dialed-loading-pour 0.5s linear infinite;
+}
+
+/* The coffee in the cone: the same shape as the outline, filling from the bottom with the download progress. */
+.dialed-loading-cone-fill {
+    position: absolute;
+    left: 1.5rem;
+    top: 4.4rem;
+    width: 6rem;
+    height: 4.2rem;
+    clip-path: polygon(0 0, 100% 0, 63.3% 100%, 36.7% 100%);
 }
 
 .dialed-loading-fill {
@@ -92,36 +123,8 @@
     transition: height 0.2s ease-out;
 }
 
-.dialed-loading-handle {
-    position: absolute;
-    top: 0.9rem;
-    right: -1.35rem;
-    width: 1.6rem;
-    height: 2rem;
-    border: 0.3rem solid var(--loading-ink);
-    border-left: 0;
-    border-radius: 0 1.2rem 1.2rem 0;
-}
-
-.dialed-loading-steam {
-    position: absolute;
-    bottom: 100%;
-    width: 0.3rem;
-    height: 1.4rem;
-    border-radius: 0.3rem;
-    background: var(--loading-ink);
-    opacity: 0;
-    animation: dialed-loading-steam 2.4s ease-in-out infinite;
-}
-
-.dialed-loading-steam:nth-child(1) { left: 1.4rem; animation-delay: 0s; }
-.dialed-loading-steam:nth-child(2) { left: 2.65rem; animation-delay: 0.8s; }
-.dialed-loading-steam:nth-child(3) { left: 3.9rem; animation-delay: 1.6s; }
-
-@keyframes dialed-loading-steam {
-    0% { opacity: 0; transform: translateY(0.6rem) scaleY(0.6); }
-    40% { opacity: 0.55; }
-    100% { opacity: 0; transform: translateY(-0.6rem) scaleY(1); }
+@keyframes dialed-loading-pour {
+    to { stroke-dashoffset: -0.9rem; }
 }
 
 .dialed-loading-name {
@@ -142,7 +145,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dialed-loading-steam {
+    .dialed-loading-stream {
         animation: none;
     }
 
