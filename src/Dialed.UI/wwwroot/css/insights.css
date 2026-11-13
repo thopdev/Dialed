@@ -513,3 +513,53 @@ a.dialed-banner {
 .dialed-espresso-prep .dialed-chips {
     justify-content: center;
 }
+
+/* Streak cup and level title (Statistics and Home): two quiet tiles, brown, no backgrounds behind the icon. */
+.dialed-streak-level {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: var(--dialed-space-3);
+    margin: var(--dialed-space-4) 0;
+}
+
+.dialed-streak-tile,
+.dialed-level-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--dialed-space-1);
+    padding: var(--dialed-space-4);
+    border-radius: var(--dialed-radius-l);
+    background: var(--colorNeutralBackground1);
+    box-shadow: var(--dialed-shadow-card);
+}
+
+.dialed-streak-tile {
+    align-items: center;
+    text-align: center;
+}
+
+.dialed-streak-cup {
+    display: inline-flex;
+    color: var(--colorBrandForeground1);
+}
+
+.dialed-streak-days {
+    font-family: var(--dialed-font-display);
+    font-size: var(--dialed-text-3xl);
+    line-height: 1;
+}
+
+.dialed-level-title {
+    font-family: var(--dialed-font-display);
+    font-size: var(--dialed-text-xl);
+}
+
+.dialed-level-tile .dialed-meter {
+    margin: var(--dialed-space-2) 0;
+}
+
+@media (max-width: 22rem) {
+    .dialed-streak-level {
+        grid-template-columns: 1fr;
+    }
+}

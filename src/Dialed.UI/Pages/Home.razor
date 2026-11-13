@@ -7,6 +7,7 @@
 @using Dialed.Domain.Equipment
 @using Dialed.Domain.Inventory
 @using Dialed.Domain.Model
+@using Dialed.Domain.Statistics
 @implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject IRepository<Bag> BagStore
@@ -67,6 +68,11 @@ else
         </a>
     </div>
     <p id="home-scan-hint" class="dialed-home-hint">@L["Home_ScanHint"]</p>
+
+    @if (!Preferences.Profile.HideStreak && milestones.Brews > 0)
+    {
+        <StreakLevel Summary="milestones" Id="home-streak-level" />
+    }
 
     @if (gearDue.Count > 0)
     {
@@ -172,6 +178,7 @@ else
     private IReadOnlyList<Brew> recent = [];
     private int brewsToday;
     private IReadOnlyList<EquipmentItem> gearDue = [];
+    private MilestoneSummary milestones = MilestoneSummary.Calculate([], [], [], DateOnly.MinValue);
     private Brew? lastToday;
     private int beanCount;
     private Dictionary<string, Bean> beansById = [];
@@ -233,6 +240,7 @@ else
         brewsToday = todays.Count;
         lastToday = todays.FirstOrDefault();
         var recipes = await RecipeStore.ListAsync();
+        milestones = MilestoneSummary.Calculate(brews, bags, beans, today);
         gearDue = [.. (await GearStore.ListAsync()).Where(g => !g.Deleted && GearWear.Evaluate(g, brews, recipes, today).State == WearState.Due)];
     }
 

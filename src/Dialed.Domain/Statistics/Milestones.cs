@@ -29,6 +29,9 @@ public sealed record MilestoneSummary(int Brews, int Origins, int Roasters, int 
         [MilestoneKind.Streak] = [3, 7, 14, 30, 100],
     };
 
+    /// <summary>The title that goes with the number of brews.</summary>
+    public CoffeeLevel Level => CoffeeLevel.For(Brews);
+
     public static MilestoneSummary Calculate(IEnumerable<Brew> brews, IEnumerable<Bag> bags, IEnumerable<Bean> beans, DateOnly today)
     {
         ArgumentNullException.ThrowIfNull(brews);
