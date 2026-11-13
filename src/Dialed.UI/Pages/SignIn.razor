@@ -1,0 +1,37 @@
+@page "/signin"
+@using Dialed.Client.Account
+@using Dialed.Client.Preferences
+@implements IDisposable
+@inject IStringLocalizer<Strings> L
+@inject AuthSession Session
+@inject IUserPreferences Preferences
+@inject NavigationManager Navigation
+
+<PageHeader Title="@L["SignIn_Title"]" BackHref="settings" />
+
+<p id="signin-intro" class="dialed-muted">@L["SignIn_Intro"]</p>
+
+<div class="dialed-card">
+    <AccountPanel />
+</div>
+
+@code {
+    protected override void OnInitialized() => Session.Changed += OnChanged;
+
+    private void OnChanged()
+    {
+        if (!Session.IsSignedIn)
+        {
+            return;
+        }
+
+        // Someone who has just signed in does not need the first-run setup on top.
+        _ = InvokeAsync(async () =>
+        {
+            await Preferences.SetProfileAsync(Preferences.Profile with { OnboardingDone = true });
+            Navigation.NavigateTo("");
+        });
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

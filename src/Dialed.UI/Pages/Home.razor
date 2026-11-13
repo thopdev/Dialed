@@ -33,6 +33,13 @@ else
     </header>
 }
 
+@if (!Session.IsSignedIn)
+{
+    <a id="home-signin" class="dialed-banner" href="signin">
+        <span class="dialed-banner-message">@L["Home_SignInHint"] <strong>@L["Home_SignInLink"]</strong></span>
+    </a>
+}
+
 @if (stock is null)
 {
     <Loading IsLoading="true" />
