@@ -65,13 +65,13 @@
     <script type="importmap"></script>
     <!-- First script on the page so JavaScript errors during startup are caught too (#91). -->
     <script src="js/errors.js"></script>
-    <!-- Switches the loading screen from "Bloom" to "Dialed" when the download is almost done. -->
+    <!-- Switches the loading screen from "Bloom" and "Pour" to "Dialed" when the download is almost done. -->
     <script src="js/loading.js"></script>
 </head>
 
 <!-- Fluent UI builds light and dark brand themes from this colour (espresso brown) and follows the system mode. -->
 <body data-theme-color="#6F4E37">
-    <!-- Shown until Blazor has started: a kettle blooms and pours twice into a V60 that drips into a cup, and the cup fills as the app downloads; the name says "Bloom" and becomes "Dialed" near the end (js/loading.js) (Blazor sets --blazor-load-percentage).
+    <!-- Shown until Blazor has started: a kettle blooms and pours twice into a V60 that drips into a cup, and the cup fills as the app downloads; the name says "Bloom" and "Pour" with the kettle and becomes "Dialed" near the end (js/loading.js) (Blazor sets --blazor-load-percentage).
          Plain HTML and CSS on purpose so it appears before any .NET code runs; no words, so it needs no translation. -->
     <div id="app">
         <div class="dialed-loading" role="status" aria-label="Dialed">
@@ -94,7 +94,8 @@
                 <div class="dialed-loading-cup-fill"><div class="dialed-loading-fill"></div></div>
             </div>
             <div class="dialed-loading-name" aria-hidden="true">
-                <span class="dialed-loading-dialing">Bloom</span>
+                <span class="dialed-loading-bloom">Bloom</span>
+                <span class="dialed-loading-pour-word">Pour</span>
                 <span class="dialed-loading-dialed">Dialed</span>
             </div>
             <div class="dialed-loading-percent" aria-hidden="true"></div>

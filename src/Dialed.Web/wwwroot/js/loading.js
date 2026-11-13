@@ -1,6 +1,6 @@
-// The loading screen in index.html says "Bloom" while the app downloads and switches to "Dialed" when it is almost there.
+// The loading screen in index.html says "Bloom" and "Pour" with the kettle while the app downloads and switches to "Dialed" when it is almost there.
 // Blazor writes its progress to --blazor-load-percentage on <html>; this watches it. Nothing else depends on this file: without it
-// the screen simply keeps saying "Bloom" until the app starts.
+// the screen simply keeps showing the brew words until the app starts.
 (function () {
     const threshold = 90;
     const root = document.documentElement;
