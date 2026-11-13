@@ -97,6 +97,11 @@
     font-size: var(--dialed-text-s);
 }
 
+/* With the update banner above it the hero has nothing to bleed under, so it stays below the banner. */
+.dialed-update-banner ~ .dialed-home-hero {
+    margin-top: 0;
+}
+
 /* The actions float over the lower edge of the hero. */
 .dialed-home-hero + .dialed-home-actions {
     position: relative;
