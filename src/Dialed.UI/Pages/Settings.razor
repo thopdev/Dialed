@@ -1,109 +1,156 @@
 @page "/settings"
+@page "/settings/{Group}"
 @using System.Reflection
 @using Dialed.Client
+@using Dialed.Client.Account
 @using Dialed.Client.Storage
+@implements IDisposable
 @inject IStringLocalizer<Strings> L
 @inject StorageStatus Storage
+@inject AuthSession Session
 
-<PageHeader Title="@L["Settings_Title"]" BackHref="more" />
+@if (Current is { } group)
+{
+    <PageHeader Title="@L[group.TitleKey]" BackHref="settings" />
 
-<nav class="dialed-settings-jump" aria-label="@L["Settings_JumpTo"]">
-    @foreach (var (id, key) in Groups)
+    <div class="dialed-card dialed-settings-card" id="@($"group-{group.Id}")">
+        @switch (group.Id)
+        {
+            case "profile":
+                <div id="settings-profile">
+                    <ProfileForm />
+                </div>
+                <div id="settings-public-profile" class="dialed-settings-item">
+                    <PublicProfilePanel />
+                </div>
+                break;
+            case "preferences":
+                <div id="settings-units" class="dialed-settings-item">
+                    <UnitsSetting />
+                </div>
+                <div id="settings-methods" class="dialed-settings-item">
+                    <FavouriteMethodsPicker />
+                </div>
+                <div id="settings-inventory" class="dialed-settings-item">
+                    <InventorySettingsForm />
+                </div>
+                break;
+            case "household":
+                <div id="settings-household">
+                    <HouseholdPanel />
+                </div>
+                break;
+            case "data":
+                <div id="settings-sync" class="dialed-settings-item">
+                    <h3>@L["More_Diagnostics"]</h3>
+                    <ApiStatus />
+                    <SyncDiagnostics />
+                </div>
+                <div id="settings-storage" class="dialed-settings-item">
+                    <h3>@L["Settings_Storage"]</h3>
+                    <p id="storage-status" class="dialed-muted">@L[Storage.Durable ? (Storage.Persisted ? "Storage_Persisted" : "Storage_Unprotected") : "Storage_Memory"]</p>
+                </div>
+                break;
+            case "account":
+                <div id="settings-account" class="dialed-settings-item">
+                    <AccountPanel />
+                </div>
+                <div id="settings-passkeys" class="dialed-settings-item">
+                    <PasskeysPanel />
+                </div>
+                <div id="settings-notifications" class="dialed-settings-item">
+                    <NotificationsPanel />
+                </div>
+                <div class="dialed-settings-item">
+                    <DataControls />
+                </div>
+                <div id="settings-backup" class="dialed-settings-item">
+                    <BackupPanel />
+                </div>
+                break;
+            case "privacy":
+                <div id="settings-privacy">
+                    <p><a id="privacy-link" class="dialed-inline-link" href="privacy">@L["Settings_PrivacyLink"]</a></p>
+                    <ErrorReportingSetting />
+                </div>
+                break;
+            case "help":
+                <div id="settings-feedback" class="dialed-settings-item">
+                    <h3>@L["Feedback_Title"]</h3>
+                    <FeedbackPanel />
+                </div>
+                <div id="settings-setup" class="dialed-settings-item">
+                    <h3>@L["Settings_Setup"]</h3>
+                    <a id="settings-reopen-onboarding" class="dialed-button" href="welcome">@L["Settings_ReopenSetup"]</a>
+                </div>
+                <InstallGuide />
+                break;
+        }
+    </div>
+}
+else
+{
+    <PageHeader Title="@L["Settings_Title"]" BackHref="more" />
+
+    @* The account comes first: who you are signed in as, or a way to sign in. *@
+    @if (Session.IsSignedIn)
     {
-        <a class="dialed-chip" href="@($"settings#{id}")">@L[key]</a>
+        <div class="dialed-list dialed-settings-list">
+            <ListRow Title="@(Session.DisplayName ?? L["Settings_Account"].Value)" Subtitle="@L["Settings_Sub_account"]" Href="settings/account" id="settings-account-card">
+                <Leading><Avatar Name="@(Session.DisplayName ?? "")" Size="44" /></Leading>
+            </ListRow>
+        </div>
     }
-</nav>
+    else
+    {
+        <div class="dialed-card dialed-settings-signin" id="settings-account-card">
+            <h2>@L["Settings_NotSignedIn"]</h2>
+            <p class="dialed-muted">@L["Settings_NotSignedInHint"]</p>
+            <a id="settings-signin" class="dialed-button dialed-button-primary" href="signin">@L["SignIn_Title"]</a>
+        </div>
+    }
 
-<SettingsGroup Id="group-profile" Title="@L["Settings_GroupProfile"]" Icon="@(new Icons.Regular.Size24.Person())">
-    <div id="settings-profile">
-        <ProfileForm />
+    <div class="dialed-list dialed-settings-list" id="settings-groups">
+        @foreach (var item in Groups.Where(g => g.Id != "account"))
+        {
+            <ListRow Title="@L[item.TitleKey]" Subtitle="@L[$"Settings_Sub_{item.Id}"]" Href="@($"settings/{item.Id}")" data-settings="@item.Id">
+                <Leading>
+                    <span class="dialed-thumb dialed-more-icon" style="--dialed-thumb-size: 36px" aria-hidden="true">
+                        <FluentIcon Value="@item.Icon" Color="Color.Custom" CustomColor="currentColor" />
+                    </span>
+                </Leading>
+            </ListRow>
+        }
     </div>
-    <div id="settings-public-profile" class="dialed-settings-item">
-        <PublicProfilePanel />
-    </div>
-</SettingsGroup>
 
-<SettingsGroup Id="group-preferences" Title="@L["Settings_GroupPreferences"]" Icon="@(new Icons.Regular.Size24.Options())">
-    <div id="settings-units" class="dialed-settings-item">
-        <UnitsSetting />
-    </div>
-    <div id="settings-methods" class="dialed-settings-item">
-        <FavouriteMethodsPicker />
-    </div>
-    <div id="settings-inventory" class="dialed-settings-item">
-        <InventorySettingsForm />
-    </div>
-</SettingsGroup>
-
-<SettingsGroup Id="group-household" Title="@L["Settings_GroupHousehold"]" Icon="@(new Icons.Regular.Size24.People())">
-    <div id="settings-household">
-        <HouseholdPanel />
-    </div>
-</SettingsGroup>
-
-<SettingsGroup Id="group-data" Title="@L["Settings_GroupData"]" Icon="@(new Icons.Regular.Size24.Database())">
-    <div id="settings-sync" class="dialed-settings-item">
-        <h3>@L["More_Diagnostics"]</h3>
-        <ApiStatus />
-        <SyncDiagnostics />
-    </div>
-    <div id="settings-storage" class="dialed-settings-item">
-        <h3>@L["Settings_Storage"]</h3>
-        <p id="storage-status" class="dialed-muted">@L[Storage.Durable ? (Storage.Persisted ? "Storage_Persisted" : "Storage_Unprotected") : "Storage_Memory"]</p>
-    </div>
-</SettingsGroup>
-
-<SettingsGroup Id="group-account" Title="@L["Settings_Account"]" Icon="@(new Icons.Regular.Size24.ShieldLock())">
-    <div id="settings-account" class="dialed-settings-item">
-        <AccountPanel />
-    </div>
-    <div id="settings-passkeys" class="dialed-settings-item">
-        <PasskeysPanel />
-    </div>
-    <div id="settings-notifications" class="dialed-settings-item">
-        <NotificationsPanel />
-    </div>
-    <div class="dialed-settings-item">
-        <DataControls />
-    </div>
-    <div id="settings-backup" class="dialed-settings-item">
-        <BackupPanel />
-    </div>
-</SettingsGroup>
-
-<SettingsGroup Id="group-privacy" Title="@L["Settings_GroupPrivacy"]" Icon="@(new Icons.Regular.Size24.LockClosed())">
-    <div id="settings-privacy">
-        <p><a id="privacy-link" class="dialed-inline-link" href="privacy">@L["Settings_PrivacyLink"]</a></p>
-        <ErrorReportingSetting />
-    </div>
-</SettingsGroup>
-
-<SettingsGroup Id="group-help" Title="@L["Settings_GroupHelp"]" Icon="@(new Icons.Regular.Size24.ChatHelp())">
-    <div id="settings-feedback" class="dialed-settings-item">
-        <h3>@L["Feedback_Title"]</h3>
-        <FeedbackPanel />
-    </div>
-    <div id="settings-setup" class="dialed-settings-item">
-        <h3>@L["Settings_Setup"]</h3>
-        <a id="settings-reopen-onboarding" class="dialed-button" href="welcome">@L["Settings_ReopenSetup"]</a>
-    </div>
-    <InstallGuide />
-</SettingsGroup>
-
-<SettingsGroup Id="group-about" Title="@L["Settings_GroupAbout"]" Icon="@(new Icons.Regular.Size24.Info())">
     <p class="dialed-muted" id="settings-version">@string.Format(L["Settings_Version"].Value, Version)</p>
-</SettingsGroup>
+}
 
 @code {
-    private static readonly (string Id, string Key)[] Groups =
+    private sealed record SettingsGroupInfo(string Id, string TitleKey, Icon Icon);
+
+    private static readonly SettingsGroupInfo[] Groups =
     [
-        ("group-profile", "Settings_GroupProfile"),
-        ("group-preferences", "Settings_GroupPreferences"),
-        ("group-data", "Settings_GroupData"),
-        ("group-account", "Settings_Account"),
-        ("group-privacy", "Settings_GroupPrivacy"),
-        ("group-about", "Settings_GroupAbout"),
+        new("profile", "Settings_GroupProfile", new Icons.Regular.Size24.Person()),
+        new("preferences", "Settings_GroupPreferences", new Icons.Regular.Size24.Options()),
+        new("household", "Settings_GroupHousehold", new Icons.Regular.Size24.People()),
+        new("data", "Settings_GroupData", new Icons.Regular.Size24.Database()),
+        new("account", "Settings_Account", new Icons.Regular.Size24.ShieldLock()),
+        new("privacy", "Settings_GroupPrivacy", new Icons.Regular.Size24.LockClosed()),
+        new("help", "Settings_GroupHelp", new Icons.Regular.Size24.ChatHelp()),
     ];
+
+    /// <summary>The group in the address (<c>settings/household</c>); empty shows the overview.</summary>
+    [Parameter]
+    public string? Group { get; set; }
+
+    private SettingsGroupInfo? Current => Groups.FirstOrDefault(g => g.Id.Equals(Group, StringComparison.OrdinalIgnoreCase));
+
+    protected override void OnInitialized() => Session.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Session.Changed -= OnChanged;
 
     private static string Version =>
         typeof(Settings).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "dev";

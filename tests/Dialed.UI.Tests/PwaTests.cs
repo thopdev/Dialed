@@ -45,6 +45,6 @@ public sealed class PwaTests : UiTestContext
     {
         Pwa.NeedsInstallGuide = true;
 
-        Render<Settings>().FindAll(".dialed-install-guide").Count.ShouldBe(1);
+        Render<Settings>(p => p.Add(x => x.Group, "help")).FindAll(".dialed-install-guide").Count.ShouldBe(1);
     }
 }

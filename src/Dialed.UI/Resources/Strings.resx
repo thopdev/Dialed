@@ -526,6 +526,8 @@
   <data name="Home_ScanBag" xml:space="preserve"><value>Scan bag</value></data>
   <data name="Home_ScanHint" xml:space="preserve"><value>Take a photo of a bag label to add the bean and the bag.</value></data>
   <data name="Home_SeeAll" xml:space="preserve"><value>See all</value></data>
+  <data name="Home_SignInHint" xml:space="preserve"><value>Have an account? Sign in to get your coffee on this device.</value></data>
+  <data name="Home_SignInLink" xml:space="preserve"><value>Sign in</value></data>
   <data name="Home_Welcome" xml:space="preserve"><value>Add your first coffee bean to start tracking bags and brews.</value></data>
   <data name="Home_WelcomeTitle" xml:space="preserve"><value>Welcome to Dialed</value></data>
   <data name="Household_Active" xml:space="preserve"><value>Household</value></data>
@@ -657,6 +659,7 @@
   <data name="Onboarding_GearHint" xml:space="preserve"><value>Add your grinder and brewer; you can add more later.</value></data>
   <data name="Onboarding_GearTitle" xml:space="preserve"><value>Your gear</value></data>
   <data name="Onboarding_Grinder" xml:space="preserve"><value>Grinder</value></data>
+  <data name="Onboarding_HaveAccount" xml:space="preserve"><value>I already have an account</value></data>
   <data name="Onboarding_InstallTitle" xml:space="preserve"><value>Add Dialed to your Home Screen</value></data>
   <data name="Onboarding_Next" xml:space="preserve"><value>Next</value></data>
   <data name="Onboarding_Progress" xml:space="preserve"><value>Step {0} of {1}</value></data>
@@ -945,7 +948,6 @@
   <data name="Settings_DeleteAccount" xml:space="preserve"><value>Delete account</value></data>
   <data name="Settings_Export" xml:space="preserve"><value>Export my data</value></data>
   <data name="Settings_ExportDone" xml:space="preserve"><value>Your data was exported as a JSON file.</value></data>
-  <data name="Settings_GroupAbout" xml:space="preserve"><value>About</value></data>
   <data name="Settings_GroupData" xml:space="preserve"><value>Data and sync</value></data>
   <data name="Settings_GroupHelp" xml:space="preserve"><value>Help and feedback</value></data>
   <data name="Settings_GroupHousehold" xml:space="preserve"><value>Household</value></data>
@@ -953,7 +955,8 @@
   <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="Settings_GroupProfile" xml:space="preserve"><value>Profile</value></data>
   <data name="Settings_Household" xml:space="preserve"><value>Active household</value></data>
-  <data name="Settings_JumpTo" xml:space="preserve"><value>Jump to</value></data>
+  <data name="Settings_NotSignedIn" xml:space="preserve"><value>You are not signed in</value></data>
+  <data name="Settings_NotSignedInHint" xml:space="preserve"><value>Your coffee stays on this device. Sign in to sync between devices and share with your household.</value></data>
   <data name="Settings_Passkeys" xml:space="preserve"><value>Passkeys</value></data>
   <data name="Settings_Privacy" xml:space="preserve"><value>Privacy policy</value></data>
   <data name="Settings_PrivacyLater" xml:space="preserve"><value>The privacy policy will be linked here before the beta.</value></data>
@@ -964,6 +967,13 @@
   <data name="Settings_SignOut" xml:space="preserve"><value>Sign out</value></data>
   <data name="Settings_Storage" xml:space="preserve"><value>Storage</value></data>
   <data name="Settings_StorageLater" xml:space="preserve"><value>Storage status appears here once data is kept on this device.</value></data>
+  <data name="Settings_Sub_account" xml:space="preserve"><value>Passkeys, notifications, backup, delete</value></data>
+  <data name="Settings_Sub_data" xml:space="preserve"><value>Sync, diagnostics and storage</value></data>
+  <data name="Settings_Sub_help" xml:space="preserve"><value>Feedback, known issues, install guide</value></data>
+  <data name="Settings_Sub_household" xml:space="preserve"><value>Members, invites, active household</value></data>
+  <data name="Settings_Sub_preferences" xml:space="preserve"><value>Units, brew methods, stock alerts</value></data>
+  <data name="Settings_Sub_privacy" xml:space="preserve"><value>Privacy policy and error reports</value></data>
+  <data name="Settings_Sub_profile" xml:space="preserve"><value>Your name and who sees your profile</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_Version" xml:space="preserve"><value>Version {0}</value></data>
   <data name="Shopping_Again" xml:space="preserve"><value>Buy again: you rated it well</value></data>
@@ -974,6 +984,8 @@
   <data name="Shot_InBand" xml:space="preserve"><value>In the target window</value></data>
   <data name="Shot_TooLong" xml:space="preserve"><value>Too long</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Too short</value></data>
+  <data name="SignIn_Intro" xml:space="preserve"><value>Sign in with your passkey to get your data on this device, or create an account to sync and share with your household.</value></data>
+  <data name="SignIn_Title" xml:space="preserve"><value>Sign in</value></data>
   <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} brews</value></data>
   <data name="Stats_CupCost" xml:space="preserve"><value>Cost per cup</value></data>
   <data name="Stats_CupCostHelp" xml:space="preserve"><value>The average cost of the coffee in a brew, from the price and weight of its bag. Milk and water are not counted.</value></data>

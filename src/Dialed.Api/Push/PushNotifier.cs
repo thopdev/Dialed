@@ -176,7 +176,7 @@ public static class PushText
             _ => new(
                 nl ? "Nieuw huishoudlid" : "New household member",
                 nl ? $"{name} is lid geworden van je huishouden." : $"{name} joined your household.",
-                "settings#settings-household",
+                "settings/household",
                 "household-joined"),
         };
     }
