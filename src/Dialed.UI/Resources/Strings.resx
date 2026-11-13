@@ -526,6 +526,8 @@
   <data name="Home_ScanBag" xml:space="preserve"><value>Scan bag</value></data>
   <data name="Home_ScanHint" xml:space="preserve"><value>Take a photo of a bag label to add the bean and the bag.</value></data>
   <data name="Home_SeeAll" xml:space="preserve"><value>See all</value></data>
+  <data name="Home_SignInHint" xml:space="preserve"><value>Have an account? Sign in to get your coffee on this device.</value></data>
+  <data name="Home_SignInLink" xml:space="preserve"><value>Sign in</value></data>
   <data name="Home_Welcome" xml:space="preserve"><value>Add your first coffee bean to start tracking bags and brews.</value></data>
   <data name="Home_WelcomeTitle" xml:space="preserve"><value>Welcome to Dialed</value></data>
   <data name="Household_Active" xml:space="preserve"><value>Household</value></data>
@@ -657,6 +659,7 @@
   <data name="Onboarding_GearHint" xml:space="preserve"><value>Add your grinder and brewer; you can add more later.</value></data>
   <data name="Onboarding_GearTitle" xml:space="preserve"><value>Your gear</value></data>
   <data name="Onboarding_Grinder" xml:space="preserve"><value>Grinder</value></data>
+  <data name="Onboarding_HaveAccount" xml:space="preserve"><value>I already have an account</value></data>
   <data name="Onboarding_InstallTitle" xml:space="preserve"><value>Add Dialed to your Home Screen</value></data>
   <data name="Onboarding_Next" xml:space="preserve"><value>Next</value></data>
   <data name="Onboarding_Progress" xml:space="preserve"><value>Step {0} of {1}</value></data>
@@ -974,6 +977,8 @@
   <data name="Shot_InBand" xml:space="preserve"><value>In the target window</value></data>
   <data name="Shot_TooLong" xml:space="preserve"><value>Too long</value></data>
   <data name="Shot_TooShort" xml:space="preserve"><value>Too short</value></data>
+  <data name="SignIn_Intro" xml:space="preserve"><value>Sign in with your passkey to get your data on this device, or create an account to sync and share with your household.</value></data>
+  <data name="SignIn_Title" xml:space="preserve"><value>Sign in</value></data>
   <data name="Stats_BrewsCount" xml:space="preserve"><value>{0} brews</value></data>
   <data name="Stats_CupCost" xml:space="preserve"><value>Cost per cup</value></data>
   <data name="Stats_CupCostHelp" xml:space="preserve"><value>The average cost of the coffee in a brew, from the price and weight of its bag. Milk and water are not counted.</value></data>
