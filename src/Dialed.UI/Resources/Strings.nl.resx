@@ -387,6 +387,17 @@
   <data name="Error_Message" xml:space="preserve"><value>Dit scherm kon niet worden getoond. Je gegevens zijn veilig.</value></data>
   <data name="Error_Retry" xml:space="preserve"><value>Probeer opnieuw</value></data>
   <data name="Error_Title" xml:space="preserve"><value>Er ging iets mis</value></data>
+  <data name="Espresso_Figure_Grind" xml:space="preserve"><value>Molen die de portafilter vult</value></data>
+  <data name="Espresso_Figure_Shot" xml:space="preserve"><value>Espresso in het kopje, {0}%</value></data>
+  <data name="Espresso_Figure_Wdt" xml:space="preserve"><value>Een naald die de koffie in de portafilter roert</value></data>
+  <data name="Espresso_Hint_Grind" xml:space="preserve"><value>Maal je dosis direct in de portafilter.</value></data>
+  <data name="Espresso_Hint_Shot" xml:space="preserve"><value>Draai de portafilter vast, zet het kopje eronder en start.</value></data>
+  <data name="Espresso_Hint_Wdt" xml:space="preserve"><value>Roer de koffie met een dunne naald (WDT) om klontjes te breken en tamp daarna.</value></data>
+  <data name="Espresso_Next" xml:space="preserve"><value>Volgende stap</value></data>
+  <data name="Espresso_Prep" xml:space="preserve"><value>Maak de shot klaar</value></data>
+  <data name="Espresso_Step_Grind" xml:space="preserve"><value>1 Malen</value></data>
+  <data name="Espresso_Step_Shot" xml:space="preserve"><value>3 Shot</value></data>
+  <data name="Espresso_Step_Wdt" xml:space="preserve"><value>2 WDT</value></data>
   <data name="Fav_Title" xml:space="preserve"><value>Favoriete zetmethoden</value></data>
   <data name="Feed_AddedBean" xml:space="preserve"><value>{0} voegde {1} toe</value></data>
   <data name="Feed_Brewed" xml:space="preserve"><value>{0} zette {1}</value></data>

@@ -448,6 +448,30 @@ public sealed class BrewTimerTests : UiTestContext
     }
 
     [Fact]
+    public async Task Espresso_walks_through_grind_and_wdt_before_the_shot_and_the_timer_starts_the_shot()
+    {
+        var page = RenderTimer(await Espresso());
+
+        page.Find("#espresso-figure").ClassList.ShouldContain("dialed-espresso-grind");
+        page.Find("#espresso-next").Click();
+        page.Find("#espresso-figure").ClassList.ShouldContain("dialed-espresso-wdt");
+        page.Find("#espresso-next").Click();
+        page.Find("#espresso-figure").ClassList.ShouldContain("dialed-espresso-shot");
+        page.FindAll("#espresso-next").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Starting_the_timer_shows_the_shot_and_hides_the_prep_steps()
+    {
+        var page = RenderTimer(await Espresso());
+
+        page.Find("#timer-start").Click();
+
+        page.Find("#espresso-figure").ClassList.ShouldContain("dialed-espresso-shot");
+        page.FindAll("#espresso-prep").ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Espresso_progress_runs_to_the_top_of_the_shot_band_and_has_no_step_list()
     {
         var page = RenderTimer(await Espresso());

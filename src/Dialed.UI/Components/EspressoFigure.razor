@@ -1,0 +1,112 @@
+@inject IStringLocalizer<Strings> L
+
+@* A small drawing for the espresso timer: the grinder fills the portafilter, a WDT needle stirs the grounds, then the shot runs into the cup. Animated while shown (the motion stops for people who ask for reduced motion). *@
+<svg id="@Id" class="dialed-pour-figure dialed-espresso-figure @(Animated ? "animated" : "") dialed-espresso-@(Phase.ToString().ToLowerInvariant())" viewBox="0 0 120 176" role="img" aria-label="@Description">
+    <defs>
+        <clipPath id="@BasketClipId">
+            <path d="M36 100 h48 l-4 22 h-40 z" />
+        </clipPath>
+        <clipPath id="@CupClipId">
+            <path d="M42 134 h36 v14 a10 10 0 0 1 -10 10 h-16 a10 10 0 0 1 -10 -10 z" />
+        </clipPath>
+    </defs>
+
+    @if (Phase == EspressoPhase.Grind)
+    {
+        @* The grinder above the basket, grounds falling into it. *@
+        <path class="dialed-espresso-grinder" d="M38 6 h44 l-8 22 h-28 z" />
+        <rect class="dialed-espresso-grinder" x="46" y="28" width="28" height="22" rx="3" />
+        <path class="dialed-espresso-grinder" d="M54 50 h12 v6 h-12 z" />
+        @for (var i = 0; i < 3; i++)
+        {
+            <circle class="dialed-espresso-grain" cx="@(56 + (i * 4))" cy="60" r="1.6" style="animation-delay: @((i * 0.25).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))s" />
+        }
+    }
+
+    @if (Phase == EspressoPhase.Wdt)
+    {
+        @* A fine needle swinging through the grounds. *@
+        <g class="dialed-espresso-needle">
+            <circle class="dialed-espresso-grinder" cx="60" cy="30" r="5" />
+            <line class="dialed-espresso-needle-line" x1="60" y1="35" x2="60" y2="116" />
+            <path class="dialed-espresso-needle-line" d="M55 110 l5 6 l5 -6" />
+        </g>
+    }
+
+    @* The portafilter: basket, handle and spout. In the shot it sits higher, above the cup. *@
+    <g transform="translate(0 @(Phase == EspressoPhase.Shot ? -34 : 0))">
+        <g clip-path="url(#@BasketClipId)">
+            @if (Phase == EspressoPhase.Grind)
+            {
+                <path class="dialed-espresso-mound" d="M36 122 L36 112 Q60 94 84 112 L84 122 Z" />
+            }
+            else
+            {
+                <rect class="dialed-pour-bed dialed-espresso-puck" x="36" y="108" width="48" height="14" />
+            }
+        </g>
+        <path class="dialed-pour-vessel" d="M36 100 h48 l-4 22 h-40 z" />
+        <path class="dialed-pour-vessel" d="M84 106 h26 a3.5 3.5 0 0 1 0 7 h-24" />
+        <path class="dialed-pour-vessel" d="M56 122 v6 h8 v-6" />
+    </g>
+
+    @if (Phase == EspressoPhase.Shot)
+    {
+        <g clip-path="url(#@CupClipId)">
+            <rect class="dialed-pour-cup-coffee" x="40" y="134" width="40" height="24" style="transform: scaleY(@Level.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture))" />
+            @if (Finished)
+            {
+                <ellipse class="dialed-pour-crema" cx="60" cy="@CoffeeTop" rx="17" ry="2.2" />
+            }
+        </g>
+        <path class="dialed-pour-cup" d="M42 134 h36 v14 a10 10 0 0 1 -10 10 h-16 a10 10 0 0 1 -10 -10 z" />
+        <path class="dialed-pour-cup" d="M78 140 h4 a6 6 0 0 1 0 12 h-4" />
+        <path class="dialed-pour-cup" d="M36 164 h48" />
+        @if (Animated && Level < 1)
+        {
+            <line class="dialed-pour-drip dialed-espresso-stream" x1="60" y1="94" x2="60" y2="@CoffeeTop" />
+        }
+
+        @if (Finished)
+        {
+            <path class="dialed-pour-steam" d="M46 126 q3 -4 0 -8 M74 126 q3 -4 0 -8" />
+        }
+    }
+</svg>
+
+@code {
+    private static int counter;
+    private readonly string uid = $"ef{Interlocked.Increment(ref counter)}";
+
+    /// <summary>Which part of the routine is drawn.</summary>
+    [Parameter]
+    public EspressoPhase Phase { get; set; }
+
+    /// <summary>How much of the shot has run, 0 to 1: how full the cup is.</summary>
+    [Parameter]
+    public double Fraction { get; set; }
+
+    /// <summary>The shot has reached its target window: the cup gets crema and a little steam.</summary>
+    [Parameter]
+    public bool Finished { get; set; }
+
+    [Parameter]
+    public bool Animated { get; set; } = true;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private string BasketClipId => $"{uid}-basket";
+
+    private string CupClipId => $"{uid}-cup";
+
+    private double Level => double.IsNaN(Fraction) ? 0 : Math.Clamp(Fraction, 0, 1);
+
+    /// <summary>Where the coffee surface is in the cup (bottom 158, top 134).</summary>
+    private string CoffeeTop => (158 - (24 * Level)).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+
+    private string Description =>
+        Phase == EspressoPhase.Shot
+            ? string.Format(L["Espresso_Figure_Shot"].Value, (int)Math.Round(Level * 100))
+            : L[$"Espresso_Figure_{Phase}"].Value;
+}
