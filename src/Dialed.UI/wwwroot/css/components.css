@@ -295,6 +295,12 @@ button.dialed-chip::after {
     margin-bottom: var(--dialed-space-3);
 }
 
+/* Banners sit above screens that pull their hero up under the status bar (Home, bag), so their buttons stay tappable. */
+.dialed-banner {
+    position: relative;
+    z-index: 5;
+}
+
 .dialed-install-guide {
     margin-bottom: var(--dialed-space-4);
 }
