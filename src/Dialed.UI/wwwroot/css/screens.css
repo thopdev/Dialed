@@ -252,11 +252,11 @@
     flex: none;
 }
 
-.dialed-roast-light .dialed-thumb { background: var(--colorPaletteYellowBackground2, #fef7b2); color: var(--colorPaletteYellowForeground2, #817400); }
-.dialed-roast-mediumlight .dialed-thumb { background: var(--colorPaletteMarigoldBackground2, #f9e2ae); color: var(--colorPaletteMarigoldForeground2, #835b00); }
-.dialed-roast-medium .dialed-thumb { background: var(--colorPalettePeachBackground2, #ffddb3); color: var(--colorPalettePeachForeground2, #8f4e00); }
-.dialed-roast-mediumdark .dialed-thumb { background: var(--colorPaletteDarkOrangeBackground2, #f4bfab); color: var(--colorPaletteDarkOrangeForeground2, #7a2101); }
-.dialed-roast-dark .dialed-thumb { background: var(--colorPaletteBrownBackground2, #ddc3b0); color: var(--colorPaletteBrownForeground2, #50301a); }
+.dialed-roast-light .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-light-end), var(--dialed-roast-light-start)); color: var(--dialed-roast-light-fg); }
+.dialed-roast-mediumlight .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-mediumlight-end), var(--dialed-roast-mediumlight-start)); color: var(--dialed-roast-mediumlight-fg); }
+.dialed-roast-medium .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-medium-end), var(--dialed-roast-medium-start)); color: var(--dialed-roast-medium-fg); }
+.dialed-roast-mediumdark .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-mediumdark-end), var(--dialed-roast-mediumdark-start)); color: var(--dialed-roast-mediumdark-fg); }
+.dialed-roast-dark .dialed-thumb { background: linear-gradient(145deg, var(--dialed-roast-dark-end), var(--dialed-roast-dark-start)); color: var(--dialed-roast-dark-fg); }
 
 /* Extra line in a list row: a meter or small chips. */
 .dialed-row-below {

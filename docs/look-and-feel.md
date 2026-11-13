@@ -5,6 +5,7 @@ How Dialed looks and where each piece lives. The rule from `CLAUDE.md` still hol
 ## Palette and surfaces
 - **Brand-tinted surfaces.** `--dialed-surface` (page, set on `body`, applied on `.dialed-shell`) mixes the brand colour into Fluent's background, so it follows light and dark mode. Cards are plain Fluent surfaces. Icons on More and Settings have no background chip, and the friend code is a neutral label. Gold and brown fills are for actions (buttons, selected chips) and for roast colours that carry meaning (a bean's roast); a cream palette was tried and reverted, so do not add decorative gold.
 - **Tokens** (`tokens.css`): `--dialed-shadow-card` and `--dialed-shadow-raised`, `--dialed-font-display` (serif for titles and big numbers), `--dialed-radius-xl`, roast colours `--dialed-roast-{light..dark}-{start,end,fg}`, flavour colours `--dialed-flavor-N`.
+- **Roast colours are one brown scale.** Light roast is a pale latte brown, dark roast is espresso; no yellow, orange or red. Bean thumbnails use the same brown gradient as the heroes (pale for light roasts, espresso for dark), in light and dark mode.
 - **Roast mood.** A bean's screens take the colour of its roast: `.dialed-mood` / `.dialed-mood-<level>` sets `--dialed-mood-start`, `--dialed-mood-end` and `--dialed-mood-fg`. Used on the bag screen hero, the bean page card and the colour edge of bean rows.
 
 ## Components
