@@ -948,7 +948,6 @@
   <data name="Settings_DeleteAccount" xml:space="preserve"><value>Delete account</value></data>
   <data name="Settings_Export" xml:space="preserve"><value>Export my data</value></data>
   <data name="Settings_ExportDone" xml:space="preserve"><value>Your data was exported as a JSON file.</value></data>
-  <data name="Settings_GroupAbout" xml:space="preserve"><value>About</value></data>
   <data name="Settings_GroupData" xml:space="preserve"><value>Data and sync</value></data>
   <data name="Settings_GroupHelp" xml:space="preserve"><value>Help and feedback</value></data>
   <data name="Settings_GroupHousehold" xml:space="preserve"><value>Household</value></data>
@@ -956,7 +955,8 @@
   <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="Settings_GroupProfile" xml:space="preserve"><value>Profile</value></data>
   <data name="Settings_Household" xml:space="preserve"><value>Active household</value></data>
-  <data name="Settings_JumpTo" xml:space="preserve"><value>Jump to</value></data>
+  <data name="Settings_NotSignedIn" xml:space="preserve"><value>You are not signed in</value></data>
+  <data name="Settings_NotSignedInHint" xml:space="preserve"><value>Your coffee stays on this device. Sign in to sync between devices and share with your household.</value></data>
   <data name="Settings_Passkeys" xml:space="preserve"><value>Passkeys</value></data>
   <data name="Settings_Privacy" xml:space="preserve"><value>Privacy policy</value></data>
   <data name="Settings_PrivacyLater" xml:space="preserve"><value>The privacy policy will be linked here before the beta.</value></data>
@@ -967,6 +967,13 @@
   <data name="Settings_SignOut" xml:space="preserve"><value>Sign out</value></data>
   <data name="Settings_Storage" xml:space="preserve"><value>Storage</value></data>
   <data name="Settings_StorageLater" xml:space="preserve"><value>Storage status appears here once data is kept on this device.</value></data>
+  <data name="Settings_Sub_account" xml:space="preserve"><value>Passkeys, notifications, backup, delete</value></data>
+  <data name="Settings_Sub_data" xml:space="preserve"><value>Sync, diagnostics and storage</value></data>
+  <data name="Settings_Sub_help" xml:space="preserve"><value>Feedback, known issues, install guide</value></data>
+  <data name="Settings_Sub_household" xml:space="preserve"><value>Members, invites, active household</value></data>
+  <data name="Settings_Sub_preferences" xml:space="preserve"><value>Units, brew methods, stock alerts</value></data>
+  <data name="Settings_Sub_privacy" xml:space="preserve"><value>Privacy policy and error reports</value></data>
+  <data name="Settings_Sub_profile" xml:space="preserve"><value>Your name and who sees your profile</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
   <data name="Settings_Version" xml:space="preserve"><value>Version {0}</value></data>
   <data name="Shopping_Again" xml:space="preserve"><value>Buy again: you rated it well</value></data>

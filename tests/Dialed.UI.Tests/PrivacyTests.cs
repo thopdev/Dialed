@@ -28,7 +28,7 @@ public sealed class PrivacyTests : UiTestContext
     [Fact]
     public void Settings_and_sign_up_link_to_the_policy()
     {
-        Render<Settings>().Find("#privacy-link").GetAttribute("href").ShouldBe("privacy");
+        Render<Settings>(p => p.Add(x => x.Group, "privacy")).Find("#privacy-link").GetAttribute("href").ShouldBe("privacy");
         Render<AccountPanel>().Find("#account-privacy-link").GetAttribute("href").ShouldBe("privacy");
     }
 

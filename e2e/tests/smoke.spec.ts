@@ -207,8 +207,10 @@ test('settings page opens with every section', async ({ page }) => {
   await page.getByRole('link', { name: 'More', exact: true }).click();
   await page.getByRole('link', { name: 'Settings' }).click();
 
-  await expect(page.locator('#settings-units')).toBeVisible();
+  await expect(page.locator('#settings-signin')).toBeVisible();
   await expect(page.locator('#settings-version')).toContainText('Version');
+  await page.locator('[data-settings="preferences"]').click();
+  await expect(page.locator('#settings-units')).toBeVisible();
 });
 
 // ---- Accounts and sync, against the Development API that playwright.config.ts starts (#110) ----------------------------

@@ -948,7 +948,6 @@
   <data name="Settings_DeleteAccount" xml:space="preserve"><value>Account verwijderen</value></data>
   <data name="Settings_Export" xml:space="preserve"><value>Mijn gegevens exporteren</value></data>
   <data name="Settings_ExportDone" xml:space="preserve"><value>Je gegevens zijn geëxporteerd als JSON-bestand.</value></data>
-  <data name="Settings_GroupAbout" xml:space="preserve"><value>Over</value></data>
   <data name="Settings_GroupData" xml:space="preserve"><value>Gegevens en synchronisatie</value></data>
   <data name="Settings_GroupHelp" xml:space="preserve"><value>Hulp en feedback</value></data>
   <data name="Settings_GroupHousehold" xml:space="preserve"><value>Huishouden</value></data>
@@ -956,7 +955,8 @@
   <data name="Settings_GroupPrivacy" xml:space="preserve"><value>Privacy</value></data>
   <data name="Settings_GroupProfile" xml:space="preserve"><value>Profiel</value></data>
   <data name="Settings_Household" xml:space="preserve"><value>Actief huishouden</value></data>
-  <data name="Settings_JumpTo" xml:space="preserve"><value>Ga naar</value></data>
+  <data name="Settings_NotSignedIn" xml:space="preserve"><value>Je bent niet ingelogd</value></data>
+  <data name="Settings_NotSignedInHint" xml:space="preserve"><value>Je koffie blijft op dit apparaat. Log in om te synchroniseren tussen apparaten en te delen met je huishouden.</value></data>
   <data name="Settings_Passkeys" xml:space="preserve"><value>Passkeys</value></data>
   <data name="Settings_Privacy" xml:space="preserve"><value>Privacybeleid</value></data>
   <data name="Settings_PrivacyLater" xml:space="preserve"><value>Het privacybeleid wordt voor de bèta hier gelinkt.</value></data>
@@ -967,6 +967,13 @@
   <data name="Settings_SignOut" xml:space="preserve"><value>Uitloggen</value></data>
   <data name="Settings_Storage" xml:space="preserve"><value>Opslag</value></data>
   <data name="Settings_StorageLater" xml:space="preserve"><value>De opslagstatus verschijnt hier zodra gegevens op dit apparaat worden bewaard.</value></data>
+  <data name="Settings_Sub_account" xml:space="preserve"><value>Passkeys, meldingen, back-up, verwijderen</value></data>
+  <data name="Settings_Sub_data" xml:space="preserve"><value>Synchronisatie, diagnose en opslag</value></data>
+  <data name="Settings_Sub_help" xml:space="preserve"><value>Feedback, bekende problemen, installatiegids</value></data>
+  <data name="Settings_Sub_household" xml:space="preserve"><value>Leden, uitnodigingen, actief huishouden</value></data>
+  <data name="Settings_Sub_preferences" xml:space="preserve"><value>Eenheden, zetmethoden, voorraadmeldingen</value></data>
+  <data name="Settings_Sub_privacy" xml:space="preserve"><value>Privacybeleid en foutrapporten</value></data>
+  <data name="Settings_Sub_profile" xml:space="preserve"><value>Je naam en wie je profiel ziet</value></data>
   <data name="Settings_Title" xml:space="preserve"><value>Instellingen</value></data>
   <data name="Settings_Version" xml:space="preserve"><value>Versie {0}</value></data>
   <data name="Shopping_Again" xml:space="preserve"><value>Opnieuw kopen: je gaf hem een goede beoordeling</value></data>

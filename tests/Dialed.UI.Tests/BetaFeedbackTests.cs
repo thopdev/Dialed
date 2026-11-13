@@ -33,7 +33,7 @@ public sealed class BetaFeedbackTests : UiTestContext
     [Fact]
     public void Settings_has_the_feedback_section_and_the_known_issues_list_has_items()
     {
-        Render<Settings>().Find("#settings-feedback #known-issues-link").ShouldNotBeNull();
+        Render<Settings>(p => p.Add(x => x.Group, "help")).Find("#settings-feedback #known-issues-link").ShouldNotBeNull();
 
         Render<KnownIssues>().FindAll("#known-issues li").Count.ShouldBeGreaterThanOrEqualTo(3);
     }
