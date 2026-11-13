@@ -33,6 +33,6 @@ public sealed class UnitsSettingTests : UiTestContext
     [Fact]
     public void Settings_page_offers_the_units_setting()
     {
-        Render<Settings>().FindAll(".dialed-units-setting").Count.ShouldBe(1);
+        Render<Settings>(p => p.Add(x => x.Group, "preferences")).FindAll(".dialed-units-setting").Count.ShouldBe(1);
     }
 }

@@ -308,7 +308,7 @@ public sealed class PushTests(PushApp app) : IClassFixture<PushApp>
 
         var received = SentTo(owner).ShouldHaveSingleItem();
         received.Payload.Body.ShouldBe("Joe joined your household.");
-        received.Payload.Url.ShouldBe("settings#settings-household");
+        received.Payload.Url.ShouldBe("settings/household");
         SentTo(joiner).ShouldBeEmpty();
     }
 

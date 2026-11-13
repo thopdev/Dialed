@@ -43,9 +43,9 @@ test('a push shows a notification with the title, line and link', async () => {
 
 test('a push the open window already shows is passed to it and not shown as a banner', async () => {
   const w = worker([{ visibilityState: 'visible', focused: true }]);
-  await w.push({ title: 'New household member', body: 'Joe joined your household.', url: 'settings#settings-household', tag: 'household-joined' });
+  await w.push({ title: 'New household member', body: 'Joe joined your household.', url: 'settings/household', tag: 'household-joined' });
   expect(w.shown).toHaveLength(0);
-  expect(w.clients[0].messages).toEqual([{ type: 'dialed-push', url: 'settings#settings-household', tag: 'household-joined' }]);
+  expect(w.clients[0].messages).toEqual([{ type: 'dialed-push', url: 'settings/household', tag: 'household-joined' }]);
 });
 
 test('a hidden window does not stop the banner', async () => {
@@ -80,8 +80,8 @@ test('tapping a notification focuses the open app and asks it to open the screen
 
 test('tapping a notification with the app closed opens it at the link', async () => {
   const w = worker();
-  await w.click('settings#settings-household');
-  expect(w.opened).toEqual(['https://dialed.test/settings#settings-household']);
+  await w.click('settings/household');
+  expect(w.opened).toEqual(['https://dialed.test/settings/household']);
 });
 
 test('tapping a notification with a bad link opens the app start page', async () => {
