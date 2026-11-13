@@ -78,13 +78,14 @@
             <div class="dialed-loading-brewer" aria-hidden="true">
                 <svg viewBox="0 0 90 130" focusable="false">
                     <g class="dialed-loading-pourer">
-                        <g class="dialed-loading-kettle" transform="translate(-12 0) rotate(16 30 20)">
-                            <path class="dialed-loading-kettle-body" d="M12 10 h28 a6 6 0 0 1 6 6 v12 a6 6 0 0 1 -6 6 h-28 a6 6 0 0 1 -6 -6 v-12 a6 6 0 0 1 6 -6 z" />
-                            <path class="dialed-loading-kettle-body" d="M46 18 L60 14 L62 18 L46 28" />
-                            <path d="M6 16 q-10 0 -10 8 q0 8 10 8" />
-                            <path d="M20 10 q6 -6 12 0" />
+                        <!-- A gooseneck kettle: a small round body and a long thin neck that curves over and points down at the tip. -->
+                        <g class="dialed-loading-kettle" transform="translate(-12 -8) rotate(16 30 20)">
+                            <path class="dialed-loading-kettle-body" d="M12 12 h20 a6 6 0 0 1 6 6 v10 a6 6 0 0 1 -6 6 h-20 a6 6 0 0 1 -6 -6 v-10 a6 6 0 0 1 6 -6 z" />
+                            <path d="M38 30 C 47 30, 52 24, 54 14 C 55 8, 61 7, 64 11 L 65 14" />
+                            <path d="M6 17 q-10 0 -10 8 q0 7 10 7" />
+                            <path d="M16 12 q6 -6 12 0" />
                         </g>
-                        <line class="dialed-loading-stream dialed-loading-stream-kettle" x1="50" y1="27" x2="50" y2="62" />
+                        <line class="dialed-loading-stream dialed-loading-stream-kettle" x1="53.4" y1="16" x2="53.4" y2="62" />
                     </g>
                     <polygon class="dialed-loading-cone" points="15,44 75,44 53,86 37,86" />
                     <path class="dialed-loading-rim" d="M12 44 H78" />

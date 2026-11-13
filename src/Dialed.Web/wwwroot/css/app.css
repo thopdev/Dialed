@@ -141,7 +141,7 @@
     bottom: 0;
     height: var(--blazor-load-percentage, 0%);
     background: var(--loading-ink);
-    transition: height 1s cubic-bezier(0.3, 0.6, 0.3, 1);
+    transition: height 1.2s cubic-bezier(0.3, 0.6, 0.3, 1);
 }
 
 @keyframes dialed-loading-pour {
@@ -150,12 +150,18 @@
 
 /* The brew follows the real download: js/loading.js sets data-stage on .dialed-loading from the progress
    (bloom, rest1, pour1, rest2, pour2, done). Each stage sets how far the kettle tilts, whether it pours and how high the water stands. */
-/* How far the pouring kettle sways from side to side, so the stream lands in different places like a real pour. It is a registered
-   property so that it eases to 0 when the kettle rests instead of jumping. */
+/* --sway and --rock are how far the pouring kettle drifts sideways and rocks, so the stream lands in different places like a real
+   pour. They are registered properties so that they ease to 0 when the kettle rests instead of jumping. */
 @property --sway {
     syntax: '<length>';
     inherits: true;
     initial-value: 0px;
+}
+
+@property --rock {
+    syntax: '<angle>';
+    inherits: true;
+    initial-value: 0deg;
 }
 
 .dialed-loading {
@@ -164,17 +170,25 @@
     --water: 24%;
     --drip: 1;
     --sway: 4px;
-    --water-delay: 0.7s;
+    --rock: 1.5deg;
+    /* The stream starts once the kettle has tilted, and the water rises once the stream has reached it. */
+    --stream-delay: 0.6s;
+    --water-delay: 1.3s;
 }
 
-.dialed-loading[data-stage="rest1"] { --kettle-tilt: 0deg; --pouring: 0; --water-delay: 0s; --water: 16%; --sway: 0px; }
-.dialed-loading[data-stage="pour1"] { --kettle-tilt: 16deg; --pouring: 1; --water: 58%; --sway: 7px; }
-.dialed-loading[data-stage="rest2"] { --kettle-tilt: 0deg; --pouring: 0; --water-delay: 0s; --water: 42%; --sway: 0px; }
-.dialed-loading[data-stage="pour2"] { --kettle-tilt: 16deg; --pouring: 1; --water: 86%; --sway: 7px; }
-.dialed-loading[data-stage="done"] { --kettle-tilt: 0deg; --pouring: 0; --water: 0%; --drip: 0; --sway: 0px; --water-delay: 0s; }
+.dialed-loading[data-stage="rest1"] { --kettle-tilt: 0deg; --pouring: 0; --stream-delay: 0s; --water-delay: 0s; --water: 16%; --sway: 0px; --rock: 0deg; }
+.dialed-loading[data-stage="pour1"] { --kettle-tilt: 16deg; --pouring: 1; --water: 58%; --sway: 7px; --rock: 2deg; }
+.dialed-loading[data-stage="rest2"] { --kettle-tilt: 0deg; --pouring: 0; --stream-delay: 0s; --water-delay: 0s; --water: 42%; --sway: 0px; --rock: 0deg; }
+.dialed-loading[data-stage="pour2"] { --kettle-tilt: 16deg; --pouring: 1; --water: 86%; --sway: 7px; --rock: 2deg; }
+.dialed-loading[data-stage="done"] { --kettle-tilt: 0deg; --pouring: 0; --stream-delay: 0s; --water-delay: 0s; --water: 0%; --drip: 0; --sway: 0px; --rock: 0deg; }
+
+.dialed-loading-pourer {
+    transform-box: view-box;
+    transform-origin: 30px 20px;
+}
 
 .dialed-loading-kettle {
-    transform: translate(-12px, 0) rotate(var(--kettle-tilt));
+    transform: translate(-12px, -8px) rotate(var(--kettle-tilt));
 }
 
 .dialed-loading-stream {
@@ -186,7 +200,7 @@
     opacity: var(--pouring);
     transform: scaleY(var(--pouring));
     transform-box: view-box;
-    transform-origin: 50px 27px;
+    transform-origin: 53.4px 16px;
 }
 
 .dialed-loading-water {
@@ -195,35 +209,36 @@
 
 @media (prefers-reduced-motion: no-preference) {
     .dialed-loading {
-        transition: --sway 1s ease-in-out;
+        transition: --sway 1.4s ease-in-out, --rock 1.4s ease-in-out;
     }
 
-    /* The kettle and its stream drift left and right while pouring. */
+    /* The kettle and its stream drift left and right and rock a little while pouring. */
     .dialed-loading-pourer {
-        animation: dialed-loading-sway 2.6s ease-in-out infinite alternate;
+        animation: dialed-loading-sway 3.4s ease-in-out infinite alternate;
     }
 
     .dialed-loading-kettle {
-        transition: transform 1s cubic-bezier(0.45, 0, 0.2, 1);
+        transition: transform 1.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .dialed-loading-stream {
-        transition: opacity 0.4s ease;
+        transition: opacity 0.5s ease;
     }
 
+    /* Starts after the kettle has tilted, stops at once. */
     .dialed-loading-stream-kettle {
-        transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.3, 0, 0.2, 1);
+        transition: opacity 0.5s ease var(--stream-delay), transform 0.7s cubic-bezier(0.3, 0, 0.2, 1) var(--stream-delay);
     }
 
     /* The water rises a moment after a pour starts, while the stream travels down to it; it drops at once when the pour stops. */
     .dialed-loading-water {
-        transition: height 0.9s ease-in-out var(--water-delay);
+        transition: height 1.1s ease-in-out var(--water-delay);
     }
 }
 
 @keyframes dialed-loading-sway {
-    from { transform: translateX(calc(var(--sway) * -1)); }
-    to { transform: translateX(var(--sway)); }
+    from { transform: translateX(calc(var(--sway) * -1)) rotate(calc(var(--rock) * -1)); }
+    to { transform: translateX(var(--sway)) rotate(var(--rock)); }
 }
 
 .dialed-loading-name {
@@ -268,7 +283,7 @@
     .dialed-loading-bloom,
     .dialed-loading-pour-word,
     .dialed-loading-dialed {
-        transition: opacity 0.25s ease;
+        transition: opacity 0.4s ease;
     }
 
     /* "Dialed" settles into place with a little overshoot, and the cup gives a small hop. */
