@@ -6,9 +6,44 @@ Setup: one iPhone, ideally an iPad too, two accounts that follow each other (Ali
 
 ## Install and sign-in
 - [ ] Add to Home Screen from Safari (steps in [beta-testing.md](beta-testing.md)); the app opens full screen with the icon and splash screen.
-- [ ] Sign up with an invite code and a passkey (Face ID or Touch ID); the recovery codes are shown once.
+- [ ] Sign up with an invite code and a passkey (Face ID or Touch ID); the recovery codes are shown once. Find sign-in through the **Sign in** banner on Home while signed out, or through Settings (the **Sign in** button in the account card at the top).
 - [ ] Sign in on a second device with the passkey. **Lost your passkey?** works with a recovery code.
 - [ ] The app works under the enforced Content-Security-Policy: scan a label, take a photo, sign in with a passkey, use it for a minute. If something looks broken, open the Safari web inspector and look for "Refused to ..." messages (#231).
+
+## Sign-in page (#361)
+The `/signin` page offers passkey sign-in, sign-up with an invite code and **Lost your passkey?**. Start each check below signed out.
+- [ ] Home: the **Sign in** banner (#home-signin) is shown while signed out, opens the sign-in page, and is gone after signing in.
+- [ ] Onboarding: **I already have an account** (#onboarding-signin) opens the sign-in page; after signing in the first-run setup is skipped and Home opens.
+- [ ] Scan, signed out: the **Sign in** button opens the sign-in page.
+- [ ] People and Activity, signed out: the sign-in prompt opens the sign-in page.
+- [ ] Settings, signed out: the account card at the top has a **Sign in** button that opens the sign-in page.
+- [ ] On the sign-in page the passkey prompt appears after the tap (Face ID or Touch ID), and cancelling it shows a message without breaking the page.
+- [ ] The back arrow on the sign-in page returns to Settings; in the installed app nothing opens in Safari.
+
+## Settings overview (#362)
+Settings is an overview: the account card first (signed in with your name, or a **Sign in** button), then Profile, Preferences, Household, Data and sync, Privacy, and Help and feedback. Each opens its own page (`settings/{group}`).
+- [ ] Signed in: the account card opens Settings > Account with passkeys, notifications, data controls and backup.
+- [ ] Every row opens its page, and the back arrow returns to the overview, also in the installed app and with the iOS swipe-back gesture.
+- [ ] The overview fits at iPhone width with no sideways scrolling, in light and dark mode and at the largest text size.
+- [ ] VoiceOver reads each row with its name and its description.
+- [ ] Reopening a group page directly (for example from a notification) works after the app was closed.
+
+## Espresso timer (#363)
+- [ ] An espresso recipe, before starting: the chips **1 Grind**, **2 WDT** and **3 Shot** show with an animated drawing; **Next step** moves through them and the drawing and hint change with the step.
+- [ ] The Start button fits on the first screen at iPhone width (no scrolling), also at the largest text size.
+- [ ] **Start** jumps straight to the shot: the cup fills over the target time window and the crema shows once the shot is in range.
+- [ ] Pause stops the drawing; resume continues it.
+- [ ] iOS Settings > Accessibility > Motion > **Reduce Motion** on: the animation stops (the drawing stays still) and the timer still works.
+- [ ] Light and dark mode: the drawing is readable.
+
+## Loading screen (#365)
+A cold start of the installed app: delete the Home Screen app, clear Safari website data for the site, add it again, then open it (a slow connection or Safari's Network Link Conditioner makes the stages easier to see). On a fast or cached start some stages are very short, so one pass may only show a few of them.
+- [ ] A kettle blooms, then pours twice into a V60 that drips into a cup; the cup fills as the download progresses.
+- [ ] The stages follow the real progress: the word says **Bloom**, then **Pour**, then **Dialed** at about 90%.
+- [ ] **Dialed** shows before the app takes over, and the hand-over to the app has no flash (no white or blank frame).
+- [ ] Light and dark mode: the screen and the words are readable and match the app background.
+- [ ] iOS Settings > Accessibility > Motion > **Reduce Motion** on: the kettle does not sway; the cup still fills and the words still change.
+- [ ] A start from the Home Screen when the app is already cached does not get stuck on the loading screen.
 
 ## Offline, storage and sync
 - [ ] Airplane mode: log a brew and add a bean; back online, they sync and the "not yet synced" note goes away.
@@ -49,16 +84,16 @@ Setup: one iPhone, ideally an iPad too, two accounts that follow each other (Ali
 
 ## Notifications (#100)
 Needs a deployed API with real VAPID keys (#260), or the API run locally and reachable from the phone (dev tunnel).
-- [ ] In Safari (not installed): Settings > Notifications says to add Dialed to the Home Screen first and has no Allow button.
+- [ ] In Safari (not installed): Settings > Account (the notifications part) says to add Dialed to the Home Screen first and has no Allow button.
 - [ ] Installed app (iOS 16.4 or later): **Allow notifications** shows the system prompt after the tap; allowing turns the switches on.
 - [ ] Carol follows Alice's code: with the app **closed**, Alice gets a banner "New follow request"; tapping it opens People.
 - [ ] Same with the app **open** on another screen: no banner interrupts, the request shows in People.
 - [ ] Alice accepts: Carol gets "Request accepted".
-- [ ] Someone joins Alice's household with an invite: Alice gets "New household member"; tapping it opens Settings at the household.
+- [ ] Someone joins Alice's household with an invite: Alice gets "New household member"; tapping it opens Settings > Household (`settings/household`).
 - [ ] Switching a type off stops it at once; **Turn off on this device** stops all of them; signing out does too.
 - [ ] Denying the permission shows how to allow it in Settings; nothing breaks.
 - [ ] Low stock and peak (#259): switch both on, set the low-stock threshold above a bag's weight; the notification arrives the next morning around 08:00 (or run the job against a dev API), says the bean, and tapping it opens Inventory showing only those bags.
-- [ ] At most one low-stock and one peak notification per day, none at night; changing the threshold in Settings > Inventory changes what is announced.
+- [ ] At most one low-stock and one peak notification per day, none at night; changing the threshold in Settings > Preferences changes what is announced.
 ## Public profiles (#106)
 - [ ] Settings > Profile: the **Public profile** switch is off by default; switching it on and off works with one tap and shows the status.
 - [ ] A bean's visibility picker offers **Everyone on Dialed** with the explanation under it; brews do not.
@@ -84,7 +119,7 @@ The production app only started caching itself in #283 (before that the service 
 - [ ] A bean with three or more brews that have a grind setting shows the **Dial-in trace**; long-press a dot shows its details (or just check the text under the chart).
 - [ ] A friend's profile (Beans tab) shows the origin map; a profile without origins shows none.
 - [ ] VoiceOver reads the maps and charts as one description each ("Map with a marker for each origin: ...", "Grind setting over 8 brews, from 22 to 16") and the legends as lists.
-- [ ] Settings > Notifications > **Peak** on: a bag whose rest window ends tomorrow gives "reaches its peak tomorrow" the day before (needs the push keys of #260 to deliver for real).
+- [ ] Settings > Account > Notifications > **Peak** on: a bag whose rest window ends tomorrow gives "reaches its peak tomorrow" the day before (needs the push keys of #260 to deliver for real).
 
 ## Brew card
 - [ ] Brew history > a brew of mine > **Share a picture of this brew**: the iOS share sheet opens with a PNG (Save Image, Messages and Instagram accept it), the card is readable and not cut off, and long bean names wrap.
@@ -95,7 +130,7 @@ The production app only started caching itself in #283 (before that the service 
 - [ ] Works in the installed PWA, in Safari and in airplane mode.
 
 ## Gear upkeep push
-- [ ] Gear > a grinder with "or every (days)" set to 1 and serviced two days ago, Settings > Notifications > **A piece of gear is due for service** on: the next morning around 08:00 one notification names the gear and tapping it opens Gear.
+- [ ] Gear > a grinder with "or every (days)" set to 1 and serviced two days ago, Settings > Account > Notifications > **A piece of gear is due for service** on: the next morning around 08:00 one notification names the gear and tapping it opens Gear.
 - [ ] Mark it serviced: no notification until it is due again; switching the switch off stops it.
 
 ## Accessibility (#49)
