@@ -243,6 +243,36 @@
     }
 }
 
+/* Done: the pouring stops. The kettle rests, both streams stop and the V60 has drained into the full cup. */
+.dialed-loading-done .dialed-loading-kettle {
+    animation: none;
+    transform: translate(-12px, 0) rotate(0deg);
+}
+
+.dialed-loading-done .dialed-loading-stream {
+    animation: none;
+    opacity: 0;
+}
+
+.dialed-loading-done .dialed-loading-water {
+    animation: none;
+    height: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-loading-done .dialed-loading-kettle {
+        transition: transform 0.4s ease;
+    }
+
+    .dialed-loading-done .dialed-loading-stream {
+        transition: opacity 0.25s ease;
+    }
+
+    .dialed-loading-done .dialed-loading-water {
+        transition: height 0.6s ease;
+    }
+}
+
 @keyframes dialed-loading-word-bloom {
     0%, 26% { opacity: 1; }
     30%, 96% { opacity: 0; }
