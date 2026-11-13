@@ -164,13 +164,14 @@
     --water: 24%;
     --drip: 1;
     --sway: 4px;
+    --water-delay: 0.7s;
 }
 
-.dialed-loading[data-stage="rest1"] { --kettle-tilt: 0deg; --pouring: 0; --water: 16%; --sway: 0px; }
+.dialed-loading[data-stage="rest1"] { --kettle-tilt: 0deg; --pouring: 0; --water-delay: 0s; --water: 16%; --sway: 0px; }
 .dialed-loading[data-stage="pour1"] { --kettle-tilt: 16deg; --pouring: 1; --water: 58%; --sway: 7px; }
-.dialed-loading[data-stage="rest2"] { --kettle-tilt: 0deg; --pouring: 0; --water: 42%; --sway: 0px; }
+.dialed-loading[data-stage="rest2"] { --kettle-tilt: 0deg; --pouring: 0; --water-delay: 0s; --water: 42%; --sway: 0px; }
 .dialed-loading[data-stage="pour2"] { --kettle-tilt: 16deg; --pouring: 1; --water: 86%; --sway: 7px; }
-.dialed-loading[data-stage="done"] { --kettle-tilt: 0deg; --pouring: 0; --water: 0%; --drip: 0; --sway: 0px; }
+.dialed-loading[data-stage="done"] { --kettle-tilt: 0deg; --pouring: 0; --water: 0%; --drip: 0; --sway: 0px; --water-delay: 0s; }
 
 .dialed-loading-kettle {
     transform: translate(-12px, 0) rotate(var(--kettle-tilt));
@@ -214,8 +215,9 @@
         transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.3, 0, 0.2, 1);
     }
 
+    /* The water rises a moment after a pour starts, while the stream travels down to it; it drops at once when the pour stops. */
     .dialed-loading-water {
-        transition: height 0.9s ease-in-out;
+        transition: height 0.9s ease-in-out var(--water-delay);
     }
 }
 
