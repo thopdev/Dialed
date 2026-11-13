@@ -441,3 +441,75 @@ a.dialed-banner {
     width: 2.5rem;
     height: 2.5rem;
 }
+
+/* ---- Espresso figure (grind, WDT, shot) --------------------------------------------------------- */
+
+.dialed-espresso-grinder {
+    fill: var(--colorNeutralForeground3);
+}
+
+.dialed-espresso-grain {
+    fill: var(--colorNeutralForeground1);
+    opacity: 0;
+}
+
+.dialed-espresso-mound {
+    fill: var(--colorNeutralForeground1);
+    opacity: 0.55;
+    transform-origin: 60px 122px;
+    transform-box: view-box;
+}
+
+.dialed-espresso-needle {
+    transform-origin: 60px 30px;
+    transform-box: view-box;
+}
+
+.dialed-espresso-needle-line {
+    fill: none;
+    stroke: var(--colorNeutralForeground3);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dialed-espresso-figure.animated .dialed-espresso-grain {
+        animation: dialed-espresso-fall 0.9s ease-in infinite;
+    }
+
+    .dialed-espresso-figure.animated .dialed-espresso-mound {
+        animation: dialed-espresso-grow 4s ease-out infinite;
+    }
+
+    .dialed-espresso-figure.animated .dialed-espresso-needle {
+        animation: dialed-espresso-swing 1.1s ease-in-out infinite alternate;
+    }
+}
+
+@keyframes dialed-espresso-fall {
+    0% { opacity: 0.9; transform: translateY(0); }
+    100% { opacity: 0.9; transform: translateY(36px); }
+}
+
+@keyframes dialed-espresso-grow {
+    0% { transform: scaleY(0.2); }
+    100% { transform: scaleY(1); }
+}
+
+@keyframes dialed-espresso-swing {
+    from { transform: rotate(-16deg); }
+    to { transform: rotate(16deg); }
+}
+
+.dialed-espresso-prep {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--dialed-space-2);
+    text-align: center;
+}
+
+.dialed-espresso-prep .dialed-chips {
+    justify-content: center;
+}
