@@ -141,7 +141,7 @@
     bottom: 0;
     height: var(--blazor-load-percentage, 0%);
     background: var(--loading-ink);
-    transition: height 0.2s ease-out;
+    transition: height 1s cubic-bezier(0.3, 0.6, 0.3, 1);
 }
 
 @keyframes dialed-loading-pour {
