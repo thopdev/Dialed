@@ -50,7 +50,7 @@
 
   <ItemGroup Label="Images (thumbnails and metadata stripping, MIT)">
     <PackageVersion Include="SkiaSharp" Version="4.155.0" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.155.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.156.1" />
   </ItemGroup>
 
   <ItemGroup Label="Web Push (VAPID signing and RFC 8291 payload encryption), #100">
