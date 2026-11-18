@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <AspNetCoreVersion>10.0.14</AspNetCoreVersion>
+    <AspNetCoreVersion>10.0.15</AspNetCoreVersion>
     <!-- Keep in sync with the Aspire.AppHost.Sdk version in src/Dialed.AppHost/Dialed.AppHost.csproj -->
     <AspireVersion>13.6.4</AspireVersion>
     <OpenTelemetryVersion>1.17.0</OpenTelemetryVersion>
