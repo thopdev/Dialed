@@ -20,6 +20,13 @@ public sealed class CosmosUserStore(DialedCosmos cosmos, TimeProvider time) : Ac
 {
     private static readonly IdentityErrorDescriber Errors = new();
 
+    /// <summary>
+    /// How old an email lookup must be before its claim may be taken over when its user is missing or has another address.
+    /// A younger one may belong to a sign-up or email change that is still writing its user document (the lookup and the user
+    /// live in different partitions, so they cannot be written in one transaction).
+    /// </summary>
+    public static readonly TimeSpan OrphanedClaimAge = TimeSpan.FromMinutes(5);
+
     public override async Task<IdentityResult> CreateAsync(AccountUser user, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(user.NormalizedEmail))
@@ -157,12 +164,14 @@ public sealed class CosmosUserStore(DialedCosmos cosmos, TimeProvider time) : Ac
     private static string PasskeyId(byte[] credentialId) => "passkey:" + CosmosIdentity.Hash(credentialId);
 
     /// <summary>
-    /// Creates the email lookup for the user. Taken when it points to someone who still has the address; a lookup left behind
-    /// by a sign-up that never finished (no such user, or the user changed address) is taken over with its ETag.
+    /// Creates the email lookup for the user; creating is atomic, so of two sign-ups racing for one address only one gets it
+    /// (409 for the other). Taken when it points to someone who still has the address, or to a claim younger than
+    /// <see cref="OrphanedClaimAge"/> (a sign-up still in progress). An older lookup whose user is gone or moved to another
+    /// address was left behind by a sign-up that never finished, and is taken over with its ETag.
     /// </summary>
     private async Task<bool> TryClaimEmailAsync(Container container, string normalizedEmail, string userId, CancellationToken ct)
     {
-        var claim = new LookupDocument { Id = EmailId(normalizedEmail), Type = "email", UserId = userId };
+        var claim = new LookupDocument { Id = EmailId(normalizedEmail), Type = "email", UserId = userId, ClaimedAt = Time.GetUtcNow() };
         for (var attempt = 0; attempt < CosmosIdentity.MaxRetries; attempt++)
         {
             var (existing, etag) = await container.ReadAsync<LookupDocument>(claim.Id, ct);
@@ -171,6 +180,11 @@ public sealed class CosmosUserStore(DialedCosmos cosmos, TimeProvider time) : Ac
                 if (existing.UserId == userId)
                 {
                     return true;
+                }
+
+                if (existing.ClaimedAt is { } claimedAt && Time.GetUtcNow() - claimedAt < OrphanedClaimAge)
+                {
+                    return false; // possibly a sign-up that is still writing its user
                 }
 
                 var owner = await FindByIdAsync(existing.UserId, ct);
@@ -217,5 +231,8 @@ public sealed class CosmosUserStore(DialedCosmos cosmos, TimeProvider time) : Ac
     internal sealed record LookupDocument : IdentityDocument
     {
         public string UserId { get; init; } = "";
+
+        /// <summary>When an email lookup was claimed; see <see cref="OrphanedClaimAge"/>.</summary>
+        public DateTimeOffset? ClaimedAt { get; init; }
     }
 }

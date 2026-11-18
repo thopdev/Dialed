@@ -250,7 +250,24 @@ public sealed class CosmosUserStoreTests : UserStoreContract, IAsyncDisposable
 
         results.Count(r => r.Succeeded).ShouldBe(1);
         var winner = results[0].Succeeded ? a : b;
+        var loser = results[0].Succeeded ? b : a;
         (await NewStore().FindByEmailAsync(a.NormalizedEmail!, Ct))!.Id.ShouldBe(winner.Id);
+        (await NewStore().FindByIdAsync(loser.Id, Ct)).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Many_instances_signing_up_the_same_email_create_one_user()
+    {
+        var users = Enumerable.Range(0, 6).Select(_ => NewUser()).ToList();
+        foreach (var user in users.Skip(1))
+        {
+            user.Email = users[0].Email;
+            user.NormalizedEmail = users[0].NormalizedEmail;
+        }
+
+        var results = await Task.WhenAll(users.Select(u => NewStore().CreateAsync(u, Ct)));
+
+        results.Count(r => r.Succeeded).ShouldBe(1);
     }
 
     [Fact]
@@ -282,6 +299,11 @@ public sealed class CosmosUserStoreTests : UserStoreContract, IAsyncDisposable
         (await store.FindByEmailAsync(user.NormalizedEmail!, Ct)).ShouldBeNull();
         var again = NewUser();
         again.NormalizedEmail = user.NormalizedEmail;
+
+        // A young claim may be a sign-up still writing its user: not taken over yet.
+        (await store.CreateAsync(again, Ct)).Succeeded.ShouldBeFalse();
+
+        Time.Now += CosmosUserStore.OrphanedClaimAge;
         (await store.CreateAsync(again, Ct)).Succeeded.ShouldBeTrue();
         (await store.FindByEmailAsync(user.NormalizedEmail!, Ct))!.Id.ShouldBe(again.Id);
     }
