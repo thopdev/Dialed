@@ -20,6 +20,9 @@ param cosmosAccountResourceGroup string = ''
 @allowed(['true', 'false'])
 param cosmosFreeTier string = 'true'
 
+@description('Region for the Cosmos DB account when it is created. Cosmos capacity for new subscriptions can run out in a region ("high demand"); empty means the same as location.')
+param cosmosLocation string = ''
+
 @description('API image set by azd after the first deploy; empty means the bootstrap image is used.')
 param apiImageName string = ''
 
@@ -111,7 +114,7 @@ module cosmosAccount 'modules/cosmos-account.bicep' = if (createCosmosAccount) {
   scope: rg
   name: 'cosmos-account'
   params: {
-    location: location
+    location: empty(cosmosLocation) ? location : cosmosLocation
     tags: tags
     name: cosmosAccountName
     enableFreeTier: cosmosFreeTier == 'true'

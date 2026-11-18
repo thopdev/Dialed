@@ -6,6 +6,7 @@
     "location": { "value": "${AZURE_LOCATION=westeurope}" },
     "staticWebAppLocation": { "value": "${STATIC_WEB_APP_LOCATION=}" },
     "cosmosFreeTier": { "value": "${COSMOS_FREE_TIER=true}" },
+    "cosmosLocation": { "value": "${COSMOS_LOCATION=}" },
     "cosmosAccountResourceGroup": { "value": "${COSMOS_ACCOUNT_RESOURCE_GROUP=}" },
     "apiImageName": { "value": "${SERVICE_API_IMAGE_NAME=}" }
   }
