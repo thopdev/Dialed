@@ -1,13 +1,14 @@
 using System.Security.Claims;
+using Dialed.Api.Data;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Dialed.Api.Friends;
 
 public static class FriendEndpoints
 {
-    public static IServiceCollection AddDialedFriends(this IServiceCollection services)
+    public static IServiceCollection AddDialedFriends(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IFriendStore, InMemoryFriendStore>();
+        services.AddCosmosOrInMemory<IFriendStore, CosmosFriendStore, InMemoryFriendStore>(configuration);
         services.AddSingleton<FriendService>();
         return services;
     }

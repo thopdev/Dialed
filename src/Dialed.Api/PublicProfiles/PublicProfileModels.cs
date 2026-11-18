@@ -33,7 +33,7 @@ public sealed record Report(
     string? Note,
     DateTimeOffset CreatedAt);
 
-/// <summary>Public profiles, suspensions and reports. Server-only data: none of it syncs to devices. Cosmos DB takes over with the other stores.</summary>
+/// <summary>Public profiles, suspensions and reports. Server-only data: none of it syncs to devices. <see cref="CosmosPublicProfileStore"/> in Azure, in memory in tests.</summary>
 public interface IPublicProfileStore
 {
     Task<PublicProfile> GetAsync(string userId, CancellationToken cancellationToken = default);

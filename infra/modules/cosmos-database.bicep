@@ -20,6 +20,31 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15
   }
 }
 
+// Friend codes, follows and blocks (#38). Partition key = `user:{id}` or `code:{CODE}` (CosmosFriendStore); nothing expires.
+resource friends 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+  parent: database
+  name: 'friends'
+  properties: {
+    resource: {
+      id: 'friends'
+      partitionKey: { paths: ['/pk'], kind: 'Hash' }
+    }
+  }
+}
+
+// Households and their invites (#38), one partition per household; invites expire through their `ttl` field.
+resource households 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+  parent: database
+  name: 'households'
+  properties: {
+    resource: {
+      id: 'households'
+      partitionKey: { paths: ['/householdId'], kind: 'Hash' }
+      defaultTtl: -1
+    }
+  }
+}
+
 // Users, passkeys and lookup documents (ADR-0010). Partition key = id; documents expire through the `ttl` field (ceremony state).
 resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
   parent: database
@@ -29,6 +54,38 @@ resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers
       id: 'identity'
       partitionKey: { paths: ['/pk'], kind: 'Hash' }
       defaultTtl: -1
+    }
+  }
+}
+
+// Public profiles and reports (#38, #106), one partition per person; nothing expires.
+resource publicprofiles 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+  parent: database
+  name: 'publicprofiles'
+  properties: {
+    resource: {
+      id: 'publicprofiles'
+      partitionKey: { paths: ['/userId'], kind: 'Hash' }
+    }
+  }
+}
+
+// Synced records (#38, ADR-0011), one partition per household. The app's JSON under /entity is not indexed (queries only filter on the
+// copied top-level fields), so a write only pays for indexing those few fields. Soft-deleted records expire through their `ttl` field.
+resource sync 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+  parent: database
+  name: 'sync'
+  properties: {
+    resource: {
+      id: 'sync'
+      partitionKey: { paths: ['/householdId'], kind: 'Hash' }
+      defaultTtl: -1
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [{ path: '/*' }]
+        excludedPaths: [{ path: '/entity/*' }, { path: '/"_etag"/?' }]
+      }
     }
   }
 }

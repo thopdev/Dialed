@@ -28,13 +28,13 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 builder.Services.AddDialedProtection(builder.Configuration);
 builder.Services.AddDialedAuth(builder.Configuration, builder.Environment);
 builder.Services.AddDialedPasskeys(builder.Configuration);
-builder.Services.AddDialedSync();
+builder.Services.AddDialedSync(builder.Configuration);
 builder.Services.AddDialedPhotoProcessing();
-builder.Services.AddDialedHouseholds(builder.Environment);
+builder.Services.AddDialedHouseholds(builder.Environment, builder.Configuration);
 builder.Services.AddDialedPush(builder.Configuration, builder.Environment);
 builder.Services.AddDialedPublicProfiles(builder.Configuration);
 builder.Services.AddDialedCatalog(builder.Configuration);
-builder.Services.AddDialedFriends();
+builder.Services.AddDialedFriends(builder.Configuration);
 builder.Services.AddDialedAi(builder.Configuration);
 builder.Services.AddDialedBetaInvites(builder.Configuration);
 builder.Services.AddDialedAccount();

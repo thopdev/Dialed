@@ -33,7 +33,7 @@ public enum FriendOutcome { Ok, NotFound, Conflict }
 
 public sealed record FriendResult<T>(FriendOutcome Outcome, T? Value = default, string? Message = null);
 
-/// <summary>Friend codes, follows and blocks. In memory for now; Cosmos DB replaces it.</summary>
+/// <summary>Friend codes, follows and blocks: <see cref="CosmosFriendStore"/> in Azure, <see cref="InMemoryFriendStore"/> in tests and a bare run.</summary>
 public interface IFriendStore
 {
     Task<string> GetOrCreateCodeAsync(string userId, Func<string> newCode, CancellationToken cancellationToken = default);
