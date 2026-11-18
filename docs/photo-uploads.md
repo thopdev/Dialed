@@ -29,25 +29,32 @@ How photo files get from the phone to storage, and what changes when Azure Blob 
 
 The interfaces are in `src/Dialed.Api/Photos/PhotoStorage.cs`:
 
-- `IPhotoUrlIssuer` makes the upload and read URLs (one permission, one photo, short expiry).
+- `IPhotoUrlIssuer` makes the upload and read URLs (one permission, one photo, short expiry): `LocalSignedPhotoUrls` locally, `AzureBlobPhotoUrls` in Azure.
 - `IPhotoBlobStore` (in `Dialed.Images`, paths like `photos/{household}/{photo}.jpg`) reads and writes the files, for the stand-in, for the processing of #69 (metadata stripping and thumbnails, run in place so the read URL serves the stripped photo) and for server-side readers such as a label scan by photo id. The in-memory store and the development folder store both raise `BlobWritten`, which stands in for Azure's blob-created event.
 - `IPhotoUploadedHandler` runs after a photo arrived. Thumbnails and metadata stripping (#69) plug in here for local development; in Azure the same work is triggered by the blob-created event.
 
 Settings live under `Photos` (`UploadUrlLifetime`, `ReadUrlLifetime`, `MaxBytes`, `LocalFolder`). Development keeps files in `%TEMP%/dialed-dev-photos`; tests keep them in memory. The stand-in signs URLs with an HMAC key made at startup, so restarting the API also ends every URL it handed out (the queue simply asks for a new one).
 
-## Moving to Azure Blob Storage
+## Blob Storage (Azure)
 
-Not done here because Azure is not available (#25). The steps:
+With `Storage__BlobEndpoint` set (`infra/main.bicep` sets it and `Storage__PhotosContainer` on the API), `AddDialedPhotos` uses Blob Storage instead of the stand-in. Without it the local stand-in stays: a folder in development (`Photos:LocalFolder`), memory in tests.
 
-1. **Storage account** with a private container `photos` (Bicep in `infra/`). The API's managed identity gets *Storage Blob Delegator* on the account and *Storage Blob Data Contributor* on the container.
-2. **CORS** on the Blob service: allowed origins are only the app origin(s) (the same list as `App:Origins`), methods `PUT, GET, HEAD`, allowed headers `content-type, x-ms-blob-type`, max age 3600.
-3. **`AzureBlobPhotoUrls : IPhotoUrlIssuer`** with `Azure.Storage.Blobs`:
-   - Get a user delegation key with `BlobServiceClient.GetUserDelegationKeyAsync` (cache it, it is valid for up to 7 days; refresh well before it expires).
-   - For each URL build a `BlobSasBuilder` for blob `{householdId}/{photoId}.jpg` in `photos`, `Resource = "b"`, `StartsOn = now - 5 min` (clock skew), `ExpiresOn = now + lifetime`, permissions `Create | Write` for upload or `Read` for read, `Protocol = HttpsOnly`, and for reads `ContentType = "image/jpeg"` and `CacheControl = "private, max-age=..."`.
-   - Return `PUT` with header `x-ms-blob-type: BlockBlob` (the stand-in already sends it), or `GET`.
-4. **`AzureBlobPhotoStore : IPhotoBlobStore`** on the same container for server-side reads, and register both in `AddDialedPhotos` instead of the stand-in. `MapDialedPhotos` maps the `/photo-blobs` endpoints only while the stand-in is the issuer, so they disappear by themselves.
-5. **Size and type**: a SAS cannot limit size or content type. The Function from #69 checks each new blob (JPEG magic bytes, at most `MaxBytes`) and deletes anything else, and an Event Grid subscription on `BlobCreated` triggers it.
-6. **Deletion**: deleting a photo record, a household or an account must also delete the blobs (Function job, ADR-0008).
+- **Account**: private container `photos`, shared keys and public access off (`infra/modules/storage.bicep`). The API reaches it with its user-assigned managed identity (`DefaultAzureCredential`, `AZURE_CLIENT_ID`), which has *Storage Blob Data Contributor* and *Storage Blob Delegator* on the account.
+- **Blob names** are the store paths: `photos/{household}/{photo}.jpg` for originals and `thumbnails/{household}/{photo}-{size}.jpg`, both in the `photos` container.
+- **URLs** (`AzureBlobPhotoUrls`): user delegation SAS, signed with a key from `GetUserDelegationKey` that is cached for a day (`CachedUserDelegationKeys`; a new one is fetched when the cached key would expire before the URL). Each SAS is for one blob (`sr=b`), HTTPS only, starts 5 minutes in the past for clock skew and expires after `UploadUrlLifetime` (10 min) or `ReadUrlLifetime` (30 min). Uploads may only create and write (`sp=cw`) and need `x-ms-blob-type: BlockBlob`, which the API returns as a header; reads may only read (`sp=r`) and are served as `image/jpeg` with `Cache-Control: private, max-age=1800`.
+- **CORS** on the Blob service allows only the Static Web App origin, methods `GET, PUT, HEAD, OPTIONS`, headers `content-type` and `x-ms-*`. Storage CORS has no partial wildcards, so PR preview origins cannot be listed without allowing every origin: photo uploads and reads do not work on previews.
+- **Store** (`AzureBlobPhotoStore : IPhotoBlobStore`) on the same container, for the processing and server-side readers such as label scans by photo id.
+- **After an upload** (#69): the app uploads straight to the container, so the API does not see the upload. `BlobStoragePhotoWatcher` lists the container every `Storage:PollInterval` (15 s) and raises `BlobWritten` for each original that has no thumbnails yet, or that was written again more than a minute after its thumbnails (a new upload; the stripped original written by the processing itself lands seconds after the thumbnails). Each version (ETag) is raised once per process; after a restart the listing catches up. `InMemoryPhotoTrigger` then runs `PhotoProcessingHandler` as before: strips metadata, writes the 256 and 768 px thumbnails, sets `thumbPath`, retries and parks poison events. Originals larger than `MaxBytes` are deleted, since a SAS cannot limit size.
+- **Tests**: `AzureBlobPhotoStorageTests` (SAS scope and expiry, key caching, the watcher with a fake listing, the wiring) and `AzuriteBlobPhotoStoreTests` (the store and the watcher with real processing against Azurite, in CI's `azurite` job; locally set `AZURITE_CONNECTION_STRING`). Azurite uses account keys, so the delegation SAS itself is checked in dev.
+
+### Follow-up: the blob-triggered Function
+
+The watcher is fine for the beta (one listing per interval per API replica; the handler is idempotent, so two replicas only repeat work). At more photos it should move to the Functions app:
+
+1. A blob trigger on `photos/photos/{household}/{name}.jpg` with an Event Grid source (`BlobCreated`), the Functions identity already has the storage roles. It calls the same `PhotoProcessingHandler` with `AzureBlobPhotoStore` and an `IPhotoRecords` on Cosmos DB; the runtime gives the retries and the poison queue.
+2. The Function also checks each new blob (JPEG magic bytes, at most `MaxBytes`) and deletes anything else.
+3. Then the API drops `BlobStoragePhotoWatcher` and `InMemoryPhotoTrigger` in Azure.
+4. **Deletion**: deleting a photo record, a household or an account must also delete the blobs (Function job, ADR-0008).
 
 The app needs no change: it already sends whatever method and headers the API returns, to whatever URL it returns, without the API token.
 

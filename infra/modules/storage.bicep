@@ -30,13 +30,16 @@ resource blobs 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
   parent: account
   name: 'default'
   properties: {
-    // The PWA uploads photos straight to Blob Storage with short-lived user delegation SAS (ADR-0008).
+    // The PWA uploads photos straight to Blob Storage with short-lived user delegation SAS (ADR-0008, docs/photo-uploads.md).
+    // Only exact origins: Storage CORS has no partial wildcards, so PR preview origins ({name}-{pr}.{region}...) cannot be
+    // listed without allowing every origin. Previews keep working except for photo uploads and reads.
     cors: {
       corsRules: [
         {
           allowedOrigins: appOrigins
           allowedMethods: ['GET', 'PUT', 'HEAD', 'OPTIONS']
-          allowedHeaders: ['*']
+          // The app sends Content-Type and the x-ms-blob-type header the API returns with the upload URL.
+          allowedHeaders: ['content-type', 'x-ms-*']
           exposedHeaders: ['ETag']
           maxAgeInSeconds: 3600
         }

@@ -1,0 +1,30 @@
+name: Deploy prod
+
+# Deploys a release to prod (#28): push a tag like v1.2.0, or run it manually from the Actions tab.
+# Uses the GitHub environment `prod` (its own variables and federated credential, and the required reviewers the
+# owner sets on it), always provisions, deploys the API, Functions and the PWA, then smoke-tests them.
+# Refuses to run while the prod variable CUSTOM_DOMAIN is empty: the passkey RP ID must be the real domain (#111).
+# Set up once with `infra/scripts/setup-github-oidc.ps1 -Environment prod` (infra/README.md).
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ vars.AZURE_CLIENT_ID != '' }}
+    uses: ./.github/workflows/deploy-azure.yml
+    with:
+      environment: prod
+      force-provision: true
+      deploy-web: true
+      require-domain: true

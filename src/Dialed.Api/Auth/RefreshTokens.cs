@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using Dialed.Api.Data;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 
 namespace Dialed.Api.Auth;
@@ -96,6 +98,99 @@ public sealed class InMemoryRefreshTokenStore : IRefreshTokenStore
         }
 
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>
+/// Refresh tokens in Cosmos DB, so sign-ins survive restarts and work on every API instance. One <c>refresh:{hash}</c> document
+/// per token in the <c>identity</c> container: the refresh call is a point read plus a write with the ETag, so two requests
+/// with the same token cannot both rotate it. Revoking a family or a person is a query (sign-out, reuse and account deletion
+/// only). TTL removes a token a while after it expires.
+/// </summary>
+public sealed class CosmosRefreshTokenStore(DialedCosmos cosmos, TimeProvider time) : IRefreshTokenStore
+{
+    public async Task AddAsync(RefreshTokenRecord record, CancellationToken cancellationToken = default)
+    {
+        var container = await cosmos.ContainerAsync(cancellationToken);
+        var document = TokenDocument.From(record, CosmosIdentity.Ttl(record.ExpiresAt - time.GetUtcNow()));
+        await container.UpsertItemAsync(document, new PartitionKey(document.Pk), cancellationToken: cancellationToken);
+    }
+
+    public async Task<RefreshTokenRecord?> FindAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        var container = await cosmos.ContainerAsync(cancellationToken);
+        var (document, _) = await container.ReadAsync<TokenDocument>(TokenDocument.IdFor(tokenHash), cancellationToken);
+        return document?.ToRecord();
+    }
+
+    public async Task<bool> TryConsumeAsync(string tokenHash, CancellationToken cancellationToken = default)
+    {
+        var container = await cosmos.ContainerAsync(cancellationToken);
+        for (var attempt = 0; attempt < CosmosIdentity.MaxRetries; attempt++)
+        {
+            var (document, etag) = await container.ReadAsync<TokenDocument>(TokenDocument.IdFor(tokenHash), cancellationToken);
+            if (document is null || document.Used)
+            {
+                return false;
+            }
+
+            // Only one writer can replace this version; the loser reads again and finds it used.
+            if (await container.TryWriteAsync(document with { Used = true }, etag, cancellationToken))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Task RevokeFamilyAsync(string familyId, CancellationToken cancellationToken = default) =>
+        RevokeWhereAsync(new QueryDefinition("SELECT VALUE c.id FROM c WHERE c.type = 'refresh' AND c.familyId = @value").WithParameter("@value", familyId), cancellationToken);
+
+    public Task RevokeUserAsync(string userId, CancellationToken cancellationToken = default) =>
+        RevokeWhereAsync(new QueryDefinition("SELECT VALUE c.id FROM c WHERE c.type = 'refresh' AND c.userId = @value").WithParameter("@value", userId), cancellationToken);
+
+    private async Task RevokeWhereAsync(QueryDefinition query, CancellationToken cancellationToken)
+    {
+        var container = await cosmos.ContainerAsync(cancellationToken);
+        foreach (var id in await container.QueryAsync<string>(query, cancellationToken))
+        {
+            for (var attempt = 0; attempt < CosmosIdentity.MaxRetries; attempt++)
+            {
+                var (document, etag) = await container.ReadAsync<TokenDocument>(id, cancellationToken);
+                if (document is null || document.Revoked || await container.TryWriteAsync(document with { Revoked = true }, etag, cancellationToken))
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    internal sealed record TokenDocument : IdentityDocument
+    {
+        public string TokenHash { get; init; } = "";
+        public string UserId { get; init; } = "";
+        public string FamilyId { get; init; } = "";
+        public DateTimeOffset ExpiresAt { get; init; }
+        public bool Used { get; init; }
+        public bool Revoked { get; init; }
+
+        public static string IdFor(string tokenHash) => "refresh:" + tokenHash;
+
+        public static TokenDocument From(RefreshTokenRecord record, int ttl) => new()
+        {
+            Id = IdFor(record.TokenHash),
+            Type = "refresh",
+            TokenHash = record.TokenHash,
+            UserId = record.UserId,
+            FamilyId = record.FamilyId,
+            ExpiresAt = record.ExpiresAt,
+            Used = record.Used,
+            Revoked = record.Revoked,
+            Ttl = ttl,
+        };
+
+        public RefreshTokenRecord ToRecord() => new(TokenHash, UserId, FamilyId, ExpiresAt, Used, Revoked);
     }
 }
 
