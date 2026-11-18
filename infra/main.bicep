@@ -10,6 +10,9 @@ param environmentName string
 @description('Azure region for all resources.')
 param location string = 'westeurope'
 
+@description('Region for the Static Web App resource. It is only offered in a few regions (centralus, eastus2, westus2, westeurope, eastasia); the site itself is served from the global edge, so this only decides where its settings live. Empty means the same as location.')
+param staticWebAppLocation string = ''
+
 @description('Resource group of an existing shared Cosmos DB account. Empty (dev) creates the account in this environment; prod sets it to the dev resource group and only adds its own database.')
 param cosmosAccountResourceGroup string = ''
 
@@ -74,7 +77,7 @@ module staticWebApp 'modules/staticwebapp.bicep' = {
   scope: rg
   name: 'static-web-app'
   params: {
-    location: location
+    location: empty(staticWebAppLocation) ? location : staticWebAppLocation
     tags: tags
     name: 'swa-dialed-${env}'
   }
