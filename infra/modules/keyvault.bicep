@@ -4,7 +4,7 @@ param tags object
 param name string
 param secretsUserPrincipalIds array
 
-var keyVaultSecretsUser = '4633458b-17de-40ea-8c3d-17a9d1ca38fb'
+var keyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6'
 var keyVaultCryptoUser = '12338af0-0e69-4776-bea7-57ae8d297424'
 
 resource vault 'Microsoft.KeyVault/vaults@2023-07-01' = {
