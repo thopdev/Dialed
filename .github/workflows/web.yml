@@ -57,7 +57,11 @@ jobs:
         run: dotnet publish src/Dialed.Web/Dialed.Web.csproj --configuration Release --output publish
 
       - name: Deploy to Static Web Apps
+        id: swa
         if: steps.config.outputs.ready == 'true'
+        # The Free plan has 3 preview environments. When they are all taken, a PR preview fails; that must not block the PR.
+        # Deploys from main (the real dev site) still fail the run.
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
@@ -67,6 +71,10 @@ jobs:
           api_location: ''
           skip_app_build: true
           skip_api_build: true
+
+      - name: Note a skipped preview
+        if: github.event_name == 'pull_request' && steps.swa.outcome == 'failure'
+        run: echo "::warning::No preview for this PR (the Free plan allows 3 preview environments at a time, or the deploy failed). Closing other PRs frees a slot."
 
   close-preview:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
