@@ -33,6 +33,8 @@ azd deploy                 # builds and ships the API (Container Apps) and Funct
 - **Passkeys (dev):** the API's allowed origin list contains the Static Web App's default hostname (`Passkeys__Origins__0`, `App__Origins__0`); the RP ID is derived from the calling origin (ADR-0010). Prod sets a fixed `Passkeys__RpId` to the custom domain.
 - **Cosmos free tier** exists once per subscription and only at creation. `dev` creates the account; for `prod` run `azd env set COSMOS_ACCOUNT_RESOURCE_GROUP rg-dialed-dev` so it only adds its own database to the shared account.
 - **First deploy:** until `azd deploy` runs, the API container app runs a hello-world bootstrap image.
+- **JWT signing** (#30): the RSA key `jwt-signing` in Key Vault signs the API's access tokens (RS256); the API signs through Key Vault with its managed identity (Key Vault Crypto User) and validates with the public keys of every enabled version. Rotate by adding a version (`az keyvault key rotate --vault-name <vault> --name jwt-signing`): new tokens use it within an hour, old ones stay valid until they expire. Disable an old version only after the access-token lifetime (30 minutes) has passed.
+- **API image on provision:** CI starts from a fresh azd environment, so `infra/main.bicep` reads the image the API already runs (`SERVICE_API_RESOURCE_EXISTS`) instead of resetting it. A brand-new app starts from the ASP.NET sample image on port 8080, the same port as the API, because `azd deploy` only swaps the image.
 - **Data Protection keys** (ADR-0010) must be persisted to Storage/Key Vault before the API runs more than one replica; the Key Vault and roles are ready for that (#30).
 
 CI compiles and lints the templates on every change (`infra` job).

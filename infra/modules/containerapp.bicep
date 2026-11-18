@@ -11,8 +11,12 @@ param registryLoginServer string
 param imageName string
 param appSettings object
 
-// Until the first `azd deploy` there is no API image, so the app starts from Microsoft's hello-world image (port 80).
-var bootstrap = empty(imageName)
+@description('Image the app runs now (empty when it does not exist yet); used when imageName is empty so a provision keeps it.')
+param existingImage string = ''
+
+// Until the first `azd deploy` there is no API image, so the app starts from Microsoft's ASP.NET sample. It listens on
+// 8080 like the API: `azd deploy` only swaps the image, so the ingress port must already be right.
+var image = !empty(imageName) ? imageName : (!empty(existingImage) ? existingImage : 'mcr.microsoft.com/dotnet/samples:aspnetapp')
 
 resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: last(split(logAnalyticsId, '/'))
@@ -52,7 +56,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
       activeRevisionsMode: 'Single'
       ingress: {
         external: true
-        targetPort: bootstrap ? 80 : 8080
+        targetPort: 8080
         transport: 'auto'
         allowInsecure: false
       }
@@ -67,7 +71,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           name: 'api'
-          image: bootstrap ? 'mcr.microsoft.com/k8se/quickstart:latest' : imageName
+          image: image
           resources: { cpu: json('0.5'), memory: '1Gi' }
           env: [for item in items(settings): { name: item.key, value: item.value }]
         }
