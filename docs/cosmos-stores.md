@@ -28,9 +28,29 @@ How a store in `Dialed.Api` moves from memory to Cosmos DB (ADR-0003). The first
 | `CosmosAiQuotaStore` (AI calls per user, operation and UTC day) | `aiquota` | `/userId` | each day's counter: 2 days |
 | `CosmosCatalogStore`, `CosmosCatalogRulesStore` (catalog build in parts, hide and merge rules) | `catalog` | `/pk` (`build`, `rules`) | none |
 | `CosmosEmailRecoveryStore` | `recovery` | `/accountId` | per document |
+| Identity stores (see below) | `identity` | `/pk` | per document |
 | `CosmosPushStore` (devices, switches, stock alert memory, one-push-per-event markers) | `push` | `/userId` | event markers: 1 hour and a minute |
 
 Each container also has a block in `infra/modules/cosmos-database.bicep` (alphabetical). Cosmos test classes share `CosmosTestDatabase` (a throwaway database per test class instance).
+
+## The identity stores (#38)
+
+Accounts, passkeys and sign-ins live in the `identity` container (partition key `/pk`, default TTL `-1`), as ADR-0010 planned. Every document has `pk = id` and a `type`, so each key is its own logical partition and every lookup by key is a point read; a document is written on its own with its ETag. One container instead of one per store, because none of these stores needs a multi-document transaction and they share the database's throughput.
+
+| Document id | Store | What it holds | Expires |
+| --- | --- | --- | --- |
+| `user:{userId}` | `CosmosUserStore` | The Identity user with its passkeys and recovery code hashes. Saved with its ETag; a stale save is a concurrency failure. | never |
+| `email:{sha256(normalized email)}` | `CosmosUserStore` | Points to the user. Creating it claims the address (409: taken), so emails stay unique across instances. Hashed to keep emails out of ids. | never |
+| `passkey:{sha256(credential id)}` | `CosmosUserStore` | Points to the user, for passkey sign-in. Hashed because a credential id can be longer than an id may be (1023 bytes). | never |
+| `profile:{userId}` | `CosmosUserDirectory` | Display name, email, active household and other households (`households` holds all of them for the members query). | never |
+| `refresh:{sha256(token)}` | `CosmosRefreshTokenStore` | User, token family, expiry, used and revoked flags. Rotation marks it used with the ETag, so two refreshes with one token cannot both win. | after its expiry |
+| `ceremony:{sha256(nonce)}` | `CosmosCeremonyNonces` | A claimed ceremony nonce: creating it claims it, a replay gets 409. | after the ceremony lifetime |
+| `invite:{sha256(CODE)}` | `CosmosBetaInviteStore` | A beta invite with its uses, counted with the ETag. | a day after it expires |
+
+- **Lookups are written before the user and removed after it**, and a lookup only counts when the user it points to still has that email or passkey. The lookup and the user sit in different partitions, so they cannot share a transaction: a claim younger than 5 minutes (`CosmosUserStore.OrphanedClaimAge`) always counts as taken, because its sign-up may still be writing the user. A crash between two writes leaves a harmless orphan, which a later sign-up takes over with its ETag once it is older than that.
+- **Queries** (cross-partition, small): the members of a household (`ARRAY_CONTAINS(c.households, @id)`), and revoking a token family or all of a person's tokens (sign-out, a reused token, account deletion). The hot paths (refresh, sign-in, `/auth/me`) are point reads.
+- **Development users**: `/auth/dev` signs in as alice, bob or carol. With Cosmos DB in Development the directory creates their profiles on first use (create only, so a changed household stays).
+- **Passkeys depend on these documents**: deleting `user:` documents or changing the RP ID invalidates the passkeys on people's devices. Never clear the `identity` container of an environment with real users.
 
 ## Running the Cosmos tests
 
@@ -49,5 +69,5 @@ The key is the emulator's public, well-known key.
 ## Still needed in Azure (#198)
 
 - In Azure the API connects with **managed identity and Cosmos DB data-plane RBAC**, not a key. `CosmosConnection` then needs an endpoint-only path, `new CosmosClient(endpoint, new DefaultAzureCredential())`, and the Bicep needs the role assignment.
-- Containers are created by the app on first use. With RBAC the data-plane role can't create databases or containers, so in Azure they come from Bicep instead (`recovery`: partition `/accountId`, default TTL `-1`), and `DialedCosmos` must not try to create them.
+- Containers are created by the app on first use. With RBAC the data-plane role can't create databases or containers, so in Azure they come from Bicep instead (`recovery`: partition `/accountId`, default TTL `-1`; `identity`: partition `/pk`, default TTL `-1`), and `DialedCosmos` must not try to create them.
 - Check throughput on the shared free-tier database (≤ 1000 RU/s) and set an alert on 429s.

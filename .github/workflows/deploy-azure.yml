@@ -1,0 +1,161 @@
+name: Deploy to Azure (reusable)
+
+# Shared by deploy-dev.yml and deploy-prod.yml: signs in with OIDC (federated credential for the GitHub environment,
+# no client secret), provisions with azd, deploys the API and Functions, optionally publishes the PWA to the
+# environment's Static Web App, then smoke-tests the API (/health must say "Healthy") and Functions.
+# Variables come from the GitHub environment first, then the repository (see infra/README.md).
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub environment (dev or prod); its federated credential is the only one that can sign in
+        type: string
+        required: true
+      force-provision:
+        description: Run azd provision even if infra did not change in the last commit
+        type: boolean
+        default: false
+      deploy-web:
+        description: Publish the PWA to the environment's Static Web App (dev uses web.yml instead)
+        type: boolean
+        default: false
+      require-domain:
+        description: Refuse to run without CUSTOM_DOMAIN (prod; the passkey RP ID must never be a temporary hostname)
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      STATIC_WEB_APP_LOCATION: ${{ vars.STATIC_WEB_APP_LOCATION }}
+      COSMOS_LOCATION: ${{ vars.COSMOS_LOCATION }}
+      COSMOS_ACCOUNT_RESOURCE_GROUP: ${{ vars.COSMOS_ACCOUNT_RESOURCE_GROUP }}
+      CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+      API_MIN_REPLICAS: ${{ vars.API_MIN_REPLICAS }}
+      API_PUBLIC_URL: ${{ vars.API_PUBLIC_URL }}
+    steps:
+      - name: Check configuration
+        run: |
+          if [ "$AZURE_ENV_NAME" != "${{ inputs.environment }}" ]; then
+            echo "::error::AZURE_ENV_NAME is '$AZURE_ENV_NAME' but the GitHub environment is '${{ inputs.environment }}'. Run infra/scripts/setup-github-oidc.ps1 -Environment ${{ inputs.environment }}."
+            exit 1
+          fi
+          if [ "${{ inputs.require-domain }}" = "true" ] && [ -z "$CUSTOM_DOMAIN" ]; then
+            echo "::error::CUSTOM_DOMAIN is not set for '${{ inputs.environment }}'. Passkeys registered on a temporary hostname break when the domain changes, so this environment does not deploy without one (#111, infra/README.md)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: Azure/setup-azd@v2
+
+      - name: Sign in to Azure (OIDC)
+        run: |
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider github \
+            --tenant-id "$AZURE_TENANT_ID"
+
+      - name: Create azd environment
+        run: azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" --location "$AZURE_LOCATION"
+
+      - name: Detect infrastructure changes
+        id: infra
+        run: |
+          if [ "${{ inputs.force-provision }}" = "true" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet HEAD~1 HEAD -- infra azure.yaml 2>/dev/null; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Provision infrastructure
+        if: steps.infra.outputs.changed == 'true'
+        run: azd provision --no-prompt
+
+      # Without a provision the outputs (registry, URLs, ...) are read back from the last deployment in Azure.
+      - name: Load environment values
+        if: steps.infra.outputs.changed != 'true'
+        run: azd env refresh --no-prompt
+
+      - name: Deploy API and Functions
+        run: azd deploy --all --no-prompt
+
+      # The PWA calls API_PUBLIC_URL (https://api.<domain> once it is bound, #111), else the Container App's own address.
+      - name: Publish the PWA
+        if: inputs.deploy-web
+        run: |
+          api_url="${API_PUBLIC_URL:-$(azd env get-value API_URL)}"
+          echo "PWA calls $api_url"
+          jq --arg url "$api_url" '.Api.BaseUrl = $url' src/Dialed.Web/wwwroot/appsettings.json > appsettings.tmp
+          mv appsettings.tmp src/Dialed.Web/wwwroot/appsettings.json
+          dotnet publish src/Dialed.Web/Dialed.Web.csproj --configuration Release --output publish
+
+      # The deployment token is read with the same OIDC sign-in, so prod needs no stored secret.
+      - name: Sign in to Azure CLI (OIDC)
+        if: inputs.deploy-web
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Read the Static Web App deployment token
+        id: swa
+        if: inputs.deploy-web
+        run: |
+          token="$(az staticwebapp secrets list \
+            --name "$(azd env get-value STATIC_WEB_APP_NAME)" \
+            --resource-group "$(azd env get-value AZURE_RESOURCE_GROUP)" \
+            --query properties.apiKey --output tsv)"
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy the PWA to Static Web Apps
+        if: inputs.deploy-web
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa.outputs.token }}
+          action: upload
+          app_location: publish/wwwroot
+          api_location: ''
+          skip_app_build: true
+          skip_api_build: true
+
+      - name: Smoke test
+        # The API must answer /health with "Healthy": the bootstrap image a new container app starts with also returns 200,
+        # so a status check alone passed while the real revision was crash-looping.
+        run: |
+          check() {
+            url="$1"; expected="$2"
+            for attempt in $(seq 1 18); do
+              body="$(curl -s --max-time 20 -w '\n%{http_code}' "$url" || true)"
+              status="$(printf '%s' "$body" | tail -n1)"
+              content="$(printf '%s' "$body" | sed '$d')"
+              echo "$url -> $status '$content' (attempt $attempt)"
+              if [ "$status" = "200" ] && { [ -z "$expected" ] || [ "$content" = "$expected" ]; }; then return 0; fi
+              sleep 10
+            done
+            echo "::error::Smoke test failed: $url is not healthy"
+            return 1
+          }
+          check "$(azd env get-value API_URL)/health" "Healthy"
+          check "$(azd env get-value FUNCTIONS_URL)/api/health" ""
+          if [ "${{ inputs.deploy-web }}" = "true" ]; then
+            check "$(azd env get-value WEB_URL)/" ""
+          fi

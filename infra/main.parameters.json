@@ -8,6 +8,8 @@
     "cosmosFreeTier": { "value": "${COSMOS_FREE_TIER=true}" },
     "cosmosLocation": { "value": "${COSMOS_LOCATION=}" },
     "cosmosAccountResourceGroup": { "value": "${COSMOS_ACCOUNT_RESOURCE_GROUP=}" },
+    "customDomain": { "value": "${CUSTOM_DOMAIN=}" },
+    "apiMinReplicas": { "value": "${API_MIN_REPLICAS=0}" },
     "apiImageName": { "value": "${SERVICE_API_IMAGE_NAME=}" },
     "apiExists": { "value": "${SERVICE_API_RESOURCE_EXISTS=false}" }
   }

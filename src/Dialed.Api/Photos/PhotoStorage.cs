@@ -18,7 +18,7 @@ public sealed class PhotoStorageOptions
 
     /// <summary>
     /// Folder for the local stand-in of Blob Storage. Empty keeps photos in memory (tests); Development uses a folder in the temp
-    /// directory so photos survive an API restart.
+    /// directory so photos survive an API restart. Ignored when <c>Storage:BlobEndpoint</c> is set (Azure).
     /// </summary>
     public string? LocalFolder { get; set; }
 }
@@ -38,13 +38,28 @@ public sealed record PhotoUrl(Uri Url, string Method, IReadOnlyDictionary<string
 
 /// <summary>
 /// Hands out short-lived URLs that allow exactly one thing on exactly one photo: writing it, or reading it. The caller has done the access
-/// check. Azure: a user-delegation SAS on the blob (see <c>docs/photo-uploads.md</c>); here: <see cref="LocalSignedPhotoUrls"/>.
+/// check. Azure: a user delegation SAS on the blob (<see cref="AzureBlobPhotoUrls"/>); locally: <see cref="LocalSignedPhotoUrls"/>.
 /// </summary>
 public interface IPhotoUrlIssuer
 {
-    PhotoUrl IssueUpload(PhotoBlobRef blob);
+    Task<PhotoUrl> IssueUploadAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default);
 
-    PhotoUrl IssueRead(PhotoBlobRef blob);
+    Task<PhotoUrl> IssueReadAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Checks on blob paths shared by the folder store and the Blob Storage store.</summary>
+public static class PhotoStoragePaths
+{
+    /// <summary>
+    /// At least two segments, each letters, digits, dashes, underscores or a dot inside the file name, never empty, <c>.</c> or <c>..</c>:
+    /// a path can never leave the folder or the container's photo layout.
+    /// </summary>
+    public static bool IsValid(string path)
+    {
+        var segments = path.Split('/');
+        return segments.Length >= 2
+            && segments.All(s => s.Length > 0 && s is not "." and not ".." && s.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.'));
+    }
 }
 
 /// <summary>
@@ -92,15 +107,9 @@ public sealed class FileSystemPhotoBlobStore(string root) : IPhotoBlobStore, IPh
         return Task.CompletedTask;
     }
 
-    /// <summary>Every segment of a blob path is letters, digits, dashes, underscores or a dot inside the file name, and never <c>..</c>, so a path can never leave the folder.</summary>
-    private string FullPath(string path)
-    {
-        var segments = path.Split('/');
-        if (segments.Length < 2 || segments.Any(s => s.Length == 0 || s is "." or ".." || !s.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.')))
-        {
-            throw new ArgumentException("Not a valid photo path.", nameof(path));
-        }
-
-        return System.IO.Path.Combine([root, .. segments]);
-    }
+    /// <summary>Only paths that pass <see cref="PhotoStoragePaths.IsValid"/>, so a path can never leave the folder.</summary>
+    private string FullPath(string path) =>
+        PhotoStoragePaths.IsValid(path)
+            ? System.IO.Path.Combine([root, .. path.Split('/')])
+            : throw new ArgumentException("Not a valid photo path.", nameof(path));
 }
