@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Dialed.Api.Data;
 using Microsoft.Extensions.Options;
 
 namespace Dialed.Api.Passkeys;
@@ -68,6 +69,71 @@ public sealed class InMemoryBetaInviteStore : IBetaInviteStore
     }
 }
 
+/// <summary>
+/// Beta invites in Cosmos DB: one <c>invite:{sha256(CODE)}</c> document in the <c>identity</c> container, so checking a code is a point read.
+/// Uses are counted with ETags, so two sign-ups cannot share the last use. TTL removes the invite a while after it expires.
+/// </summary>
+public sealed class CosmosBetaInviteStore(DialedCosmos cosmos, TimeProvider time) : IBetaInviteStore
+{
+    /// <summary>Kept a day past expiry, so a late sign-up still finds it (and is told it expired).</summary>
+    private static readonly TimeSpan KeepAfterExpiry = TimeSpan.FromDays(1);
+
+    public async Task AddAsync(BetaInvite invite, CancellationToken cancellationToken = default)
+    {
+        var container = await cosmos.ContainerAsync(cancellationToken);
+        await container.UpsertItemAsync(ToDocument(invite), new Microsoft.Azure.Cosmos.PartitionKey(Id(invite.Code)), cancellationToken: cancellationToken);
+    }
+
+    public async Task<bool> IsValidAsync(string code, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        var container = await cosmos.ContainerAsync(cancellationToken);
+        var (invite, _) = await container.ReadAsync<InviteDocument>(Id(code), cancellationToken);
+        return invite is not null && invite.ExpiresAt > now && invite.Uses < invite.MaxUses;
+    }
+
+    public async Task<bool> TryUseAsync(string code, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        var container = await cosmos.ContainerAsync(cancellationToken);
+        for (var attempt = 0; attempt < CosmosIdentity.MaxRetries * 2; attempt++)
+        {
+            var (invite, etag) = await container.ReadAsync<InviteDocument>(Id(code), cancellationToken);
+            if (invite is null || invite.ExpiresAt <= now || invite.Uses >= invite.MaxUses)
+            {
+                return false;
+            }
+
+            if (await container.TryWriteAsync(invite with { Uses = invite.Uses + 1 }, etag, cancellationToken))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Hashed: an admin-chosen code may hold characters a Cosmos DB id cannot.</summary>
+    private static string Id(string code) => "invite:" + CosmosIdentity.Hash(code.Trim().ToUpperInvariant());
+
+    private InviteDocument ToDocument(BetaInvite invite) => new()
+    {
+        Id = Id(invite.Code),
+        Type = "invite",
+        Code = invite.Code,
+        MaxUses = invite.MaxUses,
+        Uses = invite.Uses,
+        ExpiresAt = invite.ExpiresAt,
+        Ttl = CosmosIdentity.Ttl(invite.ExpiresAt - time.GetUtcNow() + KeepAfterExpiry),
+    };
+
+    internal sealed record InviteDocument : IdentityDocument
+    {
+        public string Code { get; init; } = "";
+        public int MaxUses { get; init; }
+        public int Uses { get; init; }
+        public DateTimeOffset ExpiresAt { get; init; }
+    }
+}
+
 /// <summary>The secret that guards the <c>/admin</c> endpoints (the <c>X-Admin-Key</c> header). When none is configured they do not exist.</summary>
 public static class AdminKey
 {
@@ -94,7 +160,7 @@ public static class BetaInviteExtensions
     public static IServiceCollection AddDialedBetaInvites(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<BetaOptions>(configuration.GetSection(BetaOptions.SectionName));
-        services.AddSingleton<IBetaInviteStore, InMemoryBetaInviteStore>();
+        services.AddCosmosOrInMemory<IBetaInviteStore, CosmosBetaInviteStore, InMemoryBetaInviteStore>(configuration);
         return services;
     }
 

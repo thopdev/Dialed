@@ -130,7 +130,7 @@ public sealed class AuthTests(WebApplicationFactory<Program> factory) : IClassFi
         using var client = factory.CreateClient();
         var tokens = await DevLogin(client);
 
-        var store = factory.Services.GetRequiredService<InMemoryRefreshTokenStore>();
+        var store = factory.Services.GetRequiredService<IRefreshTokenStore>().ShouldBeOfType<InMemoryRefreshTokenStore>();
         store.Hashes.ShouldNotContain(tokens.RefreshToken);
         store.Hashes.ShouldContain(RefreshTokenService.Hash(tokens.RefreshToken));
     }

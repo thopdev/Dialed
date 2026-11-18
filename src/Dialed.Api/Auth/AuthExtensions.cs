@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Azure.Identity;
+using Dialed.Api.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -56,9 +57,10 @@ public static class AuthExtensions
         });
 
         services.AddSingleton(TimeProvider.System);
-        services.AddSingleton<IUserDirectory>(_ => new InMemoryUserDirectory(environment.IsDevelopment() ? DevUsers.All : []));
-        services.AddSingleton<InMemoryRefreshTokenStore>();
-        services.AddSingleton<IRefreshTokenStore>(sp => sp.GetRequiredService<InMemoryRefreshTokenStore>());
+        // The test users of /auth/dev exist in Development only; the Cosmos DB directory adds them on first use.
+        services.AddSingleton(new UserDirectorySeed(environment.IsDevelopment() ? DevUsers.All : []));
+        services.AddCosmosOrInMemory<IUserDirectory, CosmosUserDirectory, InMemoryUserDirectory>(configuration);
+        services.AddCosmosOrInMemory<IRefreshTokenStore, CosmosRefreshTokenStore, InMemoryRefreshTokenStore>(configuration);
         services.AddSingleton<TokenIssuer>();
         services.AddSingleton<RefreshTokenService>();
 
