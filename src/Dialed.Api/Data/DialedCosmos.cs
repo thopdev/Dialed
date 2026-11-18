@@ -166,6 +166,11 @@ public static class CosmosServiceCollectionExtensions
 
         services.TryAddSingleton(_ => CosmosConnection.CreateClient(cosmos));
         services.TryAddSingleton(sp => new DialedCosmos(sp.GetRequiredService<CosmosClient>(), cosmos.Database, cosmos.CreatesContainers));
+        if (!cosmos.CreatesContainers)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, CosmosStartupCheck>());
+        }
+
         return true;
     }
 

@@ -51,6 +51,8 @@ var containers = [
 
 To add one, add a comment line and an entry line at its alphabetical place by `id`, matching the store's `CosmosContainerSpec` (`defaultTtl: -1` turns TTL on with a per-document `ttl`; leave `defaultTtl` out for no TTL). Different PRs then touch different lines; on a merge conflict keep both entries. The next `azd provision` (the deploy workflow runs it when `infra/` changed) creates the container. Never change the partition key of an existing container: Cosmos DB can't, the deployment fails, and the data has to be moved to a new container.
 
+At startup in Azure, `CosmosStartupCheck` lists the database's containers and does one point read in each. It logs `Cosmos DB reachable at ..., containers: ...` or, as an error, `Cosmos DB not reachable` (usually a missing role assignment). It only logs; `/health` does not depend on Cosmos DB. To find it: `az containerapp logs show -g rg-dialed-dev -n ca-dialed-api-dev --tail 200 | grep "Cosmos DB"`.
+
 All containers share the database's 400 RU/s (free tier covers 1000 RU/s per account).
 
 ## Still needed in Azure (#198)

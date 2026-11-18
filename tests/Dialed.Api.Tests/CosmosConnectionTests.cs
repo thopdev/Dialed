@@ -3,6 +3,7 @@ using Dialed.Api.Data;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Dialed.Api.Tests;
 
@@ -94,6 +95,18 @@ public sealed class CosmosConnectionTests
         cosmos.DatabaseId.ShouldBe("dialed-dev");
         cosmos.CreatesContainers.ShouldBeFalse();
         cosmos.Client.Endpoint.ShouldBe(new Uri(AzureEndpoint));
+        services.ShouldContain(d => d.ServiceType == typeof(IHostedService) && d.ImplementationType == typeof(CosmosStartupCheck));
+    }
+
+    [Fact]
+    public void With_a_connection_string_containers_are_created_and_there_is_no_startup_check()
+    {
+        var services = new ServiceCollection();
+        services.TryAddDialedCosmos(Configuration(new() { ["ConnectionStrings:cosmos"] = EmulatorConnectionString })).ShouldBeTrue();
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<DialedCosmos>().CreatesContainers.ShouldBeTrue();
+        services.ShouldNotContain(d => d.ServiceType == typeof(IHostedService));
     }
 
     [Fact]
