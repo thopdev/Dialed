@@ -1,4 +1,4 @@
-// Container Apps environment + the API app (Consumption, scale to zero in dev). `azd deploy` replaces the bootstrap image.
+// Container Apps environment + the API app (Consumption; scales to zero unless minReplicas is set). `azd deploy` replaces the bootstrap image.
 param location string
 param tags object
 param environmentName string
@@ -13,6 +13,11 @@ param appSettings object
 
 @description('Image the app runs now (empty when it does not exist yet); used when imageName is empty so a provision keeps it.')
 param existingImage string = ''
+
+@description('Minimum replicas: 0 scales to zero (cold start of a few seconds), 1 keeps one replica warm.')
+@minValue(0)
+@maxValue(2)
+param minReplicas int = 0
 
 // Until the first `azd deploy` there is no API image, so the app starts from Microsoft's ASP.NET sample. It listens on
 // 8080 like the API: `azd deploy` only swaps the image, so the ingress port must already be right.
@@ -77,7 +82,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 0
+        minReplicas: minReplicas
         maxReplicas: 2
       }
     }

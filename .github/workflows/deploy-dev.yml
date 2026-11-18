@@ -1,8 +1,9 @@
 name: Deploy dev
 
 # Every merge to main provisions (when infra changed) and deploys the API and Functions to the dev environment.
-# Signs in to Azure with OIDC (federated credential, no client secret). Set up once with
-# infra/scripts/setup-github-oidc.ps1; until then this workflow skips itself.
+# The steps live in deploy-azure.yml (shared with deploy-prod.yml). Signs in to Azure with OIDC (federated credential,
+# no client secret). Set up once with infra/scripts/setup-github-oidc.ps1; until then this workflow skips itself.
+# The dev PWA is published by web.yml.
 
 on:
   push:
@@ -29,76 +30,7 @@ concurrency:
 jobs:
   deploy:
     if: ${{ vars.AZURE_CLIENT_ID != '' }}
-    runs-on: ubuntu-latest
-    environment: dev
-    env:
-      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      STATIC_WEB_APP_LOCATION: ${{ vars.STATIC_WEB_APP_LOCATION }}
-      COSMOS_LOCATION: ${{ vars.COSMOS_LOCATION }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 2
-
-      - uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: '10.0.x'
-
-      - uses: Azure/setup-azd@v2
-
-      - name: Sign in to Azure (OIDC)
-        run: |
-          azd auth login \
-            --client-id "$AZURE_CLIENT_ID" \
-            --federated-credential-provider github \
-            --tenant-id "$AZURE_TENANT_ID"
-
-      - name: Create azd environment
-        run: azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" --location "$AZURE_LOCATION"
-
-      - name: Detect infrastructure changes
-        id: infra
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.provision }}" = "true" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          elif git diff --quiet HEAD~1 HEAD -- infra azure.yaml 2>/dev/null; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Provision infrastructure
-        if: steps.infra.outputs.changed == 'true'
-        run: azd provision --no-prompt
-
-      # Without a provision the outputs (registry, URLs, ...) are read back from the last deployment in Azure.
-      - name: Load environment values
-        if: steps.infra.outputs.changed != 'true'
-        run: azd env refresh --no-prompt
-
-      - name: Deploy API and Functions
-        run: azd deploy --all --no-prompt
-
-      - name: Smoke test
-        # The API must answer /health with "Healthy": the bootstrap image a new container app starts with also returns 200,
-        # so a status check alone passed while the real revision was crash-looping.
-        run: |
-          check() {
-            url="$1"; expected="$2"
-            for attempt in $(seq 1 18); do
-              body="$(curl -s --max-time 20 -w '\n%{http_code}' "$url" || true)"
-              status="$(printf '%s' "$body" | tail -n1)"
-              content="$(printf '%s' "$body" | sed '$d')"
-              echo "$url -> $status '$content' (attempt $attempt)"
-              if [ "$status" = "200" ] && { [ -z "$expected" ] || [ "$content" = "$expected" ]; }; then return 0; fi
-              sleep 10
-            done
-            echo "::error::Smoke test failed: $url is not healthy"
-            return 1
-          }
-          check "$(azd env get-value API_URL)/health" "Healthy"
-          check "$(azd env get-value FUNCTIONS_URL)/api/health" ""
+    uses: ./.github/workflows/deploy-azure.yml
+    with:
+      environment: dev
+      force-provision: ${{ github.event_name == 'workflow_dispatch' && inputs.provision }}

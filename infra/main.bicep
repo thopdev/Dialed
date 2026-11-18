@@ -23,6 +23,12 @@ param cosmosFreeTier string = 'true'
 @description('Region for the Cosmos DB account when it is created. Cosmos capacity for new subscriptions can run out in a region ("high demand"); empty means the same as location.')
 param cosmosLocation string = ''
 
+@description('Custom domain of the environment, for example dialed.app (no scheme, no app. prefix). Empty for dev, which uses Azure default hostnames. When set, the app origin is https://app.{domain} and the passkey RP ID is fixed to the domain (ADR-0010). Prod refuses to deploy without it: a passkey registered on a temporary hostname would stop working once the domain is set.')
+param customDomain string = ''
+
+@description('Minimum replicas of the API container app ("0" scales to zero; a string because azd fills it from the environment). Dev 0, prod 1 to avoid cold starts.')
+param apiMinReplicas string = '0'
+
 @description('API image set by azd after the first deploy; empty means the bootstrap image is used.')
 param apiImageName string = ''
 
@@ -40,12 +46,18 @@ var tags = {
 
 // Shared by all environments in the subscription, so its name does not contain the environment.
 var cosmosAccountName = 'cosmos-dialed-${take(uniqueString(subscription().id), 6)}'
+// Prod must have its domain before anything runs: changing the RP ID later invalidates every passkey (#111).
+var domain = toLower(customDomain)
+var hasCustomDomain = !empty(domain)
+// The check sits on the resource group, the first resource, so a prod deployment without a domain creates nothing.
+var resourceGroupLocation = env == 'prod' && !hasCustomDomain ? fail('customDomain (CUSTOM_DOMAIN) is required for prod; see infra/README.md') : location
+
 var createCosmosAccount = empty(cosmosAccountResourceGroup)
 var cosmosResourceGroup = createCosmosAccount ? 'rg-dialed-${env}' : cosmosAccountResourceGroup
 
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: 'rg-dialed-${env}'
-  location: location
+  location: resourceGroupLocation
   tags: tags
 }
 
@@ -108,7 +120,7 @@ module storage 'modules/storage.bicep' = {
     location: location
     tags: tags
     name: 'stdialed${env}${token}'
-    appOrigins: [staticWebApp.outputs.origin]
+    appOrigins: [appOrigin]
     apiPrincipalId: apiIdentity.outputs.principalId
     functionsPrincipalId: functionsIdentity.outputs.principalId
   }
@@ -158,8 +170,23 @@ module email 'modules/email.bicep' = {
   }
 }
 
+// The origin the PWA is served from. With a custom domain only https://app.{domain} is allowed, so the Static Web App's
+// temporary hostname can never register a passkey; without one (dev) it is the default hostname plus PR previews.
+var appOrigin = hasCustomDomain ? 'https://app.${domain}' : staticWebApp.outputs.origin
+var originSettings = hasCustomDomain
+  ? {
+      App__Origins__0: appOrigin
+      Passkeys__Origins__0: appOrigin
+      Passkeys__RpId: domain
+    }
+  : {
+      App__Origins__0: appOrigin
+      App__Origins__1: staticWebApp.outputs.previewOriginPattern
+      Passkeys__Origins__0: appOrigin
+    }
+
 // Configuration is environment variables only: endpoints and names, never keys.
-// The passkey RP ID is not set for dev: the API derives it from the calling origin against the allowlist (ADR-0010).
+// Without a custom domain the passkey RP ID is not set: the API derives it from the calling origin against the allowlist (ADR-0010).
 var sharedSettings = {
   APPLICATIONINSIGHTS_CONNECTION_STRING: monitoring.outputs.appInsightsConnectionString
   Cosmos__Endpoint: cosmosDatabase.outputs.endpoint
@@ -195,10 +222,8 @@ module api 'modules/containerapp.bicep' = {
     registryLoginServer: registry.outputs.loginServer
     imageName: apiImageName
     existingImage: apiImage.outputs.image
-    appSettings: union(sharedSettings, {
-      App__Origins__0: staticWebApp.outputs.origin
-      App__Origins__1: staticWebApp.outputs.previewOriginPattern
-      Passkeys__Origins__0: staticWebApp.outputs.origin
+    minReplicas: int(empty(apiMinReplicas) ? '0' : apiMinReplicas)
+    appSettings: union(sharedSettings, originSettings, {
       Jwt__KeyVaultKeyName: keyVault.outputs.jwtSigningKeyName
     })
   }
@@ -226,6 +251,7 @@ output AZURE_RESOURCE_GROUP string = rg.name
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.outputs.loginServer
 output API_URL string = api.outputs.url
 output WEB_URL string = staticWebApp.outputs.origin
+output APP_ORIGIN string = appOrigin
 output STATIC_WEB_APP_NAME string = staticWebApp.outputs.name
 output FUNCTIONS_APP_NAME string = functions.outputs.name
 output FUNCTIONS_URL string = 'https://${functions.outputs.hostname}'
