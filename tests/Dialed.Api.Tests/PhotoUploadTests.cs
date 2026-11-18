@@ -237,7 +237,7 @@ public sealed class PhotoUploadTests(WebApplicationFactory<Program> factory) : I
     }
 
     [Fact]
-    public void Signed_urls_stop_working_when_they_expire()
+    public async Task Signed_urls_stop_working_when_they_expire()
     {
         var time = new ManualTime(new DateTimeOffset(2026, 11, 10, 12, 0, 0, TimeSpan.Zero));
         var http = new HttpContextAccessor { HttpContext = new DefaultHttpContext() };
@@ -246,7 +246,7 @@ public sealed class PhotoUploadTests(WebApplicationFactory<Program> factory) : I
         var urls = new LocalSignedPhotoUrls(http, new PhotoStorageOptions(), time);
         var blob = new PhotoBlobRef("h1", "p1");
 
-        var issued = urls.IssueUpload(blob);
+        var issued = await urls.IssueUploadAsync(blob, Ct);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(issued.Url.Query);
         issued.Url.AbsolutePath.ShouldBe("/photo-blobs/h1/p1.jpg");
         issued.ExpiresAt.ShouldBe(time.GetUtcNow().AddMinutes(10));

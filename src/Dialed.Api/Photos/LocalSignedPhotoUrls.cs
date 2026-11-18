@@ -16,9 +16,11 @@ public sealed class LocalSignedPhotoUrls(IHttpContextAccessor http, PhotoStorage
 
     private readonly byte[] key = RandomNumberGenerator.GetBytes(32);
 
-    public PhotoUrl IssueUpload(PhotoBlobRef blob) => Issue(blob, "w", "PUT", options.UploadUrlLifetime);
+    public Task<PhotoUrl> IssueUploadAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Issue(blob, "w", "PUT", options.UploadUrlLifetime));
 
-    public PhotoUrl IssueRead(PhotoBlobRef blob) => Issue(blob, "r", "GET", options.ReadUrlLifetime);
+    public Task<PhotoUrl> IssueReadAsync(PhotoBlobRef blob, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Issue(blob, "r", "GET", options.ReadUrlLifetime));
 
     /// <summary>Whether the signature in a request allows <paramref name="permission"/> on the photo right now.</summary>
     public bool Verify(PhotoBlobRef blob, string permission, string? signedPermission, string? expiresAt, string? signature)

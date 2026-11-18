@@ -103,6 +103,30 @@ jobs:
       - name: Test the Cosmos DB stores
         run: dotnet test --project tests/Dialed.Api.Tests --configuration Release --no-build --filter-class "*Cosmos*" --output detailed
 
+  # Runs the Blob Storage photo store and upload watcher against Azurite, the emulator the AppHost runs.
+  # Without AZURITE_CONNECTION_STRING (as in build-test) those tests skip.
+  azurite:
+    runs-on: ubuntu-latest
+    env:
+      # Azurite's well-known, public development account key.
+      AZURITE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # Started by hand, not as a service: Azurite lags the SDK's newest storage API version and needs --skipApiVersionCheck.
+      - name: Start Azurite
+        run: docker run -d -p 10000:10000 mcr.microsoft.com/azure-storage/azurite:3.35.0 azurite-blob --blobHost 0.0.0.0 --skipApiVersionCheck --loose
+
+      - name: Build
+        run: dotnet build tests/Dialed.Api.Tests --configuration Release
+
+      - name: Test the Blob Storage photo store
+        run: dotnet test --project tests/Dialed.Api.Tests --configuration Release --no-build --filter-class "*Azurite*" --output detailed
+
   # Compiles and lints the Bicep templates (no Azure login needed). Runs only when infrastructure changes.
   infra:
     runs-on: ubuntu-latest

@@ -7,7 +7,8 @@ namespace Dialed.Api.Photos;
 public sealed record PoisonedPhotoEvent(string BlobPath, int Attempts, string Error, DateTimeOffset At);
 
 /// <summary>
-/// Stands in for the blob-triggered Azure Function (#69) while there is no Blob Storage: listens to <see cref="IPhotoBlobEvents.BlobWritten"/>,
+/// Stands in for the blob-triggered Azure Function (#69): listens to <see cref="IPhotoBlobEvents.BlobWritten"/> (the local stores, or
+/// <see cref="BlobStoragePhotoWatcher"/> on Blob Storage),
 /// runs <see cref="PhotoProcessingHandler"/> one event at a time, retries with backoff and parks events that keep failing, like the
 /// Functions runtime does with its <c>webjobs-blobtrigger-poison</c> queue.
 /// </summary>

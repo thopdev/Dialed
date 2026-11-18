@@ -92,7 +92,7 @@ public sealed class CosmosPublicProfileStoreTests : PublicProfileStoreContract, 
 {
     private readonly CosmosTestDatabase database = new();
 
-    protected override IPublicProfileStore NewStore() => new CosmosPublicProfileStore(database.NewCosmos());
+    protected override IPublicProfileStore NewStore() => new CosmosPublicProfileStore(database.New());
 
     public ValueTask DisposeAsync() => database.DisposeAsync();
 

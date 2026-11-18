@@ -135,7 +135,7 @@ public sealed class CosmosFriendStoreTests : FriendStoreContract, IAsyncDisposab
 {
     private readonly CosmosTestDatabase database = new();
 
-    protected override IFriendStore NewStore() => new CosmosFriendStore(database.NewCosmos());
+    protected override IFriendStore NewStore() => new CosmosFriendStore(database.New());
 
     public ValueTask DisposeAsync() => database.DisposeAsync();
 

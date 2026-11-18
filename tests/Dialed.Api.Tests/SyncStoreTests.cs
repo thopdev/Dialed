@@ -357,7 +357,7 @@ public sealed class CosmosSyncStoreTests : SyncStoreContract, IAsyncDisposable
 {
     private readonly CosmosTestDatabase database = new();
 
-    protected override ISyncStore NewStore() => new CosmosSyncStore(database.NewCosmos(), Time);
+    protected override ISyncStore NewStore() => new CosmosSyncStore(database.New(), Time);
 
     public ValueTask DisposeAsync() => database.DisposeAsync();
 
@@ -404,7 +404,7 @@ public sealed class CosmosSyncStoreTests : SyncStoreContract, IAsyncDisposable
     [Fact]
     public async Task Deleted_records_get_a_ttl_and_restored_ones_lose_it()
     {
-        var cosmos = database.NewCosmos();
+        var cosmos = database.New();
         var store = new CosmosSyncStore(cosmos, Time);
         var household = NewHousehold();
         await Put(store, household, "alice", "beans", "b1", deleted: true);

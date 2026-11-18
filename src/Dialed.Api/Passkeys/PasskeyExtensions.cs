@@ -14,7 +14,8 @@ public static class PasskeyExtensions
             AllowedOrigins.From(configuration),
             AllowedOrigins.Patterns(configuration),
             sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PasskeyOptions>>()));
-        services.AddSingleton<ICeremonyNonces, InMemoryCeremonyNonces>();
+        // Users, passkeys and single-use ceremony nonces must survive restarts and be shared by every instance (#38).
+        services.AddCosmosOrInMemory<ICeremonyNonces, CosmosCeremonyNonces, InMemoryCeremonyNonces>(configuration);
         services.AddScoped<PasskeyCeremonies>();
         services.AddScoped<RecoveryService>();
         // Lockout, send cooldown and email codes must hold across restarts and instances (#197).
@@ -26,10 +27,9 @@ public static class PasskeyExtensions
         // minted by one replica cannot be opened by another.
         services.AddDataProtection();
 
-        // One shared in-memory store (Identity would otherwise create one per request).
-        services.AddSingleton<InMemoryUserStore>();
+        // One shared store (Identity would otherwise create one per request).
         services.AddIdentityCore<AccountUser>(options => options.User.RequireUniqueEmail = true);
-        services.AddSingleton<IUserStore<AccountUser>>(sp => sp.GetRequiredService<InMemoryUserStore>());
+        services.AddCosmosOrInMemory<IUserStore<AccountUser>, CosmosUserStore, InMemoryUserStore>(configuration);
         return services;
     }
 

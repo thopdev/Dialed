@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Azure.Storage.Blobs;
 using Dialed.Images;
 using System.Security.Claims;
 using System.Text.Json.Nodes;
@@ -13,8 +15,9 @@ public sealed record PhotoUrlResponse(string Url, string Method, IReadOnlyDictio
 
 /// <summary>
 /// Photo files (#68, ADR-0008). The app syncs a photo's metadata like any record and then asks for a short-lived URL to upload the file
-/// directly to storage, so photo bytes never pass through the API in Azure. Until Azure is set up the URLs point at a signed local
-/// stand-in on this API (<see cref="LocalSignedPhotoUrls"/>).
+/// directly to storage, so photo bytes never pass through the API in Azure. With <c>Storage:BlobEndpoint</c> set (Azure) the URLs are user
+/// delegation SAS on Blob Storage (<see cref="AzureBlobPhotoUrls"/>); otherwise they point at a signed local stand-in on this API
+/// (<see cref="LocalSignedPhotoUrls"/>).
 /// </summary>
 public static class PhotoEndpoints
 {
@@ -30,7 +33,13 @@ public static class PhotoEndpoints
         services.TryAddSingleton(TimeProvider.System);
         services.AddHttpContextAccessor();
 
-        // Azure: register an issuer that makes user-delegation SAS URLs and a Blob Storage-backed store instead (docs/photo-uploads.md).
+        var storage = configuration.GetSection(BlobStorageOptions.Section).Get<BlobStorageOptions>() ?? new BlobStorageOptions();
+        if (!string.IsNullOrEmpty(storage.BlobEndpoint))
+        {
+            AddBlobStorage(services, storage);
+            return services;
+        }
+
         services.TryAddSingleton<LocalSignedPhotoUrls>();
         services.TryAddSingleton<IPhotoUrlIssuer>(sp => sp.GetRequiredService<LocalSignedPhotoUrls>());
         // One store for uploads, processing and reads: in memory (registered by AddDialedPhotoProcessing), or a folder in development so photos
@@ -44,6 +53,27 @@ public static class PhotoEndpoints
         return services;
     }
 
+    /// <summary>
+    /// Azure: photos in Blob Storage, reached with the managed identity (<c>AZURE_CLIENT_ID</c> picks the user-assigned one). The app gets
+    /// user delegation SAS URLs, and <see cref="BlobStoragePhotoWatcher"/> feeds new uploads to the in-process trigger for #69.
+    /// </summary>
+    private static void AddBlobStorage(IServiceCollection services, BlobStorageOptions storage)
+    {
+        services.AddSingleton(storage);
+        services.AddSingleton(_ => new BlobServiceClient(new Uri(storage.BlobEndpoint!), new DefaultAzureCredential()));
+        services.AddSingleton(sp => sp.GetRequiredService<BlobServiceClient>().GetBlobContainerClient(storage.PhotosContainer));
+        services.AddSingleton<IUserDelegationKeySource, CachedUserDelegationKeys>();
+        services.AddSingleton<IPhotoUrlIssuer, AzureBlobPhotoUrls>();
+
+        services.AddSingleton<AzureBlobPhotoStore>();
+        services.AddSingleton<IPhotoBlobListing>(sp => sp.GetRequiredService<AzureBlobPhotoStore>());
+        services.Replace(ServiceDescriptor.Singleton<IPhotoBlobStore>(sp => sp.GetRequiredService<AzureBlobPhotoStore>()));
+
+        services.AddSingleton<BlobStoragePhotoWatcher>();
+        services.Replace(ServiceDescriptor.Singleton<IPhotoBlobEvents>(sp => sp.GetRequiredService<BlobStoragePhotoWatcher>()));
+        services.AddHostedService(sp => sp.GetRequiredService<BlobStoragePhotoWatcher>());
+    }
+
     public static IEndpointRouteBuilder MapDialedPhotos(this IEndpointRouteBuilder endpoints)
     {
         var photos = endpoints.MapGroup("/photos").RequireAuthorization();
@@ -51,11 +81,11 @@ public static class PhotoEndpoints
         // A URL to upload the photo's file, after checking the photo's record is in the caller's household and visible to them. The record
         // syncs first; until it has, the answer is 404 and the app tries again after the next sync.
         photos.MapPost("/{id}/upload-url", async (string id, ClaimsPrincipal user, ISyncStore store, IPhotoUrlIssuer issuer, CancellationToken ct) =>
-            await FindForCallerAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(issuer.IssueUpload(blob))) : NotFound());
+            await FindForCallerAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(await issuer.IssueUploadAsync(blob, ct))) : NotFound());
 
         // A URL to read the photo's file (for devices that did not take it), with the same check.
         photos.MapGet("/{id}/url", async (string id, ClaimsPrincipal user, ISyncStore store, IPhotoUrlIssuer issuer, CancellationToken ct) =>
-            await FindForCallerAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(issuer.IssueRead(blob))) : NotFound());
+            await FindForCallerAsync(id, user, store, ct) is { } blob ? Results.Ok(ToResponse(await issuer.IssueReadAsync(blob, ct))) : NotFound());
 
         // The local stand-in for Blob Storage. The signature in the URL is the authorisation, as with a SAS.
         if (endpoints.ServiceProvider.GetService<IPhotoUrlIssuer>() is LocalSignedPhotoUrls)

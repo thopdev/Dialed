@@ -45,7 +45,8 @@ resource households 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containe
   }
 }
 
-// Users, passkeys and lookup documents (ADR-0010). Partition key = id; documents expire through the `ttl` field (ceremony state).
+// Identity (ADR-0010, docs/cosmos-stores.md): users with passkeys, email and passkey lookups, profiles, refresh tokens, ceremony
+// nonces and beta invites. Partition key = id (`pk`); refresh tokens, nonces and invites expire through their `ttl` field.
 resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
   parent: database
   name: 'identity'

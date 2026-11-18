@@ -135,7 +135,7 @@ public sealed class CosmosHouseholdStoreTests : HouseholdStoreContract, IAsyncDi
 {
     private readonly CosmosTestDatabase database = new();
 
-    protected override IHouseholdStore NewStore(IEnumerable<Household>? initial = null) => new CosmosHouseholdStore(database.NewCosmos(), Time, initial);
+    protected override IHouseholdStore NewStore(IEnumerable<Household>? initial = null) => new CosmosHouseholdStore(database.New(), Time, initial);
 
     public ValueTask DisposeAsync() => database.DisposeAsync();
 
@@ -176,7 +176,7 @@ public sealed class CosmosHouseholdStoreTests : HouseholdStoreContract, IAsyncDi
     [Fact]
     public async Task An_invite_expires_in_cosmos_after_its_end()
     {
-        var cosmos = database.NewCosmos();
+        var cosmos = database.New();
         var store = new CosmosHouseholdStore(cosmos, Time);
         var household = NewId();
         var code = NewCode();
