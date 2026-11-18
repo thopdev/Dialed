@@ -20,18 +20,27 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15
   }
 }
 
-// Users, passkeys and lookup documents (ADR-0010). Partition key = id; documents expire through the `ttl` field (ceremony state).
-resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+// The containers the API's Cosmos stores use. With data-plane RBAC the app can't create them, so they all live here.
+// One entry per container, in alphabetical order by id, so PRs that each add a container touch different lines.
+// defaultTtl -1: TTL on, every document sets its own `ttl`. See docs/cosmos-stores.md.
+var containers = [
+  // Users, passkeys and lookup documents (ADR-0010). Partition key = id; ceremony state expires through `ttl`.
+  { id: 'identity', partitionKey: '/pk', defaultTtl: -1 }
+  // Email recovery codes, send cooldown and lockout per account (#197, CosmosEmailRecoveryStore).
+  { id: 'recovery', partitionKey: '/accountId', defaultTtl: -1 }
+]
+
+resource sqlContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = [for container in containers: {
   parent: database
-  name: 'identity'
+  name: container.id
   properties: {
     resource: {
-      id: 'identity'
-      partitionKey: { paths: ['/pk'], kind: 'Hash' }
-      defaultTtl: -1
+      id: container.id
+      partitionKey: { paths: [container.partitionKey], kind: 'Hash' }
+      defaultTtl: container.?defaultTtl
     }
   }
-}
+}]
 
 resource assignments 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-11-15' = [for principalId in principalIds: {
   parent: account
