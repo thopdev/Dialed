@@ -51,20 +51,27 @@ if (-not $servicePrincipalId) {
 }
 
 # 2. Federated credential: only workflow runs in the GitHub environment can sign in ----------------------
+# GitHub may send an ID-based subject (repo:owner@id/name@id:...) instead of repo:owner/name:...; ask it which prefix it uses.
+$subjectPrefix = "repo:${Repository}"
+$customization = Invoke-Native { gh api "repos/$Repository/actions/oidc/customization/sub" } | ConvertFrom-Json
+if ($customization.sub_claim_prefix) { $subjectPrefix = $customization.sub_claim_prefix }
+$subject = "${subjectPrefix}:environment:${Environment}"
 $credentialName = "github-$Environment"
-$existing = Invoke-Native { az ad app federated-credential list --id $clientId --query "[?name=='$credentialName'].name" --output tsv }
+$existing = Invoke-Native { az ad app federated-credential list --id $clientId --query "[?subject=='$subject'].name" --output tsv }
 if (-not $existing) {
+    $taken = Invoke-Native { az ad app federated-credential list --id $clientId --query "[?name=='$credentialName'].name" --output tsv }
+    if ($taken) { $credentialName = "$credentialName-ids" }
     $credential = @{
         name      = $credentialName
         issuer    = 'https://token.actions.githubusercontent.com'
-        subject   = "repo:${Repository}:environment:${Environment}"
+        subject   = $subject
         audiences = @('api://AzureADTokenExchange')
     } | ConvertTo-Json
     $file = New-TemporaryFile
     Set-Content -Path $file -Value $credential
     try { Invoke-Native { az ad app federated-credential create --id $clientId --parameters "@$file" --output none } }
     finally { Remove-Item $file }
-    Write-Host "Created federated credential for repo:${Repository}:environment:${Environment}"
+    Write-Host "Created federated credential for $subject"
 }
 
 # 3. Rights on the subscription: create resources, and the role assignments the Bicep makes ---------------
