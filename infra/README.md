@@ -25,6 +25,9 @@ azd deploy                 # builds and ships the API (Container Apps) and Funct
 | `functions` | `asp-dialed-func-{env}` (Flex Consumption), `func-dialed-{env}` (.NET 10 isolated) |
 | `email` | Communication Services Email with an Azure-managed domain, sender role for both identities |
 
+## Regions
+`AZURE_LOCATION` (default `westeurope`) sets the region for everything except the Static Web App. New subscriptions can be refused in busy regions (`RequestDisallowedByAzure`, "not accepting new customers"); pick another region with `azd env set AZURE_LOCATION <region>` locally, or the `AZURE_LOCATION` variable in GitHub. The Static Web App is only offered in `centralus`, `eastus2`, `westus2`, `westeurope` and `eastasia`; set `STATIC_WEB_APP_LOCATION` when `AZURE_LOCATION` is not one of them. Its region only decides where the resource's settings live: the site is served from the global edge.
+
 ## Rules
 - **No secrets in configuration.** App settings are endpoints and names. Cosmos has local (key) auth disabled, Storage has shared-key auth disabled, the container registry has no admin user. Services authenticate with their managed identity (`AZURE_CLIENT_ID` is set for `DefaultAzureCredential`).
 - **Passkeys (dev):** the API's allowed origin list contains the Static Web App's default hostname (`Passkeys__Origins__0`, `App__Origins__0`); the RP ID is derived from the calling origin (ADR-0010). Prod sets a fixed `Passkeys__RpId` to the custom domain.

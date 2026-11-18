@@ -4,6 +4,7 @@
   "parameters": {
     "environmentName": { "value": "${AZURE_ENV_NAME}" },
     "location": { "value": "${AZURE_LOCATION=westeurope}" },
+    "staticWebAppLocation": { "value": "${STATIC_WEB_APP_LOCATION=}" },
     "cosmosFreeTier": { "value": "${COSMOS_FREE_TIER=true}" },
     "cosmosAccountResourceGroup": { "value": "${COSMOS_ACCOUNT_RESOURCE_GROUP=}" },
     "apiImageName": { "value": "${SERVICE_API_IMAGE_NAME=}" }
