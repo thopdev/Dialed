@@ -26,6 +26,10 @@ param cosmosLocation string = ''
 @description('API image set by azd after the first deploy; empty means the bootstrap image is used.')
 param apiImageName string = ''
 
+@description('Whether the API container app already exists ("true"/"false"; azd sets SERVICE_API_RESOURCE_EXISTS).')
+@allowed(['true', 'false'])
+param apiExists string = 'false'
+
 var env = toLower(environmentName)
 var token = take(uniqueString(subscription().id, env), 5)
 var tags = {
@@ -167,6 +171,15 @@ var sharedSettings = {
   Email__SenderDomain: email.outputs.senderDomain
 }
 
+module apiImage 'modules/existing-image.bicep' = {
+  scope: rg
+  name: 'api-existing-image'
+  params: {
+    name: 'ca-dialed-api-${env}'
+    exists: apiExists == 'true'
+  }
+}
+
 module api 'modules/containerapp.bicep' = {
   scope: rg
   name: 'api'
@@ -181,6 +194,7 @@ module api 'modules/containerapp.bicep' = {
     identityClientId: apiIdentity.outputs.clientId
     registryLoginServer: registry.outputs.loginServer
     imageName: apiImageName
+    existingImage: apiImage.outputs.image
     appSettings: union(sharedSettings, {
       App__Origins__0: staticWebApp.outputs.origin
       App__Origins__1: staticWebApp.outputs.previewOriginPattern
