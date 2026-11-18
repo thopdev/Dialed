@@ -20,6 +20,32 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15
   }
 }
 
+// AI calls per user, operation and UTC day (#88). Each counter expires through its `ttl` field two days later.
+resource aiquota 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+  parent: database
+  name: 'aiquota'
+  properties: {
+    resource: {
+      id: 'aiquota'
+      partitionKey: { paths: ['/userId'], kind: 'Hash' }
+      defaultTtl: -1
+    }
+  }
+}
+
+// The shared bean and roaster catalog (#268): the latest build in parts and the owner's rules. No user data; documents have no `ttl`.
+resource catalog 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+  parent: database
+  name: 'catalog'
+  properties: {
+    resource: {
+      id: 'catalog'
+      partitionKey: { paths: ['/pk'], kind: 'Hash' }
+      defaultTtl: -1
+    }
+  }
+}
+
 // Users, passkeys and lookup documents (ADR-0010). Partition key = id; documents expire through the `ttl` field (ceremony state).
 resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
   parent: database
@@ -28,6 +54,19 @@ resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers
     resource: {
       id: 'identity'
       partitionKey: { paths: ['/pk'], kind: 'Hash' }
+      defaultTtl: -1
+    }
+  }
+}
+
+// Push devices, switches, stock alert memory and one-push-per-event markers (#260). The markers expire through their `ttl` field.
+resource push 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+  parent: database
+  name: 'push'
+  properties: {
+    resource: {
+      id: 'push'
+      partitionKey: { paths: ['/userId'], kind: 'Hash' }
       defaultTtl: -1
     }
   }

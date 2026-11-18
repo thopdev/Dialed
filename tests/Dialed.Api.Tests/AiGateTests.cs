@@ -13,6 +13,8 @@ namespace Dialed.Api.Tests;
 
 public sealed class AiGateTests
 {
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     private sealed class Clock(DateTimeOffset now) : TimeProvider
     {
         public DateTimeOffset Now { get; set; } = now;
@@ -33,63 +35,63 @@ public sealed class AiGateTests
     {
         var clock = new Clock(DateTimeOffset.Parse("2026-11-09T22:00:00Z", System.Globalization.CultureInfo.InvariantCulture));
         var monitor = new Monitor(limits ?? new AiLimits { LabelScansPerDay = 2 });
-        return (new AiGate(monitor, clock), clock, monitor);
+        return (new AiGate(monitor, new InMemoryAiQuotaStore(), clock), clock, monitor);
     }
 
     [Fact]
-    public void Calls_are_allowed_until_the_daily_limit_and_then_refused_with_the_time_until_tomorrow()
+    public async Task Calls_are_allowed_until_the_daily_limit_and_then_refused_with_the_time_until_tomorrow()
     {
         var (gate, _, _) = Make();
 
-        gate.TryEnter("u1", AiOperations.Label).Status.ShouldBe(AiGateStatus.Allowed);
-        gate.TryEnter("u1", AiOperations.Label).Status.ShouldBe(AiGateStatus.Allowed);
-        var refused = gate.TryEnter("u1", AiOperations.Label);
+        (await gate.TryEnterAsync("u1", AiOperations.Label, Ct)).Status.ShouldBe(AiGateStatus.Allowed);
+        (await gate.TryEnterAsync("u1", AiOperations.Label, Ct)).Status.ShouldBe(AiGateStatus.Allowed);
+        var refused = await gate.TryEnterAsync("u1", AiOperations.Label, Ct);
 
         refused.Status.ShouldBe(AiGateStatus.QuotaExceeded);
         refused.Limit.ShouldBe(2);
         refused.RetryAfter.ShouldBe(TimeSpan.FromHours(2));
-        gate.Used("u1", AiOperations.Label).ShouldBe(2);
+        (await gate.UsedAsync("u1", AiOperations.Label, Ct)).ShouldBe(2);
     }
 
     [Fact]
-    public void The_quota_is_per_user_and_per_day()
+    public async Task The_quota_is_per_user_and_per_day()
     {
         var (gate, clock, _) = Make();
-        gate.TryEnter("u1", AiOperations.Label);
-        gate.TryEnter("u1", AiOperations.Label);
+        await gate.TryEnterAsync("u1", AiOperations.Label, Ct);
+        await gate.TryEnterAsync("u1", AiOperations.Label, Ct);
 
-        gate.TryEnter("u2", AiOperations.Label).Status.ShouldBe(AiGateStatus.Allowed);
+        (await gate.TryEnterAsync("u2", AiOperations.Label, Ct)).Status.ShouldBe(AiGateStatus.Allowed);
         clock.Now = clock.Now.AddHours(3);
-        gate.TryEnter("u1", AiOperations.Label).Status.ShouldBe(AiGateStatus.Allowed);
+        (await gate.TryEnterAsync("u1", AiOperations.Label, Ct)).Status.ShouldBe(AiGateStatus.Allowed);
     }
 
     [Fact]
-    public void A_refund_gives_the_call_back()
+    public async Task A_refund_gives_the_call_back()
     {
         var (gate, _, _) = Make();
-        gate.TryEnter("u1", AiOperations.Label);
-        gate.TryEnter("u1", AiOperations.Label);
+        await gate.TryEnterAsync("u1", AiOperations.Label, Ct);
+        await gate.TryEnterAsync("u1", AiOperations.Label, Ct);
 
-        gate.Refund("u1", AiOperations.Label);
+        await gate.RefundAsync("u1", AiOperations.Label, Ct);
 
-        gate.TryEnter("u1", AiOperations.Label).Status.ShouldBe(AiGateStatus.Allowed);
+        (await gate.TryEnterAsync("u1", AiOperations.Label, Ct)).Status.ShouldBe(AiGateStatus.Allowed);
     }
 
     [Fact]
-    public void The_kill_switch_stops_everything_at_once_and_can_be_turned_back_on()
+    public async Task The_kill_switch_stops_everything_at_once_and_can_be_turned_back_on()
     {
         var (gate, _, monitor) = Make();
         monitor.CurrentValue = new AiLimits { Enabled = false };
 
-        gate.TryEnter("u1", AiOperations.Label).Status.ShouldBe(AiGateStatus.Disabled);
+        (await gate.TryEnterAsync("u1", AiOperations.Label, Ct)).Status.ShouldBe(AiGateStatus.Disabled);
 
         monitor.CurrentValue = new AiLimits();
-        gate.TryEnter("u1", AiOperations.Label).Status.ShouldBe(AiGateStatus.Allowed);
+        (await gate.TryEnterAsync("u1", AiOperations.Label, Ct)).Status.ShouldBe(AiGateStatus.Allowed);
     }
 
     [Fact]
-    public void Unknown_operations_have_no_quota() =>
-        Make().Gate.TryEnter("u1", "nonsense").Status.ShouldBe(AiGateStatus.QuotaExceeded);
+    public async Task Unknown_operations_have_no_quota() =>
+        (await Make().Gate.TryEnterAsync("u1", "nonsense", Ct)).Status.ShouldBe(AiGateStatus.QuotaExceeded);
 
     [Fact]
     public void Cost_is_estimated_from_the_configured_prices()

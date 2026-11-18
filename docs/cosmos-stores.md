@@ -21,6 +21,17 @@ How a store in `Dialed.Api` moves from memory to Cosmos DB (ADR-0003). The first
 5. Expiry: give documents that stop mattering a `ttl` in seconds (their window plus a margin). TTL runs on the server clock, so reads still compare against the injected `TimeProvider`.
 6. Tests: write one abstract contract class with both a `...InMemory...Tests` and a `...Cosmos...Tests` subclass. Add Cosmos-only tests for what memory can't show, such as a new instance seeing the state or two instances racing. Cosmos tests call `Assert.SkipWhen(string.IsNullOrEmpty(COSMOS_CONNECTION_STRING), ...)` and use their own database, deleted afterwards.
 
+## Stores on Cosmos DB
+
+| Store | Container | Partition key | TTL |
+| --- | --- | --- | --- |
+| `CosmosAiQuotaStore` (AI calls per user, operation and UTC day) | `aiquota` | `/userId` | each day's counter: 2 days |
+| `CosmosCatalogStore`, `CosmosCatalogRulesStore` (catalog build in parts, hide and merge rules) | `catalog` | `/pk` (`build`, `rules`) | none |
+| `CosmosEmailRecoveryStore` | `recovery` | `/accountId` | per document |
+| `CosmosPushStore` (devices, switches, stock alert memory, one-push-per-event markers) | `push` | `/userId` | event markers: 1 hour and a minute |
+
+Each container also has a block in `infra/modules/cosmos-database.bicep` (alphabetical). Cosmos test classes share `CosmosTestDatabase` (a throwaway database per test class instance).
+
 ## Running the Cosmos tests
 
 CI's `cosmos` job starts the vNext emulator and runs `--filter-class "*Cosmos*"` on `Dialed.Api.Tests`. Locally:

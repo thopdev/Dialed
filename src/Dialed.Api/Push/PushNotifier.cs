@@ -35,9 +35,9 @@ public sealed class NullNotifier : INotifier
 /// </summary>
 public sealed class PushNotifier(IUserDirectory users, IFriendStore friends, IPushStore store, IPushSender sender, TimeProvider time, ILogger<PushNotifier> log) : INotifier
 {
+    /// <summary>One push per event: the same actor, kind and person within the hour is the same event (kept in the store, so it holds across restarts and instances).</summary>
     private static readonly TimeSpan Remember = TimeSpan.FromHours(1);
 
-    private readonly ConcurrentDictionary<string, DateTimeOffset> recent = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<Task, byte> running = new();
 
     public void FollowRequested(string fromId, string toId) => Run(PushKind.FollowRequest, fromId, [toId]);
@@ -85,7 +85,7 @@ public sealed class PushNotifier(IUserDirectory users, IFriendStore friends, IPu
 
         var settings = await store.GetSettingsAsync(recipientId);
         var wanted = kind == PushKind.HouseholdJoined ? settings.Household : settings.Follows;
-        if (!wanted || !Claim(kind, actorId, recipientId))
+        if (!wanted || !await store.TryClaimAsync(recipientId, $"{kind}|{actorId}", time.GetUtcNow(), Remember))
         {
             Count(kind, "skipped");
             return;
@@ -101,18 +101,6 @@ public sealed class PushNotifier(IUserDirectory users, IFriendStore friends, IPu
 
             Count(kind, outcome.ToString().ToLowerInvariant());
         }
-    }
-
-    /// <summary>One push per event: the same actor, kind and person within the hour is the same event.</summary>
-    private bool Claim(PushKind kind, string actorId, string recipientId)
-    {
-        var now = time.GetUtcNow();
-        foreach (var old in recent.Where(r => now - r.Value > Remember).Select(r => r.Key).ToList())
-        {
-            recent.TryRemove(old, out _);
-        }
-
-        return recent.TryAdd($"{kind}|{actorId}|{recipientId}", now);
     }
 
     private static void Count(PushKind kind, string outcome) =>
