@@ -38,6 +38,7 @@ jobs:
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       STATIC_WEB_APP_LOCATION: ${{ vars.STATIC_WEB_APP_LOCATION }}
+      COSMOS_LOCATION: ${{ vars.COSMOS_LOCATION }}
     steps:
       - uses: actions/checkout@v7
         with:
