@@ -33,8 +33,14 @@ public sealed class JwtOptions
 
     public string Audience { get; set; } = "dialed-app";
 
-    /// <summary>At least 32 bytes. Production needs it configured (later from Key Vault); Development falls back to a fixed local key.</summary>
+    /// <summary>
+    /// Shared HMAC key, at least 32 bytes. Only used when <see cref="KeyVaultKeyName"/> is not set: Development falls back
+    /// to a fixed local key, other environments must sign with Key Vault or set this.
+    /// </summary>
     public string SigningKey { get; set; } = "";
+
+    /// <summary>Name of the RSA key in <c>KeyVault:Uri</c> that signs tokens (#30). Set by the Bicep in Azure.</summary>
+    public string KeyVaultKeyName { get; set; } = "";
 
     /// <summary>Id of the signing key, put in the token header so keys can be rotated.</summary>
     public string KeyId { get; set; } = "local-1";

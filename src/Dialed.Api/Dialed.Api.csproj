@@ -3,6 +3,8 @@
   <!-- ASP.NET Core API: Identity + passkeys, Datasync server, households, friends, AI, photos. -->
 
   <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Azure.Security.KeyVault.Keys" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.Azure.Cosmos" />
     <PackageReference Include="Newtonsoft.Json" />

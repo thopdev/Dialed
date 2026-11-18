@@ -42,5 +42,20 @@ resource cryptoUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for 
   }
 }]
 
+// RSA key that signs the API's access tokens (#30). It never leaves the vault: the API signs through Key Vault with
+// Key Vault Crypto User and validates with the public key. ARM only creates the first version; redeploying keeps it,
+// and a rotation (new version in the portal or CLI) is picked up by the API within an hour.
+resource jwtSigningKey 'Microsoft.KeyVault/vaults/keys@2023-07-01' = {
+  parent: vault
+  name: 'jwt-signing'
+  properties: {
+    kty: 'RSA'
+    keySize: 2048
+    keyOps: ['sign', 'verify']
+    attributes: { enabled: true }
+  }
+}
+
 output name string = vault.name
+output jwtSigningKeyName string = jwtSigningKey.name
 output uri string = vault.properties.vaultUri

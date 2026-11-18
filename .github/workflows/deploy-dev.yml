@@ -84,19 +84,21 @@ jobs:
         run: azd deploy --all --no-prompt
 
       - name: Smoke test
+        # The API must answer /health with "Healthy": the bootstrap image a new container app starts with also returns 200,
+        # so a status check alone passed while the real revision was crash-looping.
         run: |
-          api="$(azd env get-value API_URL)/health"
-          functions="$(azd env get-value FUNCTIONS_URL)/api/health"
-          for url in "$api" "$functions"; do
-            ok=false
-            for attempt in $(seq 1 12); do
-              status="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$url" || true)"
-              echo "$url -> $status (attempt $attempt)"
-              if [ "$status" = "200" ]; then ok=true; break; fi
+          check() {
+            url="$1"; expected="$2"
+            for attempt in $(seq 1 18); do
+              body="$(curl -s --max-time 20 -w '\n%{http_code}' "$url" || true)"
+              status="$(printf '%s' "$body" | tail -n1)"
+              content="$(printf '%s' "$body" | sed '$d')"
+              echo "$url -> $status '$content' (attempt $attempt)"
+              if [ "$status" = "200" ] && { [ -z "$expected" ] || [ "$content" = "$expected" ]; }; then return 0; fi
               sleep 10
             done
-            if [ "$ok" != "true" ]; then
-              echo "::error::Smoke test failed: $url is not healthy"
-              exit 1
-            fi
-          done
+            echo "::error::Smoke test failed: $url is not healthy"
+            return 1
+          }
+          check "$(azd env get-value API_URL)/health" "Healthy"
+          check "$(azd env get-value FUNCTIONS_URL)/api/health" ""

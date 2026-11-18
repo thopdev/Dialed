@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -11,19 +12,36 @@ public static class AuthExtensions
     public static IServiceCollection AddDialedAuth(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         var jwt = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
-        if (string.IsNullOrWhiteSpace(jwt.SigningKey))
+        var vaultUri = configuration["KeyVault:Uri"];
+        var useKeyVault = !string.IsNullOrWhiteSpace(jwt.KeyVaultKeyName);
+        if (useKeyVault)
         {
-            if (!environment.IsDevelopment())
+            if (string.IsNullOrWhiteSpace(vaultUri))
             {
-                throw new InvalidOperationException("Jwt:SigningKey is not set. Outside Development the signing key must be configured.");
+                throw new InvalidOperationException("Jwt:KeyVaultKeyName is set but KeyVault:Uri is not.");
             }
 
-            jwt.SigningKey = JwtOptions.DevelopmentSigningKey;
+            // Uses the managed identity in Azure (AZURE_CLIENT_ID), the developer's sign-in locally.
+            services.AddSingleton<IJwtKeySource>(_ =>
+                new AzureKeyVaultJwtKeySource(new Uri(vaultUri), jwt.KeyVaultKeyName, new DefaultAzureCredential()));
+            services.AddSingleton<KeyVaultJwtSigningKeys>();
+            services.AddSingleton<IJwtSigningKeys>(sp => sp.GetRequiredService<KeyVaultJwtSigningKeys>());
+            services.AddHostedService<KeyVaultJwtKeyLoader>();
         }
-
-        if (System.Text.Encoding.UTF8.GetByteCount(jwt.SigningKey) < 32)
+        else
         {
-            throw new InvalidOperationException("Jwt:SigningKey must be at least 32 bytes.");
+            if (string.IsNullOrWhiteSpace(jwt.SigningKey))
+            {
+                if (!environment.IsDevelopment())
+                {
+                    throw new InvalidOperationException(
+                        "No JWT signing key. Outside Development set Jwt:KeyVaultKeyName (with KeyVault:Uri) or Jwt:SigningKey.");
+                }
+
+                jwt.SigningKey = JwtOptions.DevelopmentSigningKey;
+            }
+
+            services.AddSingleton<IJwtSigningKeys>(new HmacJwtSigningKeys(jwt));
         }
 
         services.Configure<JwtOptions>(options =>
@@ -32,6 +50,7 @@ public static class AuthExtensions
             options.Audience = jwt.Audience;
             options.SigningKey = jwt.SigningKey;
             options.KeyId = jwt.KeyId;
+            options.KeyVaultKeyName = jwt.KeyVaultKeyName;
             options.AccessTokenLifetime = jwt.AccessTokenLifetime;
             options.RefreshTokenLifetime = jwt.RefreshTokenLifetime;
         });
@@ -52,11 +71,15 @@ public static class AuthExtensions
                 {
                     ValidIssuer = jwt.Issuer,
                     ValidAudience = jwt.Audience,
-                    IssuerSigningKey = TokenIssuer.SigningKey(jwt),
                     NameClaimType = JwtRegisteredClaimNames.Name,
                     ClockSkew = TimeSpan.FromSeconds(30),
                 };
             });
+        services
+            .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IJwtSigningKeys>((options, keys) =>
+                options.TokenValidationParameters.IssuerSigningKeyResolver = (_, _, keyId, _) => keys.ValidationKeys(keyId));
+
         services.AddAuthorization();
         return services;
     }
