@@ -7,6 +7,7 @@
     "staticWebAppLocation": { "value": "${STATIC_WEB_APP_LOCATION=}" },
     "cosmosFreeTier": { "value": "${COSMOS_FREE_TIER=true}" },
     "cosmosLocation": { "value": "${COSMOS_LOCATION=}" },
+    "apiLocation": { "value": "${API_LOCATION=}" },
     "cosmosAccountResourceGroup": { "value": "${COSMOS_ACCOUNT_RESOURCE_GROUP=}" },
     "customDomain": { "value": "${CUSTOM_DOMAIN=}" },
     "appHostname": { "value": "${APP_HOSTNAME=}" },

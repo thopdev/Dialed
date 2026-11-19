@@ -29,6 +29,9 @@ param(
     [string]$StaticWebAppLocation = 'eastus2',
     # Region of the shared Cosmos account when dev creates it; prod reuses dev's account (CosmosAccountResourceGroup).
     [string]$CosmosLocation = '',
+    # Region of the Container Apps environment and API. A new subscription allows one Container Apps environment per region,
+    # so prod defaults to swedencentral (dev uses Location).
+    [string]$ApiLocation = '',
     # Resource group of the shared free-tier Cosmos account. Defaults to rg-dialed-dev for every environment but dev.
     [string]$CosmosAccountResourceGroup = '',
     # Minimum API replicas. Defaults to 0 for dev (scale to zero) and 1 for other environments (no cold start).
@@ -111,6 +114,7 @@ if (@($environments) -notcontains $Environment) {
 }
 $isDev = $Environment -eq 'dev'
 if (-not $CosmosAccountResourceGroup -and -not $isDev) { $CosmosAccountResourceGroup = 'rg-dialed-dev' }
+if (-not $ApiLocation -and -not $isDev) { $ApiLocation = 'swedencentral' }
 if (-not $ApiMinReplicas) { $ApiMinReplicas = if ($isDev) { '0' } else { '1' } }
 
 $variables = [ordered]@{
@@ -121,6 +125,7 @@ $variables = [ordered]@{
     AZURE_LOCATION                = $Location
     STATIC_WEB_APP_LOCATION       = $StaticWebAppLocation
     COSMOS_LOCATION               = $CosmosLocation
+    API_LOCATION                  = $ApiLocation
     COSMOS_ACCOUNT_RESOURCE_GROUP = $CosmosAccountResourceGroup
     API_MIN_REPLICAS              = $ApiMinReplicas
     CUSTOM_DOMAIN                 = $CustomDomain
