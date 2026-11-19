@@ -149,7 +149,9 @@ module cosmosAccount 'modules/cosmos-account.bicep' = if (createCosmosAccount) {
 
 module cosmosDatabase 'modules/cosmos-database.bicep' = {
   scope: resourceGroup(cosmosResourceGroup)
-  name: 'cosmos-database'
+  // Per environment: dev and prod both deploy into the shared account's resource group, and two deployments with one
+  // name collide there (DeploymentActive) when a dev and a prod deploy run at the same time.
+  name: 'cosmos-database-${env}'
   dependsOn: [cosmosAccount]
   params: {
     name: cosmosAccountName
