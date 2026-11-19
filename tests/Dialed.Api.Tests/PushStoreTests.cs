@@ -233,4 +233,11 @@ public sealed class PushStoreRegistrationTests
         using var provider = Build(new() { ["Push:StorePath"] = TempFile(), ["ConnectionStrings:cosmos"] = CosmosTestConnection.Emulator });
         provider.GetRequiredService<IPushStore>().ShouldBeOfType<CosmosPushStore>();
     }
+
+    [Fact]
+    public void With_cosmos_through_managed_identity_the_file_is_never_used()
+    {
+        using var provider = Build(new() { ["Push:StorePath"] = TempFile(), ["Cosmos:Endpoint"] = "https://dialed.documents.azure.com:443/" });
+        provider.GetRequiredService<IPushStore>().ShouldBeOfType<CosmosPushStore>();
+    }
 }

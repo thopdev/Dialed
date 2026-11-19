@@ -39,7 +39,7 @@ public static class PushEndpoints
         // Cosmos DB when it is configured (Azure, the AppHost). Without it, Push:StorePath keeps the state in a local file (development and one
         // instance; never used when Cosmos DB is there), and otherwise it is in memory.
         services.AddCosmosOrInMemory<IPushStore, CosmosPushStore, InMemoryPushStore>(configuration);
-        if (CosmosConnection.From(configuration) is null && configuration["Push:StorePath"] is { Length: > 0 } path)
+        if (CosmosConnection.Resolve(configuration) is null && configuration["Push:StorePath"] is { Length: > 0 } path)
         {
             services.Replace(ServiceDescriptor.Singleton<IPushStore>(sp => new FilePushStore(path, sp.GetRequiredService<ILogger<FilePushStore>>())));
         }

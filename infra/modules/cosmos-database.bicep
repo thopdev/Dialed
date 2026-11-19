@@ -20,58 +20,34 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15
   }
 }
 
-// AI calls per user, operation and UTC day (#88). Each counter expires through its `ttl` field two days later.
-resource aiquota 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
-  parent: database
-  name: 'aiquota'
-  properties: {
-    resource: {
-      id: 'aiquota'
-      partitionKey: { paths: ['/userId'], kind: 'Hash' }
-      defaultTtl: -1
-    }
-  }
-}
+// The containers the API's Cosmos stores use. With data-plane RBAC the app can't create them, so they all live here.
+// One entry per container, in alphabetical order by id, so PRs that each add a container touch different lines.
+// defaultTtl -1: TTL on, every document sets its own `ttl`. See docs/cosmos-stores.md.
+var containers = [
+  // AI calls per user, operation and UTC day (#88). Each counter expires through its `ttl` field two days later.
+  { id: 'aiquota', partitionKey: '/userId', defaultTtl: -1 }
+  // The shared bean and roaster catalog (#268): the latest build in parts and the owner's rules. No user data; no `ttl`.
+  { id: 'catalog', partitionKey: '/pk', defaultTtl: -1 }
+  // Identity (ADR-0010): users with passkeys, email and passkey lookups, profiles, refresh tokens, ceremony nonces and beta invites.
+  // Partition key = id (`pk`); refresh tokens, nonces and invites expire through their `ttl` field.
+  { id: 'identity', partitionKey: '/pk', defaultTtl: -1 }
+  // Push devices, switches, stock alert memory and one-push-per-event markers (#260). The markers expire through their `ttl` field.
+  { id: 'push', partitionKey: '/userId', defaultTtl: -1 }
+  // Email recovery codes, send cooldown and lockout per account (#197, CosmosEmailRecoveryStore).
+  { id: 'recovery', partitionKey: '/accountId', defaultTtl: -1 }
+]
 
-// The shared bean and roaster catalog (#268): the latest build in parts and the owner's rules. No user data; documents have no `ttl`.
-resource catalog 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+resource sqlContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = [for container in containers: {
   parent: database
-  name: 'catalog'
+  name: container.id
   properties: {
     resource: {
-      id: 'catalog'
-      partitionKey: { paths: ['/pk'], kind: 'Hash' }
-      defaultTtl: -1
+      id: container.id
+      partitionKey: { paths: [container.partitionKey], kind: 'Hash' }
+      defaultTtl: container.?defaultTtl
     }
   }
-}
-
-// Identity (ADR-0010, docs/cosmos-stores.md): users with passkeys, email and passkey lookups, profiles, refresh tokens, ceremony
-// nonces and beta invites. Partition key = id (`pk`); refresh tokens, nonces and invites expire through their `ttl` field.
-resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
-  parent: database
-  name: 'identity'
-  properties: {
-    resource: {
-      id: 'identity'
-      partitionKey: { paths: ['/pk'], kind: 'Hash' }
-      defaultTtl: -1
-    }
-  }
-}
-
-// Push devices, switches, stock alert memory and one-push-per-event markers (#260). The markers expire through their `ttl` field.
-resource push 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
-  parent: database
-  name: 'push'
-  properties: {
-    resource: {
-      id: 'push'
-      partitionKey: { paths: ['/userId'], kind: 'Hash' }
-      defaultTtl: -1
-    }
-  }
-}
+}]
 
 resource assignments 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-11-15' = [for principalId in principalIds: {
   parent: account
