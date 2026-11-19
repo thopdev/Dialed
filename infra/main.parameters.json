@@ -15,6 +15,7 @@
     "aiOrganizationName": { "value": "${AI_ORGANIZATION_NAME=}" },
     "aiCountryCode": { "value": "${AI_COUNTRY_CODE=NL}" },
     "aiModel": { "value": "${AI_MODEL=claude-opus-5-5}" },
+    "apiCertificateId": { "value": "${API_CERTIFICATE_ID=}" },
     "apiMinReplicas": { "value": "${API_MIN_REPLICAS=0}" },
     "apiImageName": { "value": "${SERVICE_API_IMAGE_NAME=}" },
     "apiExists": { "value": "${SERVICE_API_RESOURCE_EXISTS=false}" }

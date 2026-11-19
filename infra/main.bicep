@@ -35,6 +35,9 @@ param customDomain string = ''
 @description('Hostname the PWA is served from when customDomain is set, for example dialed.example.com. Empty means app.{customDomain}. Must be the domain itself or a subdomain of it, because the passkey RP ID is the domain.')
 param appHostname string = ''
 
+@description('Resource id of the managed certificate for api.{customDomain}, made by the first manual hostname bind (infra/README.md). Empty leaves the API without its custom hostname.')
+param apiCertificateId string = ''
+
 @description('Minimum replicas of the API container app ("0" scales to zero; a string because azd fills it from the environment). Dev 0, prod 1 to avoid cold starts.')
 param apiMinReplicas string = '0'
 
@@ -283,6 +286,8 @@ module api 'modules/containerapp.bicep' = {
     existingImage: apiImage.outputs.image
     minReplicas: int(empty(apiMinReplicas) ? '0' : apiMinReplicas)
     existingEnvironmentId: containerAppsEnvironmentId
+    customDomainName: hasCustomDomain ? 'api.${domain}' : ''
+    customDomainCertificateId: hasCustomDomain ? apiCertificateId : ''
     appSettings: union(sharedSettings, originSettings, aiSettings, {
       Jwt__KeyVaultKeyName: keyVault.outputs.jwtSigningKeyName
     })

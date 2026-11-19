@@ -91,10 +91,11 @@ The workflow stops at its first step when `CUSTOM_DOMAIN` is empty, or when `AZU
    | `CUSTOM_DOMAIN` | `<domain>`, only when `-CustomDomain` is given; without it the deploy refuses to run |
    | `APP_HOSTNAME` | only with `-AppHostname`: the PWA's hostname when it is not `app.<domain>`, for example the domain itself |
    | `API_PUBLIC_URL` | not set by the script: set it to `https://api.<domain>` once that hostname is bound; until then the PWA calls the Container App's own address |
+   | `API_CERTIFICATE_ID` | not set by the script: after the first `az containerapp hostname bind`, the id of its managed certificate (`az containerapp hostname list -n ca-dialed-api-prod -g rg-dialed-prod --query [0].certificateId -o tsv`). Every provision rewrites the API's ingress, so without it the next deploy removes `api.<domain>` again |
 
    Without `-CustomDomain` the environment is prepared but cannot deploy; add the domain later with `gh variable set CUSTOM_DOMAIN --env prod --body <domain>`.
 3. **Required reviewers** (owner setting, not scripted): GitHub → repository **Settings** → **Environments** → **prod** → tick **Required reviewers**, add yourself, untick **Allow administrators to bypass configured protection rules** if the approval should apply to you too, and click **Save protection rules**. Under **Deployment branches and tags** choose **Selected branches and tags** and add a tag rule `v*` (and the branch `main` if manual runs from `main` should be allowed), so only releases can deploy.
-4. Run *Deploy prod* once (tag or manual run), add the DNS records below, bind the hostnames, set `API_PUBLIC_URL` and run it again.
+4. Run *Deploy prod* once (tag or manual run), add the DNS records below, bind the hostnames, set `API_PUBLIC_URL` and `API_CERTIFICATE_ID` and run it again.
 
 ### API minimum replicas
 `API_MIN_REPLICAS` sets the Container App's minimum replicas (the maximum stays 2). Dev uses `0`: it scales to zero, and the first request after a quiet period waits for a cold start (several seconds for the .NET API). The proposed prod default is `1`, so a beta tester never waits for that.
@@ -125,7 +126,7 @@ Values in angle brackets come from the first prod provision (`azd env get-values
 |---|---|---|---|
 | `app` (or the `APP_HOSTNAME` name) | CNAME | default hostname of `swa-dialed-prod` (`<name>.azurestaticapps.net`) | The PWA. Then `az staticwebapp hostname set --name swa-dialed-prod --resource-group rg-dialed-prod --hostname <app host>` validates through the CNAME and issues the certificate. On Cloudflare set the record to **DNS only** (grey cloud), or validation and the certificate fail. |
 | `api` | CNAME | FQDN of `ca-dialed-api-prod` (`<name>.northeurope.azurecontainerapps.io`) | The API. |
-| `asuid.api` | TXT | `customDomainVerificationId` from `az containerapp show -n ca-dialed-api-prod -g rg-dialed-prod --query properties.customDomainVerificationId -o tsv` | Proves the domain to Container Apps. Then `az containerapp hostname add` and `az containerapp hostname bind --hostname api.<domain> --environment cae-dialed-prod --validation-method CNAME` (managed certificate). |
+| `asuid.api` | TXT | `customDomainVerificationId` from `az containerapp show -n ca-dialed-api-prod -g rg-dialed-prod --query properties.customDomainVerificationId -o tsv` | Proves the domain to Container Apps. Then `az containerapp hostname add` and `az containerapp hostname bind --hostname api.<domain> --environment <id of the Container Apps environment> --validation-method CNAME` (managed certificate; pass the full resource id, since the environment is `cae-dialed-dev` in `rg-dialed-dev` while it is shared). Then set `API_CERTIFICATE_ID`. |
 | `@` | TXT | `ms-domain-verification=<value>` | Verifies the email domain for Azure Communication Services (shown when the custom email domain is added). |
 | `@` | TXT | `v=spf1 include:spf.protection.outlook.com -all` | SPF for ACS email; merge it with an existing SPF record, a domain can have only one. |
 | `selector1-azurecomm-prod-net._domainkey` | CNAME | `selector1-azurecomm-prod-net._domainkey.azurecomm.net` | DKIM key 1 (ACS shows the exact values). |

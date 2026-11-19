@@ -47,6 +47,7 @@ jobs:
       AI_ORGANIZATION_NAME: ${{ vars.AI_ORGANIZATION_NAME }}
       AI_COUNTRY_CODE: ${{ vars.AI_COUNTRY_CODE }}
       AI_MODEL: ${{ vars.AI_MODEL }}
+      API_CERTIFICATE_ID: ${{ vars.API_CERTIFICATE_ID }}
     steps:
       - name: Check configuration
         run: |
