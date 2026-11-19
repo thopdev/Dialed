@@ -1,5 +1,7 @@
 using System.Security.Claims;
+using Dialed.Api.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -34,10 +36,14 @@ public static class PushEndpoints
                 options.PrivateKey = keys.PrivateKey;
             }
         });
-        // With Push:StorePath the devices, switches and stock alert memory survive a restart (development and one instance); without it they are in memory.
-        services.AddSingleton<IPushStore>(sp => configuration["Push:StorePath"] is { Length: > 0 } path
-            ? new FilePushStore(path, sp.GetRequiredService<ILogger<FilePushStore>>())
-            : new InMemoryPushStore());
+        // Cosmos DB when it is configured (Azure, the AppHost). Without it, Push:StorePath keeps the state in a local file (development and one
+        // instance; never used when Cosmos DB is there), and otherwise it is in memory.
+        services.AddCosmosOrInMemory<IPushStore, CosmosPushStore, InMemoryPushStore>(configuration);
+        if (CosmosConnection.Resolve(configuration) is null && configuration["Push:StorePath"] is { Length: > 0 } path)
+        {
+            services.Replace(ServiceDescriptor.Singleton<IPushStore>(sp => new FilePushStore(path, sp.GetRequiredService<ILogger<FilePushStore>>())));
+        }
+
         services.AddSingleton<IPushSender>(sp => sp.GetRequiredService<IOptions<PushOptions>>().Value.IsConfigured
             ? ActivatorUtilities.CreateInstance<WebPushSender>(sp)
             : new NoPushSender());

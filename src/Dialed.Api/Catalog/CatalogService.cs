@@ -50,82 +50,48 @@ public sealed record CatalogUnmergeRequest(string KeyA, string KeyB);
 /// <summary>The owner's rules as they stand, for the moderation tools.</summary>
 public sealed record CatalogRulesDto(IReadOnlyList<string> HiddenKeys, IReadOnlyList<CatalogUnmergeRequest> Merges);
 
+/// <summary>The newest build with when it was made and what the owner hid from it.</summary>
+public sealed record CatalogBuild(BeanCatalog Catalog, DateTimeOffset? BuiltAt, IReadOnlyList<CatalogEntryAdminDto> Hidden)
+{
+    public static CatalogBuild Empty { get; } = new(BeanCatalog.Empty, null, []);
+}
+
 /// <summary>The newest build, kept apart from user data: no user ids, household ids or links back to contributors.</summary>
 public interface ICatalogStore
 {
-    BeanCatalog Current { get; }
+    /// <summary>The newest build (<see cref="CatalogBuild.Empty"/> before the first). Cheap enough to call on every search.</summary>
+    Task<CatalogBuild> GetAsync(CancellationToken cancellationToken = default);
 
-    DateTimeOffset? BuiltAt { get; }
-
-    /// <summary>Entries the owner hid, as the last build found them, so they can be looked at and brought back.</summary>
-    IReadOnlyList<CatalogEntryAdminDto> Hidden { get; }
-
-    void Save(BeanCatalog catalog, DateTimeOffset builtAt, IReadOnlyList<CatalogEntryAdminDto> hidden);
+    Task SaveAsync(CatalogBuild build, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryCatalogStore : ICatalogStore
 {
-    private readonly Lock gate = new();
-    private BeanCatalog current = BeanCatalog.Empty;
-    private DateTimeOffset? builtAt;
-    private IReadOnlyList<CatalogEntryAdminDto> hidden = [];
+    private CatalogBuild current = CatalogBuild.Empty;
 
-    public IReadOnlyList<CatalogEntryAdminDto> Hidden
-    {
-        get
-        {
-            lock (gate)
-            {
-                return hidden;
-            }
-        }
-    }
+    public Task<CatalogBuild> GetAsync(CancellationToken cancellationToken = default) => Task.FromResult(Volatile.Read(ref current));
 
-    public BeanCatalog Current
+    public Task SaveAsync(CatalogBuild build, CancellationToken cancellationToken = default)
     {
-        get
-        {
-            lock (gate)
-            {
-                return current;
-            }
-        }
-    }
-
-    public DateTimeOffset? BuiltAt
-    {
-        get
-        {
-            lock (gate)
-            {
-                return builtAt;
-            }
-        }
-    }
-
-    public void Save(BeanCatalog catalog, DateTimeOffset at, IReadOnlyList<CatalogEntryAdminDto> hiddenEntries)
-    {
-        lock (gate)
-        {
-            (current, builtAt, hidden) = (catalog, at, hiddenEntries);
-        }
+        Volatile.Write(ref current, build);
+        return Task.CompletedTask;
     }
 }
 
-/// <summary>The owner's hand-made rules (hide, merge), kept as keys so they survive rebuilds. In memory now; Cosmos DB with the other stores.</summary>
+/// <summary>The owner's hand-made rules (hide, merge), kept as keys so they survive rebuilds.</summary>
 public interface ICatalogRulesStore
 {
-    CatalogRules Get();
+    Task<CatalogRules> GetAsync(CancellationToken cancellationToken = default);
 
-    void Hide(IEnumerable<string> keys);
+    Task HideAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default);
 
-    void Merge(string keyA, string keyB);
+    Task MergeAsync(string keyA, string keyB, CancellationToken cancellationToken = default);
 
     /// <summary>Takes the keys off the hidden list. <c>false</c> when none of them was hidden.</summary>
-    bool Unhide(IEnumerable<string> keys);
+    Task<bool> UnhideAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default);
 
     /// <summary>Removes one merge rule. <c>false</c> when there was none.</summary>
-    bool Unmerge(string keyA, string keyB);
+    Task<bool> UnmergeAsync(string keyA, string keyB, CancellationToken cancellationToken = default);
 }
 
 public sealed class InMemoryCatalogRulesStore : ICatalogRulesStore
@@ -134,39 +100,41 @@ public sealed class InMemoryCatalogRulesStore : ICatalogRulesStore
     private readonly HashSet<string> hidden = new(StringComparer.Ordinal);
     private readonly List<(string A, string B)> merges = [];
 
-    public CatalogRules Get()
+    public Task<CatalogRules> GetAsync(CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
-            return new CatalogRules(new HashSet<string>(hidden, StringComparer.Ordinal), [.. merges]);
+            return Task.FromResult(new CatalogRules(new HashSet<string>(hidden, StringComparer.Ordinal), [.. merges]));
         }
     }
 
-    public void Hide(IEnumerable<string> keys)
+    public Task HideAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
             hidden.UnionWith(keys);
         }
+
+        return Task.CompletedTask;
     }
 
-    public bool Unhide(IEnumerable<string> keys)
+    public Task<bool> UnhideAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
-            return keys.Aggregate(false, (any, key) => hidden.Remove(key) || any);
+            return Task.FromResult(keys.Aggregate(false, (any, key) => hidden.Remove(key) || any));
         }
     }
 
-    public bool Unmerge(string keyA, string keyB)
+    public Task<bool> UnmergeAsync(string keyA, string keyB, CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
-            return merges.Remove((keyA, keyB));
+            return Task.FromResult(merges.Remove((keyA, keyB)));
         }
     }
 
-    public void Merge(string keyA, string keyB)
+    public Task MergeAsync(string keyA, string keyB, CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
@@ -175,6 +143,8 @@ public sealed class InMemoryCatalogRulesStore : ICatalogRulesStore
                 merges.Add((keyA, keyB));
             }
         }
+
+        return Task.CompletedTask;
     }
 }
 
@@ -274,7 +244,7 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
     public async Task RebuildAsync(CancellationToken ct = default)
     {
         var (beans, roasters) = await source.ReadAsync(ct);
-        var current = rules.Get();
+        var current = await rules.GetAsync(ct);
         var visible = CatalogBuilder.Build(beans, roasters, options.Value.MinContributors, current);
 
         // The same build without the hide rules shows what was hidden, so it can be looked at and brought back (merges still apply).
@@ -290,24 +260,24 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
             ];
         }
 
-        store.Save(visible, time.GetUtcNow(), hidden);
+        await store.SaveAsync(new CatalogBuild(visible, time.GetUtcNow(), hidden), ct);
     }
 
-    public IReadOnlyList<CatalogRoasterDto> SearchRoasters(string? query)
+    public async Task<IReadOnlyList<CatalogRoasterDto>> SearchRoastersAsync(string? query, CancellationToken ct = default)
     {
         if (query is null || query.Trim().Length < MinQueryLength)
         {
             return [];
         }
 
-        var found = FuzzyMatch.Rank(store.Current.Roasters, query.Trim(), r => r.Name)
+        var found = FuzzyMatch.Rank((await store.GetAsync(ct)).Catalog.Roasters, query.Trim(), r => r.Name)
             .Select(r => (Entry: r, Score: FuzzyMatch.Score(query, r.Name)));
         return [.. found.OrderByDescending(x => x.Score).ThenByDescending(x => x.Entry.People).ThenBy(x => x.Entry.Name, StringComparer.CurrentCultureIgnoreCase)
             .Take(MaxResults).Select(x => new CatalogRoasterDto(x.Entry.Id, x.Entry.Name, x.Entry.Country, x.Entry.City, x.Entry.Website, x.Entry.People))];
     }
 
     /// <summary>Beans by name, optionally narrowed to a roaster. A roaster alone lists its beans, most popular first.</summary>
-    public IReadOnlyList<CatalogBeanDto> SearchBeans(string? query, string? roaster)
+    public async Task<IReadOnlyList<CatalogBeanDto>> SearchBeansAsync(string? query, string? roaster, CancellationToken ct = default)
     {
         var hasQuery = query is not null && query.Trim().Length >= MinQueryLength;
         var hasRoaster = !string.IsNullOrWhiteSpace(LabelMatcher.RoasterKey(roaster));
@@ -316,7 +286,7 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
             return [];
         }
 
-        var beans = store.Current.Beans.AsEnumerable();
+        var beans = (await store.GetAsync(ct)).Catalog.Beans.AsEnumerable();
         if (hasRoaster)
         {
             beans = beans.Where(b => LabelMatcher.RoasterScore(roaster, b.RoasterName) >= LabelMatcher.MinCandidate);
@@ -330,14 +300,14 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
     }
 
     /// <summary>Beans that carry this barcode (any spelling of it: UPC-A or EAN-13), most popular first.</summary>
-    public IReadOnlyList<CatalogBeanDto> FindByBarcode(string? code)
+    public async Task<IReadOnlyList<CatalogBeanDto>> FindByBarcodeAsync(string? code, CancellationToken ct = default)
     {
         if (Dialed.Domain.Barcodes.BarcodeMatcher.Normalize(code) is not { } normalized)
         {
             return [];
         }
 
-        return [.. store.Current.Beans
+        return [.. (await store.GetAsync(ct)).Catalog.Beans
             .Where(b => (b.Barcodes ?? []).Any(c => Dialed.Domain.Barcodes.BarcodeMatcher.Normalize(c) == normalized))
             .OrderByDescending(b => b.People).ThenBy(b => b.Name, StringComparer.CurrentCultureIgnoreCase)
             .Take(MaxResults).Select(ToDto)];
@@ -349,36 +319,40 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
     // ---- Moderation (the owner of the service, with the admin key) ----------------------------
 
     /// <summary>Every entry, fewest contributors first (the ones most worth a look).</summary>
-    public IReadOnlyList<CatalogEntryAdminDto> Entries(int take = 100) =>
-    [
-        .. store.Current.Roasters.Select(r => new CatalogEntryAdminDto("roaster", r.Id, r.Name, r.People, r.Keys))
-            .Concat(store.Current.Beans.Select(b => new CatalogEntryAdminDto("bean", b.Id, b.Name, b.People, b.Keys)))
+    public async Task<IReadOnlyList<CatalogEntryAdminDto>> EntriesAsync(int take = 100, CancellationToken ct = default)
+    {
+        var catalog = (await store.GetAsync(ct)).Catalog;
+        return
+        [
+            .. catalog.Roasters.Select(r => new CatalogEntryAdminDto("roaster", r.Id, r.Name, r.People, r.Keys))
+            .Concat(catalog.Beans.Select(b => new CatalogEntryAdminDto("bean", b.Id, b.Name, b.People, b.Keys)))
             .OrderBy(e => e.People).ThenBy(e => e.Kind, StringComparer.Ordinal).ThenBy(e => e.Name, StringComparer.CurrentCultureIgnoreCase)
             .Take(Math.Clamp(take, 1, 1000)),
-    ];
+        ];
+    }
 
-    private CatalogEntryAdminDto? Find(string id) => Entries(1000).FirstOrDefault(e => e.Id == id);
+    private async Task<CatalogEntryAdminDto?> FindAsync(string id, CancellationToken ct) => (await EntriesAsync(1000, ct)).FirstOrDefault(e => e.Id == id);
 
     /// <summary>Hides an entry. The rule is kept as the entry's keys, so it holds after a rebuild; the current catalog is rebuilt at once.</summary>
     public async Task<bool> HideAsync(string id, CancellationToken ct = default)
     {
-        if (Find(id) is not { } entry)
+        if (await FindAsync(id, ct) is not { } entry)
         {
             return false;
         }
 
-        rules.Hide(entry.Keys);
+        await rules.HideAsync(entry.Keys, ct);
         await RebuildAsync(ct);
         return true;
     }
 
     /// <summary>The entries that are hidden now (with their keys), most recently built state.</summary>
-    public IReadOnlyList<CatalogEntryAdminDto> HiddenEntries() => store.Hidden;
+    public async Task<IReadOnlyList<CatalogEntryAdminDto>> HiddenEntriesAsync(CancellationToken ct = default) => (await store.GetAsync(ct)).Hidden;
 
     /// <summary>Brings a hidden entry back (it shows again after the rebuild this triggers, if it still has enough people).</summary>
     public async Task<bool> UnhideAsync(string id, CancellationToken ct = default)
     {
-        if (store.Hidden.FirstOrDefault(e => e.Id == id) is not { } entry || !rules.Unhide(entry.Keys))
+        if ((await store.GetAsync(ct)).Hidden.FirstOrDefault(e => e.Id == id) is not { } entry || !await rules.UnhideAsync(entry.Keys, ct))
         {
             return false;
         }
@@ -387,16 +361,16 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
         return true;
     }
 
-    public CatalogRulesDto Rules()
+    public async Task<CatalogRulesDto> RulesAsync(CancellationToken ct = default)
     {
-        var current = rules.Get();
+        var current = await rules.GetAsync(ct);
         return new CatalogRulesDto([.. current.HiddenKeys.Order(StringComparer.Ordinal)], [.. current.Merges.Select(m => new CatalogUnmergeRequest(m.A, m.B))]);
     }
 
     /// <summary>Takes a merge back; the two entries separate again at the rebuild this triggers.</summary>
     public async Task<bool> UnmergeAsync(string keyA, string keyB, CancellationToken ct = default)
     {
-        if (!rules.Unmerge(keyA, keyB))
+        if (!await rules.UnmergeAsync(keyA, keyB, ct))
         {
             return false;
         }
@@ -408,12 +382,12 @@ public sealed class CatalogService(CatalogSource source, ICatalogStore store, IC
     /// <summary>Merges two entries of the same kind into one.</summary>
     public async Task<bool> MergeAsync(string fromId, string intoId, CancellationToken ct = default)
     {
-        if (Find(fromId) is not { } from || Find(intoId) is not { } into || from.Kind != into.Kind || from.Id == into.Id)
+        if (await FindAsync(fromId, ct) is not { } from || await FindAsync(intoId, ct) is not { } into || from.Kind != into.Kind || from.Id == into.Id)
         {
             return false;
         }
 
-        rules.Merge(from.Keys[0], into.Keys[0]);
+        await rules.MergeAsync(from.Keys[0], into.Keys[0], ct);
         await RebuildAsync(ct);
         return true;
     }
