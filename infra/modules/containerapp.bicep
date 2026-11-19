@@ -12,9 +12,6 @@ param registryLoginServer string
 param imageName string
 param appSettings object
 
-@description('Settings read from Key Vault through the app identity: environment variable name to secret URL (https://<vault>/secrets/<name>). The secret must exist, or the revision fails to start.')
-param secretSettings object = {}
-
 @description('Image the app runs now (empty when it does not exist yet); used when imageName is empty so a provision keeps it.')
 param existingImage string = ''
 
@@ -55,17 +52,6 @@ var settings = union({
   AZURE_CLIENT_ID: identityClientId
   ASPNETCORE_FORWARDEDHEADERS_ENABLED: 'true'
 }, appSettings)
-// Container Apps secret names allow lowercase letters, digits and dashes: Ai__ApiKey becomes ai-apikey.
-var secrets = [for item in items(secretSettings): {
-  name: toLower(replace(item.key, '__', '-'))
-  keyVaultUrl: item.value
-  identity: identityId
-}]
-var plainEnv = [for item in items(settings): { name: item.key, value: item.value }]
-var secretEnv = [for item in items(secretSettings): {
-  name: item.key
-  secretRef: toLower(replace(item.key, '__', '-'))
-}]
 
 resource app 'Microsoft.App/containerApps@2024-03-01' = {
   name: appName
@@ -91,7 +77,6 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
           identity: identityId
         }
       ]
-      secrets: secrets
     }
     template: {
       containers: [
@@ -99,7 +84,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'api'
           image: image
           resources: { cpu: json('0.5'), memory: '1Gi' }
-          env: concat(plainEnv, secretEnv)
+          env: [for item in items(settings): { name: item.key, value: item.value }]
         }
       ]
       scale: {

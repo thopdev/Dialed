@@ -38,11 +38,17 @@ param appHostname string = ''
 @description('Minimum replicas of the API container app ("0" scales to zero; a string because azd fills it from the environment). Dev 0, prod 1 to avoid cold starts.')
 param apiMinReplicas string = '0'
 
-@description('Claude model that reads bag labels, for example claude-haiku-5-5. Empty keeps the fake reader. Set it only after the key is in the Key Vault of this environment as secret ai-api-key (docs/ai-label-scan.md), or the API revision fails to start.')
-param aiExtractionModel string = ''
+@description('Organization name for the Anthropic offer in Azure Marketplace. Setting it creates Claude in Microsoft Foundry for the label reader and accepts that offer (billed per token); empty keeps the fake reader (docs/ai-label-scan.md).')
+param aiOrganizationName string = ''
 
-@description('Base address of the Claude Messages API: Anthropic by default, or a Foundry resource endpoint.')
-param aiEndpoint string = 'https://api.anthropic.com'
+@description('Two-letter country code for the Anthropic Marketplace offer.')
+param aiCountryCode string = 'NL'
+
+@description('Claude model deployed in Foundry for label reading.')
+param aiModel string = 'claude-opus-5-5'
+
+@description('Region of the Foundry account. Claude Hosted on Azure (Global Standard) is offered in Europe only in swedencentral.')
+param aiLocation string = 'swedencentral'
 
 @description('API image set by azd after the first deploy; empty means the bootstrap image is used.')
 param apiImageName string = ''
@@ -222,15 +228,34 @@ var sharedSettings = {
   Email__SenderDomain: email.outputs.senderDomain
 }
 
-// The real label reader (#81): on only when a model is set; the key never leaves Key Vault (read with the API identity).
-var hasAi = !empty(aiExtractionModel)
+// The real label reader (#79, #81): Claude in Microsoft Foundry, only when the Marketplace details are set.
+// The API signs in with its managed identity; there is no key.
+var hasAi = !empty(aiOrganizationName)
+
+module foundry 'modules/foundry.bicep' = if (hasAi) {
+  scope: rg
+  name: 'foundry'
+  params: {
+    location: aiLocation
+    tags: tags
+    name: 'ai-dialed-${env}-${token}'
+    model: empty(aiModel) ? 'claude-opus-5-5' : aiModel
+    modelVersion: '2'
+    capacity: 25
+    organizationName: aiOrganizationName
+    countryCode: empty(aiCountryCode) ? 'NL' : toUpper(aiCountryCode)
+    industry: 'technology'
+    userPrincipalIds: [apiIdentity.outputs.principalId]
+  }
+}
+
 var aiSettings = hasAi
   ? {
-      Ai__Endpoint: empty(aiEndpoint) ? 'https://api.anthropic.com' : aiEndpoint
-      Ai__ExtractionModel: aiExtractionModel
+      Ai__Endpoint: foundry!.outputs.endpoint
+      Ai__ExtractionModel: foundry!.outputs.deploymentName
+      Ai__UseManagedIdentity: 'true'
     }
   : {}
-var aiSecretSettings = hasAi ? { Ai__ApiKey: '${keyVault.outputs.uri}secrets/ai-api-key' } : {}
 
 module apiImage 'modules/existing-image.bicep' = {
   scope: rg
@@ -261,7 +286,6 @@ module api 'modules/containerapp.bicep' = {
     appSettings: union(sharedSettings, originSettings, aiSettings, {
       Jwt__KeyVaultKeyName: keyVault.outputs.jwtSigningKeyName
     })
-    secretSettings: aiSecretSettings
   }
 }
 

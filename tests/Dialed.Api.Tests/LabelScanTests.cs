@@ -248,6 +248,21 @@ public sealed class ClaudeLabelExtractorTests
         ClaudeLabelExtractor.UsesFallbacks(endpoint, model).ShouldBe(expected);
 
     [Fact]
+    public async Task With_a_managed_identity_the_request_carries_a_bearer_token_and_no_key()
+    {
+        var handler = new Handler(HttpStatusCode.OK);
+        var options = new ClaudeOptions { Endpoint = "https://dialed.services.ai.azure.com/anthropic", ExtractionModel = "claude-opus-5-5", UseManagedIdentity = true };
+        options.IsConfigured.ShouldBeTrue();
+
+        await new ClaudeLabelExtractor(new HttpClient(handler), options, _ => ValueTask.FromResult("entra-token")).ExtractAsync([1, 2, 3], TestContext.Current.CancellationToken);
+
+        handler.Last!.RequestUri!.ToString().ShouldBe("https://dialed.services.ai.azure.com/anthropic/v1/messages");
+        handler.Last.Headers.Authorization!.ToString().ShouldBe("Bearer entra-token");
+        handler.Last.Headers.Contains("x-api-key").ShouldBeFalse();
+        handler.Last.Headers.Contains("anthropic-beta").ShouldBeFalse();
+    }
+
+    [Fact]
     public void A_refusal_is_reported_as_a_failed_scan() =>
         Should.Throw<LabelExtractionException>(() => ClaudeLabelExtractor.Parse("""{"stop_reason":"refusal","content":[]}"""))
             .Message.ShouldContain("declined");

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -12,6 +13,12 @@ public sealed class ClaudeOptions
 
     public string ApiKey { get; set; } = "";
 
+    /// <summary>Sign in with a Microsoft Entra token (the API's managed identity on Microsoft Foundry) instead of an API key.</summary>
+    public bool UseManagedIdentity { get; set; }
+
+    /// <summary>Token scope for Claude in Microsoft Foundry.</summary>
+    public string TokenScope { get; set; } = "https://ai.azure.com/.default";
+
     /// <summary>Model (deployment) used for extraction. Configuration, not code (ADR-0006).</summary>
     public string ExtractionModel { get; set; } = "";
 
@@ -23,11 +30,15 @@ public sealed class ClaudeOptions
 
     public int TimeoutSeconds { get; set; } = 30;
 
-    public bool IsConfigured => !string.IsNullOrWhiteSpace(Endpoint) && !string.IsNullOrWhiteSpace(ApiKey) && !string.IsNullOrWhiteSpace(ExtractionModel);
+    public bool IsConfigured =>
+        !string.IsNullOrWhiteSpace(Endpoint)
+        && !string.IsNullOrWhiteSpace(ExtractionModel)
+        && (UseManagedIdentity || !string.IsNullOrWhiteSpace(ApiKey));
 }
 
 /// <summary>Reads labels with Claude through the Messages API: the model is told to answer with the recording tool, so the answer is JSON that follows the schema.</summary>
-public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options) : ILabelExtractor
+/// <param name="accessToken">With <see cref="ClaudeOptions.UseManagedIdentity"/>: returns a bearer token for <see cref="ClaudeOptions.TokenScope"/>.</param>
+public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options, Func<CancellationToken, ValueTask<string>>? accessToken = null) : ILabelExtractor
 {
     public const string ApiVersion = "2023-06-01";
 
@@ -60,7 +71,16 @@ public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options)
                 {
                     Content = JsonContent.Create(BuildRequest(jpeg, options.ExtractionModel, options.MaxTokens, options.Effort, fallbacks)),
                 };
-                request.Headers.Add("x-api-key", options.ApiKey);
+                if (options.UseManagedIdentity)
+                {
+                    var token = accessToken ?? throw new InvalidOperationException("Ai:UseManagedIdentity is set but no token source was given.");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await token(timeout.Token));
+                }
+                else
+                {
+                    request.Headers.Add("x-api-key", options.ApiKey);
+                }
+
                 request.Headers.Add("anthropic-version", ApiVersion);
                 if (fallbacks)
                 {
