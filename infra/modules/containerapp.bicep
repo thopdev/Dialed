@@ -23,7 +23,22 @@ param minReplicas int = 0
 @description('Resource id of a Container Apps environment to run in instead of creating environmentName. The app must be in its region.')
 param existingEnvironmentId string = ''
 
+@description('Custom hostname of the API, for example api.example.com. Bound only together with customDomainCertificateId.')
+param customDomainName string = ''
+
+@description('Resource id of the managed certificate for customDomainName (created by the first `az containerapp hostname bind`). Every provision rewrites the ingress, so without it a bound hostname would be removed.')
+param customDomainCertificateId string = ''
+
 var createEnvironment = empty(existingEnvironmentId)
+var customDomains = empty(customDomainName) || empty(customDomainCertificateId)
+  ? []
+  : [
+      {
+        name: customDomainName
+        certificateId: customDomainCertificateId
+        bindingType: 'SniEnabled'
+      }
+    ]
 
 // Until the first `azd deploy` there is no API image, so the app starts from Microsoft's ASP.NET sample. It listens on
 // 8080 like the API: `azd deploy` only swaps the image, so the ingress port must already be right.
@@ -70,6 +85,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: 8080
         transport: 'auto'
         allowInsecure: false
+        customDomains: customDomains
       }
       registries: [
         {
