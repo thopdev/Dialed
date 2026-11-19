@@ -20,6 +20,9 @@ param cosmosAccountResourceGroup string = ''
 @allowed(['true', 'false'])
 param cosmosFreeTier string = 'true'
 
+@description('Resource id of an existing Container Apps environment for the API, in another resource group. A new subscription may have only one Container Apps environment in total, so prod runs in the dev one with its own app, identity and settings. Empty creates cae-dialed-{env}.')
+param containerAppsEnvironmentId string = ''
+
 @description('Region of the Container Apps environment and the API. A new subscription may have only one Container Apps environment per region, so prod uses another region than dev. Empty means the same as location.')
 param apiLocation string = ''
 
@@ -238,6 +241,7 @@ module api 'modules/containerapp.bicep' = {
     imageName: apiImageName
     existingImage: apiImage.outputs.image
     minReplicas: int(empty(apiMinReplicas) ? '0' : apiMinReplicas)
+    existingEnvironmentId: containerAppsEnvironmentId
     appSettings: union(sharedSettings, originSettings, {
       Jwt__KeyVaultKeyName: keyVault.outputs.jwtSigningKeyName
     })

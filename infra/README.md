@@ -84,7 +84,8 @@ The workflow stops at its first step when `CUSTOM_DOMAIN` is empty, or when `AZU
    | `AZURE_ENV_NAME` | `prod` |
    | `AZURE_LOCATION` | `northeurope` |
    | `STATIC_WEB_APP_LOCATION` | `eastus2` |
-   | `API_LOCATION` | `swedencentral`: the Container Apps environment and API. A new subscription may have only one Container Apps environment per region (`MaxNumberOfRegionalEnvironmentsInSubExceeded`) and dev's is in North Europe; Sweden Central is also where Cosmos DB is |
+   | `CONTAINER_APPS_ENVIRONMENT_ID` | id of dev's `cae-dialed-dev`: prod's API (`ca-dialed-api-prod`, its own identity, settings and scaling) runs in dev's Container Apps environment, because a new subscription may have only one Container Apps environment in total (`MaxNumberOfGlobalEnvironmentsInSubExceeded`). Prod's console logs therefore land in `log-dialed-dev`; App Insights stays per environment. Once Azure raises the quota, clear the variable and the next deploy creates `cae-dialed-prod` (then redeploy, since the app moves) |
+   | `API_LOCATION` | not set: only for an API region other than `AZURE_LOCATION`; it must match the Container Apps environment's region |
    | `COSMOS_ACCOUNT_RESOURCE_GROUP` | `rg-dialed-dev` (adds `dialed-prod` to the shared account) |
    | `API_MIN_REPLICAS` | `1` (see below) |
    | `CUSTOM_DOMAIN` | `<domain>`, only when `-CustomDomain` is given; without it the deploy refuses to run |

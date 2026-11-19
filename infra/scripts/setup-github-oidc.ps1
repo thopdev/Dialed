@@ -29,9 +29,11 @@ param(
     [string]$StaticWebAppLocation = 'eastus2',
     # Region of the shared Cosmos account when dev creates it; prod reuses dev's account (CosmosAccountResourceGroup).
     [string]$CosmosLocation = '',
-    # Region of the Container Apps environment and API. A new subscription allows one Container Apps environment per region,
-    # so prod defaults to swedencentral (dev uses Location).
+    # Region of the Container Apps environment and API when it is not Location. Empty for both dev and prod now.
     [string]$ApiLocation = '',
+    # Container Apps environment the API joins instead of creating its own. A new subscription may have only one in total,
+    # so other environments than dev default to dev's (cae-dialed-dev in rg-dialed-dev).
+    [string]$ContainerAppsEnvironmentId = '',
     # Resource group of the shared free-tier Cosmos account. Defaults to rg-dialed-dev for every environment but dev.
     [string]$CosmosAccountResourceGroup = '',
     # Minimum API replicas. Defaults to 0 for dev (scale to zero) and 1 for other environments (no cold start).
@@ -114,7 +116,9 @@ if (@($environments) -notcontains $Environment) {
 }
 $isDev = $Environment -eq 'dev'
 if (-not $CosmosAccountResourceGroup -and -not $isDev) { $CosmosAccountResourceGroup = 'rg-dialed-dev' }
-if (-not $ApiLocation -and -not $isDev) { $ApiLocation = 'swedencentral' }
+if (-not $ContainerAppsEnvironmentId -and -not $isDev) {
+    $ContainerAppsEnvironmentId = Invoke-Native { az containerapp env show --name cae-dialed-dev --resource-group rg-dialed-dev --query id --output tsv }
+}
 if (-not $ApiMinReplicas) { $ApiMinReplicas = if ($isDev) { '0' } else { '1' } }
 
 $variables = [ordered]@{
@@ -126,6 +130,7 @@ $variables = [ordered]@{
     STATIC_WEB_APP_LOCATION       = $StaticWebAppLocation
     COSMOS_LOCATION               = $CosmosLocation
     API_LOCATION                  = $ApiLocation
+    CONTAINER_APPS_ENVIRONMENT_ID = $ContainerAppsEnvironmentId
     COSMOS_ACCOUNT_RESOURCE_GROUP = $CosmosAccountResourceGroup
     API_MIN_REPLICAS              = $ApiMinReplicas
     CUSTOM_DOMAIN                 = $CustomDomain

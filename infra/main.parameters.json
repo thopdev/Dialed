@@ -8,6 +8,7 @@
     "cosmosFreeTier": { "value": "${COSMOS_FREE_TIER=true}" },
     "cosmosLocation": { "value": "${COSMOS_LOCATION=}" },
     "apiLocation": { "value": "${API_LOCATION=}" },
+    "containerAppsEnvironmentId": { "value": "${CONTAINER_APPS_ENVIRONMENT_ID=}" },
     "cosmosAccountResourceGroup": { "value": "${COSMOS_ACCOUNT_RESOURCE_GROUP=}" },
     "customDomain": { "value": "${CUSTOM_DOMAIN=}" },
     "appHostname": { "value": "${APP_HOSTNAME=}" },

@@ -1,4 +1,5 @@
 // Container Apps environment + the API app (Consumption; scales to zero unless minReplicas is set). `azd deploy` replaces the bootstrap image.
+// With existingEnvironmentId the app joins that environment instead of creating one (prod shares dev's, see infra/README.md).
 param location string
 param tags object
 param environmentName string
@@ -19,6 +20,11 @@ param existingImage string = ''
 @maxValue(2)
 param minReplicas int = 0
 
+@description('Resource id of a Container Apps environment to run in instead of creating environmentName. The app must be in its region.')
+param existingEnvironmentId string = ''
+
+var createEnvironment = empty(existingEnvironmentId)
+
 // Until the first `azd deploy` there is no API image, so the app starts from Microsoft's ASP.NET sample. It listens on
 // 8080 like the API: `azd deploy` only swaps the image, so the ingress port must already be right.
 var image = !empty(imageName) ? imageName : (!empty(existingImage) ? existingImage : 'mcr.microsoft.com/dotnet/samples:aspnetapp')
@@ -27,7 +33,7 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
   name: last(split(logAnalyticsId, '/'))
 }
 
-resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
+resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = if (createEnvironment) {
   name: environmentName
   location: location
   tags: tags
@@ -56,7 +62,7 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
     userAssignedIdentities: { '${identityId}': {} }
   }
   properties: {
-    managedEnvironmentId: environment.id
+    managedEnvironmentId: createEnvironment ? environment.id : existingEnvironmentId
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
@@ -91,4 +97,4 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
 
 output name string = app.name
 output url string = 'https://${app.properties.configuration.ingress.fqdn}'
-output environmentId string = environment.id
+output environmentId string = createEnvironment ? environment.id : existingEnvironmentId
