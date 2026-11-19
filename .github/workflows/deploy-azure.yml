@@ -44,6 +44,7 @@ jobs:
       APP_HOSTNAME: ${{ vars.APP_HOSTNAME }}
       API_MIN_REPLICAS: ${{ vars.API_MIN_REPLICAS }}
       API_PUBLIC_URL: ${{ vars.API_PUBLIC_URL }}
+      API_CERTIFICATE_ID: ${{ vars.API_CERTIFICATE_ID }}
     steps:
       - name: Check configuration
         run: |
