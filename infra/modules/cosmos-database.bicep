@@ -20,76 +20,48 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15
   }
 }
 
-// Friend codes, follows and blocks (#38). Partition key = `user:{id}` or `code:{CODE}` (CosmosFriendStore); nothing expires.
-resource friends 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
-  parent: database
-  name: 'friends'
-  properties: {
-    resource: {
-      id: 'friends'
-      partitionKey: { paths: ['/pk'], kind: 'Hash' }
+// The containers the API's Cosmos stores use. With data-plane RBAC the app can't create them, so they all live here.
+// One entry per container, in alphabetical order by id, so PRs that each add a container touch different lines.
+// defaultTtl -1: TTL on, every document sets its own `ttl`. See docs/cosmos-stores.md.
+var containers = [
+  // Friend codes, follows and blocks (#38, CosmosFriendStore). Partition key = `user:{id}` or `code:{CODE}`; nothing expires.
+  { id: 'friends', partitionKey: '/pk' }
+  // Households and their invites (#38, CosmosHouseholdStore), one partition per household; invites expire through their `ttl` field.
+  { id: 'households', partitionKey: '/householdId', defaultTtl: -1 }
+  // Identity (ADR-0010): users with passkeys, email and passkey lookups, profiles, refresh tokens, ceremony nonces and beta invites.
+  // Partition key = id (`pk`); refresh tokens, nonces and invites expire through their `ttl` field.
+  { id: 'identity', partitionKey: '/pk', defaultTtl: -1 }
+  // Public profiles and reports (#38, #106, CosmosPublicProfileStore), one partition per person; nothing expires.
+  { id: 'publicprofiles', partitionKey: '/userId' }
+  // Email recovery codes, send cooldown and lockout per account (#197, CosmosEmailRecoveryStore).
+  { id: 'recovery', partitionKey: '/accountId', defaultTtl: -1 }
+  // Synced records (#38, ADR-0011, CosmosSyncStore), one partition per household; soft-deleted records expire through their `ttl` field.
+  // The app's JSON under /entity is not indexed (queries only filter on the copied top-level fields), so writes stay cheap.
+  {
+    id: 'sync'
+    partitionKey: '/householdId'
+    defaultTtl: -1
+    indexingPolicy: {
+      indexingMode: 'consistent'
+      automatic: true
+      includedPaths: [{ path: '/*' }]
+      excludedPaths: [{ path: '/entity/*' }, { path: '/"_etag"/?' }]
     }
   }
-}
+]
 
-// Households and their invites (#38), one partition per household; invites expire through their `ttl` field.
-resource households 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
+resource sqlContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = [for container in containers: {
   parent: database
-  name: 'households'
+  name: container.id
   properties: {
     resource: {
-      id: 'households'
-      partitionKey: { paths: ['/householdId'], kind: 'Hash' }
-      defaultTtl: -1
+      id: container.id
+      partitionKey: { paths: [container.partitionKey], kind: 'Hash' }
+      defaultTtl: container.?defaultTtl
+      indexingPolicy: container.?indexingPolicy
     }
   }
-}
-
-// Identity (ADR-0010, docs/cosmos-stores.md): users with passkeys, email and passkey lookups, profiles, refresh tokens, ceremony
-// nonces and beta invites. Partition key = id (`pk`); refresh tokens, nonces and invites expire through their `ttl` field.
-resource identity 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
-  parent: database
-  name: 'identity'
-  properties: {
-    resource: {
-      id: 'identity'
-      partitionKey: { paths: ['/pk'], kind: 'Hash' }
-      defaultTtl: -1
-    }
-  }
-}
-
-// Public profiles and reports (#38, #106), one partition per person; nothing expires.
-resource publicprofiles 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
-  parent: database
-  name: 'publicprofiles'
-  properties: {
-    resource: {
-      id: 'publicprofiles'
-      partitionKey: { paths: ['/userId'], kind: 'Hash' }
-    }
-  }
-}
-
-// Synced records (#38, ADR-0011), one partition per household. The app's JSON under /entity is not indexed (queries only filter on the
-// copied top-level fields), so a write only pays for indexing those few fields. Soft-deleted records expire through their `ttl` field.
-resource sync 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = {
-  parent: database
-  name: 'sync'
-  properties: {
-    resource: {
-      id: 'sync'
-      partitionKey: { paths: ['/householdId'], kind: 'Hash' }
-      defaultTtl: -1
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [{ path: '/*' }]
-        excludedPaths: [{ path: '/entity/*' }, { path: '/"_etag"/?' }]
-      }
-    }
-  }
-}
+}]
 
 resource assignments 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-11-15' = [for principalId in principalIds: {
   parent: account
