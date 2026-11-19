@@ -44,6 +44,8 @@ jobs:
       APP_HOSTNAME: ${{ vars.APP_HOSTNAME }}
       API_MIN_REPLICAS: ${{ vars.API_MIN_REPLICAS }}
       API_PUBLIC_URL: ${{ vars.API_PUBLIC_URL }}
+      AI_EXTRACTION_MODEL: ${{ vars.AI_EXTRACTION_MODEL }}
+      AI_ENDPOINT: ${{ vars.AI_ENDPOINT }}
     steps:
       - name: Check configuration
         run: |

@@ -38,6 +38,12 @@ param appHostname string = ''
 @description('Minimum replicas of the API container app ("0" scales to zero; a string because azd fills it from the environment). Dev 0, prod 1 to avoid cold starts.')
 param apiMinReplicas string = '0'
 
+@description('Claude model that reads bag labels, for example claude-haiku-5-5. Empty keeps the fake reader. Set it only after the key is in the Key Vault of this environment as secret ai-api-key (docs/ai-label-scan.md), or the API revision fails to start.')
+param aiExtractionModel string = ''
+
+@description('Base address of the Claude Messages API: Anthropic by default, or a Foundry resource endpoint.')
+param aiEndpoint string = 'https://api.anthropic.com'
+
 @description('API image set by azd after the first deploy; empty means the bootstrap image is used.')
 param apiImageName string = ''
 
@@ -216,6 +222,16 @@ var sharedSettings = {
   Email__SenderDomain: email.outputs.senderDomain
 }
 
+// The real label reader (#81): on only when a model is set; the key never leaves Key Vault (read with the API identity).
+var hasAi = !empty(aiExtractionModel)
+var aiSettings = hasAi
+  ? {
+      Ai__Endpoint: empty(aiEndpoint) ? 'https://api.anthropic.com' : aiEndpoint
+      Ai__ExtractionModel: aiExtractionModel
+    }
+  : {}
+var aiSecretSettings = hasAi ? { Ai__ApiKey: '${keyVault.outputs.uri}secrets/ai-api-key' } : {}
+
 module apiImage 'modules/existing-image.bicep' = {
   scope: rg
   name: 'api-existing-image'
@@ -242,9 +258,10 @@ module api 'modules/containerapp.bicep' = {
     existingImage: apiImage.outputs.image
     minReplicas: int(empty(apiMinReplicas) ? '0' : apiMinReplicas)
     existingEnvironmentId: containerAppsEnvironmentId
-    appSettings: union(sharedSettings, originSettings, {
+    appSettings: union(sharedSettings, originSettings, aiSettings, {
       Jwt__KeyVaultKeyName: keyVault.outputs.jwtSigningKeyName
     })
+    secretSettings: aiSecretSettings
   }
 }
 

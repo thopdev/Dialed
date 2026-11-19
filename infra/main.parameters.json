@@ -12,6 +12,8 @@
     "cosmosAccountResourceGroup": { "value": "${COSMOS_ACCOUNT_RESOURCE_GROUP=}" },
     "customDomain": { "value": "${CUSTOM_DOMAIN=}" },
     "appHostname": { "value": "${APP_HOSTNAME=}" },
+    "aiExtractionModel": { "value": "${AI_EXTRACTION_MODEL=}" },
+    "aiEndpoint": { "value": "${AI_ENDPOINT=https://api.anthropic.com}" },
     "apiMinReplicas": { "value": "${API_MIN_REPLICAS=0}" },
     "apiImageName": { "value": "${SERVICE_API_IMAGE_NAME=}" },
     "apiExists": { "value": "${SERVICE_API_RESOURCE_EXISTS=false}" }

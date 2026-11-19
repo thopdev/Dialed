@@ -214,17 +214,43 @@ public sealed class ClaudeLabelExtractorTests
     private static ClaudeOptions Options => new() { Endpoint = "https://example.test/", ApiKey = "key", ExtractionModel = "model-x" };
 
     [Fact]
-    public void The_request_forces_the_tool_and_carries_one_jpeg_image()
+    public void The_request_asks_for_the_tool_and_carries_one_jpeg_image()
     {
         var request = ClaudeLabelExtractor.BuildRequest([1, 2, 3], "model-x", 512);
 
         request["model"]!.GetValue<string>().ShouldBe("model-x");
-        request["tool_choice"]!["name"]!.GetValue<string>().ShouldBe(LabelPrompt.ToolName);
+        // Forced tool_choice ("tool"/"any") is a 400 on Claude Opus 5.5 and Sonnet 5.5.
+        request["tool_choice"]!["type"]!.GetValue<string>().ShouldBe("auto");
+        request["messages"]![0]!["content"]![1]!["text"]!.GetValue<string>().ShouldContain(LabelPrompt.ToolName);
+        request["output_config"].ShouldBeNull();
+        request["fallbacks"].ShouldBeNull();
         var image = request["messages"]![0]!["content"]![0]!;
         image["source"]!["media_type"]!.GetValue<string>().ShouldBe("image/jpeg");
         image["source"]!["data"]!.GetValue<string>().ShouldBe(Convert.ToBase64String([1, 2, 3]));
         request["tools"]![0]!["input_schema"]!["properties"]!.AsObject().Select(p => p.Key).ShouldBe(BeanDraft.FieldNames);
     }
+
+    [Fact]
+    public void Effort_and_fallbacks_are_sent_only_when_asked()
+    {
+        var request = ClaudeLabelExtractor.BuildRequest([1], "claude-opus-5-5", 16000, "low", fallbacks: true);
+
+        request["output_config"]!["effort"]!.GetValue<string>().ShouldBe("low");
+        request["fallbacks"]!.GetValue<string>().ShouldBe("default");
+    }
+
+    [Theory]
+    [InlineData("https://api.anthropic.com", "claude-opus-5-5", true)]
+    [InlineData("https://api.anthropic.com/", "claude-sonnet-5-5", true)]
+    [InlineData("https://api.anthropic.com", "claude-haiku-5-5", false)]
+    [InlineData("https://dialed.services.ai.azure.com/anthropic", "claude-opus-5-5", false)]
+    public void Server_side_fallbacks_only_go_to_Anthropic_for_models_that_take_them(string endpoint, string model, bool expected) =>
+        ClaudeLabelExtractor.UsesFallbacks(endpoint, model).ShouldBe(expected);
+
+    [Fact]
+    public void A_refusal_is_reported_as_a_failed_scan() =>
+        Should.Throw<LabelExtractionException>(() => ClaudeLabelExtractor.Parse("""{"stop_reason":"refusal","content":[]}"""))
+            .Message.ShouldContain("declined");
 
     [Fact]
     public void The_answer_is_validated_trimmed_and_clamped()
