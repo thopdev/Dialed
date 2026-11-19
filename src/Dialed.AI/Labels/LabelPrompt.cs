@@ -5,9 +5,12 @@ namespace Dialed.AI.Labels;
 /// <summary>The versioned prompt and output schema for label scanning. Change <see cref="Version"/> with every change to either, so results can be compared per version (#89).</summary>
 public static class LabelPrompt
 {
-    public const string Version = "label-v1";
+    // label-v2: the tool is asked for in the user text (tool_choice auto) instead of forced, which current models reject.
+    public const string Version = "label-v2";
 
     public const string ToolName = "record_bean_label";
+
+    public const string UserText = $"Read this coffee bag label and record it with the {ToolName} tool. Call the tool once.";
 
     public const string System = """
         You read the label of a bag of coffee beans from a photo and record what it says with the tool.

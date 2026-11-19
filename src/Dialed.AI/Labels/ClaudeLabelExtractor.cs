@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -12,20 +13,47 @@ public sealed class ClaudeOptions
 
     public string ApiKey { get; set; } = "";
 
+    /// <summary>Sign in with a Microsoft Entra token (the API's managed identity on Microsoft Foundry) instead of an API key.</summary>
+    public bool UseManagedIdentity { get; set; }
+
+    /// <summary>Token scope for Claude in Microsoft Foundry.</summary>
+    public string TokenScope { get; set; } = "https://ai.azure.com/.default";
+
     /// <summary>Model (deployment) used for extraction. Configuration, not code (ADR-0006).</summary>
     public string ExtractionModel { get; set; } = "";
 
-    public int MaxTokens { get; set; } = 1024;
+    /// <summary>Output cap. Thinking counts against it on current models (always on for Claude Opus 5.5), so it is generous; the tool call itself is small.</summary>
+    public int MaxTokens { get; set; } = 16000;
+
+    /// <summary>Optional effort (low, medium, high, xhigh, max). Empty: the model's default.</summary>
+    public string Effort { get; set; } = "";
 
     public int TimeoutSeconds { get; set; } = 30;
 
-    public bool IsConfigured => !string.IsNullOrWhiteSpace(Endpoint) && !string.IsNullOrWhiteSpace(ApiKey) && !string.IsNullOrWhiteSpace(ExtractionModel);
+    public bool IsConfigured =>
+        !string.IsNullOrWhiteSpace(Endpoint)
+        && !string.IsNullOrWhiteSpace(ExtractionModel)
+        && (UseManagedIdentity || !string.IsNullOrWhiteSpace(ApiKey));
 }
 
-/// <summary>Reads labels with Claude through the Messages API using forced tool use, so the answer is JSON that follows the schema.</summary>
-public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options) : ILabelExtractor
+/// <summary>Reads labels with Claude through the Messages API: the model is told to answer with the recording tool, so the answer is JSON that follows the schema.</summary>
+/// <param name="accessToken">With <see cref="ClaudeOptions.UseManagedIdentity"/>: returns a bearer token for <see cref="ClaudeOptions.TokenScope"/>.</param>
+public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options, Func<CancellationToken, ValueTask<string>>? accessToken = null) : ILabelExtractor
 {
     public const string ApiVersion = "2023-06-01";
+
+    public const string FallbackBeta = "server-side-fallback-2026-07-01";
+
+    /// <summary>
+    /// Server-side refusal fallback ("fallbacks": "default") is only sent to Anthropic's own API and only for models that take it;
+    /// other platforms (Foundry) and models (Haiku) would reject the field.
+    /// </summary>
+    public static bool UsesFallbacks(string endpoint, string model) =>
+        Uri.TryCreate(endpoint, UriKind.Absolute, out var uri)
+        && uri.Host.Equals("api.anthropic.com", StringComparison.OrdinalIgnoreCase)
+        && (model.StartsWith("claude-opus-5", StringComparison.Ordinal)
+            || model.StartsWith("claude-fable-5", StringComparison.Ordinal)
+            || model == "claude-sonnet-5-5");
 
     public async Task<LabelExtraction> ExtractAsync(byte[] jpeg, CancellationToken cancellationToken = default)
     {
@@ -38,12 +66,26 @@ public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options)
         {
             try
             {
+                var fallbacks = UsesFallbacks(options.Endpoint, options.ExtractionModel);
                 using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(options.Endpoint.TrimEnd('/') + "/v1/messages"))
                 {
-                    Content = JsonContent.Create(BuildRequest(jpeg, options.ExtractionModel, options.MaxTokens)),
+                    Content = JsonContent.Create(BuildRequest(jpeg, options.ExtractionModel, options.MaxTokens, options.Effort, fallbacks)),
                 };
-                request.Headers.Add("x-api-key", options.ApiKey);
+                if (options.UseManagedIdentity)
+                {
+                    var token = accessToken ?? throw new InvalidOperationException("Ai:UseManagedIdentity is set but no token source was given.");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await token(timeout.Token));
+                }
+                else
+                {
+                    request.Headers.Add("x-api-key", options.ApiKey);
+                }
+
                 request.Headers.Add("anthropic-version", ApiVersion);
+                if (fallbacks)
+                {
+                    request.Headers.Add("anthropic-beta", FallbackBeta);
+                }
 
                 using var response = await http.SendAsync(request, timeout.Token);
                 if (response.StatusCode is HttpStatusCode.TooManyRequests or >= HttpStatusCode.InternalServerError && attempt < 2)
@@ -75,31 +117,48 @@ public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options)
         }
     }
 
-    /// <summary>The Messages API request: one image, forced use of the recording tool.</summary>
-    public static JsonObject BuildRequest(byte[] jpeg, string model, int maxTokens) => new()
+    /// <summary>
+    /// The Messages API request: one image and the recording tool. Current models (Claude Opus 5.5, Sonnet 5.5) reject a forced
+    /// tool_choice, so the choice is "auto" and the prompt asks for the tool; <see cref="Parse"/> rejects an answer without it.
+    /// </summary>
+    public static JsonObject BuildRequest(byte[] jpeg, string model, int maxTokens, string? effort = null, bool fallbacks = false)
     {
-        ["model"] = model,
-        ["max_tokens"] = maxTokens,
-        ["system"] = LabelPrompt.System,
-        ["tools"] = new JsonArray(new JsonObject
+        var request = new JsonObject
         {
-            ["name"] = LabelPrompt.ToolName,
-            ["description"] = "Record what the coffee label says.",
-            ["input_schema"] = LabelPrompt.Schema(),
-        }),
-        ["tool_choice"] = new JsonObject { ["type"] = "tool", ["name"] = LabelPrompt.ToolName },
-        ["messages"] = new JsonArray(new JsonObject
+            ["model"] = model,
+            ["max_tokens"] = maxTokens,
+            ["system"] = LabelPrompt.System,
+            ["tools"] = new JsonArray(new JsonObject
+            {
+                ["name"] = LabelPrompt.ToolName,
+                ["description"] = "Record what the coffee label says.",
+                ["input_schema"] = LabelPrompt.Schema(),
+            }),
+            ["tool_choice"] = new JsonObject { ["type"] = "auto" },
+            ["messages"] = new JsonArray(new JsonObject
+            {
+                ["role"] = "user",
+                ["content"] = new JsonArray(
+                    new JsonObject
+                    {
+                        ["type"] = "image",
+                        ["source"] = new JsonObject { ["type"] = "base64", ["media_type"] = "image/jpeg", ["data"] = Convert.ToBase64String(jpeg) },
+                    },
+                    new JsonObject { ["type"] = "text", ["text"] = LabelPrompt.UserText }),
+            }),
+        };
+        if (!string.IsNullOrWhiteSpace(effort))
         {
-            ["role"] = "user",
-            ["content"] = new JsonArray(
-                new JsonObject
-                {
-                    ["type"] = "image",
-                    ["source"] = new JsonObject { ["type"] = "base64", ["media_type"] = "image/jpeg", ["data"] = Convert.ToBase64String(jpeg) },
-                },
-                new JsonObject { ["type"] = "text", ["text"] = "Read this coffee bag label." }),
-        }),
-    };
+            request["output_config"] = new JsonObject { ["effort"] = effort };
+        }
+
+        if (fallbacks)
+        {
+            request["fallbacks"] = "default";
+        }
+
+        return request;
+    }
 
     /// <summary>Reads the model's answer and validates it: the tool call must be there; confidences are clamped to 0..1; unknown fields are ignored.</summary>
     public static LabelExtraction Parse(string json)
@@ -112,6 +171,11 @@ public sealed class ClaudeLabelExtractor(HttpClient http, ClaudeOptions options)
         catch (JsonException exception)
         {
             throw new LabelExtractionException("The model answer is not JSON.", exception);
+        }
+
+        if (root?["stop_reason"] is JsonValue stop && stop.TryGetValue<string>(out var reason) && reason == "refusal")
+        {
+            throw new LabelExtractionException("The model declined to read this photo.");
         }
 
         var input = (root?["content"] as JsonArray)?

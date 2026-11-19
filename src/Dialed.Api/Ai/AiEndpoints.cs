@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Dialed.AI.DialIn;
@@ -32,7 +34,15 @@ public static class AiEndpoints
 
         if (options.IsConfigured)
         {
-            services.AddHttpClient<ILabelExtractor, ClaudeLabelExtractor>((http, _) => new ClaudeLabelExtractor(http, options));
+            // On Microsoft Foundry the API signs in with its managed identity (AZURE_CLIENT_ID), so there is no key to keep.
+            Func<CancellationToken, ValueTask<string>>? token = null;
+            if (options.UseManagedIdentity)
+            {
+                var credential = new DefaultAzureCredential();
+                token = async ct => (await credential.GetTokenAsync(new TokenRequestContext([options.TokenScope]), ct)).Token;
+            }
+
+            services.AddHttpClient<ILabelExtractor, ClaudeLabelExtractor>((http, _) => new ClaudeLabelExtractor(http, options, token));
         }
         else
         {
