@@ -84,6 +84,7 @@ The workflow stops at its first step when `CUSTOM_DOMAIN` is empty, or when `AZU
    | `AZURE_ENV_NAME` | `prod` |
    | `AZURE_LOCATION` | `northeurope` |
    | `STATIC_WEB_APP_LOCATION` | `eastus2` |
+   | `API_LOCATION` | `swedencentral`: the Container Apps environment and API. A new subscription may have only one Container Apps environment per region (`MaxNumberOfRegionalEnvironmentsInSubExceeded`) and dev's is in North Europe; Sweden Central is also where Cosmos DB is |
    | `COSMOS_ACCOUNT_RESOURCE_GROUP` | `rg-dialed-dev` (adds `dialed-prod` to the shared account) |
    | `API_MIN_REPLICAS` | `1` (see below) |
    | `CUSTOM_DOMAIN` | `<domain>`, only when `-CustomDomain` is given; without it the deploy refuses to run |

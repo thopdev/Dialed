@@ -20,6 +20,9 @@ param cosmosAccountResourceGroup string = ''
 @allowed(['true', 'false'])
 param cosmosFreeTier string = 'true'
 
+@description('Region of the Container Apps environment and the API. A new subscription may have only one Container Apps environment per region, so prod uses another region than dev. Empty means the same as location.')
+param apiLocation string = ''
+
 @description('Region for the Cosmos DB account when it is created. Cosmos capacity for new subscriptions can run out in a region ("high demand"); empty means the same as location.')
 param cosmosLocation string = ''
 
@@ -223,7 +226,7 @@ module api 'modules/containerapp.bicep' = {
   scope: rg
   name: 'api'
   params: {
-    location: location
+    location: empty(apiLocation) ? location : apiLocation
     tags: tags
     environmentName: 'cae-dialed-${env}'
     appName: 'ca-dialed-api-${env}'
