@@ -18,6 +18,7 @@
   ./infra/scripts/setup-github-oidc.ps1
   ./infra/scripts/setup-github-oidc.ps1 -Environment prod
   ./infra/scripts/setup-github-oidc.ps1 -Environment prod -CustomDomain example.com
+  ./infra/scripts/setup-github-oidc.ps1 -Environment prod -CustomDomain dialed.example.com -AppHostname dialed.example.com
 #>
 [CmdletBinding()]
 param(
@@ -34,6 +35,8 @@ param(
     [string]$ApiMinReplicas = '',
     # Domain such as example.com (app.<domain>, api.<domain>, passkey RP ID). Prod refuses to deploy without it.
     [string]$CustomDomain = '',
+    # Hostname of the PWA when it is not app.<domain>, for example the domain itself. Must be the domain or a subdomain of it.
+    [string]$AppHostname = '',
     [string]$AppName = 'dialed-github-deploy'
 )
 
@@ -121,6 +124,7 @@ $variables = [ordered]@{
     COSMOS_ACCOUNT_RESOURCE_GROUP = $CosmosAccountResourceGroup
     API_MIN_REPLICAS              = $ApiMinReplicas
     CUSTOM_DOMAIN                 = $CustomDomain
+    APP_HOSTNAME                  = $AppHostname
 }
 # dev reads repository variables (as before); other environments get their own, which override those.
 $target = if ($isDev) { @() } else { @('--env', $Environment) }

@@ -23,8 +23,11 @@ param cosmosFreeTier string = 'true'
 @description('Region for the Cosmos DB account when it is created. Cosmos capacity for new subscriptions can run out in a region ("high demand"); empty means the same as location.')
 param cosmosLocation string = ''
 
-@description('Custom domain of the environment, for example dialed.app (no scheme, no app. prefix). Empty for dev, which uses Azure default hostnames. When set, the app origin is https://app.{domain} and the passkey RP ID is fixed to the domain (ADR-0010). Prod refuses to deploy without it: a passkey registered on a temporary hostname would stop working once the domain is set.')
+@description('Custom domain of the environment, for example dialed.app (no scheme, no app. prefix). Empty for dev, which uses Azure default hostnames. When set, the app origin is https://{appHostname} (default app.{domain}) and the passkey RP ID is fixed to the domain (ADR-0010). Prod refuses to deploy without it: a passkey registered on a temporary hostname would stop working once the domain is set.')
 param customDomain string = ''
+
+@description('Hostname the PWA is served from when customDomain is set, for example dialed.example.com. Empty means app.{customDomain}. Must be the domain itself or a subdomain of it, because the passkey RP ID is the domain.')
+param appHostname string = ''
 
 @description('Minimum replicas of the API container app ("0" scales to zero; a string because azd fills it from the environment). Dev 0, prod 1 to avoid cold starts.')
 param apiMinReplicas string = '0'
@@ -49,6 +52,13 @@ var cosmosAccountName = 'cosmos-dialed-${take(uniqueString(subscription().id), 6
 // Prod must have its domain before anything runs: changing the RP ID later invalidates every passkey (#111).
 var domain = toLower(customDomain)
 var hasCustomDomain = !empty(domain)
+var requestedAppHost = toLower(appHostname)
+// A passkey's RP ID must be the app's host or a parent of it, so any other host would make every sign-in fail.
+var appHost = empty(requestedAppHost)
+  ? 'app.${domain}'
+  : (requestedAppHost == domain || endsWith(requestedAppHost, '.${domain}')
+      ? requestedAppHost
+      : fail('appHostname (APP_HOSTNAME) must be customDomain or a subdomain of it'))
 // The check sits on the resource group, the first resource, so a prod deployment without a domain creates nothing.
 var resourceGroupLocation = env == 'prod' && !hasCustomDomain ? fail('customDomain (CUSTOM_DOMAIN) is required for prod; see infra/README.md') : location
 
@@ -170,9 +180,9 @@ module email 'modules/email.bicep' = {
   }
 }
 
-// The origin the PWA is served from. With a custom domain only https://app.{domain} is allowed, so the Static Web App's
+// The origin the PWA is served from. With a custom domain only https://{appHost} is allowed (app.{domain} unless APP_HOSTNAME says otherwise), so the Static Web App's
 // temporary hostname can never register a passkey; without one (dev) it is the default hostname plus PR previews.
-var appOrigin = hasCustomDomain ? 'https://app.${domain}' : staticWebApp.outputs.origin
+var appOrigin = hasCustomDomain ? 'https://${appHost}' : staticWebApp.outputs.origin
 var originSettings = hasCustomDomain
   ? {
       App__Origins__0: appOrigin

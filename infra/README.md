@@ -31,7 +31,7 @@ azd deploy                 # builds and ships the API (Container Apps) and Funct
 ## Rules
 - **No secrets in configuration.** App settings are endpoints and names. Cosmos has local (key) auth disabled, Storage has shared-key auth disabled, the container registry has no admin user. Services authenticate with their managed identity (`AZURE_CLIENT_ID` is set for `DefaultAzureCredential`).
 - **Passkeys (dev):** the API's allowed origin list contains the Static Web App's default hostname (`Passkeys__Origins__0`, `App__Origins__0`); the RP ID is derived from the calling origin (ADR-0010).
-- **Passkeys (prod):** with `CUSTOM_DOMAIN` set, the only allowed origin is `https://app.<domain>` and `Passkeys__RpId` is `<domain>`; the Static Web App's own hostname and PR previews are not allowed. `infra/main.bicep` fails for `prod` without a domain, so no passkey is ever registered on a temporary hostname (changing the RP ID later invalidates every passkey).
+- **Passkeys (prod):** with `CUSTOM_DOMAIN` set, the only allowed origin is `https://app.<domain>` (or `https://<APP_HOSTNAME>` when that is set; it must be the domain or a subdomain of it) and `Passkeys__RpId` is `<domain>`; the Static Web App's own hostname and PR previews are not allowed. `infra/main.bicep` fails for `prod` without a domain, so no passkey is ever registered on a temporary hostname (changing the RP ID later invalidates every passkey).
 - **Cosmos free tier** exists once per subscription and only at creation. `dev` creates the account; for `prod` run `azd env set COSMOS_ACCOUNT_RESOURCE_GROUP rg-dialed-dev` so it only adds its own database to the shared account.
 - **First deploy:** until `azd deploy` runs, the API container app runs a hello-world bootstrap image.
 - **JWT signing** (#30): the RSA key `jwt-signing` in Key Vault signs the API's access tokens (RS256); the API signs through Key Vault with its managed identity (Key Vault Crypto User) and validates with the public keys of every enabled version. Rotate by adding a version (`az keyvault key rotate --vault-name <vault> --name jwt-signing`): new tokens use it within an hour, old ones stay valid until they expire. Disable an old version only after the access-token lifetime (30 minutes) has passed.
@@ -87,6 +87,7 @@ The workflow stops at its first step when `CUSTOM_DOMAIN` is empty, or when `AZU
    | `COSMOS_ACCOUNT_RESOURCE_GROUP` | `rg-dialed-dev` (adds `dialed-prod` to the shared account) |
    | `API_MIN_REPLICAS` | `1` (see below) |
    | `CUSTOM_DOMAIN` | `<domain>`, only when `-CustomDomain` is given; without it the deploy refuses to run |
+   | `APP_HOSTNAME` | only with `-AppHostname`: the PWA's hostname when it is not `app.<domain>`, for example the domain itself |
    | `API_PUBLIC_URL` | not set by the script: set it to `https://api.<domain>` once that hostname is bound; until then the PWA calls the Container App's own address |
 
    Without `-CustomDomain` the environment is prepared but cannot deploy; add the domain later with `gh variable set CUSTOM_DOMAIN --env prod --body <domain>`.
@@ -120,7 +121,7 @@ Values in angle brackets come from the first prod provision (`azd env get-values
 
 | Name | Type | Value | What for |
 |---|---|---|---|
-| `app` | CNAME | default hostname of `swa-dialed-prod` (`<name>.azurestaticapps.net`) | The PWA. Then `az staticwebapp hostname set --name swa-dialed-prod --resource-group rg-dialed-prod --hostname app.<domain>` validates through the CNAME and issues the certificate. |
+| `app` (or the `APP_HOSTNAME` name) | CNAME | default hostname of `swa-dialed-prod` (`<name>.azurestaticapps.net`) | The PWA. Then `az staticwebapp hostname set --name swa-dialed-prod --resource-group rg-dialed-prod --hostname <app host>` validates through the CNAME and issues the certificate. On Cloudflare set the record to **DNS only** (grey cloud), or validation and the certificate fail. |
 | `api` | CNAME | FQDN of `ca-dialed-api-prod` (`<name>.northeurope.azurecontainerapps.io`) | The API. |
 | `asuid.api` | TXT | `customDomainVerificationId` from `az containerapp show -n ca-dialed-api-prod -g rg-dialed-prod --query properties.customDomainVerificationId -o tsv` | Proves the domain to Container Apps. Then `az containerapp hostname add` and `az containerapp hostname bind --hostname api.<domain> --environment cae-dialed-prod --validation-method CNAME` (managed certificate). |
 | `@` | TXT | `ms-domain-verification=<value>` | Verifies the email domain for Azure Communication Services (shown when the custom email domain is added). |
