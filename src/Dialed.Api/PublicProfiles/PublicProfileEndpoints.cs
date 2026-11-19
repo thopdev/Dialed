@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Dialed.Api.Data;
 using Dialed.Api.Friends;
 using Dialed.Api.Passkeys;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ public static class PublicProfileEndpoints
     public static IServiceCollection AddDialedPublicProfiles(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<ReportOptions>(configuration.GetSection(ReportOptions.Section));
-        services.AddSingleton<IPublicProfileStore, InMemoryPublicProfileStore>();
+        services.AddCosmosOrInMemory<IPublicProfileStore, CosmosPublicProfileStore, InMemoryPublicProfileStore>(configuration);
         services.AddSingleton<PublicProfileService>();
         return services;
     }

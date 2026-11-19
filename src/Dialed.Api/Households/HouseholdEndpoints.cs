@@ -1,19 +1,21 @@
 using System.Security.Claims;
+using Dialed.Api.Data;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Dialed.Api.Households;
 
 public static class HouseholdEndpoints
 {
-    public static IServiceCollection AddDialedHouseholds(this IServiceCollection services, IHostEnvironment environment)
+    public static IServiceCollection AddDialedHouseholds(this IServiceCollection services, IHostEnvironment environment, IConfiguration configuration)
     {
-        services.AddSingleton<IHouseholdStore>(_ => new InMemoryHouseholdStore(environment.IsDevelopment()
-            ?
-            [
-                new Household("dev-household", "Alice and Bob", "dev-alice"),
-                new Household("dev-household-carol", "Carol's household", "dev-carol"),
-            ]
-            : []));
+        // The Development people's shared households; both stores take the registered households as their starting set.
+        if (environment.IsDevelopment())
+        {
+            services.AddSingleton(new Household("dev-household", "Alice and Bob", "dev-alice"));
+            services.AddSingleton(new Household("dev-household-carol", "Carol's household", "dev-carol"));
+        }
+
+        services.AddCosmosOrInMemory<IHouseholdStore, CosmosHouseholdStore, InMemoryHouseholdStore>(configuration);
         services.AddSingleton<HouseholdService>();
         return services;
     }

@@ -28,13 +28,32 @@ var containers = [
   { id: 'aiquota', partitionKey: '/userId', defaultTtl: -1 }
   // The shared bean and roaster catalog (#268): the latest build in parts and the owner's rules. No user data; no `ttl`.
   { id: 'catalog', partitionKey: '/pk', defaultTtl: -1 }
+  // Friend codes, follows and blocks (#38, CosmosFriendStore). Partition key = `user:{id}` or `code:{CODE}`; nothing expires.
+  { id: 'friends', partitionKey: '/pk' }
+  // Households and their invites (#38, CosmosHouseholdStore), one partition per household; invites expire through their `ttl` field.
+  { id: 'households', partitionKey: '/householdId', defaultTtl: -1 }
   // Identity (ADR-0010): users with passkeys, email and passkey lookups, profiles, refresh tokens, ceremony nonces and beta invites.
   // Partition key = id (`pk`); refresh tokens, nonces and invites expire through their `ttl` field.
   { id: 'identity', partitionKey: '/pk', defaultTtl: -1 }
+  // Public profiles and reports (#38, #106, CosmosPublicProfileStore), one partition per person; nothing expires.
+  { id: 'publicprofiles', partitionKey: '/userId' }
   // Push devices, switches, stock alert memory and one-push-per-event markers (#260). The markers expire through their `ttl` field.
   { id: 'push', partitionKey: '/userId', defaultTtl: -1 }
   // Email recovery codes, send cooldown and lockout per account (#197, CosmosEmailRecoveryStore).
   { id: 'recovery', partitionKey: '/accountId', defaultTtl: -1 }
+  // Synced records (#38, ADR-0011, CosmosSyncStore), one partition per household; soft-deleted records expire through their `ttl` field.
+  // The app's JSON under /entity is not indexed (queries only filter on the copied top-level fields), so writes stay cheap.
+  {
+    id: 'sync'
+    partitionKey: '/householdId'
+    defaultTtl: -1
+    indexingPolicy: {
+      indexingMode: 'consistent'
+      automatic: true
+      includedPaths: [{ path: '/*' }]
+      excludedPaths: [{ path: '/entity/*' }, { path: '/"_etag"/?' }]
+    }
+  }
 ]
 
 resource sqlContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-11-15' = [for container in containers: {
@@ -45,6 +64,7 @@ resource sqlContainers 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/conta
       id: container.id
       partitionKey: { paths: [container.partitionKey], kind: 'Hash' }
       defaultTtl: container.?defaultTtl
+      indexingPolicy: container.?indexingPolicy
     }
   }
 }]

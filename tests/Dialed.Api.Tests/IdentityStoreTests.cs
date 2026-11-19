@@ -7,13 +7,6 @@ namespace Dialed.Api.Tests;
 // The identity stores (#38): one contract per store, run against memory and against Cosmos DB (docs/cosmos-stores.md).
 // The Cosmos classes add what memory cannot show: a new instance sees the state, and two instances racing.
 
-internal sealed class TestClock(DateTimeOffset now) : TimeProvider
-{
-    public DateTimeOffset Now { get; set; } = now;
-
-    public override DateTimeOffset GetUtcNow() => Now;
-}
-
 // ---- Users and passkeys ---------------------------------------------------------------------------
 
 public abstract class UserStoreContract

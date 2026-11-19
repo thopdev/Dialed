@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json.Nodes;
 using Dialed.Api.Auth;
+using Dialed.Api.Data;
 using Dialed.Telemetry;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -19,9 +20,9 @@ public static class SyncEndpoints
         "beans", "bags", "brews", "recipes", "equipment", "vendors", "photos", "methoddefaults", "dialinfeedback",
     };
 
-    public static IServiceCollection AddDialedSync(this IServiceCollection services)
+    public static IServiceCollection AddDialedSync(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<ISyncStore, InMemorySyncStore>();
+        services.AddCosmosOrInMemory<ISyncStore, CosmosSyncStore, InMemorySyncStore>(configuration);
         services.AddSingleton<SyncPurgeWorker>();
         services.AddHostedService(sp => sp.GetRequiredService<SyncPurgeWorker>());
         return services;

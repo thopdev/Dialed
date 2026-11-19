@@ -47,3 +47,13 @@ public sealed class CosmosTestDatabase : IAsyncDisposable
         }
     }
 }
+
+/// <summary>A clock the tests move by hand.</summary>
+public sealed class TestClock(DateTimeOffset start) : TimeProvider
+{
+    public DateTimeOffset Now { get; set; } = start;
+
+    public override DateTimeOffset GetUtcNow() => Now;
+
+    public void Advance(TimeSpan by) => Now += by;
+}

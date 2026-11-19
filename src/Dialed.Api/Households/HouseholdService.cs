@@ -53,7 +53,7 @@ public sealed record HouseholdResult<T>(HouseholdOutcome Outcome, T? Value = def
     public bool Succeeded => Outcome == HouseholdOutcome.Ok;
 }
 
-/// <summary>Where households and invites are kept. In memory for now; Cosmos DB replaces it.</summary>
+/// <summary>Where households and invites are kept: <see cref="CosmosHouseholdStore"/> in Azure, <see cref="InMemoryHouseholdStore"/> in tests and a bare run.</summary>
 public interface IHouseholdStore
 {
     Task<Household?> FindAsync(string id, CancellationToken cancellationToken = default);

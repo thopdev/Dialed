@@ -12,7 +12,7 @@ public enum StoreOutcome { Stored, VersionMismatch, Forbidden, Invalid }
 
 public sealed record StoreResult(StoreOutcome Outcome, SyncRow? Row = null, string? Message = null);
 
-/// <summary>Rows per table, always scoped to one household. In memory for now; Cosmos DB (one container, partition <c>/householdId</c>) replaces it.</summary>
+/// <summary>Rows per table, always scoped to one household: <see cref="CosmosSyncStore"/> (container <c>sync</c>, partition <c>/householdId</c>) in Azure, <see cref="InMemorySyncStore"/> in tests and a bare run.</summary>
 public interface ISyncStore
 {
     /// <summary>

@@ -1,6 +1,6 @@
 # Cosmos DB stores in the API
 
-How a store in `Dialed.Api` moves from memory to Cosmos DB (ADR-0003). The first one is the email recovery store (#197); the sync store (#38) and the identity stores follow the same pattern.
+How a store in `Dialed.Api` moves from memory to Cosmos DB (ADR-0003). The first one is the email recovery store (#197); the sync, household, friend and public profile stores (#38) and the identity stores follow the same pattern.
 
 ## The pieces (`src/Dialed.Api/Data/DialedCosmos.cs`)
 
@@ -54,6 +54,35 @@ Accounts, passkeys and sign-ins live in the `identity` container (partition key 
 - **Development users**: `/auth/dev` signs in as alice, bob or carol. With Cosmos DB in Development the directory creates their profiles on first use (create only, so a changed household stays).
 - **Passkeys depend on these documents**: deleting `user:` documents or changing the RP ID invalidates the passkeys on people's devices. Never clear the `identity` container of an environment with real users.
 
+## Sync, households, friends and public profiles (#38)
+
+| Container | Partition key | Store | Documents | TTL |
+| --- | --- | --- | --- | --- |
+| `sync` | `/householdId` | `CosmosSyncStore` | one per record, id `{table}:{id}`; the app's JSON under `entity` (not indexed), the fields queries use copied next to it | soft-deleted records: 37 days (purge window + a week) |
+| `households` | `/householdId` | `CosmosHouseholdStore` | `household` and `invite-{CODE}` in the household's partition | invites: until they expire + 1 minute |
+| `friends` | `/pk` | `CosmosFriendStore` | `user:{id}` holds `code`, `follow:{followee}`, `block:{blocked}`; `code:{CODE}` points to its person | none |
+| `publicprofiles` | `/userId` | `CosmosPublicProfileStore` | `profile` and `report-{hash}` (reports about the person) | none |
+
+- **Pulls** order by `sortKey` (update time in ticks, zero-padded, then the record id), so the watermark is one range filter on one indexed field and needs no composite index. Someone else's private records are filtered in the query, so pages stay full.
+- **Pushes** read the record and write it back with its ETag (create when new); a write that lost the race reads again, which ends in the usual version mismatch. Two instances pushing the same version: one wins.
+- **Cross-partition reads**, only where the key is unknown: `ListPublicAsync` (catalog build), the daily purge, looking up an invite code on joining, who follows a person, the open and suspended profile lists and the reports list (moderation), and account deletion.
+- **Purge**: `SyncPurgeWorker` works as before (`deleted = true AND ts < cutoff`, across households). The TTL on deleted records is a backstop in case the worker does not run.
+- **Development**: the dev households (`dev-household`, `dev-household-carol`) are registered as `Household` services and both stores start with them; the Cosmos store creates them once and never overwrites a renamed one.
+- **Indexing**: the `sync` entry in Bicep excludes `/entity/*`. Containers the app creates itself (the emulator) index everything, which only costs RU.
+
+### Expected RU (estimates, 1 KB records, `/entity/*` not indexed)
+
+| Operation | RU |
+| --- | --- |
+| Push of a new record (point read + create) | about 8 |
+| Push of a change (point read + replace with ETag) | about 11 |
+| Pull of one table with nothing new (single-partition query) | about 3 |
+| Pull of a page of 100 changes | about 10 to 15 |
+| A full sync with nothing new (9 tables) | about 27 |
+| Shared list of one person (friend profile, feed) | about 3 + 0.3 per record read |
+
+At 400 RU/s shared by every container, that is roughly 15 idle syncs or 35 pushes per second, plenty for the beta. The SDK retries 429s itself; the alert on 429s (#198) tells when to raise throughput. Indexing `entity` as well would roughly double the cost of a push.
+
 ## Running the Cosmos tests
 
 CI's `cosmos` job starts the vNext emulator and runs `--filter-class "*Cosmos*"` on `Dialed.Api.Tests`. Locally:
@@ -80,7 +109,7 @@ var containers = [
 ]
 ```
 
-To add one, add a comment line and an entry line at its alphabetical place by `id`, matching the store's `CosmosContainerSpec` (`defaultTtl: -1` turns TTL on with a per-document `ttl`; leave `defaultTtl` out for no TTL). Different PRs then touch different lines; on a merge conflict keep both entries. The next `azd provision` (the deploy workflow runs it when `infra/` changed) creates the container. Never change the partition key of an existing container: Cosmos DB can't, the deployment fails, and the data has to be moved to a new container.
+To add one, add a comment line and an entry line at its alphabetical place by `id`, matching the store's `CosmosContainerSpec` (`defaultTtl: -1` turns TTL on with a per-document `ttl`; leave `defaultTtl` out for no TTL). An entry may also carry an `indexingPolicy` (as `sync` does to skip `/entity/*`). Different PRs then touch different lines; on a merge conflict keep both entries. The next `azd provision` (the deploy workflow runs it when `infra/` changed) creates the container. Never change the partition key of an existing container: Cosmos DB can't, the deployment fails, and the data has to be moved to a new container.
 
 At startup in Azure, `CosmosStartupCheck` lists the database's containers and does one point read in each. It logs `Cosmos DB reachable at ..., containers: ...` or, as an error, `Cosmos DB not reachable` (usually a missing role assignment). It only logs; `/health` does not depend on Cosmos DB. To find it: `az containerapp logs show -g rg-dialed-dev -n ca-dialed-api-dev --tail 200 | grep "Cosmos DB"`.
 
