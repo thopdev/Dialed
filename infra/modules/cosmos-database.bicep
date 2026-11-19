@@ -24,6 +24,10 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15
 // One entry per container, in alphabetical order by id, so PRs that each add a container touch different lines.
 // defaultTtl -1: TTL on, every document sets its own `ttl`. See docs/cosmos-stores.md.
 var containers = [
+  // AI calls per user, operation and UTC day (#88). Each counter expires through its `ttl` field two days later.
+  { id: 'aiquota', partitionKey: '/userId', defaultTtl: -1 }
+  // The shared bean and roaster catalog (#268): the latest build in parts and the owner's rules. No user data; no `ttl`.
+  { id: 'catalog', partitionKey: '/pk', defaultTtl: -1 }
   // Friend codes, follows and blocks (#38, CosmosFriendStore). Partition key = `user:{id}` or `code:{CODE}`; nothing expires.
   { id: 'friends', partitionKey: '/pk' }
   // Households and their invites (#38, CosmosHouseholdStore), one partition per household; invites expire through their `ttl` field.
@@ -33,6 +37,8 @@ var containers = [
   { id: 'identity', partitionKey: '/pk', defaultTtl: -1 }
   // Public profiles and reports (#38, #106, CosmosPublicProfileStore), one partition per person; nothing expires.
   { id: 'publicprofiles', partitionKey: '/userId' }
+  // Push devices, switches, stock alert memory and one-push-per-event markers (#260). The markers expire through their `ttl` field.
+  { id: 'push', partitionKey: '/userId', defaultTtl: -1 }
   // Email recovery codes, send cooldown and lockout per account (#197, CosmosEmailRecoveryStore).
   { id: 'recovery', partitionKey: '/accountId', defaultTtl: -1 }
   // Synced records (#38, ADR-0011, CosmosSyncStore), one partition per household; soft-deleted records expire through their `ttl` field.

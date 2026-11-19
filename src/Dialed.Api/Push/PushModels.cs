@@ -46,7 +46,7 @@ public interface IPushSender
     Task<PushOutcome> SendAsync(PushSubscription subscription, PushPayload payload, CancellationToken cancellationToken = default);
 }
 
-/// <summary>Subscriptions and switches per person. Cosmos DB takes over with the other server stores (#260).</summary>
+/// <summary>Subscriptions, switches and alert memory per person. In memory (or a file) locally, Cosmos DB in Azure (#260, <see cref="CosmosPushStore"/>).</summary>
 public interface IPushStore
 {
     /// <summary>Saves the device. An endpoint belongs to one person at a time: signing in as someone else on the same device moves it.</summary>
@@ -69,6 +69,12 @@ public interface IPushStore
     Task<StockAlertState> GetAlertStateAsync(string userId, CancellationToken cancellationToken = default);
 
     Task SaveAlertStateAsync(string userId, StockAlertState state, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Claims one push event (<paramref name="key"/>) for <paramref name="userId"/>: <c>true</c> the first time within <paramref name="window"/>,
+    /// <c>false</c> when it was claimed already (by this or another instance), so the same event is pushed once.
+    /// </summary>
+    Task<bool> TryClaimAsync(string userId, string key, DateTimeOffset now, TimeSpan window, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Everything a push store holds, as plain data (sets as arrays) so it can be written to a file.</summary>
@@ -85,6 +91,7 @@ public class InMemoryPushStore : IPushStore
     private readonly Dictionary<string, PushSubscription> byEndpoint = new(StringComparer.Ordinal);
     private readonly Dictionary<string, PushSettings> settings = new(StringComparer.Ordinal);
     private readonly Dictionary<string, StockAlertState> alertStates = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, DateTimeOffset> claims = new(StringComparer.Ordinal);
 
     /// <summary>Called, outside the lock, after every change. A persisting store writes its file here.</summary>
     protected virtual void OnChanged()
@@ -222,5 +229,18 @@ public class InMemoryPushStore : IPushStore
 
         OnChanged();
         return Task.CompletedTask;
+    }
+
+    public Task<bool> TryClaimAsync(string userId, string key, DateTimeOffset now, TimeSpan window, CancellationToken cancellationToken = default)
+    {
+        lock (gate)
+        {
+            foreach (var old in claims.Where(c => now - c.Value >= window).Select(c => c.Key).ToList())
+            {
+                claims.Remove(old);
+            }
+
+            return Task.FromResult(claims.TryAdd($"{userId}|{key}", now));
+        }
     }
 }

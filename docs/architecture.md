@@ -102,6 +102,7 @@ erDiagram
 - Partition key: `/householdId` for household data, `/id` for users, `/followerId` for follows. To be confirmed by the sync spike (ADR-0011).
 - Identity data (users, passkeys, refresh tokens) in its own containers via custom stores (ADR-0010).
 - Recovery state (lockout, email cooldown, email codes) in container `recovery`, partition `/accountId`, TTL per document (#197).
+- Push devices, switches and alert memory in `push` (`/userId`, #260); the shared catalog build and its rules in `catalog` (`/pk`, apart from user data, #268); AI quota counters in `aiquota` (`/userId`, a day's counter expires after 2 days).
 - In the API every store has an in-memory and a Cosmos DB implementation; the Cosmos DB one is used when a connection string is set. How to add one: [cosmos-stores.md](cosmos-stores.md).
 - Change feed → Functions for derived data (e.g. a per-follower feed, cleanup when a household is deleted).
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Dialed.AI.DialIn;
 using Dialed.AI.Labels;
+using Dialed.Api.Data;
 using Dialed.Api.Sync;
 using Dialed.Images;
 using Dialed.AI.Recipes;
@@ -22,6 +23,7 @@ public static class AiEndpoints
         services.AddSingleton(options);
         services.Configure<AiLimits>(configuration.GetSection("Ai"));
         services.TryAddSingleton(TimeProvider.System);
+        services.AddCosmosOrInMemory<IAiQuotaStore, CosmosAiQuotaStore, InMemoryAiQuotaStore>(configuration);
         services.AddSingleton<AiGate>();
 
         // The dial-in assistant answers with the offline rules until a Claude call for it has been verified against real brews (#86).
@@ -44,7 +46,7 @@ public static class AiEndpoints
     private static async Task<IResult> ScanAsync(byte[] jpeg, ClaimsPrincipal user, AiGate gate, ILabelExtractor extractor, ILoggerFactory logs, HttpContext http, CancellationToken ct)
     {
         var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
-        var entry = gate.TryEnter(userId, AiOperations.Label);
+        var entry = await gate.TryEnterAsync(userId, AiOperations.Label, ct);
         if (entry.Status == AiGateStatus.Disabled)
         {
             return Results.Problem("AI is switched off for now. Enter the bean by hand.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
@@ -69,7 +71,7 @@ public static class AiEndpoints
         }
         catch (LabelExtractionException exception)
         {
-            gate.Refund(userId, AiOperations.Label);
+            await gate.RefundAsync(userId, AiOperations.Label, CancellationToken.None);
             logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Label extraction failed");
             return Results.Problem("The label could not be read right now. Enter the bean by hand, or try again later.", statusCode: StatusCodes.Status503ServiceUnavailable);
         }
@@ -125,7 +127,7 @@ public static class AiEndpoints
             }
 
             var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
-            var entry = gate.TryEnter(userId, AiOperations.Suggestion);
+            var entry = await gate.TryEnterAsync(userId, AiOperations.Suggestion, ct);
             if (entry.Status == AiGateStatus.Disabled)
             {
                 return Results.Problem("AI is switched off for now. The built-in advice still works.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
@@ -151,7 +153,7 @@ public static class AiEndpoints
             }
             catch (DialInRefinementException exception)
             {
-                gate.Refund(userId, AiOperations.Suggestion);
+                await gate.RefundAsync(userId, AiOperations.Suggestion, CancellationToken.None);
                 logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Dial-in refinement failed");
                 return Results.Problem("No suggestion right now. The built-in advice still works.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }
@@ -165,7 +167,7 @@ public static class AiEndpoints
             }
 
             var userId = user.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? "";
-            var entry = gate.TryEnter(userId, AiOperations.Suggestion);
+            var entry = await gate.TryEnterAsync(userId, AiOperations.Suggestion, ct);
             if (entry.Status == AiGateStatus.Disabled)
             {
                 return Results.Problem("AI is switched off for now. Enter the recipe by hand.", statusCode: StatusCodes.Status503ServiceUnavailable, extensions: new Dictionary<string, object?> { ["code"] = "ai-disabled" });
@@ -190,7 +192,7 @@ public static class AiEndpoints
             }
             catch (RecipeSuggestionException exception)
             {
-                gate.Refund(userId, AiOperations.Suggestion);
+                await gate.RefundAsync(userId, AiOperations.Suggestion, CancellationToken.None);
                 logs.CreateLogger("Dialed.Ai").LogWarning(exception, "Recipe suggestion failed");
                 return Results.Problem("No suggestion right now. Enter the recipe by hand, or try again later.", statusCode: StatusCodes.Status503ServiceUnavailable);
             }

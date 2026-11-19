@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
 
 namespace Dialed.Api.Ai;
@@ -42,13 +41,14 @@ public enum AiGateStatus
 
 public sealed record AiGateResult(AiGateStatus Status, int Used = 0, int Limit = 0, TimeSpan RetryAfter = default);
 
-/// <summary>Counts AI calls per user, operation and UTC day. In memory for now; it moves to the database with the other server state (#197).</summary>
-public sealed class AiGate(IOptionsMonitor<AiLimits> limits, TimeProvider time)
+/// <summary>
+/// Checks the kill switch and counts AI calls per user, operation and UTC day in an <see cref="IAiQuotaStore"/> (Cosmos DB in Azure, so the
+/// quota holds across restarts and instances). The switch is checked first and never touches the store.
+/// </summary>
+public sealed class AiGate(IOptionsMonitor<AiLimits> limits, IAiQuotaStore quota, TimeProvider time)
 {
-    private readonly ConcurrentDictionary<string, int> counts = new();
-
     /// <summary>Checks the switch and the quota and, when allowed, counts the call.</summary>
-    public AiGateResult TryEnter(string userId, string operation)
+    public async Task<AiGateResult> TryEnterAsync(string userId, string operation, CancellationToken cancellationToken = default)
     {
         var current = limits.CurrentValue;
         if (!current.Enabled)
@@ -58,11 +58,8 @@ public sealed class AiGate(IOptionsMonitor<AiLimits> limits, TimeProvider time)
 
         var now = time.GetUtcNow();
         var limit = current.LimitFor(operation);
-        var key = Key(userId, operation, now);
-        var used = counts.AddOrUpdate(key, 1, (_, n) => n + 1);
-        if (used > limit)
+        if (await quota.TryTakeAsync(userId, operation, Day(now), limit, cancellationToken) is not { } used)
         {
-            counts.AddOrUpdate(key, 0, (_, n) => n - 1); // a refused call does not count
             var tomorrow = new DateTimeOffset(now.UtcDateTime.Date.AddDays(1), TimeSpan.Zero);
             return new AiGateResult(AiGateStatus.QuotaExceeded, limit, limit, tomorrow - now);
         }
@@ -71,10 +68,11 @@ public sealed class AiGate(IOptionsMonitor<AiLimits> limits, TimeProvider time)
     }
 
     /// <summary>Gives the call back, for example when the model failed: people are not charged quota for our errors.</summary>
-    public void Refund(string userId, string operation) =>
-        counts.AddOrUpdate(Key(userId, operation, time.GetUtcNow()), 0, (_, n) => Math.Max(0, n - 1));
+    public Task RefundAsync(string userId, string operation, CancellationToken cancellationToken = default) =>
+        quota.RefundAsync(userId, operation, Day(time.GetUtcNow()), cancellationToken);
 
-    public int Used(string userId, string operation) => counts.GetValueOrDefault(Key(userId, operation, time.GetUtcNow()));
+    public Task<int> UsedAsync(string userId, string operation, CancellationToken cancellationToken = default) =>
+        quota.UsedAsync(userId, operation, Day(time.GetUtcNow()), cancellationToken);
 
     public decimal EstimateCostUsd(int inputTokens, int outputTokens)
     {
@@ -82,5 +80,5 @@ public sealed class AiGate(IOptionsMonitor<AiLimits> limits, TimeProvider time)
         return (inputTokens * current.InputUsdPerMillionTokens + outputTokens * current.OutputUsdPerMillionTokens) / 1_000_000m;
     }
 
-    private static string Key(string userId, string operation, DateTimeOffset now) => $"{userId}|{operation}|{now:yyyyMMdd}";
+    private static DateOnly Day(DateTimeOffset now) => DateOnly.FromDateTime(now.UtcDateTime);
 }

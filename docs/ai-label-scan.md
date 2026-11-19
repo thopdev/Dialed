@@ -28,7 +28,7 @@ Configuration under `Ai` (reloadable, so the switch works without a deploy):
 | `Ai:SuggestionsPerDay` | 50 | Same, for dial-in suggestions (used when #86/#87 land). |
 | `Ai:InputUsdPerMillionTokens` / `Ai:OutputUsdPerMillionTokens` | 1 / 5 | Prices used to estimate cost per call (`dialed.ai.cost`). Set them to the real prices of the deployed model. |
 
-Calls that fail validation (wrong type, empty, too large) are never counted; a call that fails because of the model is refunded. Counters are in memory (reset on restart, like the recovery lockout, #197).
+Calls that fail validation (wrong type, empty, too large) are never counted; a call that fails because of the model is refunded. Counters are in the `aiquota` Cosmos DB container when Cosmos DB is configured (`CosmosAiQuotaStore`: one document per user, operation and UTC day, ETag concurrency, removed by TTL two days later), so a restart or a second instance does not reset them; without Cosmos DB they are in memory. The kill switch is checked first and never touches the store.
 
 Azure side, when the subscription exists (#25): alert rules on `dialed.ai.cost` (daily total) and `dialed.ai.tokens`, and a way to flip `Ai:Enabled` (App Configuration or an environment variable on the Container App).
 The app side (friendly message for 429/503 and the fallback) comes with the scan screen (#83).
