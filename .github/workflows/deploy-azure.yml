@@ -116,7 +116,7 @@ jobs:
       # The deployment token is read with the same OIDC sign-in, so prod needs no stored secret.
       - name: Sign in to Azure CLI (OIDC)
         if: inputs.deploy-web
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
