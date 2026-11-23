@@ -15,6 +15,7 @@
     <PackageReference Include="Aspire.Hosting.Azure.Functions" />
     <PackageReference Include="Aspire.Hosting.Azure.Storage" />
     <PackageReference Include="Aspire.Hosting.DevTunnels" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" VersionOverride="1.21.0" />
   </ItemGroup>
 
   <ItemGroup>
